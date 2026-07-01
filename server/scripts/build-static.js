@@ -24,9 +24,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 import * as nlSource from '../sources/nl.js';
-import * as ukSource from '../sources/uk.js';
-import { allCountries, getUkSlug } from '../lib/countries.js';
-import { buildThemeComparison, buildColorComparison } from '../lib/compare.js';
+import { allCountries } from '../lib/countries.js';
 import { THEMES, themeById } from '../lib/themes.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -34,8 +32,6 @@ const ROOT = join(__dirname, '..', '..');
 const PUBLIC = join(ROOT, 'public');
 const OUT = join(ROOT, 'docs');
 const DATA = join(OUT, 'data');
-
-const FOREIGN_SOURCES = { uk: ukSource };
 
 /** Voert async taken uit met beperkte gelijktijdigheid. */
 async function mapLimit(items, limit, fn) {
@@ -82,21 +78,19 @@ async function main() {
   const countries = allCountries();
   await writeFile(join(DATA, 'countries.json'), JSON.stringify(countries));
   await writeFile(
-    join(DATA, 'sources.json'),
-    JSON.stringify(Object.values(FOREIGN_SOURCES).map((s) => s.meta))
-  );
-  await writeFile(
     join(DATA, 'themes.json'),
     JSON.stringify(THEMES.map((t) => ({ id: t.id, label: t.label, group: t.group })))
   );
 
   const list = await nlSource.listAdvisories();
-  console.log(`Reisadviezen ophalen en vergelijken voor ${list.length} landen…`);
+  console.log(`Nederlandse reisadviezen ophalen voor ${list.length} landen…`);
 
+  // De buitenlandse vergelijking komt tijdens runtime live van de proxy
+  // (Cloudflare Worker). De statische build bevat alleen de NL-data, de
+  // NL-zoekindex en een lichte directory met NL-kleurcodes per land.
   const nlIndex = [];
-  const foreignIndex = [];
+  const directory = [];
   let ok = 0;
-  let withUk = 0;
   const failures = [];
 
   await mapLimit(list, 8, async (item) => {
@@ -105,28 +99,10 @@ async function main() {
     try {
       const nl = await nlSource.getAdvisory(iso);
 
-      // Buitenlandse bronnen ophalen
-      const foreignList = [];
-      const unavailable = [];
-      for (const [sid, src] of Object.entries(FOREIGN_SOURCES)) {
-        const slug = sid === 'uk' ? getUkSlug(iso) : null;
-        const adv = slug ? await src.getAdvisory(slug) : null;
-        if (adv) foreignList.push(adv);
-        else unavailable.push({ source: sid, label: src.meta.label });
-      }
-      if (foreignList.length) withUk++;
-
-      const payload = {
-        country: { iso3: iso, nl: nl.name, en: item.nl },
-        nl,
-        foreign: foreignList,
-        unavailable,
-        colorComparison: buildColorComparison(nl, foreignList),
-        themeComparison: buildThemeComparison(nl, foreignList),
-      };
+      const payload = { country: { iso3: iso, nl: nl.name, en: item.nl }, nl };
       await writeFile(join(DATA, 'compare', `${iso}.json`), JSON.stringify(payload));
 
-      // Zoekindexen vullen
+      directory.push({ iso3: iso, nl: nl.name, color: nl.colors?.overall || null });
       nlIndex.push({
         iso3: iso,
         name: nl.name,
@@ -135,16 +111,6 @@ async function main() {
         summaryText: nl.summaryText,
         blocks: searchBlocks(nl.themes),
       });
-      for (const f of foreignList) {
-        foreignIndex.push({
-          iso3: iso,
-          name: nl.name,
-          source: f.source,
-          sourceLabel: f.sourceLabel,
-          url: f.url,
-          blocks: searchBlocks(f.themes),
-        });
-      }
       ok++;
     } catch (e) {
       failures.push(`${iso}: ${e.message}`);
@@ -152,9 +118,9 @@ async function main() {
   });
 
   nlIndex.sort((a, b) => a.name.localeCompare(b.name, 'nl'));
-  foreignIndex.sort((a, b) => a.name.localeCompare(b.name, 'nl'));
+  directory.sort((a, b) => a.nl.localeCompare(b.nl, 'nl'));
   await writeFile(join(DATA, 'search', 'nl.json'), JSON.stringify(nlIndex));
-  await writeFile(join(DATA, 'search', 'foreign.json'), JSON.stringify(foreignIndex));
+  await writeFile(join(DATA, 'directory.json'), JSON.stringify(directory));
 
   // .nojekyll zodat GitHub Pages de map/bestanden ongemoeid laat.
   await writeFile(join(OUT, '.nojekyll'), '');
@@ -162,13 +128,11 @@ async function main() {
   // Bouwmoment voor de UI
   await writeFile(
     join(DATA, 'meta.json'),
-    JSON.stringify({ builtAt: new Date().toISOString(), countries: ok, withForeign: withUk })
+    JSON.stringify({ builtAt: new Date().toISOString(), countries: ok })
   );
 
   const secs = ((Date.now() - started) / 1000).toFixed(1);
-  console.log(
-    `Klaar in ${secs}s: ${ok} landen weggeschreven (${withUk} met buitenlands advies).`
-  );
+  console.log(`Klaar in ${secs}s: ${ok} landen weggeschreven (NL-data + directory + zoekindex).`);
   if (failures.length) {
     console.log(`\n${failures.length} land(en) overgeslagen:`);
     console.log(failures.join('\n'));

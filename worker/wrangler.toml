@@ -1,0 +1,12 @@
+# Cloudflare Worker: live proxy voor buitenlandse reisadviezen + kaarten.
+# Deploy:  cd worker && npm install && npx wrangler deploy
+# Lokaal:  cd worker && npx wrangler dev
+name = "reisadviezen-buddy-proxy"
+main = "src/index.js"
+compatibility_date = "2024-11-01"
+compatibility_flags = ["nodejs_compat"]
+
+# De Worker heeft geen secrets of bindings nodig; hij haalt alleen publieke
+# overheidsdata op. Na deploy krijg je een URL zoals
+#   https://reisadviezen-buddy-proxy.<jouw-subdomein>.workers.dev
+# Zet die URL in de frontend (zie public/config.js of ?proxy=... parameter).
