@@ -8,8 +8,9 @@ maar dan vanuit Nederlands perspectief.
 De Nederlandse teksten, kleurcodes en kaarten komen uit de
 [open data feed van NederlandWereldwijd](https://www.nederlandwereldwijd.nl/open-data)
 (CC0). De buitenlandse reisadviezen komen **live** van:
-🇬🇧 VK (FCDO) · 🇺🇸 VS (State Dept) · 🇨🇦 Canada (Global Affairs) · 🇮🇪 Ierland (DFA).
-(Australië, Frankrijk, Spanje en Japan volgen.)
+🇬🇧 VK (FCDO) · 🇺🇸 VS (State Dept) · 🇨🇦 Canada (Global Affairs) · 🇮🇪 Ierland (DFA) ·
+🇫🇷 Frankrijk (France Diplomatie). (Spanje, Japan en Australië volgen.)
+Niet-Engelse bronnen worden automatisch naar het Nederlands vertaald.
 
 ## Architectuur
 
@@ -44,7 +45,14 @@ Browser ── statische NL-data (Pages) ──► NL-reisadvies + directory + z
 5. **Ontbrekende thema's** — wat andere landen wél behandelen en NL niet.
 6. **Landenoverzicht** — bladerbare directory met de NL-kleurcode per land.
 7. **Zoeken op thema/zoekwoord** — in alle Nederlandse reisadviezen, en per land
-   live in de buitenlandse reisadviezen.
+   live in de buitenlandse reisadviezen. Een Nederlandse zoekterm wordt
+   automatisch naar het Engels (en de brontaal) vertaald, zodat ook anderstalige
+   adviezen doorzocht worden.
+8. **Automatische vertaling** — anderstalige bronnen (bijv. Frankrijk) worden
+   standaard in het Nederlands getoond, met een knop naar het origineel.
+9. **Datumscanner** — doorzoekt de Nederlandse reisadviezen op datums in de
+   *tekst* die in het verleden liggen (mogelijk verouderde inhoud). De metadata
+   “laatst gewijzigd”/“geldig op” wordt bewust genegeerd.
 
 ## Snel starten
 

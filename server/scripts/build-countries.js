@@ -54,8 +54,39 @@ const IE_SLUG_OVERRIDES = {
   VNM: 'vietnam', LAO: 'laos',
 };
 
+// Frankrijk (France Diplomatie): slug = Franse landnaam, genormaliseerd. We
+// leiden die af door de Engelse naam te vertalen; overrides voor bekende namen.
+const FR_SLUG_OVERRIDES = {
+  USA: 'etats-unis', GBR: 'royaume-uni', DEU: 'allemagne', NLD: 'pays-bas',
+  BEL: 'belgique', ESP: 'espagne', ITA: 'italie', CHE: 'suisse', KOR: 'coree-du-sud',
+  PRK: 'coree-du-nord', RUS: 'russie', CHN: 'chine', JPN: 'japon', MAR: 'maroc',
+  EGY: 'egypte', GRC: 'grece', TUR: 'turquie', BRA: 'bresil', MEX: 'mexique',
+  ZAF: 'afrique-du-sud', SAU: 'arabie-saoudite', ARE: 'emirats-arabes-unis',
+  IND: 'inde', IDN: 'indonesie', THA: 'thailande', VNM: 'vietnam', PHL: 'philippines',
+};
+
 // Handmatige ISO3 -> ISO2 aanvullingen voor NL-bijzonderheden (Caribisch NL).
 const ISO2_OVERRIDES = { 'BQ-BO': 'BQ', 'BQ-SA': 'BQ', 'BQ-SE': 'BQ' };
+
+/** Vertaalt een tekst via het gratis Google-endpoint (voor slug-afleiding). */
+async function translateName(text, to) {
+  try {
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=${to}&dt=t&q=${encodeURIComponent(text)}`;
+    const res = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+    if (!res.ok) return null;
+    const d = await res.json();
+    return Array.isArray(d?.[0]) ? d[0].map((s) => (s && s[0]) || '').join('') : null;
+  } catch { return null; }
+}
+
+async function mapLimit(items, limit, fn) {
+  const out = new Array(items.length);
+  let i = 0;
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, async () => {
+    while (i < items.length) { const idx = i++; out[idx] = await fn(items[idx], idx); }
+  }));
+  return out;
+}
 
 const normalise = (s) =>
   (s || '')
@@ -117,7 +148,7 @@ async function main() {
     caByIso2[iso2] = { id: v['country-id'], eng: v['country-eng'] };
   }
 
-  const counts = { uk: 0, us: 0, ca: 0, ie: 0 };
+  const counts = { uk: 0, us: 0, ca: 0, ie: 0, fr: 0 };
   const countries = {};
   for (const doc of nlList) {
     const iso = (doc.isocode || '').toUpperCase();
@@ -144,9 +175,22 @@ async function main() {
       nl: doc.location,
       en: enName,
       key: doc.locationkey,
-      sources: { uk, us, ca, ie },
+      sources: { uk, us, ca, ie, fr: null },
     };
   }
+
+  // Frankrijk: slug afleiden via vertaling van de Engelse naam (met overrides).
+  console.log('Franse slugs afleiden via vertaling…');
+  const isos = Object.keys(countries);
+  await mapLimit(isos, 6, async (iso) => {
+    let fr = FR_SLUG_OVERRIDES[iso];
+    if (!fr) {
+      const frName = await translateName(countries[iso].en, 'fr');
+      fr = frName ? normalise(frName) : null;
+    }
+    countries[iso].sources.fr = fr;
+    if (fr) counts.fr = (counts.fr || 0) + 1;
+  });
 
   const payload = JSON.stringify(countries, null, 2) + '\n';
   const outPath = join(__dirname, '..', 'data', 'countries.json');
@@ -157,7 +201,7 @@ async function main() {
   const total = Object.keys(countries).length;
   console.log(`Geschreven ${total} landen naar ${outPath} en worker/src/data.`);
   console.log(
-    `Koppelingen: VK ${counts.uk}, VS ${counts.us}, Canada ${counts.ca}, Ierland ${counts.ie}.`
+    `Koppelingen: VK ${counts.uk}, VS ${counts.us}, Canada ${counts.ca}, Ierland ${counts.ie}, Frankrijk ${counts.fr}.`
   );
 }
 

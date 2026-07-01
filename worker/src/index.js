@@ -15,8 +15,11 @@ import * as uk from './adapters/uk.js';
 import * as us from './adapters/us.js';
 import * as canada from './adapters/canada.js';
 import * as ireland from './adapters/ireland.js';
+import * as france from './adapters/france.js';
+import { translate, translateBlocks } from './lib/translate.js';
+import { classifyTheme } from './lib/themes.js';
 
-const ADAPTERS = { uk, us, ca: canada, ie: ireland };
+const ADAPTERS = { uk, us, ca: canada, ie: ireland, fr: france };
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -58,6 +61,7 @@ export default {
           .split(',')
           .map((s) => s.trim())
           .filter((s) => ADAPTERS[s]);
+        const translateTo = url.searchParams.get('translate'); // bijv. 'nl'
 
         const results = await Promise.all(
           requested.map(async (s) => {
@@ -66,8 +70,23 @@ export default {
             try {
               const adv = await ADAPTERS[s].getAdvisory(id);
               if (!adv) return { source: s, unavailable: true, label: ADAPTERS[s].meta.label };
-              // Kaart-endpoint dat de frontend op klik kan laden.
               adv.mapProxy = adv.hasMap ? `/map/${s}/${iso}` : null;
+              adv.lang = ADAPTERS[s].meta.lang || 'en';
+              // Vertaal niet-Engelstalige bronnen op verzoek naar NL (Engels
+              // laten we origineel: het is redelijk leesbaar en scheelt veel
+              // vertaalcalls).
+              if (translateTo && adv.lang !== translateTo && adv.lang !== 'en' && adv.themes?.length) {
+                try {
+                  const blocks = await translateBlocks(adv.themes, translateTo, adv.lang);
+                  // Herclassificeer op de vertaalde (NL) tekst zodat niet-Engelse
+                  // bronnen alsnog op de juiste thema's terechtkomen.
+                  adv.themes = blocks.map((b) => ({
+                    ...b,
+                    themeId: b.themeId || classifyTheme(b.headingNl || '', b.textNl || ''),
+                  }));
+                  adv.translated = translateTo;
+                } catch { /* origineel behouden bij fout */ }
+              }
               return adv;
             } catch (e) {
               return { source: s, error: String(e.message || e), label: ADAPTERS[s].meta.label };
@@ -80,6 +99,16 @@ export default {
           200,
           { 'Cache-Control': 'public, max-age=1800' }
         );
+      }
+
+      // /translate?to=nl&from=auto&q=...
+      if (parts[0] === 'translate') {
+        const q = url.searchParams.get('q') || '';
+        const to = url.searchParams.get('to') || 'nl';
+        const from = url.searchParams.get('from') || 'auto';
+        if (!q) return json({ error: 'q ontbreekt' }, 400);
+        const r = await translate(q, to, from);
+        return json(r, 200, { 'Cache-Control': 'public, max-age=86400' });
       }
 
       // /map/:source/:iso

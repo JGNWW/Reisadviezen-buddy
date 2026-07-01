@@ -38,6 +38,10 @@ const COLOR_MEANING = {
 };
 const COLOR_LEVEL = { groen: 1, geel: 2, oranje: 3, rood: 4 };
 
+// Toon buitenlandse teksten in het origineel (true) of vertaald naar NL (false).
+let SHOW_ORIGINAL = false;
+let LAST_COMPARE = null;
+
 // ---- Proxy-configuratie ---------------------------------------------------
 function getProxy() {
   const qs = new URLSearchParams(location.search).get('proxy');
@@ -63,13 +67,23 @@ async function loadJSON(path) {
   _cache.set(path, p);
   return p.catch((e) => { _cache.delete(path); throw e; });
 }
-async function fetchForeign(iso, sources) {
+async function fetchForeign(iso, sources, translate = 'nl') {
   const proxy = getProxy();
   if (!proxy || !sources.length) return null;
-  const url = `${proxy}/advisory/${iso}?sources=${sources.join(',')}`;
+  let url = `${proxy}/advisory/${iso}?sources=${sources.join(',')}`;
+  if (translate) url += `&translate=${translate}`;
   const r = await fetch(url);
   if (!r.ok) throw new Error(`Proxy gaf ${r.status}`);
   return r.json();
+}
+async function translateText(q, to, from = 'auto') {
+  const proxy = getProxy();
+  if (!proxy) return q;
+  try {
+    const r = await fetch(`${proxy}/translate?to=${to}&from=${from}&q=${encodeURIComponent(q)}`);
+    const d = await r.json();
+    return d.text || q;
+  } catch { return q; }
 }
 
 // ---- Tekst-helpers --------------------------------------------------------
@@ -253,9 +267,12 @@ function colorBadge(color) {
 }
 
 function renderComparison(staticData, foreign, root) {
+  LAST_COMPARE = { staticData, foreign, root };
+  root.innerHTML = '';
   const nl = staticData.nl;
   const okSources = (foreign.sources || []).filter((s) => !s.unavailable && !s.error && s.themes);
   const problems = (foreign.sources || []).filter((s) => s.unavailable || s.error);
+  const hasTranslated = okSources.some((s) => s.translated);
   const frag = document.createDocumentFragment();
 
   frag.append(el('div', { class: 'result-head' },
@@ -339,7 +356,14 @@ function renderComparison(staticData, foreign, root) {
     frag.append(el('div', { class: 'callout' }, el('h3', {}, '💡 Thema’s die andere landen wél noemen en NederlandWereldwijd niet'), ul));
   }
 
-  frag.append(el('h3', { class: 'section-title' }, 'Vergelijking per thema'));
+  const themeHead = el('div', { class: 'theme-head-row' }, el('h3', { class: 'section-title', style: 'flex:1;margin:0;border:none' }, 'Vergelijking per thema'));
+  if (hasTranslated) {
+    themeHead.append(el('button', {
+      class: 'btn toggle-lang', type: 'button',
+      onclick: () => { SHOW_ORIGINAL = !SHOW_ORIGINAL; renderComparison(LAST_COMPARE.staticData, LAST_COMPARE.foreign, LAST_COMPARE.root); },
+    }, SHOW_ORIGINAL ? '🌐 Toon vertaald (Nederlands)' : '🌐 Toon origineel'));
+  }
+  frag.append(themeHead);
   const foreignCols = okSources.map((f) => ({ id: f.source, label: f.sourceLabel, flag: f.flag }));
   let lastGroup = null;
   cmp.themes.forEach((t) => {
@@ -351,13 +375,21 @@ function renderComparison(staticData, foreign, root) {
   root.append(frag);
 }
 
-function renderBlocks(blocks) {
+function renderBlocks(blocks, foreign = false) {
   if (!blocks || !blocks.length) return null;
   const wrap = el('div');
-  blocks.forEach((b) => wrap.append(el('div', { class: 'block' },
-    b.heading ? el('div', { class: 'block-heading' }, b.heading) : null,
-    b.category && b.category !== b.heading ? el('div', { class: 'block-cat' }, b.category) : null,
-    el('div', { class: 'rich', html: b.html || esc(b.text || '') }))));
+  blocks.forEach((b) => {
+    // Voor buitenlandse (vertaalde) blokken: standaard NL, of origineel bij toggle.
+    const useNl = foreign && !SHOW_ORIGINAL && (b.textNl || b.headingNl);
+    const heading = useNl && b.headingNl ? b.headingNl : b.heading;
+    const bodyNode = useNl && b.textNl
+      ? el('div', { class: 'rich', html: esc(b.textNl).replace(/\n+/g, '</p><p>') })
+      : el('div', { class: 'rich', html: b.html || esc(b.text || '') });
+    wrap.append(el('div', { class: 'block' },
+      heading ? el('div', { class: 'block-heading' }, heading) : null,
+      b.category && b.category !== heading ? el('div', { class: 'block-cat' }, b.category) : null,
+      bodyNode));
+  });
   return wrap;
 }
 
@@ -370,14 +402,14 @@ function renderThemeCard(t, foreignCols) {
   const details = el('details', { class: 'panel theme-card', ...(t.foreignHasIt && !t.nlHasIt ? { open: 'open' } : {}) });
   details.append(el('summary', {}, t.theme.label, badge));
   const nCols = 1 + foreignCols.length;
-  const cols = el('div', { class: 'compare-cols cols-' + Math.min(nCols, 5) });
+  const cols = el('div', { class: 'compare-cols cols-' + Math.min(nCols, 6) });
   const nlCol = el('div', { class: 'compare-col' }, el('h4', {}, '🇳🇱 NederlandWereldwijd'));
   nlCol.append(t.nlHasIt ? renderBlocks(t.nl) : el('div', { class: 'empty-col' }, 'Niet apart behandeld.'));
   cols.append(nlCol);
   foreignCols.forEach((fc) => {
     const entry = t.foreign[fc.id] || { blocks: [] };
     const col = el('div', { class: 'compare-col' }, el('h4', {}, `${fc.flag || ''} ${fc.label}`));
-    col.append(entry.blocks?.length ? renderBlocks(entry.blocks) : el('div', { class: 'empty-col' }, 'Niet apart behandeld.'));
+    col.append(entry.blocks?.length ? renderBlocks(entry.blocks, true) : el('div', { class: 'empty-col' }, 'Niet apart behandeld.'));
     cols.append(col);
   });
   details.append(cols);
@@ -442,13 +474,26 @@ function searchNlIndex(index, term, isoFilter) {
   results.sort((a, b) => b.matchCount - a.matchCount || a.name.localeCompare(b.name, 'nl'));
   return results;
 }
-function searchForeignAdvisory(res, term) {
-  const t = term.toLowerCase(), out = [];
+function searchForeignAdvisory(res, qNl, qEn) {
+  const tNl = qNl.toLowerCase(), tEn = (qEn || qNl).toLowerCase(), out = [];
   for (const s of (res.sources || [])) {
     if (s.unavailable || s.error || !s.themes) continue;
     const matches = [];
-    for (const b of s.themes) if (b.text && b.text.toLowerCase().includes(t))
-      matches.push({ category: b.category, heading: b.heading, theme: b.themeId ? (THEME_BY_ID.get(b.themeId)?.label || null) : null, snippet: snippetAround(b.text, term) });
+    for (const b of s.themes) {
+      // Vertaalde (niet-Engelse) bron: zoek met de NL-term in de NL-tekst.
+      // Engelse bron: zoek met de naar Engels vertaalde term in de originele tekst.
+      const useNl = !!b.textNl;
+      const hay = (useNl ? b.textNl : b.text) || '';
+      const term = useNl ? tNl : tEn;
+      if (hay.toLowerCase().includes(term)) {
+        matches.push({
+          category: b.category,
+          heading: (useNl && b.headingNl) ? b.headingNl : b.heading,
+          theme: b.themeId ? (THEME_BY_ID.get(b.themeId)?.label || null) : null,
+          snippet: snippetAround(hay, useNl ? qNl : qEn),
+        });
+      }
+    }
     if (matches.length) out.push({ iso3: res.country.iso3, name: `${s.flag || ''} ${s.sourceLabel}`, url: s.url, matches, matchCount: matches.length });
   }
   return out;
@@ -475,8 +520,12 @@ $('#search-form').addEventListener('submit', async (e) => {
       if (!country) throw new Error('Kies een land voor buitenlands zoeken (dit gebeurt live per land).');
       if (!getProxy()) throw new Error('Stel de proxy in (⚙) om buitenlands te zoeken.');
       const selected = (CFG.SOURCES || []).map((s) => s.id);
-      const res = await fetchForeign(country.iso3, selected);
-      out.foreign = res ? searchForeignAdvisory(res, q) : [];
+      // NL-term ook naar Engels vertalen zodat we in Engelstalige adviezen zoeken.
+      const [res, qEn] = await Promise.all([
+        fetchForeign(country.iso3, selected, 'nl'),
+        translateText(q, 'en', 'nl'),
+      ]);
+      out.foreign = res ? searchForeignAdvisory(res, q, qEn) : [];
     }
     status.textContent = '';
     renderSearch(out, result, q);
@@ -517,6 +566,93 @@ function renderSearch(data, root, term) {
     if (!data.foreign.length) frag.append(el('p', { class: 'empty-col' }, 'Geen resultaten (probeer een Engelse term).'));
     data.foreign.forEach((r) => frag.append(renderCountryResult(r, term)));
   }
+  root.append(frag);
+}
+
+// ==========================================================================
+// DATUMSCANNER — vindt datums in de bodytekst die in het verleden liggen
+// (mogelijk verouderde inhoud). De metadata (laatst gewijzigd/geldig op) zit
+// niet in deze teksten en wordt zo dus niet meegenomen.
+// ==========================================================================
+const NL_MONTHS = { januari: 0, februari: 1, maart: 2, april: 3, mei: 4, juni: 5, juli: 6, augustus: 7, september: 8, oktober: 9, november: 10, december: 11 };
+const MONTH_RE = 'januari|februari|maart|april|mei|juni|juli|augustus|september|oktober|november|december';
+const MONTH_NAMES = Object.keys(NL_MONTHS);
+
+function findPastDates(text, mode, today) {
+  const found = [];
+  const excludedBefore = /(gewijzigd|geldig op|bijgewerkt|gepubliceerd|laatst)/;
+  const add = (idx, raw, date, uncertain) => {
+    if (!date || isNaN(date) || date >= today) return;
+    const before = text.slice(Math.max(0, idx - 28), idx).toLowerCase();
+    if (excludedBefore.test(before)) return;
+    found.push({ date, raw: raw.trim(), uncertain, snippet: snippetAround(text, raw.trim(), 90) });
+  };
+  let m;
+  const r1 = new RegExp(`(\\d{1,2})\\s+(${MONTH_RE})\\s+(\\d{4})`, 'gi');
+  while ((m = r1.exec(text))) add(m.index, m[0], new Date(+m[3], NL_MONTHS[m[2].toLowerCase()], +m[1]));
+  const r2 = /(\d{1,2})[-/](\d{1,2})[-/](\d{4})/g;
+  while ((m = r2.exec(text))) { const mo = +m[2]; if (mo >= 1 && mo <= 12) add(m.index, m[0], new Date(+m[3], mo - 1, +m[1])); }
+  const r3 = new RegExp(`(?<![\\d]\\s)(${MONTH_RE})\\s+(\\d{4})`, 'gi');
+  while ((m = r3.exec(text))) add(m.index, m[0], new Date(+m[2], NL_MONTHS[m[1].toLowerCase()] + 1, 0));
+  if (mode === 'all') {
+    const r4 = new RegExp(`(\\d{1,2})\\s+(${MONTH_RE})(?!\\s+\\d{4})`, 'gi');
+    while ((m = r4.exec(text))) add(m.index, m[0] + ` ${today.getFullYear()}`, new Date(today.getFullYear(), NL_MONTHS[m[2].toLowerCase()], +m[1]), true);
+  }
+  return found;
+}
+function fmtDate(d) { return `${d.getDate()} ${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}`; }
+function ageText(d, today) {
+  const days = Math.round((today - d) / 86400000);
+  if (days < 60) return `${days} dagen geleden`;
+  const months = Math.round(days / 30.4);
+  if (months < 24) return `${months} maanden geleden`;
+  return `${(days / 365).toFixed(1)} jaar geleden`;
+}
+
+$('#datescan-run').addEventListener('click', async () => {
+  const mode = $('#datescan-mode').value;
+  const status = $('#datescan-status'), result = $('#datescan-result');
+  status.className = 'status'; status.innerHTML = '<span class="spinner"></span>Scannen…'; result.innerHTML = '';
+  try {
+    const idx = await loadJSON('search/nl.json');
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const countries = [];
+    for (const entry of idx) {
+      const hits = [];
+      const scan = (text, heading) => {
+        if (!text) return;
+        for (const f of findPastDates(text, mode, today)) hits.push({ ...f, heading });
+      };
+      scan(entry.summaryText, 'In het kort');
+      for (const b of entry.blocks) scan(b.text, b.heading);
+      if (hits.length) {
+        hits.sort((a, b) => a.date - b.date);
+        // dedup op datum+snippet
+        const seen = new Set();
+        const uniq = hits.filter((h) => { const k = h.date.getTime() + h.snippet.slice(0, 30); if (seen.has(k)) return false; seen.add(k); return true; });
+        countries.push({ iso3: entry.iso3, name: entry.name, url: entry.url, color: entry.color, hits: uniq, oldest: uniq[0].date });
+      }
+    }
+    countries.sort((a, b) => a.oldest - b.oldest);
+    status.textContent = `${countries.length} reisadviezen met datums uit het verleden (van ${idx.length} gescand).`;
+    renderDateScan(countries, today, result);
+  } catch (e) { status.className = 'status error'; status.textContent = e.message; }
+});
+
+function renderDateScan(countries, today, root) {
+  const frag = document.createDocumentFragment();
+  if (!countries.length) { frag.append(el('p', { class: 'empty-col' }, 'Geen datums uit het verleden gevonden.')); root.append(frag); return; }
+  countries.forEach((c) => {
+    const details = el('details', { class: 'panel result-country' });
+    details.append(el('summary', {},
+      el('span', {}, c.color ? el('span', { class: `dot c-${c.color}` }) : '', ' ' + c.name),
+      el('span', { class: 'count-pill', style: 'margin-left:auto' }, `oudste: ${fmtDate(c.oldest)}`),
+      el('a', { href: c.url, target: '_blank', rel: 'noopener', style: 'margin-left:10px;font-weight:400;font-size:13px', onclick: (e) => e.stopPropagation() }, 'origineel →')));
+    c.hits.forEach((h) => details.append(el('div', { class: 'match' },
+      el('div', { class: 'm-head' }, el('strong', {}, fmtDate(h.date)), ` · ${ageText(h.date, today)}`, h.uncertain ? el('span', { class: 'm-theme' }, 'geen jaartal — aanname huidig jaar') : null, ' · ', h.heading),
+      el('div', { class: 'snippet', html: highlight(h.snippet, h.raw) }))));
+    frag.append(details);
+  });
   root.append(frag);
 }
 

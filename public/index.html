@@ -22,6 +22,7 @@
       <button class="tab active" data-view="compare" role="tab">Vergelijken</button>
       <button class="tab" data-view="directory" role="tab">Landenoverzicht</button>
       <button class="tab" data-view="search" role="tab">Zoeken op thema/woord</button>
+      <button class="tab" data-view="datescan" role="tab">Datumscanner</button>
     </nav>
   </header>
 
@@ -66,6 +67,25 @@
         <div class="legend" id="dir-legend"></div>
       </div>
       <div id="directory-grid" class="directory-grid"></div>
+    </section>
+
+    <!-- ================= DATUMSCANNER ================= -->
+    <section id="view-datescan" class="view">
+      <div class="panel controls">
+        <div class="field grow">
+          <p style="margin:0">Scant alle Nederlandse reisadviezen op datums in de <strong>tekst</strong> die in het verleden liggen — een teken dat de inhoud mogelijk verouderd is. De metadata (“laatst gewijzigd” / “geldig op”) wordt genegeerd.</p>
+        </div>
+        <div class="field">
+          <label for="datescan-mode">Toon</label>
+          <select id="datescan-mode">
+            <option value="year">Alleen datums met jaartal (betrouwbaarst)</option>
+            <option value="all">Ook datums zonder jaartal (dag + maand)</option>
+          </select>
+        </div>
+        <button id="datescan-run" type="button" class="btn primary">Scan reisadviezen</button>
+      </div>
+      <div id="datescan-status" class="status"></div>
+      <div id="datescan-result"></div>
     </section>
 
     <!-- ================= ZOEKEN ================= -->

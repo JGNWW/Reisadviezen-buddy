@@ -213,3 +213,10 @@ input:focus, select:focus { outline: 2px solid var(--nl-blue); border-color: var
 .map-load:hover { background: #e0ecfa; }
 .compare-cols.cols-4 { grid-template-columns: repeat(4, 1fr); }
 .compare-cols.cols-5 { grid-template-columns: repeat(5, 1fr); }
+
+/* ---- Vertaal-toggle + datumscanner ---- */
+.theme-head-row { display: flex; align-items: center; gap: 12px; margin: 24px 0 12px; border-bottom: 2px solid var(--border); padding-bottom: 6px; }
+.toggle-lang { background: #eef4fb; color: var(--nl-blue); border: 1px solid var(--nl-blue); font-size: 13px; padding: 6px 12px; }
+.toggle-lang:hover { background: #e0ecfa; }
+.compare-cols.cols-6 { grid-template-columns: repeat(6, minmax(150px, 1fr)); }
+@media (max-width: 1100px) { .compare-cols.cols-5, .compare-cols.cols-6 { display: block; } .compare-cols.cols-5 .compare-col, .compare-cols.cols-6 .compare-col { border-right: none; border-bottom: 1px solid var(--border); } }

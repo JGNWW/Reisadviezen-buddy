@@ -5,17 +5,22 @@ normaliseert ze naar dezelfde vorm als de Nederlandse data en geeft ze met
 CORS-headers terug, zodat de statische frontend (GitHub Pages) ze kan gebruiken.
 
 Ondersteunde bronnen: 🇬🇧 VK (FCDO), 🇺🇸 VS (State Dept), 🇨🇦 Canada (Global
-Affairs), 🇮🇪 Ierland (DFA). Australië/Frankrijk/Spanje/Japan volgen later.
+Affairs), 🇮🇪 Ierland (DFA), 🇫🇷 Frankrijk (France Diplomatie).
+Spanje/Japan/Australië volgen.
 
 ## Endpoints
 
 | Endpoint | Beschrijving |
 | --- | --- |
-| `GET /advisory/:iso?sources=uk,us,ca,ie` | Genormaliseerde adviezen (niveau/kleur + thema's) van de gevraagde bronnen |
+| `GET /advisory/:iso?sources=uk,us,ca,ie,fr` | Genormaliseerde adviezen (niveau/kleur + thema's) van de gevraagde bronnen |
+| `GET /advisory/:iso?...&translate=nl` | Vertaalt niet-Engelse bronnen naar Nederlands (voegt `headingNl`/`textNl` toe en herclassificeert de thema's) |
 | `GET /map/:source/:iso` | De kaartafbeelding van die bron (live opgehaald/gescrapet, geproxyd) |
+| `GET /translate?to=nl&from=auto&q=...` | Losse vertaling (o.a. voor het vertalen van zoektermen) |
 | `GET /health` | Status + ondersteunde bronnen |
 
-`:iso` is de ISO 3166-1 alpha-3 code (bijv. `ETH`).
+`:iso` is de ISO 3166-1 alpha-3 code (bijv. `ETH`). Vertaling gebruikt het
+gratis publieke Google-translate-endpoint (geen key); makkelijk te vervangen in
+`src/lib/translate.js`.
 
 ## Deployen naar Cloudflare (gratis)
 

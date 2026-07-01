@@ -10,12 +10,14 @@ window.REISADVIEZEN_CONFIG = {
   // Bijv. 'https://reisadviezen-buddy-proxy.jouwnaam.workers.dev'
   PROXY: '',
 
-  // Buitenlandse bronnen die de proxy ondersteunt.
+  // Buitenlandse bronnen die de proxy ondersteunt. `lang` = brontaal (voor
+  // automatische vertaling naar Nederlands).
   SOURCES: [
-    { id: 'uk', label: 'Verenigd Koninkrijk (FCDO)', flag: '🇬🇧', default: true },
-    { id: 'us', label: 'Verenigde Staten (State Dept)', flag: '🇺🇸', default: true },
-    { id: 'ca', label: 'Canada (Global Affairs)', flag: '🇨🇦', default: true },
-    { id: 'ie', label: 'Ierland (DFA)', flag: '🇮🇪', default: true },
-    // Volgende fase: Australië, Frankrijk, Spanje, Japan.
+    { id: 'uk', label: 'Verenigd Koninkrijk (FCDO)', flag: '🇬🇧', lang: 'en', default: true },
+    { id: 'us', label: 'Verenigde Staten (State Dept)', flag: '🇺🇸', lang: 'en', default: true },
+    { id: 'ca', label: 'Canada (Global Affairs)', flag: '🇨🇦', lang: 'en', default: true },
+    { id: 'ie', label: 'Ierland (DFA)', flag: '🇮🇪', lang: 'en', default: true },
+    { id: 'fr', label: 'Frankrijk (France Diplomatie)', flag: '🇫🇷', lang: 'fr', default: true },
+    // Volgende fase: Spanje, Japan (API), Australië (via publieke proxy).
   ],
 };
