@@ -17,11 +17,12 @@ import * as canada from './adapters/canada.js';
 import * as ireland from './adapters/ireland.js';
 import * as france from './adapters/france.js';
 import * as australia from './adapters/australia.js';
+import * as spain from './adapters/spain.js';
 import { translate, translateBlocks } from './lib/translate.js';
 import { classifyTheme } from './lib/themes.js';
 import { setReaderKey } from './lib/fetch.js';
 
-const ADAPTERS = { uk, us, ca: canada, ie: ireland, fr: france, au: australia };
+const ADAPTERS = { uk, us, ca: canada, ie: ireland, fr: france, au: australia, es: spain };
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',

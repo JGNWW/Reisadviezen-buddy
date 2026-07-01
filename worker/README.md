@@ -6,11 +6,12 @@ CORS-headers terug, zodat de statische frontend (GitHub Pages) ze kan gebruiken.
 
 Ondersteunde bronnen: 🇬🇧 VK (FCDO), 🇺🇸 VS (State Dept), 🇨🇦 Canada (Global
 Affairs), 🇮🇪 Ierland (DFA), 🇫🇷 Frankrijk (France Diplomatie), 🇦🇺 Australië
-(Smartraveller, via publieke reader-proxy). Spanje en Japan volgen (JS-SPA's).
+(Smartraveller), 🇪🇸 Spanje (Exteriores). Japan is nog open (de anzen.mofa-SPA
+rendert niet landspecifiek via de reader).
 
-Australië blokkeert datacenter-IP's; die bron wordt daarom via de publieke
-reader-proxy `r.jina.ai` opgehaald. Zet optioneel een gratis jina.ai-key voor
-betrouwbaarheid: `npx wrangler secret put JINA_KEY`.
+Australië en Spanje worden via de publieke reader-proxy `r.jina.ai` opgehaald —
+Australië blokkeert datacenter-IP's, Spanje is een JS-SPA. Zet een (gratis)
+jina.ai-key voor betrouwbaarheid: `npx wrangler secret put JINA_KEY`.
 
 ## Endpoints
 

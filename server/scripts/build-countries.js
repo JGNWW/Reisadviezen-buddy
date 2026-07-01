@@ -81,6 +81,15 @@ function auContinent(region, subregion) {
   return null;
 }
 
+// Spanje (Exteriores): landpagina via de Spaanse landnaam (?trc=Naam). We
+// leiden de naam af via vertaling (en->es); overrides voor bekende namen.
+const ES_NAME_OVERRIDES = {
+  USA: 'Estados Unidos', GBR: 'Reino Unido', DEU: 'Alemania', NLD: 'Países Bajos',
+  KOR: 'Corea del Sur', PRK: 'Corea del Norte', RUS: 'Rusia', CHN: 'China',
+  JPN: 'Japón', MAR: 'Marruecos', EGY: 'Egipto', TUR: 'Turquía', BRA: 'Brasil',
+  ZAF: 'Sudáfrica', SAU: 'Arabia Saudí', ARE: 'Emiratos Árabes Unidos',
+};
+
 // Handmatige ISO3 -> ISO2 aanvullingen voor NL-bijzonderheden (Caribisch NL).
 const ISO2_OVERRIDES = { 'BQ-BO': 'BQ', 'BQ-SA': 'BQ', 'BQ-SE': 'BQ' };
 
@@ -203,21 +212,23 @@ async function main() {
       nl: doc.location,
       en: enName,
       key: doc.locationkey,
-      sources: { uk, us, ca, ie, fr: null, au },
+      sources: { uk, us, ca, ie, fr: null, au, es: null },
     };
   }
 
-  // Frankrijk: slug afleiden via vertaling van de Engelse naam (met overrides).
-  console.log('Franse slugs afleiden via vertaling…');
+  // Frankrijk (slug) en Spanje (Spaanse naam) afleiden via vertaling.
+  console.log('Franse/Spaanse namen afleiden via vertaling…');
   const isos = Object.keys(countries);
   await mapLimit(isos, 6, async (iso) => {
     let fr = FR_SLUG_OVERRIDES[iso];
-    if (!fr) {
-      const frName = await translateName(countries[iso].en, 'fr');
-      fr = frName ? normalise(frName) : null;
-    }
+    if (!fr) { const frName = await translateName(countries[iso].en, 'fr'); fr = frName ? normalise(frName) : null; }
     countries[iso].sources.fr = fr;
     if (fr) counts.fr = (counts.fr || 0) + 1;
+
+    let es = ES_NAME_OVERRIDES[iso];
+    if (!es) { const esName = await translateName(countries[iso].en, 'es'); es = esName ? esName.trim() : null; }
+    countries[iso].sources.es = es;
+    if (es) counts.es = (counts.es || 0) + 1;
   });
 
   const payload = JSON.stringify(countries, null, 2) + '\n';
@@ -229,7 +240,8 @@ async function main() {
   const total = Object.keys(countries).length;
   console.log(`Geschreven ${total} landen naar ${outPath} en worker/src/data.`);
   console.log(
-    `Koppelingen: VK ${counts.uk}, VS ${counts.us}, Canada ${counts.ca}, Ierland ${counts.ie}, Frankrijk ${counts.fr}.`
+    `Koppelingen: VK ${counts.uk}, VS ${counts.us}, Canada ${counts.ca}, Ierland ${counts.ie}, ` +
+      `Frankrijk ${counts.fr}, Australië ${counts.au || 0}, Spanje ${counts.es}.`
   );
 }
 

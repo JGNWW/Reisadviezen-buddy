@@ -27,8 +27,10 @@ let READER_KEY = null;
 /** Stel een (gratis) r.jina.ai API-key in voor hogere limieten/betrouwbaarheid. */
 export function setReaderKey(key) { READER_KEY = key || null; }
 
-export async function getViaReader(url, format = 'html') {
-  const headers = { 'User-Agent': UA, 'X-Return-Format': format };
+export async function getViaReader(url, opts = {}) {
+  const { format = 'html', browser = false, timeout = 30 } = typeof opts === 'string' ? { format: opts } : opts;
+  const headers = { 'User-Agent': UA, 'X-Return-Format': format, 'X-Timeout': String(timeout) };
+  if (browser) headers['X-Engine'] = 'browser'; // rendert JavaScript-SPA's
   if (READER_KEY) headers.Authorization = `Bearer ${READER_KEY}`;
   const res = await fetch(`https://r.jina.ai/${url}`, { headers });
   if (!res.ok) throw new Error(`reader ${res.status} ${url}`);
