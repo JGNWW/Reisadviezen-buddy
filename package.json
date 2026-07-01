@@ -5,10 +5,11 @@
   "type": "module",
   "main": "server/index.js",
   "scripts": {
+    "build": "node server/scripts/build-static.js",
+    "preview": "node server/index.js",
     "start": "node server/index.js",
-    "dev": "node --watch server/index.js",
     "build:countries": "node server/scripts/build-countries.js",
-    "test": "node --test"
+    "test": "node --test server/lib/*.test.js"
   },
   "engines": {
     "node": ">=18"

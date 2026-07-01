@@ -1,0 +1,56 @@
+name: Build en publiceer naar GitHub Pages
+
+# Bouwt de statische site (haalt de reisadviezen op) en publiceert naar Pages.
+# - bij elke push naar de standaardbranch
+# - dagelijks (om de data te verversen)
+# - handmatig via "Run workflow"
+on:
+  push:
+    branches: [main, master]
+  schedule:
+    - cron: '0 6 * * *' # elke dag 06:00 UTC
+  workflow_dispatch:
+
+# Rechten die nodig zijn om naar Pages te deployen.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Eén deployment tegelijk; nieuwe runs vervangen lopende.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Dependencies installeren
+        run: npm ci
+
+      - name: Statische site bouwen
+        run: npm run build
+
+      - name: Pages-artifact uploaden
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publiceren naar GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

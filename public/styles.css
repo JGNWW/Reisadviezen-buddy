@@ -175,3 +175,7 @@ input:focus, select:focus { outline: 2px solid var(--nl-blue); border-color: var
   .compare-cols, .compare-cols.cols-3, .results-columns { grid-template-columns: 1fr; }
   .compare-col { border-right: none; border-bottom: 1px solid var(--border); }
 }
+
+.footer { max-width: 1180px; margin: 0 auto; padding: 20px; color: var(--muted); font-size: 12.5px; border-top: 1px solid var(--border); }
+.footer a { color: var(--nl-blue); }
+.build-meta { font-weight: 600; color: var(--text); }

@@ -1,6 +1,13 @@
 'use strict';
 
-// ---- Helpers --------------------------------------------------------------
+// ==========================================================================
+// Reisadviezen-buddy — statische frontend.
+// Leest voorgebouwde JSON uit ./data en doet vergelijken + zoeken in de browser.
+// ==========================================================================
+
+const DATA = 'data';
+
+// ---- DOM-helpers ----------------------------------------------------------
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 const el = (tag, props = {}, ...kids) => {
@@ -28,17 +35,58 @@ const COLOR_MEANING = {
   rood: 'Niet reizen',
 };
 
-async function api(path) {
-  const res = await fetch(path);
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || `Fout ${res.status}`);
-  return data;
+// ---- Datalaag (statische JSON) -------------------------------------------
+const _cache = new Map();
+async function loadJSON(path) {
+  if (_cache.has(path)) return _cache.get(path);
+  const p = fetch(`${DATA}/${path}`).then((res) => {
+    if (!res.ok) throw new Error(`Kan ${path} niet laden (${res.status})`);
+    return res.json();
+  });
+  _cache.set(path, p);
+  return p.catch((e) => {
+    _cache.delete(path);
+    throw e;
+  });
+}
+
+// ---- Tekst-helpers --------------------------------------------------------
+const norm = (s) =>
+  (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+
+function snippetAround(text, term, radius = 160) {
+  if (!text) return '';
+  const idx = text.toLowerCase().indexOf(term.toLowerCase());
+  if (idx === -1) return text.slice(0, radius * 2).trim() + (text.length > radius * 2 ? '…' : '');
+  const start = Math.max(0, idx - radius);
+  const end = Math.min(text.length, idx + term.length + radius);
+  return (start > 0 ? '…' : '') + text.slice(start, end).trim() + (end < text.length ? '…' : '');
 }
 
 function highlight(text, term) {
   if (!term) return esc(text);
   const re = new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
   return esc(text).replace(re, '<mark>$1</mark>');
+}
+
+// ---- Landresolutie (client) ----------------------------------------------
+let COUNTRIES = [];
+let SOURCES = [];
+
+function resolveCountry(query) {
+  if (!query) return null;
+  const q = query.trim();
+  const upper = q.toUpperCase();
+  const byIso = COUNTRIES.find((c) => c.iso3 === upper);
+  if (byIso) return byIso;
+  const nq = norm(q);
+  const byKey = COUNTRIES.find((c) => (c.key || '').toLowerCase() === q.toLowerCase());
+  if (byKey) return byKey;
+  let exact = COUNTRIES.find((c) => norm(c.nl) === nq || norm(c.en) === nq);
+  if (exact) return exact;
+  let starts = COUNTRIES.find((c) => norm(c.nl).startsWith(nq) || norm(c.en).startsWith(nq));
+  if (starts) return starts;
+  return COUNTRIES.find((c) => norm(c.nl).includes(nq) || norm(c.en).includes(nq)) || null;
 }
 
 // ---- Tabs -----------------------------------------------------------------
@@ -49,10 +97,14 @@ $$('.tab').forEach((t) =>
   })
 );
 
-// ---- Bootstrap: landen + bronnen -----------------------------------------
-let SOURCES = [];
+// ---- Bootstrap ------------------------------------------------------------
 async function bootstrap() {
-  const [countries, sources] = await Promise.all([api('/api/countries'), api('/api/sources')]);
+  const [countries, sources, meta] = await Promise.all([
+    loadJSON('countries.json'),
+    loadJSON('sources.json'),
+    loadJSON('meta.json').catch(() => null),
+  ]);
+  COUNTRIES = countries;
   SOURCES = sources;
 
   const list = $('#country-list');
@@ -71,78 +123,111 @@ async function bootstrap() {
     );
     toggles.append(label);
   });
+
+  if (meta?.builtAt) {
+    $('#build-meta').textContent =
+      `Data bijgewerkt op ${new Date(meta.builtAt).toLocaleString('nl-NL')} · ` +
+      `${meta.countries} landen (${meta.withForeign} met buitenlands advies)`;
+  }
 }
 
-// ---- Compare view ---------------------------------------------------------
+// ==========================================================================
+// VERGELIJKEN
+// ==========================================================================
 $('#compare-form').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const country = $('#country-input').value.trim();
-  const sources = $$('#source-toggles input:checked').map((i) => i.value);
+  const input = $('#country-input').value.trim();
+  const selected = $$('#source-toggles input:checked').map((i) => i.value);
   const status = $('#compare-status');
   const result = $('#compare-result');
-  if (!country) return;
-  if (!sources.length) {
+  if (!input) return;
+
+  const country = resolveCountry(input);
+  if (!country) {
     status.className = 'status error';
-    status.textContent = 'Kies minstens één land om mee te vergelijken.';
+    status.textContent = `Land “${input}” niet gevonden.`;
+    result.innerHTML = '';
     return;
   }
   status.className = 'status';
-  status.innerHTML = `<span class="spinner"></span>Reisadviezen ophalen voor ${esc(country)}…`;
+  status.innerHTML = `<span class="spinner"></span>Reisadvies laden voor ${esc(country.nl)}…`;
   result.innerHTML = '';
   try {
-    const data = await api(`/api/compare/${encodeURIComponent(country)}?sources=${sources.join(',')}`);
+    const data = await loadJSON(`compare/${country.iso3}.json`);
     status.textContent = '';
-    renderComparison(data, result);
+    renderComparison(data, selected, result);
   } catch (err) {
     status.className = 'status error';
     status.textContent = err.message;
   }
 });
 
-function colorBadge(color) {
-  if (!color) return el('span', { class: 'empty-col' }, 'geen kleurcode gevonden');
-  return el(
-    'span',
-    { class: `color-badge c-${color}` },
-    el('span', { class: 'dot' }),
-    COLOR_LABELS[color] || color
-  );
+/** Filtert de voorgebouwde vergelijking op de geselecteerde bronnen en
+ *  herberekent de afgeleide lijsten (ontbrekend / alleen NL). */
+function deriveComparison(data, selected) {
+  const foreignList = data.foreign.filter((f) => selected.includes(f.source));
+  const activeIds = new Set(foreignList.map((f) => f.source));
+
+  const colorForeign = data.colorComparison.foreign.filter((f) => activeIds.has(f.source));
+
+  const themes = data.themeComparison.themes.map((t) => {
+    const foreign = {};
+    let foreignHasIt = false;
+    for (const [sid, entry] of Object.entries(t.foreign)) {
+      if (!activeIds.has(sid)) continue;
+      foreign[sid] = entry;
+      if (entry.blocks && entry.blocks.length) foreignHasIt = true;
+    }
+    return { ...t, foreign, foreignHasIt };
+  });
+
+  const missingFromNl = [];
+  const onlyNl = [];
+  for (const t of themes) {
+    if (t.theme.id === '_other') continue;
+    if (!t.nlHasIt && t.foreignHasIt) missingFromNl.push(t);
+    if (t.nlHasIt && !t.foreignHasIt) onlyNl.push(t);
+  }
+
+  const unavailable = data.unavailable.filter((u) => selected.includes(u.source));
+  return { foreignList, colorForeign, themes, missingFromNl, onlyNl, unavailable };
 }
 
-function renderComparison(data, root) {
+function colorBadge(color) {
+  if (!color) return el('span', { class: 'empty-col' }, 'geen kleurcode gevonden');
+  return el('span', { class: `color-badge c-${color}` }, el('span', { class: 'dot' }), COLOR_LABELS[color] || color);
+}
+
+function renderComparison(data, selected, root) {
   const nl = data.nl;
-  const cc = data.colorComparison;
+  const view = deriveComparison(data, selected);
   const frag = document.createDocumentFragment();
 
-  // Kop
   frag.append(
     el(
       'div',
       { class: 'result-head' },
-      el('h2', {}, `${data.country.nl}`),
+      el('h2', {}, data.country.nl),
       el('p', { class: 'meta' }, nl.modificationDate || `Laatst gewijzigd: ${(nl.lastModified || '').slice(0, 10)}`)
     )
   );
 
-  // Melding als een bron geen advies heeft voor dit land
-  if (data.unavailable && data.unavailable.length) {
+  if (view.unavailable.length) {
     frag.append(
       el(
         'div',
         { class: 'callout', style: 'background:#eef4fb;border-color:#b9d3ef;border-left-color:var(--nl-blue)' },
         el('h3', { style: 'color:var(--nl-blue)' }, 'ℹ️ Geen buitenlands advies beschikbaar'),
-        el(
-          'p',
-          { style: 'margin:0' },
+        el('p', { style: 'margin:0' },
           `Voor ${data.country.nl} is geen los reisadvies gevonden bij: ` +
-            data.unavailable.map((u) => u.label).join(', ') + '.'
-        )
+            view.unavailable.map((u) => u.label).join(', ') + '.')
       )
     );
   }
 
-  // Kleurcode-vergelijking
+  // Kleurcodes
   const colorsGrid = el('div', { class: 'colors-grid' });
+  const cc = data.colorComparison;
   const nlCard = el(
     'div',
     { class: 'panel color-card' },
@@ -150,90 +235,62 @@ function renderComparison(data, root) {
     colorBadge(cc.nl.overall),
     cc.nl.overall ? el('div', { class: 'color-note' }, COLOR_MEANING[cc.nl.overall]) : null
   );
-  if (cc.nl.colors && cc.nl.colors.length) {
+  if (cc.nl.colors?.length) {
     const ul = el('ul', { class: 'color-contexts' });
-    cc.nl.colors.forEach((c) =>
-      ul.append(el('li', {}, el('strong', {}, `${COLOR_LABELS[c.color]}: `), c.context))
-    );
+    cc.nl.colors.forEach((c) => ul.append(el('li', {}, el('strong', {}, `${COLOR_LABELS[c.color]}: `), c.context)));
     nlCard.append(ul);
   }
   colorsGrid.append(nlCard);
-
-  cc.foreign.forEach((f) => {
+  view.colorForeign.forEach((f) => {
     colorsGrid.append(
       el(
         'div',
         { class: 'panel color-card' },
         el('h3', {}, `${f.flag || ''} ${f.label}`),
-        el(
-          'span',
-          {},
-          colorBadge(f.mappedColor),
-          el('span', { class: 'approx-tag', title: 'Vertaald naar de Nederlandse kleurenschaal' }, 'benadering')
-        ),
+        el('span', {}, colorBadge(f.mappedColor),
+          el('span', { class: 'approx-tag', title: 'Vertaald naar de Nederlandse kleurenschaal' }, 'benadering')),
         el('div', { class: 'color-note' }, `Grondslag: ${f.basis}`),
-        f.alertStatus && f.alertStatus.length
-          ? el('div', { class: 'color-note' }, `Waarschuwing: ${f.alertStatus.join(', ')}`)
-          : null,
+        f.alertStatus?.length ? el('div', { class: 'color-note' }, `Waarschuwing: ${f.alertStatus.join(', ')}`) : null,
         el('div', { class: 'color-note' }, el('a', { href: f.url, target: '_blank', rel: 'noopener' }, 'Bekijk origineel reisadvies →'))
       )
     );
   });
   frag.append(el('h3', { class: 'section-title' }, 'Kleurcodes'), colorsGrid);
 
-  // Kaarten naast elkaar
+  // Kaarten (hotlink naar open data; cross-origin <img> werkt zonder CORS)
   const mapsGrid = el('div', { class: 'maps-grid' });
   mapsGrid.append(
-    el(
-      'figure',
-      { class: 'map-box' },
-      el('img', { src: `/api/nl/${data.country.iso3}/map?type=standard`, alt: `Kaart reisadvies ${data.country.nl}` }),
-      el('figcaption', {}, '🇳🇱 NederlandWereldwijd')
-    )
+    el('figure', { class: 'map-box' },
+      el('img', { src: nl.maps.standard, alt: `Kaart reisadvies ${data.country.nl}`,
+        onerror: function () { this.replaceWith(el('div', { class: 'map-missing' }, 'Kaart niet beschikbaar.')); } }),
+      el('figcaption', {}, '🇳🇱 NederlandWereldwijd'))
   );
-  data.foreign.forEach((f) => {
+  view.foreignList.forEach((f) => {
     mapsGrid.append(
-      el(
-        'figure',
-        { class: 'map-box' },
-        el(
-          'div',
-          { class: 'map-missing' },
+      el('figure', { class: 'map-box' },
+        el('div', { class: 'map-missing' },
           `${f.flag || ''} ${f.sourceLabel} publiceert geen losse kaartafbeelding via de open data. `,
-          el('a', { href: f.url, target: '_blank', rel: 'noopener' }, 'Bekijk de kaart op de bronpagina →')
-        )
-      )
+          el('a', { href: f.url, target: '_blank', rel: 'noopener' }, 'Bekijk de kaart op de bronpagina →')))
     );
   });
   frag.append(el('h3', { class: 'section-title' }, 'Kaarten'), mapsGrid);
 
-  // Wat vermelden andere landen wel en wij niet?
-  const tc = data.themeComparison;
-  if (tc.missingFromNl.length) {
+  // Wat noemen andere landen wel en wij niet?
+  if (view.missingFromNl.length) {
     const ul = el('ul');
-    tc.missingFromNl.forEach((m) => {
-      const srcs = Object.entries(m.foreign)
-        .filter(([, v]) => v.blocks.length)
-        .map(([, v]) => v.label);
-      ul.append(
-        el('li', {}, el('strong', {}, m.theme.label), ' ', el('span', { class: 'src' }, `— wel behandeld door ${srcs.join(', ')}`))
-      );
+    view.missingFromNl.forEach((t) => {
+      const srcs = Object.values(t.foreign).filter((v) => v.blocks?.length).map((v) => v.label);
+      ul.append(el('li', {}, el('strong', {}, t.theme.label), ' ', el('span', { class: 'src' }, `— wel behandeld door ${srcs.join(', ')}`)));
     });
-    frag.append(
-      el(
-        'div',
-        { class: 'callout' },
-        el('h3', {}, '💡 Thema’s die andere landen wél noemen en NederlandWereldwijd niet'),
-        ul
-      )
-    );
+    frag.append(el('div', { class: 'callout' },
+      el('h3', {}, '💡 Thema’s die andere landen wél noemen en NederlandWereldwijd niet'), ul));
   }
 
-  // Thema-voor-thema vergelijking
+  // Per thema
   frag.append(el('h3', { class: 'section-title' }, 'Vergelijking per thema'));
-  const foreignSources = data.foreign.map((f) => ({ id: f.source, label: f.sourceLabel, flag: f.flag }));
+  const foreignSources = view.foreignList.map((f) => ({ id: f.source, label: f.sourceLabel, flag: f.flag }));
   let lastGroup = null;
-  tc.themes.forEach((t) => {
+  view.themes.forEach((t) => {
     const group = t.theme.group || 'Overig';
     if (group !== lastGroup) {
       frag.append(el('div', { class: 'theme-group-label' }, group));
@@ -250,126 +307,151 @@ function renderBlocks(blocks) {
   const wrap = el('div');
   blocks.forEach((b) => {
     wrap.append(
-      el(
-        'div',
-        { class: 'block' },
+      el('div', { class: 'block' },
         b.heading ? el('div', { class: 'block-heading' }, b.heading) : null,
         b.category && b.category !== b.heading ? el('div', { class: 'block-cat' }, b.category) : null,
-        el('div', { class: 'rich', html: b.html })
-      )
+        el('div', { class: 'rich', html: b.html }))
     );
   });
   return wrap;
 }
 
 function renderThemeCard(t, foreignSources) {
-  const nlHas = t.nlHasIt;
-  const forHas = t.foreignHasIt;
   let badge;
-  if (nlHas && forHas) badge = el('span', { class: 'badge both' }, 'beide');
-  else if (nlHas) badge = el('span', { class: 'badge nl-only' }, 'alleen NL');
+  if (t.nlHasIt && t.foreignHasIt) badge = el('span', { class: 'badge both' }, 'beide');
+  else if (t.nlHasIt) badge = el('span', { class: 'badge nl-only' }, 'alleen NL');
   else badge = el('span', { class: 'badge foreign-only' }, 'ontbreekt bij NL');
 
-  const details = el('details', { class: 'panel theme-card', ...(forHas && !nlHas ? { open: 'open' } : {}) });
+  const details = el('details', { class: 'panel theme-card', ...(t.foreignHasIt && !t.nlHasIt ? { open: 'open' } : {}) });
   details.append(el('summary', {}, t.theme.label, badge));
 
   const cols = el('div', { class: 'compare-cols' + (foreignSources.length >= 2 ? ' cols-3' : '') });
-
-  // NL-kolom
   const nlCol = el('div', { class: 'compare-col' }, el('h4', {}, '🇳🇱 NederlandWereldwijd'));
-  nlCol.append(nlHas ? renderBlocks(t.nl) : el('div', { class: 'empty-col' }, 'Niet apart behandeld in het Nederlandse reisadvies.'));
+  nlCol.append(t.nlHasIt ? renderBlocks(t.nl) : el('div', { class: 'empty-col' }, 'Niet apart behandeld in het Nederlandse reisadvies.'));
   cols.append(nlCol);
 
-  // Buitenlandse kolommen
   foreignSources.forEach((fs) => {
     const entry = t.foreign[fs.id] || { blocks: [] };
     const col = el('div', { class: 'compare-col' }, el('h4', {}, `${fs.flag || ''} ${fs.label}`));
-    if (entry.blocks && entry.blocks.length) {
-      col.append(renderBlocks(entry.blocks));
-    } else {
-      col.append(
-        el('div', { class: 'empty-col' + (nlHas ? '' : '') }, 'Niet apart behandeld.')
-      );
-    }
+    col.append(entry.blocks?.length ? renderBlocks(entry.blocks) : el('div', { class: 'empty-col' }, 'Niet apart behandeld.'));
     cols.append(col);
   });
-
   details.append(cols);
   return details;
 }
 
-// ---- Search view ----------------------------------------------------------
+// ==========================================================================
+// ZOEKEN
+// ==========================================================================
 const scopeHints = {
   nl: 'Doorzoekt alle Nederlandse reisadviezen. Toont per land waar iets over je zoekwoord staat.',
-  foreign:
-    'Doorzoekt buitenlandse reisadviezen (FCDO). Let op: gebruik een Engelse term (bijv. "election" i.p.v. "verkiezingen").',
-  both:
-    'Vergelijkt Nederlandse en buitenlandse reisadviezen op je zoekwoord. Tip: NL en FCDO zijn anderstalig; kies een term of vul een land in.',
+  foreign: 'Doorzoekt buitenlandse reisadviezen (FCDO). Let op: gebruik een Engelse term (bijv. "election" i.p.v. "verkiezingen").',
+  both: 'Vergelijkt Nederlandse en buitenlandse reisadviezen op je zoekwoord. Tip: NL en FCDO zijn anderstalig; kies een term of vul een land in.',
 };
 $('#search-scope').addEventListener('change', (e) => {
   $('#search-hint').textContent = scopeHints[e.target.value] || '';
 });
 $('#search-hint').textContent = scopeHints.nl;
 
+function searchInIndex(index, term, isoFilter) {
+  const t = term.toLowerCase();
+  const results = [];
+  for (const entry of index) {
+    if (isoFilter && entry.iso3 !== isoFilter) continue;
+    const matches = [];
+    for (const block of entry.blocks) {
+      if (block.text && block.text.toLowerCase().includes(t)) {
+        matches.push({
+          category: block.category,
+          heading: block.heading,
+          theme: block.themeLabel || null,
+          themeId: block.themeId,
+          snippet: snippetAround(block.text, term),
+        });
+      }
+    }
+    const inSummary = entry.summaryText ? entry.summaryText.toLowerCase().includes(t) : false;
+    if (matches.length || inSummary) {
+      results.push({
+        iso3: entry.iso3,
+        name: entry.name,
+        url: entry.url,
+        color: entry.color ?? null,
+        source: entry.source,
+        sourceLabel: entry.sourceLabel,
+        inSummary,
+        summarySnippet: inSummary ? snippetAround(entry.summaryText, term) : null,
+        matches,
+        matchCount: matches.length + (inSummary ? 1 : 0),
+      });
+    }
+  }
+  results.sort((a, b) => b.matchCount - a.matchCount || a.name.localeCompare(b.name, 'nl'));
+  return results;
+}
+
 $('#search-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const q = $('#search-input').value.trim();
   const scope = $('#search-scope').value;
-  const country = $('#search-country').value.trim();
+  const countryInput = $('#search-country').value.trim();
   const status = $('#search-status');
   const result = $('#search-result');
   if (!q) return;
+
+  let iso = null;
+  if (countryInput) {
+    const c = resolveCountry(countryInput);
+    if (!c) {
+      status.className = 'status error';
+      status.textContent = `Land “${countryInput}” niet gevonden.`;
+      result.innerHTML = '';
+      return;
+    }
+    iso = c.iso3;
+  }
+
   status.className = 'status';
-  status.innerHTML = `<span class="spinner"></span>Zoeken naar “${esc(q)}”…${scope !== 'nl' ? ' (buitenlandse adviezen kunnen even duren)' : ''}`;
+  status.innerHTML = `<span class="spinner"></span>Zoeken naar “${esc(q)}”…`;
   result.innerHTML = '';
   try {
-    const params = new URLSearchParams({ q, scope });
-    if (country) params.set('country', country);
-    const data = await api(`/api/search?${params}`);
+    const out = { query: q, scope };
+    if (scope === 'nl' || scope === 'both') {
+      const idx = await loadJSON('search/nl.json');
+      out.nl = searchInIndex(idx, q, iso);
+    }
+    if (scope === 'foreign' || scope === 'both') {
+      const idx = await loadJSON('search/foreign.json');
+      out.foreign = searchInIndex(idx, q, iso);
+    }
     status.textContent = '';
-    renderSearch(data, result, q);
+    renderSearch(out, result, q);
   } catch (err) {
     status.className = 'status error';
     status.textContent = err.message;
   }
 });
 
-function renderCountryResult(r, term, sourceLabel) {
+function renderCountryResult(r, term) {
   const details = el('details', { class: 'panel result-country' });
-  const summary = el(
-    'summary',
-    {},
-    el('span', {}, r.color ? el('span', { class: `dot c-${r.color}`, title: COLOR_LABELS[r.color] }) : '', ' ' + r.name),
-    el('span', { class: 'count-pill', style: 'margin-left:auto' }, `${r.matchCount}×`),
-    el('a', { href: r.url, target: '_blank', rel: 'noopener', style: 'margin-left:10px;font-weight:400;font-size:13px', onclick: (ev) => ev.stopPropagation() }, 'origineel →')
+  details.append(
+    el('summary', {},
+      el('span', {}, r.color ? el('span', { class: `dot c-${r.color}`, title: COLOR_LABELS[r.color] }) : '', ' ' + r.name),
+      el('span', { class: 'count-pill', style: 'margin-left:auto' }, `${r.matchCount}×`),
+      el('a', { href: r.url, target: '_blank', rel: 'noopener', style: 'margin-left:10px;font-weight:400;font-size:13px', onclick: (ev) => ev.stopPropagation() }, 'origineel →'))
   );
-  details.append(summary);
-
   if (r.inSummary && r.summarySnippet) {
-    details.append(
-      el(
-        'div',
-        { class: 'match' },
-        el('div', { class: 'm-head' }, 'In het kort (samenvatting)'),
-        el('div', { class: 'snippet', html: highlight(r.summarySnippet, term) })
-      )
-    );
+    details.append(el('div', { class: 'match' },
+      el('div', { class: 'm-head' }, 'In het kort (samenvatting)'),
+      el('div', { class: 'snippet', html: highlight(r.summarySnippet, term) })));
   }
   (r.matches || []).forEach((m) => {
-    details.append(
-      el(
-        'div',
-        { class: 'match' },
-        el(
-          'div',
-          { class: 'm-head' },
-          m.category && m.category !== m.heading ? `${m.category} › ` : '',
-          el('strong', {}, m.heading),
-          m.theme ? el('span', { class: 'm-theme' }, m.theme) : null
-        ),
-        el('div', { class: 'snippet', html: highlight(m.snippet, term) })
-      )
-    );
+    details.append(el('div', { class: 'match' },
+      el('div', { class: 'm-head' },
+        m.category && m.category !== m.heading ? `${m.category} › ` : '',
+        el('strong', {}, m.heading),
+        m.theme ? el('span', { class: 'm-theme' }, m.theme) : null),
+      el('div', { class: 'snippet', html: highlight(m.snippet, term) })));
   });
   return details;
 }
@@ -380,16 +462,13 @@ function renderSearch(data, root, term) {
   const hasForeign = Array.isArray(data.foreign);
 
   if (hasNl && hasForeign) {
-    // Vergelijkingsweergave in twee kolommen
     const cols = el('div', { class: 'results-columns' });
     const left = el('div', {}, el('h3', { class: 'section-title' }, `🇳🇱 NederlandWereldwijd (${data.nl.length})`));
     if (!data.nl.length) left.append(el('p', { class: 'empty-col' }, 'Geen Nederlandse reisadviezen met deze term.'));
     data.nl.forEach((r) => left.append(renderCountryResult(r, term)));
-
     const right = el('div', {}, el('h3', { class: 'section-title' }, `🌍 Buitenland / FCDO (${data.foreign.length})`));
     if (!data.foreign.length) right.append(el('p', { class: 'empty-col' }, 'Geen buitenlandse reisadviezen met deze term (probeer een Engelse term).'));
-    data.foreign.forEach((r) => right.append(renderCountryResult(r, term, r.sourceLabel)));
-
+    data.foreign.forEach((r) => right.append(renderCountryResult(r, term)));
     cols.append(left, right);
     frag.append(cols);
   } else if (hasNl) {
@@ -399,7 +478,7 @@ function renderSearch(data, root, term) {
   } else if (hasForeign) {
     frag.append(el('h3', { class: 'section-title' }, `Gevonden in ${data.foreign.length} buitenlands(e) reisadvies/reisadviezen`));
     if (!data.foreign.length) frag.append(el('p', { class: 'empty-col' }, 'Geen resultaten (probeer een Engelse term).'));
-    data.foreign.forEach((r) => frag.append(renderCountryResult(r, term, r.sourceLabel)));
+    data.foreign.forEach((r) => frag.append(renderCountryResult(r, term)));
   }
   root.append(frag);
 }
@@ -407,5 +486,5 @@ function renderSearch(data, root, term) {
 // ---- Init -----------------------------------------------------------------
 bootstrap().catch((e) => {
   $('#compare-status').className = 'status error';
-  $('#compare-status').textContent = 'Kan landenlijst niet laden: ' + e.message;
+  $('#compare-status').textContent = 'Kan gegevens niet laden: ' + e.message;
 });
