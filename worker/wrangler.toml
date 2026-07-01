@@ -6,7 +6,12 @@ main = "src/index.js"
 compatibility_date = "2024-11-01"
 compatibility_flags = ["nodejs_compat"]
 
-# De Worker heeft geen secrets of bindings nodig; hij haalt alleen publieke
-# overheidsdata op. Na deploy krijg je een URL zoals
+# Na deploy krijg je een URL zoals
 #   https://reisadviezen-buddy-proxy.<jouw-subdomein>.workers.dev
 # Zet die URL in de frontend (zie public/config.js of ?proxy=... parameter).
+#
+# Optioneel: Australië (Smartraveller) blokkeert datacenter-IP's, dus die bron
+# wordt via de publieke reader-proxy r.jina.ai opgehaald. Voor hogere limieten/
+# betrouwbaarheid kun je een gratis jina.ai-key als secret zetten:
+#   npx wrangler secret put JINA_KEY
+# Zonder key werkt het ook, maar kan de reader af en toe rate-limiten.

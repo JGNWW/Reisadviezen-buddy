@@ -18,6 +18,7 @@ window.REISADVIEZEN_CONFIG = {
     { id: 'ca', label: 'Canada (Global Affairs)', flag: '🇨🇦', lang: 'en', default: true },
     { id: 'ie', label: 'Ierland (DFA)', flag: '🇮🇪', lang: 'en', default: true },
     { id: 'fr', label: 'Frankrijk (France Diplomatie)', flag: '🇫🇷', lang: 'fr', default: true },
-    // Volgende fase: Spanje, Japan (API), Australië (via publieke proxy).
+    { id: 'au', label: 'Australië (Smartraveller)', flag: '🇦🇺', lang: 'en', default: true },
+    // Volgende fase: Spanje, Japan (JS-SPA’s; vergen meer werk).
   ],
 };

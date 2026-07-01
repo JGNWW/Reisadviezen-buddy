@@ -13,3 +13,24 @@ export async function getJson(url) {
   if (!res.ok) throw new Error(`${res.status} ${url}`);
   return res.json();
 }
+
+/**
+ * Haalt een pagina op via de publieke reader-proxy r.jina.ai. Nodig voor
+ * bronnen die datacenter-IP's blokkeren (bijv. Smartraveller/Australië) of die
+ * volledig client-side renderen. `format` 'html' geeft de HTML terug, anders
+ * opgeschoonde markdown.
+ *
+ * Let op: dit is een externe, gratis dienst met eigen limieten. Zie ook de
+ * discussie over publieke proxies in de README.
+ */
+let READER_KEY = null;
+/** Stel een (gratis) r.jina.ai API-key in voor hogere limieten/betrouwbaarheid. */
+export function setReaderKey(key) { READER_KEY = key || null; }
+
+export async function getViaReader(url, format = 'html') {
+  const headers = { 'User-Agent': UA, 'X-Return-Format': format };
+  if (READER_KEY) headers.Authorization = `Bearer ${READER_KEY}`;
+  const res = await fetch(`https://r.jina.ai/${url}`, { headers });
+  if (!res.ok) throw new Error(`reader ${res.status} ${url}`);
+  return res.text();
+}

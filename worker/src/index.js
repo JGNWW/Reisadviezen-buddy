@@ -16,10 +16,12 @@ import * as us from './adapters/us.js';
 import * as canada from './adapters/canada.js';
 import * as ireland from './adapters/ireland.js';
 import * as france from './adapters/france.js';
+import * as australia from './adapters/australia.js';
 import { translate, translateBlocks } from './lib/translate.js';
 import { classifyTheme } from './lib/themes.js';
+import { setReaderKey } from './lib/fetch.js';
 
-const ADAPTERS = { uk, us, ca: canada, ie: ireland, fr: france };
+const ADAPTERS = { uk, us, ca: canada, ie: ireland, fr: france, au: australia };
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -39,8 +41,9 @@ function sourceId(iso, source) {
 }
 
 export default {
-  async fetch(request) {
+  async fetch(request, env) {
     if (request.method === 'OPTIONS') return new Response(null, { headers: CORS });
+    setReaderKey(env?.JINA_KEY); // optioneel: hogere limieten voor de reader-proxy
 
     const url = new URL(request.url);
     const parts = url.pathname.split('/').filter(Boolean);

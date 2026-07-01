@@ -65,6 +65,22 @@ const FR_SLUG_OVERRIDES = {
   IND: 'inde', IDN: 'indonesie', THA: 'thailande', VNM: 'vietnam', PHL: 'philippines',
 };
 
+// Australië (Smartraveller): URL = /destinations/{continent}/{slug}.
+const AU_SLUG_OVERRIDES = {
+  USA: 'united-states-of-america', GBR: 'united-kingdom', KOR: 'south-korea',
+  PRK: 'north-korea', RUS: 'russia', AE: 'united-arab-emirates', CZE: 'czech-republic',
+  LAO: 'laos', BRN: 'brunei', SYR: 'syria', MMR: 'myanmar', CPV: 'cape-verde',
+};
+// Smartraveller-continent op basis van ISO-regio/subregio.
+function auContinent(region, subregion) {
+  if (region === 'Africa') return 'africa';
+  if (region === 'Americas') return 'americas';
+  if (region === 'Europe') return 'europe';
+  if (region === 'Oceania') return 'pacific';
+  if (region === 'Asia') return subregion === 'Western Asia' ? 'middle-east' : 'asia';
+  return null;
+}
+
 // Handmatige ISO3 -> ISO2 aanvullingen voor NL-bijzonderheden (Caribisch NL).
 const ISO2_OVERRIDES = { 'BQ-BO': 'BQ', 'BQ-SA': 'BQ', 'BQ-SE': 'BQ' };
 
@@ -126,9 +142,13 @@ async function main() {
 
   const iso3ToEn = {};
   const iso3ToIso2 = {};
+  const iso3ToRegion = {};
+  const iso3ToSub = {};
   for (const c of isoData) {
     iso3ToEn[c['alpha-3']] = c.name;
     iso3ToIso2[c['alpha-3']] = c['alpha-2'];
+    iso3ToRegion[c['alpha-3']] = c.region;
+    iso3ToSub[c['alpha-3']] = c['sub-region'];
   }
 
   const ukSlugs = new Set();
@@ -157,17 +177,25 @@ async function main() {
     const iso2 = ISO2_OVERRIDES[iso] || iso3ToIso2[iso] || null;
 
     const uk = matchSlug(iso, enName, ukSlugs, UK_SLUG_OVERRIDES);
-    const us = matchSlug(iso, enName, usSlugs, US_SLUG_OVERRIDES);
     const ie = matchSlug(iso, enName, ieSlugs, IE_SLUG_OVERRIDES);
+    // VS: de State Dept-RSS is een roulerende subset; leid de slug direct af
+    // (misses geven netjes 404 in de adapter).
+    const us = iso in US_SLUG_OVERRIDES ? US_SLUG_OVERRIDES[iso] : normalise(enName);
 
     let ca = null;
     const caEntry = iso2 && caByIso2[iso2];
     if (caEntry) ca = { iso2, id: caEntry.id, slug: normalise(caEntry.eng) };
 
+    // Australië: continent uit ISO-regio, slug uit Engelse naam (met overrides).
+    let au = null;
+    const continent = auContinent(iso3ToRegion[iso], iso3ToSub[iso]);
+    if (continent) au = { continent, slug: AU_SLUG_OVERRIDES[iso] || normalise(enName) };
+
     if (uk) counts.uk++;
     if (us) counts.us++;
     if (ca) counts.ca++;
     if (ie) counts.ie++;
+    if (au) counts.au = (counts.au || 0) + 1;
 
     countries[iso] = {
       iso3: iso,
@@ -175,7 +203,7 @@ async function main() {
       nl: doc.location,
       en: enName,
       key: doc.locationkey,
-      sources: { uk, us, ca, ie, fr: null },
+      sources: { uk, us, ca, ie, fr: null, au },
     };
   }
 

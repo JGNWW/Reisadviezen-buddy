@@ -5,8 +5,12 @@ normaliseert ze naar dezelfde vorm als de Nederlandse data en geeft ze met
 CORS-headers terug, zodat de statische frontend (GitHub Pages) ze kan gebruiken.
 
 Ondersteunde bronnen: 🇬🇧 VK (FCDO), 🇺🇸 VS (State Dept), 🇨🇦 Canada (Global
-Affairs), 🇮🇪 Ierland (DFA), 🇫🇷 Frankrijk (France Diplomatie).
-Spanje/Japan/Australië volgen.
+Affairs), 🇮🇪 Ierland (DFA), 🇫🇷 Frankrijk (France Diplomatie), 🇦🇺 Australië
+(Smartraveller, via publieke reader-proxy). Spanje en Japan volgen (JS-SPA's).
+
+Australië blokkeert datacenter-IP's; die bron wordt daarom via de publieke
+reader-proxy `r.jina.ai` opgehaald. Zet optioneel een gratis jina.ai-key voor
+betrouwbaarheid: `npx wrangler secret put JINA_KEY`.
 
 ## Endpoints
 
