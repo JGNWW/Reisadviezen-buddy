@@ -8,7 +8,8 @@ const PORT = process.env.PORT || 8787;
 createServer(async (req, res) => {
   const url = `http://localhost:${PORT}${req.url}`;
   try {
-    const response = await worker.fetch(new Request(url, { method: req.method }));
+    // Geef env door (o.a. JINA_KEY voor de reader-proxy) net als Cloudflare doet.
+    const response = await worker.fetch(new Request(url, { method: req.method }), { JINA_KEY: process.env.JINA_KEY });
     res.statusCode = response.status;
     response.headers.forEach((v, k) => res.setHeader(k, v));
     const buf = Buffer.from(await response.arrayBuffer());
