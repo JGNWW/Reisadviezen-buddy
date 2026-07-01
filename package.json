@@ -1,0 +1,21 @@
+{
+  "name": "reisadviezen-buddy",
+  "version": "1.0.0",
+  "description": "Vergelijk het Nederlandse reisadvies met reisadviezen van andere landen. Gebaseerd op de open data feed van NederlandWereldwijd.",
+  "type": "module",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js",
+    "build:countries": "node server/scripts/build-countries.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "node-html-parser": "^6.1.13"
+  },
+  "license": "MIT"
+}

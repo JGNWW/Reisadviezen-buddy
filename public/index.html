@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reisadviezen-buddy · Vergelijk reisadviezen</title>
+  <meta name="description" content="Vergelijk het Nederlandse reisadvies met de reisadviezen van andere landen. Gebaseerd op de open data van NederlandWereldwijd." />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧭</text></svg>" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">🧭</span>
+      <div>
+        <h1>Reisadviezen-buddy</h1>
+        <p class="tagline">Vergelijk het Nederlandse reisadvies met dat van andere landen · data van NederlandWereldwijd (open data)</p>
+      </div>
+    </div>
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-view="compare" role="tab">Vergelijken</button>
+      <button class="tab" data-view="search" role="tab">Zoeken op thema/woord</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- ================= VERGELIJKEN ================= -->
+    <section id="view-compare" class="view active">
+      <form id="compare-form" class="panel controls">
+        <div class="field grow">
+          <label for="country-input">Land</label>
+          <input id="country-input" list="country-list" autocomplete="off"
+                 placeholder="Bijv. Ethiopië, Verenigd Koninkrijk, USA…" />
+          <datalist id="country-list"></datalist>
+        </div>
+        <div class="field">
+          <label>Vergelijk met</label>
+          <div id="source-toggles" class="source-toggles"></div>
+        </div>
+        <button type="submit" class="btn primary">Vergelijk</button>
+      </form>
+
+      <div id="compare-status" class="status"></div>
+      <div id="compare-result"></div>
+    </section>
+
+    <!-- ================= ZOEKEN ================= -->
+    <section id="view-search" class="view">
+      <form id="search-form" class="panel controls">
+        <div class="field grow">
+          <label for="search-input">Zoekwoord of thema</label>
+          <input id="search-input" autocomplete="off" placeholder="Bijv. verkiezingen, aardbeving, drugs…" />
+        </div>
+        <div class="field">
+          <label for="search-scope">Waar zoeken</label>
+          <select id="search-scope">
+            <option value="nl">In Nederlandse reisadviezen</option>
+            <option value="foreign">In buitenlandse reisadviezen (FCDO)</option>
+            <option value="both">Vergelijk NL ↔ buitenland</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="search-country">Land (optioneel)</label>
+          <input id="search-country" list="country-list" autocomplete="off" placeholder="Alle landen" />
+        </div>
+        <button type="submit" class="btn primary">Zoek</button>
+      </form>
+      <p class="hint" id="search-hint"></p>
+      <div id="search-status" class="status"></div>
+      <div id="search-result"></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>
+      Bron reisadviezen Nederland: <a href="https://www.nederlandwereldwijd.nl/open-data" target="_blank" rel="noopener">NederlandWereldwijd open data</a> (CC0).
+      Buitenlandse bron: <a href="https://www.gov.uk/foreign-travel-advice" target="_blank" rel="noopener">UK FCDO</a> via GOV.UK Content API.
+      Kleurcodes van andere landen zijn een benadering op de Nederlandse schaal; de oorspronkelijke formulering staat er altijd bij.
+    </p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
