@@ -179,3 +179,44 @@ input:focus, select:focus { outline: 2px solid var(--nl-blue); border-color: var
 .footer { max-width: 1180px; margin: 0 auto; padding: 20px; color: var(--muted); font-size: 12.5px; border-top: 1px solid var(--border); }
 .footer a { color: var(--nl-blue); }
 .build-meta { font-weight: 600; color: var(--text); }
+
+/* ---- Settings / proxy ---- */
+.brand { position: relative; width: 100%; }
+.settings-btn { margin-left: auto; background: rgba(255,255,255,.15); color: #fff; border: none; width: 38px; height: 38px; border-radius: 8px; font-size: 18px; cursor: pointer; }
+.settings-btn:hover { background: rgba(255,255,255,.28); }
+.settings-panel { background: #0b3050; color: #fff; padding: 14px 24px; }
+.settings-panel label { font-size: 13px; font-weight: 600; display: block; margin-bottom: 6px; }
+.settings-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.settings-row input { flex: 1 1 340px; }
+.settings-panel .hint { color: #cfe0f0; }
+
+/* ---- Divergentie ---- */
+.divergence { border-radius: var(--radius); padding: 14px 18px; margin-bottom: 20px; border: 1px solid var(--border); }
+.divergence.high { background: #fdecea; border-color: #f3b7b0; }
+.divergence.some { background: #fff8e6; border-color: #f0d98a; }
+.divergence.none { background: #eaf4ea; border-color: #bcd9bc; }
+.divergence h3 { margin: 0 0 10px; font-size: 16px; }
+.chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.div-chip { background: #fff; border: 1px solid var(--border); border-radius: 20px; padding: 5px 12px; font-size: 13.5px; display: inline-flex; align-items: center; gap: 4px; }
+.dot.c-none { background: #cbd5e1; }
+
+/* ---- Directory ---- */
+.legend { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+.legend-item { font-size: 13px; color: var(--muted); display: inline-flex; align-items: center; gap: 5px; }
+.directory-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; }
+.dir-card { display: flex; align-items: center; gap: 9px; padding: 10px 12px; background: #fff; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 14.5px; text-align: left; }
+.dir-card:hover { border-color: var(--nl-blue); background: #eef4fb; }
+.dir-name { font-weight: 500; }
+
+/* ---- Kaart laden-knop ---- */
+.map-load { background: #eef4fb; color: var(--nl-blue); border: 1px dashed var(--nl-blue); width: 300px; max-width: 100%; padding: 40px 12px; }
+.map-load:hover { background: #e0ecfa; }
+.compare-cols.cols-4 { grid-template-columns: repeat(4, 1fr); }
+.compare-cols.cols-5 { grid-template-columns: repeat(5, 1fr); }
+
+/* ---- Vertaal-toggle + datumscanner ---- */
+.theme-head-row { display: flex; align-items: center; gap: 12px; margin: 24px 0 12px; border-bottom: 2px solid var(--border); padding-bottom: 6px; }
+.toggle-lang { background: #eef4fb; color: var(--nl-blue); border: 1px solid var(--nl-blue); font-size: 13px; padding: 6px 12px; }
+.toggle-lang:hover { background: #e0ecfa; }
+.compare-cols.cols-6 { grid-template-columns: repeat(6, minmax(150px, 1fr)); }
+@media (max-width: 1100px) { .compare-cols.cols-5, .compare-cols.cols-6 { display: block; } .compare-cols.cols-5 .compare-col, .compare-cols.cols-6 .compare-col { border-right: none; border-bottom: 1px solid var(--border); } }

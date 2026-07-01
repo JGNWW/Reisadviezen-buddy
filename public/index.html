@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Reisadviezen-buddy · Vergelijk reisadviezen</title>
-  <meta name="description" content="Vergelijk het Nederlandse reisadvies met de reisadviezen van andere landen. Gebaseerd op de open data van NederlandWereldwijd." />
+  <meta name="description" content="Vergelijk het Nederlandse reisadvies met de reisadviezen van andere landen (VK, VS, Canada, Ierland). Gebaseerd op de open data van NederlandWereldwijd." />
   <link rel="stylesheet" href="styles.css" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧭</text></svg>" />
 </head>
@@ -14,14 +14,27 @@
       <span class="logo">🧭</span>
       <div>
         <h1>Reisadviezen-buddy</h1>
-        <p class="tagline">Vergelijk het Nederlandse reisadvies met dat van andere landen · data van NederlandWereldwijd (open data)</p>
+        <p class="tagline">Vergelijk het Nederlandse reisadvies met dat van andere landen · data van NederlandWereldwijd (open data) + live buitenlandse bronnen</p>
       </div>
+      <button id="settings-btn" class="settings-btn" title="Proxy instellen">⚙</button>
     </div>
     <nav class="tabs" role="tablist">
       <button class="tab active" data-view="compare" role="tab">Vergelijken</button>
+      <button class="tab" data-view="directory" role="tab">Landenoverzicht</button>
       <button class="tab" data-view="search" role="tab">Zoeken op thema/woord</button>
+      <button class="tab" data-view="datescan" role="tab">Datumscanner</button>
     </nav>
   </header>
+
+  <div id="settings-panel" class="settings-panel" hidden>
+    <label for="proxy-input">Proxy-URL (Cloudflare Worker) voor buitenlandse adviezen &amp; kaarten</label>
+    <div class="settings-row">
+      <input id="proxy-input" type="url" placeholder="https://reisadviezen-buddy-proxy.jouwnaam.workers.dev" />
+      <button id="proxy-save" class="btn primary">Opslaan</button>
+      <button id="proxy-test" class="btn">Test</button>
+    </div>
+    <p id="proxy-status" class="hint"></p>
+  </div>
 
   <main>
     <!-- ================= VERGELIJKEN ================= -->
@@ -44,6 +57,37 @@
       <div id="compare-result"></div>
     </section>
 
+    <!-- ================= LANDENOVERZICHT ================= -->
+    <section id="view-directory" class="view">
+      <div class="panel controls">
+        <div class="field grow">
+          <label for="dir-filter">Filter landen</label>
+          <input id="dir-filter" autocomplete="off" placeholder="Typ om te filteren…" />
+        </div>
+        <div class="legend" id="dir-legend"></div>
+      </div>
+      <div id="directory-grid" class="directory-grid"></div>
+    </section>
+
+    <!-- ================= DATUMSCANNER ================= -->
+    <section id="view-datescan" class="view">
+      <div class="panel controls">
+        <div class="field grow">
+          <p style="margin:0">Scant alle Nederlandse reisadviezen op datums in de <strong>tekst</strong> die in het verleden liggen — een teken dat de inhoud mogelijk verouderd is. De metadata (“laatst gewijzigd” / “geldig op”) wordt genegeerd.</p>
+        </div>
+        <div class="field">
+          <label for="datescan-mode">Toon</label>
+          <select id="datescan-mode">
+            <option value="year">Alleen datums met jaartal (betrouwbaarst)</option>
+            <option value="all">Ook datums zonder jaartal (dag + maand)</option>
+          </select>
+        </div>
+        <button id="datescan-run" type="button" class="btn primary">Scan reisadviezen</button>
+      </div>
+      <div id="datescan-status" class="status"></div>
+      <div id="datescan-result"></div>
+    </section>
+
     <!-- ================= ZOEKEN ================= -->
     <section id="view-search" class="view">
       <form id="search-form" class="panel controls">
@@ -55,12 +99,12 @@
           <label for="search-scope">Waar zoeken</label>
           <select id="search-scope">
             <option value="nl">In Nederlandse reisadviezen</option>
-            <option value="foreign">In buitenlandse reisadviezen (FCDO)</option>
-            <option value="both">Vergelijk NL ↔ buitenland</option>
+            <option value="foreign">In buitenlandse reisadviezen (per land, live)</option>
+            <option value="both">Vergelijk NL ↔ buitenland (per land)</option>
           </select>
         </div>
         <div class="field">
-          <label for="search-country">Land (optioneel)</label>
+          <label for="search-country">Land (optioneel bij NL)</label>
           <input id="search-country" list="country-list" autocomplete="off" placeholder="Alle landen" />
         </div>
         <button type="submit" class="btn primary">Zoek</button>
@@ -75,11 +119,12 @@
     <p id="build-meta" class="build-meta"></p>
     <p>
       Bron reisadviezen Nederland: <a href="https://www.nederlandwereldwijd.nl/open-data" target="_blank" rel="noopener">NederlandWereldwijd open data</a> (CC0).
-      Buitenlandse bron: <a href="https://www.gov.uk/foreign-travel-advice" target="_blank" rel="noopener">UK FCDO</a> via GOV.UK Content API.
-      Kleurcodes van andere landen zijn een benadering op de Nederlandse schaal; de oorspronkelijke formulering staat er altijd bij.
+      Buitenlandse bronnen (live): VK (FCDO), VS (State Dept), Canada (Global Affairs), Ierland (DFA).
+      Kleurcodes van andere landen zijn een benadering op de Nederlandse schaal; de oorspronkelijke formulering en link staan er altijd bij.
     </p>
   </footer>
 
+  <script src="config.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
