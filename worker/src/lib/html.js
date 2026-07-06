@@ -44,6 +44,34 @@ export function splitByHeadings(html) {
   return sections;
 }
 
+/** Zet markdown (van de reader-proxy) om naar leesbare platte tekst. */
+export function mdToText(md) {
+  return (md || '')
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, '') // afbeeldingen
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1') // links -> tekst
+    .replace(/[*_`>#]+/g, ' ')
+    .replace(/\|/g, ' ')
+    .replace(/[ \t]{2,}/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+/** Splitst markdown op koppen (## t/m ####) in secties {heading, level, text}. */
+export function splitMarkdown(md) {
+  if (!md) return [];
+  const sections = [];
+  let cur = { heading: null, level: 0, lines: [] };
+  for (const line of md.split('\n')) {
+    const m = line.match(/^(#{2,4})\s+(.+?)\s*$/);
+    if (m) {
+      if (cur.heading || cur.lines.length) sections.push(cur);
+      cur = { heading: m[2].replace(/[*_`\[\]]/g, '').trim(), level: m[1].length, lines: [] };
+    } else cur.lines.push(line);
+  }
+  if (cur.heading || cur.lines.length) sections.push(cur);
+  return sections.map((s) => ({ heading: s.heading, level: s.level, text: mdToText(s.lines.join('\n')) }));
+}
+
 /**
  * Maakt een kort tekstfragment rond het eerste voorkomen van een zoekterm.
  */

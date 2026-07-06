@@ -19,6 +19,7 @@ window.REISADVIEZEN_CONFIG = {
     { id: 'ie', label: 'Ierland (DFA)', flag: '🇮🇪', lang: 'en', default: true },
     { id: 'fr', label: 'Frankrijk (France Diplomatie)', flag: '🇫🇷', lang: 'fr', default: true },
     { id: 'au', label: 'Australië (Smartraveller)', flag: '🇦🇺', lang: 'en', default: true },
-    // Volgende fase: Spanje, Japan (JS-SPA’s; vergen meer werk).
+    { id: 'es', label: 'Spanje (Exteriores)', flag: '🇪🇸', lang: 'es', default: true },
+    // Japan (anzen.mofa.go.jp) rendert niet landspecifiek via de reader; nog open.
   ],
 };

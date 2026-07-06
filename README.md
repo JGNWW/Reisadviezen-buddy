@@ -9,8 +9,8 @@ De Nederlandse teksten, kleurcodes en kaarten komen uit de
 [open data feed van NederlandWereldwijd](https://www.nederlandwereldwijd.nl/open-data)
 (CC0). De buitenlandse reisadviezen komen **live** van:
 🇬🇧 VK (FCDO) · 🇺🇸 VS (State Dept) · 🇨🇦 Canada (Global Affairs) · 🇮🇪 Ierland (DFA) ·
-🇫🇷 Frankrijk (France Diplomatie). (Spanje, Japan en Australië volgen.)
-Niet-Engelse bronnen worden automatisch naar het Nederlands vertaald.
+🇫🇷 Frankrijk (France Diplomatie) · 🇦🇺 Australië (Smartraveller) · 🇪🇸 Spanje (Exteriores).
+(Japan is nog open.) Niet-Engelse bronnen worden automatisch naar het Nederlands vertaald.
 
 ## Architectuur
 
