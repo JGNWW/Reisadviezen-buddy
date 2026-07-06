@@ -6,7 +6,7 @@ import { parse } from 'node-html-parser';
 import { getJson, getText } from '../lib/fetch.js';
 import { htmlToText, splitByHeadings, absolutiseLinks } from '../lib/html.js';
 import { classifyTheme } from '../lib/themes.js';
-import { textToLevel, levelToColor } from '../lib/levels.js';
+import { assessUkAlertStatus } from '../lib/level-assessment.js';
 
 const API = 'https://www.gov.uk/api/content/foreign-travel-advice';
 const SITE = 'https://www.gov.uk';
@@ -42,7 +42,10 @@ export async function getAdvisory(slug) {
   }
 
   const fullText = fullTextParts.join('\n');
-  const level = textToLevel(fullText);
+  // Niveau komt uit het gestructureerde GOV.UK alert_status-veld, niet uit
+  // vrije tekst — zie worker/src/lib/level-assessment.js voor de reden
+  // (regionale waarschuwingen escaleerden anders ten onrechte het hele land).
+  const assessment = assessUkAlertStatus(det.alert_status);
   return {
     source: meta.id,
     sourceLabel: meta.label,
@@ -50,9 +53,13 @@ export async function getAdvisory(slug) {
     name: det.country?.name || d.title,
     url: `${SITE}${d.base_path || '/foreign-travel-advice/' + slug}`,
     lastModified: det.updated_at || det.reviewed_at || null,
-    level,
-    color: levelToColor(level),
-    levelLabel: level ? null : 'zie advies',
+    level: assessment.level,
+    color: assessment.color,
+    levelLabel: assessment.explanation,
+    regionalMaxLevel: assessment.regionalMaxLevel,
+    hasRegionalWarnings: assessment.hasRegionalWarnings,
+    confidence: assessment.confidence,
+    assessmentStatus: assessment.assessmentStatus,
     alertStatus: det.alert_status || [],
     hasMap: true,
     themes,
