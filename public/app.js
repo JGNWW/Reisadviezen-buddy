@@ -236,7 +236,7 @@ function indexByTheme(themes) {
 
 function buildComparison(nl, foreignSources) {
   const nlIdx = indexByTheme(nl.themes);
-  const forIdx = foreignSources.map((f) => ({ source: f.source, label: f.sourceLabel, flag: f.flag, idx: indexByTheme(f.themes) }));
+  const forIdx = foreignSources.map((f) => ({ source: f.source, label: f.sourceLabel, flag: f.flag, url: f.url, idx: indexByTheme(f.themes) }));
 
   const ids = new Set([...nlIdx.keys()]);
   forIdx.forEach((f) => f.idx.forEach((_, k) => ids.add(k)));
@@ -244,7 +244,7 @@ function buildComparison(nl, foreignSources) {
     .sort((a, b) => (THEME_ORDER.get(a) ?? 99) - (THEME_ORDER.get(b) ?? 99));
   if (ids.has('_other')) ordered.push('_other');
 
-  const themes = [], missingFromNl = [];
+  const themes = [], missingFromNl = [], onlyNl = [];
   for (const id of ordered) {
     const meta = id === '_other' ? { id, label: 'Overige / niet ingedeeld', group: 'Overig' } : THEME_BY_ID.get(id);
     const nlBlocks = nlIdx.get(id) || [];
@@ -252,18 +252,53 @@ function buildComparison(nl, foreignSources) {
     let foreignHasIt = false;
     for (const f of forIdx) {
       const blocks = f.idx.get(id) || [];
-      foreign[f.source] = { label: f.label, flag: f.flag, blocks };
+      foreign[f.source] = { label: f.label, flag: f.flag, url: f.url, blocks };
       if (blocks.length) foreignHasIt = true;
     }
     themes.push({ theme: meta, nl: nlBlocks, foreign, nlHasIt: nlBlocks.length > 0, foreignHasIt });
     if (id !== '_other' && nlBlocks.length === 0 && foreignHasIt) missingFromNl.push({ theme: meta, foreign });
+    if (id !== '_other' && nlBlocks.length > 0 && !foreignHasIt && forIdx.length) onlyNl.push({ theme: meta, nl: nlBlocks });
   }
-  return { themes, missingFromNl };
+  return { themes, missingFromNl, onlyNl };
 }
 
 function colorBadge(color) {
   if (!color) return el('span', { class: 'empty-col' }, 'geen kleurcode');
   return el('span', { class: `color-badge c-${color}` }, el('span', { class: 'dot' }), COLOR_LABELS[color] || color);
+}
+
+/** Compacte, scanbare tabel: één rij per bron (i.p.v. een kaartengrid). */
+function renderSummaryTable(nl, okSources) {
+  const table = el('table', { class: 'summary-table' });
+  const thead = el('thead', {}, el('tr', {},
+    el('th', {}, 'Bron'), el('th', {}, 'Kleurcode'), el('th', {}, 'Origineel niveau'),
+    el('th', {}, 'Bijgewerkt'), el('th', {}, '')));
+  table.append(thead);
+  const tbody = el('tbody');
+
+  const fmtDateShort = (s) => {
+    if (!s) return '—';
+    const d = new Date(s);
+    return isNaN(d) ? String(s).slice(0, 10) : d.toLocaleDateString('nl-NL');
+  };
+
+  tbody.append(el('tr', {},
+    el('td', {}, '🇳🇱 NederlandWereldwijd'),
+    el('td', {}, colorBadge(nl.colors?.overall)),
+    el('td', { class: 'muted' }, '—'),
+    el('td', { class: 'muted' }, nl.modificationDate ? nl.modificationDate.split('|')[0].replace('Laatst gewijzigd op:', '').trim() : fmtDateShort(nl.lastModified)),
+    el('td', {}, el('a', { href: nl.url, target: '_blank', rel: 'noopener' }, 'origineel →'))));
+
+  okSources.forEach((s) => {
+    tbody.append(el('tr', {},
+      el('td', {}, `${s.flag || ''} ${s.sourceLabel}`),
+      el('td', {}, colorBadge(s.color), ' ', el('span', { class: 'approx-tag', title: 'Vertaald naar de Nederlandse kleurenschaal' }, 'benadering')),
+      el('td', { class: 'muted' }, s.levelLabel || '—'),
+      el('td', { class: 'muted' }, fmtDateShort(s.lastModified)),
+      el('td', {}, el('a', { href: s.url, target: '_blank', rel: 'noopener' }, 'origineel →'))));
+  });
+  table.append(tbody);
+  return table;
 }
 
 function renderComparison(staticData, foreign, root) {
@@ -296,24 +331,14 @@ function renderComparison(staticData, foreign, root) {
   divWrap.append(chipRow);
   frag.append(divWrap);
 
-  // ---- Kleurcode-kaarten ----
-  const colorsGrid = el('div', { class: 'colors-grid' });
-  const nlCard = el('div', { class: 'panel color-card' }, el('h3', {}, '🇳🇱 NederlandWereldwijd'),
-    colorBadge(nlColor), nlColor ? el('div', { class: 'color-note' }, COLOR_MEANING[nlColor]) : null);
-  if (nl.colors?.colors?.length) {
+  // ---- Samenvattingstabel (kleurcode + niveau + datum + link per bron) ----
+  frag.append(el('h3', { class: 'section-title' }, 'Kleurcodes op een rij'), renderSummaryTable(nl, okSources));
+  if (nl.colors?.colors?.length > 1) {
     const ul = el('ul', { class: 'color-contexts' });
     nl.colors.colors.forEach((c) => ul.append(el('li', {}, el('strong', {}, `${COLOR_LABELS[c.color]}: `), c.context)));
-    nlCard.append(ul);
+    frag.append(el('div', { class: 'panel', style: 'padding:12px 16px;margin-bottom:22px' },
+      el('div', { class: 'block-cat', style: 'margin-bottom:4px' }, '🇳🇱 Kleurcode geldt per regio:'), ul));
   }
-  colorsGrid.append(nlCard);
-  okSources.forEach((s) => {
-    colorsGrid.append(el('div', { class: 'panel color-card' },
-      el('h3', {}, `${s.flag || ''} ${s.sourceLabel}`),
-      el('span', {}, colorBadge(s.color), el('span', { class: 'approx-tag', title: 'Vertaald naar de Nederlandse kleurenschaal' }, 'benadering')),
-      s.levelLabel ? el('div', { class: 'color-note' }, `Origineel: ${s.levelLabel}`) : null,
-      el('div', { class: 'color-note' }, el('a', { href: s.url, target: '_blank', rel: 'noopener' }, 'Bekijk origineel reisadvies →'))));
-  });
-  frag.append(el('h3', { class: 'section-title' }, 'Kleurcodes'), colorsGrid);
 
   // ---- Kaarten (NL hotlink + buitenland op klik via proxy) ----
   const mapsGrid = el('div', { class: 'maps-grid' });
@@ -348,12 +373,16 @@ function renderComparison(staticData, foreign, root) {
   // ---- Vergelijking per thema ----
   const cmp = buildComparison(nl, okSources);
   if (cmp.missingFromNl.length) {
-    const ul = el('ul');
-    cmp.missingFromNl.forEach((m) => {
-      const srcs = Object.values(m.foreign).filter((v) => v.blocks?.length).map((v) => v.label);
-      ul.append(el('li', {}, el('strong', {}, m.theme.label), ' ', el('span', { class: 'src' }, `— wel behandeld door ${srcs.join(', ')}`)));
-    });
-    frag.append(el('div', { class: 'callout' }, el('h3', {}, '💡 Thema’s die andere landen wél noemen en NederlandWereldwijd niet'), ul));
+    const gapBtn = el('button', { class: 'btn primary', type: 'button', onclick: () => {
+      activateTab('gaps'); activateGapMode('single');
+      $('#gap-country-input').value = staticData.country.nl;
+      renderGapSingle(staticData.country, nl, okSources, $('#gap-single-result'));
+      $('#gap-single-status').textContent = '';
+    } }, 'Bekijk volledig overzicht →');
+    frag.append(el('div', { class: 'callout' },
+      el('h3', {}, `💡 ${cmp.missingFromNl.length} thema${cmp.missingFromNl.length === 1 ? '' : "'s"} die andere landen wél noemen en NederlandWereldwijd niet`),
+      el('p', { style: 'margin:0 0 10px' }, cmp.missingFromNl.slice(0, 4).map((m) => m.theme.label).join(', ') + (cmp.missingFromNl.length > 4 ? ', …' : '')),
+      gapBtn));
   }
 
   const themeHead = el('div', { class: 'theme-head-row' }, el('h3', { class: 'section-title', style: 'flex:1;margin:0;border:none' }, 'Vergelijking per thema'));
@@ -375,6 +404,14 @@ function renderComparison(staticData, foreign, root) {
   root.append(frag);
 }
 
+const SNIPPET_MAXLEN = 320;
+
+/**
+ * Rendert thema-blokken. Lange blokken worden standaard ingekort tot een
+ * scanbaar fragment met een "Lees volledige tekst"-knop — dit voorkomt de
+ * "muur van tekst" die ontstaat als N bronnen elk hun volledige, vaak
+ * uitgebreide, brontekst tonen.
+ */
 function renderBlocks(blocks, foreign = false) {
   if (!blocks || !blocks.length) return null;
   const wrap = el('div');
@@ -382,13 +419,30 @@ function renderBlocks(blocks, foreign = false) {
     // Voor buitenlandse (vertaalde) blokken: standaard NL, of origineel bij toggle.
     const useNl = foreign && !SHOW_ORIGINAL && (b.textNl || b.headingNl);
     const heading = useNl && b.headingNl ? b.headingNl : b.heading;
-    const bodyNode = useNl && b.textNl
-      ? el('div', { class: 'rich', html: esc(b.textNl).replace(/\n+/g, '</p><p>') })
-      : el('div', { class: 'rich', html: b.html || esc(b.text || '') });
-    wrap.append(el('div', { class: 'block' },
+    const fullText = useNl && b.textNl ? b.textNl : (b.text || '');
+    const fullHtml = useNl && b.textNl ? null : (b.html || null);
+
+    const blockEl = el('div', { class: 'block' },
       heading ? el('div', { class: 'block-heading' }, heading) : null,
-      b.category && b.category !== heading ? el('div', { class: 'block-cat' }, b.category) : null,
-      bodyNode));
+      b.category && b.category !== heading ? el('div', { class: 'block-cat' }, b.category) : null);
+
+    if (fullText.length > SNIPPET_MAXLEN) {
+      let expanded = false;
+      const shortNode = el('div', { class: 'rich' }, fullText.slice(0, SNIPPET_MAXLEN).trim() + '…');
+      const fullNode = el('div', { class: 'rich', html: fullHtml || esc(fullText) });
+      fullNode.hidden = true;
+      const toggle = el('button', { class: 'btn-link', type: 'button' }, `Lees volledige tekst (${fullText.length} tekens) →`);
+      toggle.addEventListener('click', () => {
+        expanded = !expanded;
+        shortNode.hidden = expanded;
+        fullNode.hidden = !expanded;
+        toggle.textContent = expanded ? '▲ Inklappen' : `Lees volledige tekst (${fullText.length} tekens) →`;
+      });
+      blockEl.append(shortNode, fullNode, toggle);
+    } else {
+      blockEl.append(el('div', { class: 'rich', html: fullHtml || esc(fullText) }));
+    }
+    wrap.append(blockEl);
   });
   return wrap;
 }
@@ -414,6 +468,161 @@ function renderThemeCard(t, foreignCols) {
   });
   details.append(cols);
   return details;
+}
+
+// ==========================================================================
+// WAT ONTBREEKT — gap-analyse: losstaand van "Vergelijken" (dat de volledige
+// brontekst per thema naast elkaar toont), focust dit uitsluitend op de
+// thema's die andere landen wél behandelen en NederlandWereldwijd niet — en
+// omgekeerd. Gebruikt dezelfde regelgebaseerde vergelijking (buildComparison),
+// geen AI: puur aggregatie over reeds opgehaalde data.
+// ==========================================================================
+function activateGapMode(mode) {
+  $$('.subtab').forEach((t) => t.classList.toggle('active', t.dataset.gapmode === mode));
+  $('#gap-single').classList.toggle('active', mode === 'single');
+  $('#gap-multi').classList.toggle('active', mode === 'multi');
+}
+$$('.subtab').forEach((t) => t.addEventListener('click', () => activateGapMode(t.dataset.gapmode)));
+
+function selectedSources() {
+  return $$('#source-toggles input:checked').map((i) => i.value);
+}
+
+function renderGapSingle(country, nl, okSources, root) {
+  root.innerHTML = '';
+  const frag = document.createDocumentFragment();
+  const cmp = buildComparison(nl, okSources);
+  const totalThemes = cmp.themes.filter((t) => t.theme.id !== '_other').length;
+
+  frag.append(el('div', { class: 'result-head' },
+    el('h2', {}, country.nl || country),
+    el('p', { class: 'meta' },
+      `${cmp.missingFromNl.length} van ${totalThemes} thema's ontbreken bij NederlandWereldwijd, vergeleken met ${okSources.length} bron${okSources.length === 1 ? '' : 'nen'}.`)));
+
+  if (!cmp.missingFromNl.length) {
+    frag.append(el('div', { class: 'callout', style: 'background:#eaf4ea;border-left-color:var(--groen)' },
+      el('p', { style: 'margin:0' }, '✅ Geen ontbrekende thema’s gevonden bij de gekozen bronnen.')));
+  } else {
+    let lastGroup = null;
+    cmp.missingFromNl.forEach((m) => {
+      const g = m.theme.group || 'Overig';
+      if (g !== lastGroup) { frag.append(el('div', { class: 'theme-group-label' }, g)); lastGroup = g; }
+      const details = el('details', { class: 'panel theme-card', open: 'open' });
+      details.append(el('summary', {}, m.theme.label, el('span', { class: 'badge foreign-only' }, 'ontbreekt bij NL')));
+      const body = el('div', { class: 'gap-body' });
+      Object.values(m.foreign).filter((v) => v.blocks?.length).forEach((v) => {
+        body.append(el('div', { class: 'block' },
+          el('div', { class: 'block-heading' }, `${v.flag || ''} ${v.label}`),
+          renderBlocks(v.blocks, true),
+          v.url ? el('div', { class: 'color-note' }, el('a', { href: v.url, target: '_blank', rel: 'noopener' }, 'Bekijk bron →')) : null));
+      });
+      details.append(body);
+      frag.append(details);
+    });
+  }
+
+  if (cmp.onlyNl.length) {
+    const det = el('details', { class: 'panel theme-card' });
+    det.append(el('summary', {}, `Andersom: ${cmp.onlyNl.length} thema${cmp.onlyNl.length === 1 ? '' : "'s"} die alleen NederlandWereldwijd behandelt`));
+    const body = el('div', { class: 'gap-body' });
+    cmp.onlyNl.forEach((o) => body.append(el('div', { class: 'block' }, el('div', { class: 'block-heading' }, o.theme.label), renderBlocks(o.nl))));
+    det.append(body);
+    frag.append(det);
+  }
+  root.append(frag);
+}
+
+$('#gap-single-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const input = $('#gap-country-input').value.trim();
+  const status = $('#gap-single-status'), result = $('#gap-single-result');
+  if (!input) return;
+  const country = resolveCountry(input);
+  if (!country) { status.className = 'status error'; status.textContent = `Land “${input}” niet gevonden.`; result.innerHTML = ''; return; }
+  const selected = selectedSources();
+  if (!selected.length) { status.className = 'status error'; status.textContent = 'Kies minstens één bron bij "Vergelijken".'; result.innerHTML = ''; return; }
+  if (!getProxy()) { status.className = 'status error'; status.textContent = 'Stel de proxy in (⚙) om buitenlandse bronnen te vergelijken.'; result.innerHTML = ''; return; }
+
+  status.className = 'status'; status.innerHTML = `<span class="spinner"></span>Analyseren voor ${esc(country.nl)}…`; result.innerHTML = '';
+  try {
+    const [staticData, res] = await Promise.all([
+      loadJSON(`compare/${country.iso3}.json`),
+      fetchForeign(country.iso3, selected),
+    ]);
+    const okSources = (res?.sources || []).filter((s) => !s.unavailable && !s.error && s.themes);
+    status.textContent = '';
+    renderGapSingle(country, staticData.nl, okSources, result);
+  } catch (err) { status.className = 'status error'; status.textContent = err.message; }
+});
+
+// ---- Meerdere landen (trends) ----
+let GAP_MULTI = [];
+function renderGapMultiChips() {
+  const wrap = $('#gap-multi-chips');
+  wrap.innerHTML = '';
+  GAP_MULTI.forEach((c) => {
+    const rm = el('button', { type: 'button', class: 'chip-remove' }, '×');
+    rm.addEventListener('click', () => { GAP_MULTI = GAP_MULTI.filter((x) => x.iso3 !== c.iso3); renderGapMultiChips(); });
+    wrap.append(el('span', { class: 'chip' }, c.nl, rm));
+  });
+}
+$('#gap-multi-add').addEventListener('click', () => {
+  const input = $('#gap-multi-input');
+  const country = resolveCountry(input.value.trim());
+  if (!country || GAP_MULTI.find((c) => c.iso3 === country.iso3)) { input.value = ''; return; }
+  GAP_MULTI.push(country);
+  input.value = '';
+  renderGapMultiChips();
+});
+
+$('#gap-multi-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const status = $('#gap-multi-status'), result = $('#gap-multi-result');
+  if (GAP_MULTI.length < 2) { status.className = 'status error'; status.textContent = 'Voeg minstens 2 landen toe.'; result.innerHTML = ''; return; }
+  const selected = selectedSources();
+  if (!selected.length) { status.className = 'status error'; status.textContent = 'Kies minstens één bron bij "Vergelijken".'; return; }
+  if (!getProxy()) { status.className = 'status error'; status.textContent = 'Stel de proxy in (⚙).'; return; }
+
+  status.className = 'status'; result.innerHTML = '';
+  const themeCounts = new Map();
+  let done = 0;
+  for (const country of GAP_MULTI) {
+    status.innerHTML = `<span class="spinner"></span>Analyseren… (${done + 1}/${GAP_MULTI.length}: ${esc(country.nl)})`;
+    try {
+      const [staticData, res] = await Promise.all([
+        loadJSON(`compare/${country.iso3}.json`),
+        fetchForeign(country.iso3, selected),
+      ]);
+      const okSources = (res?.sources || []).filter((s) => !s.unavailable && !s.error && s.themes);
+      const cmp = buildComparison(staticData.nl, okSources);
+      cmp.missingFromNl.forEach((m) => {
+        if (!themeCounts.has(m.theme.id)) themeCounts.set(m.theme.id, { theme: m.theme, count: 0, countries: [] });
+        const entry = themeCounts.get(m.theme.id);
+        entry.count++;
+        entry.countries.push(country.nl);
+      });
+    } catch { /* land overslaan bij fout, doorgaan met de rest */ }
+    done++;
+  }
+  status.textContent = `Klaar: ${done} van ${GAP_MULTI.length} landen geanalyseerd.`;
+  renderGapMultiResult([...themeCounts.values()].sort((a, b) => b.count - a.count), done, result);
+});
+
+function renderGapMultiResult(rows, total, root) {
+  root.innerHTML = '';
+  if (!rows.length) { root.append(el('p', { class: 'empty-col' }, 'Geen structurele hiaten gevonden in de gekozen landen.')); return; }
+  const table = el('table', { class: 'summary-table' });
+  table.append(el('thead', {}, el('tr', {}, el('th', {}, 'Thema'), el('th', {}, 'Ontbreekt bij NL in'), el('th', {}, 'Voorbeeldlanden'))));
+  const tbody = el('tbody');
+  rows.forEach((r) => {
+    const pct = Math.round((r.count / total) * 100);
+    tbody.append(el('tr', {},
+      el('td', {}, r.theme.label),
+      el('td', {}, el('div', { class: 'gap-bar-wrap' }, el('div', { class: 'gap-bar', style: `width:${pct}%` }), el('span', {}, `${r.count}/${total} (${pct}%)`))),
+      el('td', { class: 'muted' }, r.countries.slice(0, 5).join(', ') + (r.countries.length > 5 ? ', …' : ''))));
+  });
+  table.append(tbody);
+  root.append(table);
 }
 
 // ==========================================================================

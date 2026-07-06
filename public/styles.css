@@ -220,3 +220,31 @@ input:focus, select:focus { outline: 2px solid var(--nl-blue); border-color: var
 .toggle-lang:hover { background: #e0ecfa; }
 .compare-cols.cols-6 { grid-template-columns: repeat(6, minmax(150px, 1fr)); }
 @media (max-width: 1100px) { .compare-cols.cols-5, .compare-cols.cols-6 { display: block; } .compare-cols.cols-5 .compare-col, .compare-cols.cols-6 .compare-col { border-right: none; border-bottom: 1px solid var(--border); } }
+
+/* ---- Samenvattingstabel (Vergelijken + Wat ontbreekt) ---- */
+.summary-table { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 22px; }
+.summary-table th, .summary-table td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); font-size: 14px; }
+.summary-table th { font-size: 11px; text-transform: uppercase; letter-spacing: .03em; color: var(--muted); background: #f8fafc; }
+.summary-table tr:last-child td { border-bottom: none; }
+.summary-table .muted { color: var(--muted); }
+.btn-link { background: none; border: none; color: var(--nl-blue); font-size: 13px; font-weight: 600; padding: 4px 0; cursor: pointer; }
+.btn-link:hover { text-decoration: underline; }
+
+/* ---- Subtabs (binnen Wat ontbreekt) ---- */
+.subtabs { display: flex; gap: 6px; margin-bottom: 16px; }
+.subtab { background: #fff; border: 1px solid var(--border); border-radius: 20px; padding: 8px 16px; font-size: 14px; cursor: pointer; color: var(--muted); }
+.subtab.active { background: var(--nl-blue); border-color: var(--nl-blue); color: #fff; font-weight: 600; }
+.gap-panel { display: none; }
+.gap-panel.active { display: block; }
+.gap-body { padding: 4px 18px 14px; border-top: 1px solid var(--border); }
+
+/* ---- Landen-chips (meerdere landen / trends) ---- */
+.chip-list { display: flex; flex-wrap: wrap; gap: 8px; margin: -6px 0 14px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; background: #eef4fb; color: var(--nl-blue); border-radius: 16px; padding: 6px 8px 6px 14px; font-size: 13.5px; font-weight: 500; }
+.chip-remove { background: none; border: none; color: var(--nl-blue); font-size: 16px; line-height: 1; cursor: pointer; padding: 2px 6px; border-radius: 50%; }
+.chip-remove:hover { background: rgba(21,66,115,.15); }
+
+/* ---- Gap-trend balkjes ---- */
+.gap-bar-wrap { position: relative; background: #f0f3f7; border-radius: 6px; height: 22px; width: 200px; max-width: 100%; overflow: hidden; }
+.gap-bar { position: absolute; inset: 0 auto 0 0; background: var(--oranje); opacity: .35; border-radius: 6px; }
+.gap-bar-wrap span { position: relative; z-index: 1; font-size: 12.5px; font-weight: 600; padding: 0 8px; line-height: 22px; display: block; }
