@@ -87,9 +87,10 @@ ververst de NL-data dagelijks). Eenmalig: **Settings → Pages → Source:
 GitHub Actions**. De site komt op `https://<gebruiker>.github.io/<repo>/`.
 
 ### Proxy op Cloudflare Workers
-Zie **[worker/README.md](worker/README.md)**: `cd worker && npx wrangler deploy`.
-Zet daarna de Worker-URL in de tool via de ⚙-knop (of in `public/config.js`
-vóór de build). Zonder proxy werkt de tool ook, maar dan alleen met de
+Zie **[worker/README.md](worker/README.md)** voor het volledige stappenplan —
+deployen kan volledig via GitHub (Actions + repository-secrets), zonder iets
+lokaal te installeren. Zet daarna de Worker-URL in de tool via de ⚙-knop (of in
+`public/config.js` vóór de build). Zonder proxy werkt de tool ook, maar dan alleen met de
 Nederlandse data.
 
 ## Projectstructuur

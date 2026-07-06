@@ -43,23 +43,75 @@ Zonder deze secret werkt alles gewoon met alleen de directe fetch.
 gratis publieke Google-translate-endpoint (geen key); makkelijk te vervangen in
 `src/lib/translate.js`.
 
-## Deployen naar Cloudflare (gratis)
+## Deployen — via GitHub (aanbevolen, geen installatie nodig)
 
-1. Maak een gratis account op [Cloudflare](https://dash.cloudflare.com/sign-up).
-2. Installeer de dependencies en deploy:
-   ```bash
-   cd worker
-   npm install
-   npx wrangler login      # opent de browser om in te loggen
-   npx wrangler deploy
+De workflow `.github/workflows/deploy-worker.yml` deployt de Worker automatisch
+bij elke wijziging in `worker/` op `main`, en is ook handmatig te starten. Je
+hoeft hiervoor niets op je eigen computer te installeren.
+
+### Eenmalig instellen
+
+1. **Cloudflare-account** — maak een gratis account op
+   [dash.cloudflare.com/sign-up](https://dash.cloudflare.com/sign-up) (als je
+   die nog niet hebt).
+
+2. **API-token maken** (in de Cloudflare-website, geen CLI nodig):
+   - Ga naar [dash.cloudflare.com/profile/api-tokens](https://dash.cloudflare.com/profile/api-tokens).
+   - Klik **Create Token** → kies het sjabloon **"Edit Cloudflare Workers"**.
+   - Rond de wizard af en **kopieer de token** (je ziet 'm maar één keer).
+
+3. **Account-ID opzoeken**:
+   - Ga naar [dash.cloudflare.com](https://dash.cloudflare.com) → **Workers & Pages**.
+   - Rechts op die pagina staat je **Account ID** — kopieer die.
+
+4. **Beide waarden als GitHub-secret zetten** (in de repo op GitHub.com, niet lokaal):
+   - Ga naar de repo → **Settings** → **Secrets and variables** → **Actions**.
+   - Klik **New repository secret**, maak er twee aan:
+     | Name | Value |
+     | --- | --- |
+     | `CLOUDFLARE_API_TOKEN` | de token uit stap 2 |
+     | `CLOUDFLARE_ACCOUNT_ID` | de account-ID uit stap 3 |
+
+5. **Deploy starten**: de workflow draait automatisch zodra deze instellingen
+   staan en er iets in `worker/` wijzigt op `main`. Wil je 'm nu meteen
+   draaien? Ga naar de repo → **Actions** → **"Deploy proxy (Cloudflare
+   Worker)"** → **Run workflow**.
+
+6. **De Worker-URL vinden**: open de afgeronde run in **Actions** en zoek in de
+   log naar een regel als:
    ```
-3. Wrangler geeft na afloop een URL, bijvoorbeeld:
+   Published reisadviezen-buddy-proxy (...)
+     https://reisadviezen-buddy-proxy.<jouw-subdomein>.workers.dev
    ```
-   https://reisadviezen-buddy-proxy.<jouw-subdomein>.workers.dev
-   ```
-4. Zet die URL in de frontend: open de tool, klik op **⚙** rechtsboven, plak de
-   URL en klik **Opslaan** (of gebruik `?proxy=<url>` in de adresbalk, of vul
-   `PROXY` in `public/config.js` in vóór de build).
+   (Of kijk op [dash.cloudflare.com](https://dash.cloudflare.com) → **Workers
+   & Pages** → de Worker staat in de lijst met zijn URL.)
+
+7. **Koppel de URL aan de tool**: open de site, klik **⚙** rechtsboven, plak de
+   URL en klik **Opslaan**. Wil je dat de URL voor iedereen standaard aanstaat
+   (i.p.v. dat elke bezoeker 'm zelf moet invullen)? Vul `PROXY` in
+   `public/config.js` in en commit die wijziging.
+
+### Worker-secrets zetten (ook via de website, geen CLI)
+
+De optionele secrets (`JINA_KEY`, `CORS_PROXY_URL`, zie hierboven) zet je
+rechtstreeks in de Cloudflare-website, zonder wrangler:
+- Ga naar **dash.cloudflare.com** → **Workers & Pages** → open de Worker
+  `reisadviezen-buddy-proxy` → tab **Settings** → **Variables and Secrets**.
+- Klik **Add** → naam (`JINA_KEY` of `CORS_PROXY_URL`) → waarde → zet het type
+  op **Secret** (versleuteld, niet zichtbaar na opslaan) → **Deploy**.
+
+## Deployen — handmatig vanaf je eigen computer (alternatief)
+
+Heb je liever geen GitHub Actions, dan kan het ook lokaal (vereist Node.js):
+
+```bash
+cd worker
+npm install
+npx wrangler login      # opent de browser om in te loggen
+npx wrangler deploy
+npx wrangler secret put JINA_KEY        # optioneel
+npx wrangler secret put CORS_PROXY_URL  # optioneel
+```
 
 ## Lokaal draaien
 
