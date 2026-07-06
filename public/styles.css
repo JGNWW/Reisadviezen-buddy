@@ -205,6 +205,22 @@ input:focus, select:focus { outline: 2px solid var(--nl-blue); border-color: var
 .divergence.some { background: #fff8e6; border-color: #f0d98a; }
 .divergence.none { background: #eaf4ea; border-color: #bcd9bc; }
 .divergence h3 { margin: 0 0 10px; font-size: 16px; }
+.consensus-line { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; font-size: 14px; }
+.consensus-line .color-badge { font-size: 13px; padding: 3px 10px; }
+
+/* ---- Recente wijzigingen ---- */
+.change-date { font-size: 13px; text-transform: uppercase; letter-spacing: .03em; color: var(--muted); margin: 20px 0 8px; }
+.change-date:first-child { margin-top: 0; }
+.change-row {
+  background: #fff; border: 1px solid var(--border); border-left: 4px solid var(--border);
+  border-radius: 8px; padding: 10px 14px; margin-bottom: 8px;
+}
+.change-row.kind-up, .change-row.kind-regional-new, .change-row.kind-regional-up { border-left-color: var(--rood); }
+.change-row.kind-down, .change-row.kind-regional-down, .change-row.kind-regional-removed { border-left-color: var(--groen); }
+.change-row.kind-status { border-left-color: var(--nl-blue); }
+.change-kind { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .02em; color: var(--muted); }
+.change-country { display: block; font-weight: 600; font-size: 14.5px; margin: 3px 0 4px; padding: 0; }
+.change-desc { margin: 0; font-size: 13.5px; color: var(--text); }
 .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
 .div-chip { background: #fff; border: 1px solid var(--border); border-radius: 20px; padding: 5px 12px; font-size: 13.5px; display: inline-flex; align-items: center; gap: 4px; }
 .dot.c-none { background: #cbd5e1; }
