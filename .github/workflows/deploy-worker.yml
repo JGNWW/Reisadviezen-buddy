@@ -1,0 +1,42 @@
+name: Deploy proxy (Cloudflare Worker)
+
+# Deployt de live proxy (worker/) naar Cloudflare Workers. Draait automatisch
+# bij wijzigingen in worker/, en is ook handmatig te starten.
+#
+# Vereist twee GitHub-repository-secrets (Settings → Secrets and variables →
+# Actions → New repository secret):
+#   CLOUDFLARE_API_TOKEN   Cloudflare-token met rechten om Workers te bewerken
+#   CLOUDFLARE_ACCOUNT_ID  Je Cloudflare account-ID
+# Zie worker/README.md voor waar je deze vandaan haalt.
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'worker/**'
+      - '.github/workflows/deploy-worker.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: worker
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: worker/package-lock.json
+
+      - name: Dependencies installeren
+        run: npm ci
+
+      - name: Deployen naar Cloudflare Workers
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: worker
