@@ -7,8 +7,7 @@
  * URL-parameter ?proxy=... of via het instellingenveld in de tool.
  */
 window.REISADVIEZEN_CONFIG = {
-  // Bijv. 'https://reisadviezen-buddy-proxy.jouwnaam.workers.dev'
-  PROXY: '',
+  PROXY: 'https://reisadviezen-buddy-proxy.nederlander.workers.dev',
 
   // Buitenlandse bronnen die de proxy ondersteunt. `lang` = brontaal (voor
   // automatische vertaling naar Nederlands).
