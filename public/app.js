@@ -262,9 +262,27 @@ function buildComparison(nl, foreignSources) {
   return { themes, missingFromNl, onlyNl };
 }
 
-function colorBadge(color) {
-  if (!color) return el('span', { class: 'empty-col' }, 'geen kleurcode');
-  return el('span', { class: `color-badge c-${color}` }, el('span', { class: 'dot' }), COLOR_LABELS[color] || color);
+function colorBadge(color, opts = {}) {
+  const { uncertain, hasRegionalWarnings, regionalMaxLevel, explanation } = opts;
+  const badges = [];
+  if (uncertain) {
+    badges.push(el('span', {
+      class: 'color-badge c-uncertain',
+      title: explanation || 'Niveau kon niet betrouwbaar worden vastgesteld — geen gok gedaan.',
+    }, el('span', { class: 'dot' }), 'Onzeker'));
+  } else if (!color) {
+    badges.push(el('span', { class: 'empty-col' }, 'geen kleurcode'));
+  } else {
+    badges.push(el('span', { class: `color-badge c-${color}` }, el('span', { class: 'dot' }), COLOR_LABELS[color] || color));
+  }
+  if (hasRegionalWarnings) {
+    const rColor = ['', 'groen', 'geel', 'oranje', 'rood'][regionalMaxLevel] || null;
+    badges.push(el('span', {
+      class: 'regional-flag',
+      title: explanation || `Regionale waarschuwing gevonden (max. niveau: ${rColor || 'onbekend'}) — het landelijke niveau geldt niet overal.`,
+    }, `⚠ regionaal: ${rColor ? COLOR_LABELS[rColor] : '?'}`));
+  }
+  return el('span', { class: 'badge-stack' }, ...badges);
 }
 
 /** Compacte, scanbare tabel: één rij per bron (i.p.v. een kaartengrid). */
@@ -292,7 +310,12 @@ function renderSummaryTable(nl, okSources) {
   okSources.forEach((s) => {
     tbody.append(el('tr', {},
       el('td', {}, `${s.flag || ''} ${s.sourceLabel}`),
-      el('td', {}, colorBadge(s.color), ' ', el('span', { class: 'approx-tag', title: 'Vertaald naar de Nederlandse kleurenschaal' }, 'benadering')),
+      el('td', {}, colorBadge(s.color, {
+        uncertain: s.assessmentStatus === 'uncertain',
+        hasRegionalWarnings: s.hasRegionalWarnings,
+        regionalMaxLevel: s.regionalMaxLevel,
+        explanation: s.levelLabel,
+      }), ' ', el('span', { class: 'approx-tag', title: 'Vertaald naar de Nederlandse kleurenschaal' }, 'benadering')),
       el('td', { class: 'muted' }, s.levelLabel || '—'),
       el('td', { class: 'muted' }, fmtDateShort(s.lastModified)),
       el('td', {}, el('a', { href: s.url, target: '_blank', rel: 'noopener' }, 'origineel →'))));
