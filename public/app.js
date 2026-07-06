@@ -363,30 +363,6 @@ function renderComparison(staticData, foreign, root) {
       el('div', { class: 'block-cat', style: 'margin-bottom:4px' }, '🇳🇱 Kleurcode geldt per regio:'), ul));
   }
 
-  // ---- Kaarten (NL hotlink + buitenland op klik via proxy) ----
-  const mapsGrid = el('div', { class: 'maps-grid' });
-  mapsGrid.append(el('figure', { class: 'map-box' },
-    el('img', { src: nl.maps.standard, alt: `Kaart ${staticData.country.nl}`,
-      onerror: function () { this.replaceWith(el('div', { class: 'map-missing' }, 'Kaart niet beschikbaar.')); } }),
-    el('figcaption', {}, '🇳🇱 NederlandWereldwijd')));
-  okSources.forEach((s) => {
-    if (s.mapProxy && getProxy()) {
-      const box = el('figure', { class: 'map-box' });
-      const btn = el('button', { class: 'btn map-load', type: 'button' }, `${s.flag || ''} Kaart ${s.sourceLabel} laden`);
-      btn.addEventListener('click', () => {
-        btn.replaceWith(el('img', { src: getProxy() + s.mapProxy, alt: `Kaart ${s.sourceLabel}`,
-          onerror: function () { this.replaceWith(el('div', { class: 'map-missing' }, 'Kaart kon niet geladen worden.')); } }));
-      });
-      box.append(btn, el('figcaption', {}, `${s.flag || ''} ${s.sourceLabel}`));
-      mapsGrid.append(box);
-    } else {
-      mapsGrid.append(el('figure', { class: 'map-box' },
-        el('div', { class: 'map-missing' }, `${s.flag || ''} ${s.sourceLabel} publiceert geen losse kaart. `,
-          el('a', { href: s.url, target: '_blank', rel: 'noopener' }, 'Bronpagina →'))));
-    }
-  });
-  frag.append(el('h3', { class: 'section-title' }, 'Kaarten'), mapsGrid);
-
   // ---- Notices ----
   if (foreign.notice) frag.append(el('div', { class: 'callout', style: 'background:#eef4fb;border-left-color:var(--nl-blue)' },
     el('p', { style: 'margin:0' }, foreign.notice)));
