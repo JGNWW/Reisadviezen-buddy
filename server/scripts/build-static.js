@@ -13,6 +13,8 @@
  *   docs/data/compare/<iso>.json           (kant-en-klare vergelijking per land)
  *   docs/data/search/nl.json               (zoekindex NL-adviezen)
  *   docs/data/search/foreign.json          (zoekindex buitenlandse adviezen)
+ *   docs/data/recent-changes.json          (recente wijzigingen buitenlandse bronnen,
+ *                                            bijgehouden door de aparte snapshot-workflow)
  *
  * Kaartafbeeldingen worden NIET gedownload: de frontend hotlinkt ze
  * rechtstreeks vanaf de open data (cross-origin <img> werkt zonder CORS).
@@ -20,6 +22,7 @@
  * Draaien: npm run build
  */
 import { mkdir, writeFile, rm, cp } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
@@ -32,6 +35,7 @@ const ROOT = join(__dirname, '..', '..');
 const PUBLIC = join(ROOT, 'public');
 const OUT = join(ROOT, 'docs');
 const DATA = join(OUT, 'data');
+const RECENT_CHANGES_SRC = join(ROOT, 'worker', 'data', 'recent-changes.json');
 
 /** Voert async taken uit met beperkte gelijktijdigheid. */
 async function mapLimit(items, limit, fn) {
@@ -121,6 +125,13 @@ async function main() {
   directory.sort((a, b) => a.nl.localeCompare(b.nl, 'nl'));
   await writeFile(join(DATA, 'search', 'nl.json'), JSON.stringify(nlIndex));
   await writeFile(join(DATA, 'directory.json'), JSON.stringify(directory));
+
+  // Recente wijzigingen bij buitenlandse bronnen (bijgehouden door de aparte
+  // snapshot-workflow, zie .github/workflows/snapshot-changes.yml). Bestaat
+  // niet bij de allereerste build — dan wordt de sectie leeg getoond.
+  if (existsSync(RECENT_CHANGES_SRC)) {
+    await cp(RECENT_CHANGES_SRC, join(DATA, 'recent-changes.json'));
+  }
 
   // .nojekyll zodat GitHub Pages de map/bestanden ongemoeid laat.
   await writeFile(join(OUT, '.nojekyll'), '');

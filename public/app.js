@@ -183,6 +183,7 @@ async function bootstrap() {
   }
 
   buildDirectory();
+  buildChanges();
 }
 
 // ==========================================================================
@@ -396,6 +397,25 @@ function renderComparison(staticData, foreign, root) {
   const divWrap = el('div', { class: 'divergence ' + (spread >= 2 ? 'high' : distinctColors.size > 1 ? 'some' : 'none') });
   divWrap.append(el('h3', {}, spread >= 2 ? '⚠️ Landen verschillen sterk in kleurcode'
     : distinctColors.size > 1 ? 'Landen verschillen licht in kleurcode' : 'Landen zijn het eens over de kleurcode'));
+
+  // ---- Internationale consensus (mediaan van de betrouwbaar beoordeelde
+  // buitenlandse bronnen, NL zelf telt hier niet mee) ----
+  const consensusLevels = okSources
+    .filter((s) => s.level != null && s.assessmentStatus !== 'uncertain')
+    .map((s) => s.level)
+    .sort((a, b) => a - b);
+  if (consensusLevels.length) {
+    const mid = Math.floor(consensusLevels.length / 2);
+    const consensusLevel = consensusLevels.length % 2
+      ? consensusLevels[mid]
+      : Math.round((consensusLevels[mid - 1] + consensusLevels[mid]) / 2);
+    const consensusColor = ['', 'groen', 'geel', 'oranje', 'rood'][consensusLevel];
+    divWrap.append(el('p', { class: 'consensus-line' },
+      '🌍 Internationale consensus: ',
+      el('span', { class: `color-badge c-${consensusColor}` }, el('span', { class: 'dot' }), COLOR_LABELS[consensusColor]),
+      ` (mediaan van ${consensusLevels.length} bron${consensusLevels.length === 1 ? '' : 'nen'}, NL niet meegeteld)`));
+  }
+
   const chipRow = el('div', { class: 'chip-row' });
   chips.forEach((c) => chipRow.append(el('span', { class: 'div-chip' },
     el('span', { class: `dot c-${c.color || 'none'}` }), ` ${c.label}: `, el('strong', {}, c.color ? COLOR_LABELS[c.color] : '—'))));
@@ -700,6 +720,65 @@ function renderDirectory(filter) {
     grid.append(card);
   });
   if (!items.length) grid.append(el('p', { class: 'empty-col' }, 'Geen landen gevonden.'));
+}
+
+// ==========================================================================
+// RECENTE WIJZIGINGEN (buitenlandse bronnen — niet NL, dat doet de redactie zelf)
+// ==========================================================================
+let RECENT_CHANGES = null;
+const CHANGE_KIND_LABEL = {
+  up: '⬆ niveau omhoog', down: '⬇ niveau omlaag', status: '● status',
+  'regional-new': '⚠ nieuwe regio', 'regional-up': '⬆ regio omhoog',
+  'regional-down': '⬇ regio omlaag', 'regional-removed': '– regio vervallen',
+};
+
+async function buildChanges() {
+  const status = $('#changes-status');
+  try {
+    const data = await loadJSON('recent-changes.json');
+    RECENT_CHANGES = data.changes || [];
+    status.textContent = data.generatedAt
+      ? `Laatst gecontroleerd op ${new Date(data.generatedAt).toLocaleString('nl-NL')}.`
+      : '';
+  } catch {
+    RECENT_CHANGES = [];
+    status.textContent = 'Nog geen wijzigingsgeschiedenis beschikbaar (de eerste snapshot moet nog draaien).';
+  }
+
+  const sources = [...new Map(RECENT_CHANGES.map((c) => [c.source, c])).values()];
+  const filterSel = $('#changes-filter');
+  sources.forEach((c) => filterSel.append(el('option', { value: c.source }, `${c.flag || ''} ${c.sourceLabel}`)));
+  filterSel.addEventListener('change', () => renderChanges(filterSel.value));
+
+  renderChanges('');
+}
+
+function renderChanges(sourceFilter) {
+  const root = $('#changes-result');
+  root.innerHTML = '';
+  const items = (RECENT_CHANGES || []).filter((c) => !sourceFilter || c.source === sourceFilter);
+  if (!items.length) {
+    root.append(el('p', { class: 'empty-col' }, 'Geen recente wijzigingen gevonden.'));
+    return;
+  }
+
+  let lastDate = null;
+  items.forEach((c) => {
+    if (c.date !== lastDate) {
+      lastDate = c.date;
+      root.append(el('h4', { class: 'change-date' }, new Date(c.date).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })));
+    }
+    const row = el('div', { class: `change-row kind-${c.kind}` },
+      el('span', { class: 'change-kind' }, CHANGE_KIND_LABEL[c.kind] || c.kind),
+      el('button', { type: 'button', class: 'btn-link change-country' }, `${c.flag || ''} ${c.sourceLabel} — ${c.countryNl}`),
+      el('p', { class: 'change-desc' }, c.description));
+    row.querySelector('.change-country').addEventListener('click', () => {
+      activateTab('compare');
+      $('#country-input').value = c.countryNl;
+      $('#compare-form').requestSubmit();
+    });
+    root.append(row);
+  });
 }
 
 // ==========================================================================

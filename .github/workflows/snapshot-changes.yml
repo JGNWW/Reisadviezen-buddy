@@ -1,0 +1,52 @@
+name: Snapshot buitenlandse reisadviezen
+
+# Houdt bij welke landen een wijziging kregen bij de buitenlandse bronnen
+# (VK/VS/Canada/Ierland/Frankrijk/Australië/Spanje) en wat die wijziging
+# inhield. Gaat NIET over de Nederlandse reisadviezen (die worden door
+# NederlandWereldwijd zelf bijgehouden en bij elke Pages-build al vers
+# opgehaald) — alleen over de buitenlandse bronnen, die anders geen
+# geschiedenis hebben omdat ze alleen live (per bezoek) opgevraagd worden.
+on:
+  schedule:
+    - cron: '30 5 * * *' # elke dag 05:30 UTC, vóór de Pages-build om 06:00
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: snapshot-foreign
+  cancel-in-progress: false
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: worker
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: worker/package-lock.json
+
+      - name: Dependencies installeren
+        run: npm ci
+
+      - name: Snapshot ophalen en wijzigingen bepalen
+        run: node scripts/snapshot-foreign.mjs
+        env:
+          # Optioneel: alleen actief als deze repository-secrets bestaan.
+          JINA_KEY: ${{ secrets.JINA_KEY }}
+          CORS_PROXY_URL: ${{ secrets.CORS_PROXY_URL }}
+
+      - name: Wijzigingen committen
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/history data/recent-changes.json
+          git diff --cached --quiet || git commit -m "Snapshot buitenlandse reisadviezen $(date -u +%Y-%m-%d)"
+          git push
