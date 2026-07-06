@@ -20,6 +20,7 @@
     </div>
     <nav class="tabs" role="tablist">
       <button class="tab active" data-view="compare" role="tab">Vergelijken</button>
+      <button class="tab" data-view="gaps" role="tab">Wat ontbreekt?</button>
       <button class="tab" data-view="directory" role="tab">Landenoverzicht</button>
       <button class="tab" data-view="search" role="tab">Zoeken op thema/woord</button>
       <button class="tab" data-view="datescan" role="tab">Datumscanner</button>
@@ -55,6 +56,44 @@
 
       <div id="compare-status" class="status"></div>
       <div id="compare-result"></div>
+    </section>
+
+    <!-- ================= WAT ONTBREEKT ================= -->
+    <section id="view-gaps" class="view">
+      <nav class="subtabs">
+        <button class="subtab active" data-gapmode="single" type="button">Eén land</button>
+        <button class="subtab" data-gapmode="multi" type="button">Meerdere landen (trends)</button>
+      </nav>
+
+      <!-- Eén land -->
+      <div id="gap-single" class="gap-panel active">
+        <form id="gap-single-form" class="panel controls">
+          <div class="field grow">
+            <label for="gap-country-input">Land</label>
+            <input id="gap-country-input" list="country-list" autocomplete="off" placeholder="Bijv. Ethiopië…" />
+          </div>
+          <button type="submit" class="btn primary">Analyseer</button>
+        </form>
+        <p class="hint">Toont welke thema's buitenlandse bronnen behandelen en NederlandWereldwijd niet — en, ter volledigheid, andersom. Gebruikt de bronnen die bij "Vergelijken" zijn aangevinkt.</p>
+        <div id="gap-single-status" class="status"></div>
+        <div id="gap-single-result"></div>
+      </div>
+
+      <!-- Meerdere landen -->
+      <div id="gap-multi" class="gap-panel">
+        <form id="gap-multi-form" class="panel controls">
+          <div class="field grow">
+            <label for="gap-multi-input">Land toevoegen</label>
+            <input id="gap-multi-input" list="country-list" autocomplete="off" placeholder="Typ een land en klik Toevoegen…" />
+          </div>
+          <button id="gap-multi-add" type="button" class="btn">+ Toevoegen</button>
+          <button type="submit" class="btn primary">Analyseer trend</button>
+        </form>
+        <div id="gap-multi-chips" class="chip-list"></div>
+        <p class="hint">Voeg meerdere landen toe om te zien welke thema's <strong>structureel</strong> ontbreken bij NederlandWereldwijd — d.w.z. bij hoeveel van de gekozen landen andere bronnen een thema noemen dat NL niet apart behandelt.</p>
+        <div id="gap-multi-status" class="status"></div>
+        <div id="gap-multi-result"></div>
+      </div>
     </section>
 
     <!-- ================= LANDENOVERZICHT ================= -->
@@ -119,7 +158,7 @@
     <p id="build-meta" class="build-meta"></p>
     <p>
       Bron reisadviezen Nederland: <a href="https://www.nederlandwereldwijd.nl/open-data" target="_blank" rel="noopener">NederlandWereldwijd open data</a> (CC0).
-      Buitenlandse bronnen (live): VK (FCDO), VS (State Dept), Canada (Global Affairs), Ierland (DFA).
+      Buitenlandse bronnen (live): VK (FCDO), VS (State Dept), Canada (Global Affairs), Ierland (DFA), Frankrijk (France Diplomatie), Australië (Smartraveller), Spanje (Exteriores).
       Kleurcodes van andere landen zijn een benadering op de Nederlandse schaal; de oorspronkelijke formulering en link staan er altijd bij.
     </p>
   </footer>
