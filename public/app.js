@@ -263,33 +263,58 @@ function buildComparison(nl, foreignSources) {
 }
 
 function colorBadge(color, opts = {}) {
-  const { uncertain, hasRegionalWarnings, regionalMaxLevel, explanation } = opts;
-  const badges = [];
+  const { uncertain, explanation } = opts;
   if (uncertain) {
-    badges.push(el('span', {
+    return el('span', {
       class: 'color-badge c-uncertain',
       title: explanation || 'Niveau kon niet betrouwbaar worden vastgesteld — geen gok gedaan.',
-    }, el('span', { class: 'dot' }), 'Onzeker'));
-  } else if (!color) {
-    badges.push(el('span', { class: 'empty-col' }, 'geen kleurcode'));
-  } else {
-    badges.push(el('span', { class: `color-badge c-${color}` }, el('span', { class: 'dot' }), COLOR_LABELS[color] || color));
+    }, el('span', { class: 'dot' }), 'Onzeker');
   }
-  if (hasRegionalWarnings) {
-    const rColor = ['', 'groen', 'geel', 'oranje', 'rood'][regionalMaxLevel] || null;
-    badges.push(el('span', {
-      class: 'regional-flag',
-      title: explanation || `Regionale waarschuwing gevonden (max. niveau: ${rColor || 'onbekend'}) — het landelijke niveau geldt niet overal.`,
-    }, `⚠ regionaal: ${rColor ? COLOR_LABELS[rColor] : '?'}`));
+  if (!color) return el('span', { class: 'empty-col' }, 'geen kleurcode');
+  return el('span', { class: `color-badge c-${color}` }, el('span', { class: 'dot' }), COLOR_LABELS[color] || color);
+}
+
+/** Groepeert regionale vermeldingen per niveau, hoogste niveau eerst. */
+function renderRegionalDetail(s) {
+  const wrap = el('div', { class: 'regional-detail' });
+  wrap.append(el('p', { class: 'regional-caveat' },
+    '⚠ Dit zijn expliciet gevonden regionale vermeldingen uit de brontekst — geen volledige geografische classificatie. ',
+    'Niet-genoemde gebieden zijn niet automatisch veilig.'));
+
+  const items = s.regionalBreakdown || [];
+  if (!items.length) {
+    wrap.append(el('p', { class: 'muted', style: 'margin:6px 0 0' },
+      `${s.sourceLabel} meldt regionale afwijkingen, maar er konden geen specifieke gebieden uit de brontekst worden geëxtraheerd.`));
+    return wrap;
   }
-  return el('span', { class: 'badge-stack' }, ...badges);
+
+  [4, 3, 2, 1].forEach((lvl) => {
+    const group = items.filter((r) => r.level === lvl);
+    if (!group.length) return;
+    const color = ['', 'groen', 'geel', 'oranje', 'rood'][lvl];
+    const box = el('div', { class: `regional-group c-${color}` });
+    box.append(el('h5', {}, COLOR_LABELS[color]));
+    const ul = el('ul');
+    group.forEach((r) => {
+      const li = el('li', {},
+        el('span', { class: 'regional-name' }, r.region),
+        r.confidence !== 'high' ? el('span', { class: 'regional-confidence', title: 'Extractie op basis van vrije tekst, minder zeker' }, ` (${r.confidence === 'low' ? 'lage' : 'gemiddelde'} zekerheid)`) : null,
+      );
+      if (r.excerpt) li.title = r.excerpt;
+      ul.append(li);
+    });
+    box.append(ul);
+    wrap.append(box);
+  });
+  return wrap;
 }
 
 /** Compacte, scanbare tabel: één rij per bron (i.p.v. een kaartengrid). */
 function renderSummaryTable(nl, okSources) {
   const table = el('table', { class: 'summary-table' });
+  const COLS = 6;
   const thead = el('thead', {}, el('tr', {},
-    el('th', {}, 'Bron'), el('th', {}, 'Kleurcode'), el('th', {}, 'Origineel niveau'),
+    el('th', {}, 'Bron'), el('th', {}, 'Kleurcode'), el('th', {}, 'Regionaal'), el('th', {}, 'Origineel niveau'),
     el('th', {}, 'Bijgewerkt'), el('th', {}, '')));
   table.append(thead);
   const tbody = el('tbody');
@@ -304,21 +329,44 @@ function renderSummaryTable(nl, okSources) {
     el('td', {}, '🇳🇱 NederlandWereldwijd'),
     el('td', {}, colorBadge(nl.colors?.overall)),
     el('td', { class: 'muted' }, '—'),
+    el('td', { class: 'muted' }, '—'),
     el('td', { class: 'muted' }, nl.modificationDate ? nl.modificationDate.split('|')[0].replace('Laatst gewijzigd op:', '').trim() : fmtDateShort(nl.lastModified)),
     el('td', {}, el('a', { href: nl.url, target: '_blank', rel: 'noopener' }, 'origineel →'))));
 
   okSources.forEach((s) => {
-    tbody.append(el('tr', {},
-      el('td', {}, `${s.flag || ''} ${s.sourceLabel}`),
-      el('td', {}, colorBadge(s.color, {
-        uncertain: s.assessmentStatus === 'uncertain',
-        hasRegionalWarnings: s.hasRegionalWarnings,
-        regionalMaxLevel: s.regionalMaxLevel,
-        explanation: s.levelLabel,
-      }), ' ', el('span', { class: 'approx-tag', title: 'Vertaald naar de Nederlandse kleurenschaal' }, 'benadering')),
-      el('td', { class: 'muted' }, s.levelLabel || '—'),
-      el('td', { class: 'muted' }, fmtDateShort(s.lastModified)),
-      el('td', {}, el('a', { href: s.url, target: '_blank', rel: 'noopener' }, 'origineel →'))));
+    const rColor = ['', 'groen', 'geel', 'oranje', 'rood'][s.regionalMaxLevel] || null;
+    const count = s.regionalBreakdown?.length || 0;
+
+    let regionalCell;
+    if (s.hasRegionalWarnings) {
+      const detailRow = el('tr', { class: 'regional-detail-row', hidden: true },
+        el('td', { colspan: COLS }, renderRegionalDetail(s)));
+      const btn = el('button', { type: 'button', class: 'btn-link regional-toggle' },
+        `⚠ ${count ? `${count} afwijking${count === 1 ? '' : 'en'}` : 'gemeld'} · hoogste: ${rColor ? COLOR_LABELS[rColor] : '?'} ▸`);
+      btn.addEventListener('click', () => {
+        detailRow.hidden = !detailRow.hidden;
+        btn.textContent = btn.textContent.replace(/[▸▾]$/, detailRow.hidden ? '▸' : '▾');
+      });
+      regionalCell = el('td', {}, btn);
+      tbody.append(el('tr', {},
+        el('td', {}, `${s.flag || ''} ${s.sourceLabel}`),
+        el('td', {}, colorBadge(s.color, { uncertain: s.assessmentStatus === 'uncertain', explanation: s.levelLabel }),
+          ' ', el('span', { class: 'approx-tag', title: 'Vertaald naar de Nederlandse kleurenschaal' }, 'benadering')),
+        regionalCell,
+        el('td', { class: 'muted' }, s.levelLabel || '—'),
+        el('td', { class: 'muted' }, fmtDateShort(s.lastModified)),
+        el('td', {}, el('a', { href: s.url, target: '_blank', rel: 'noopener' }, 'origineel →'))));
+      tbody.append(detailRow);
+    } else {
+      tbody.append(el('tr', {},
+        el('td', {}, `${s.flag || ''} ${s.sourceLabel}`),
+        el('td', {}, colorBadge(s.color, { uncertain: s.assessmentStatus === 'uncertain', explanation: s.levelLabel }),
+          ' ', el('span', { class: 'approx-tag', title: 'Vertaald naar de Nederlandse kleurenschaal' }, 'benadering')),
+        el('td', { class: 'muted' }, '—'),
+        el('td', { class: 'muted' }, s.levelLabel || '—'),
+        el('td', { class: 'muted' }, fmtDateShort(s.lastModified)),
+        el('td', {}, el('a', { href: s.url, target: '_blank', rel: 'noopener' }, 'origineel →'))));
+    }
   });
   table.append(tbody);
   return table;
@@ -362,30 +410,6 @@ function renderComparison(staticData, foreign, root) {
     frag.append(el('div', { class: 'panel', style: 'padding:12px 16px;margin-bottom:22px' },
       el('div', { class: 'block-cat', style: 'margin-bottom:4px' }, '🇳🇱 Kleurcode geldt per regio:'), ul));
   }
-
-  // ---- Kaarten (NL hotlink + buitenland op klik via proxy) ----
-  const mapsGrid = el('div', { class: 'maps-grid' });
-  mapsGrid.append(el('figure', { class: 'map-box' },
-    el('img', { src: nl.maps.standard, alt: `Kaart ${staticData.country.nl}`,
-      onerror: function () { this.replaceWith(el('div', { class: 'map-missing' }, 'Kaart niet beschikbaar.')); } }),
-    el('figcaption', {}, '🇳🇱 NederlandWereldwijd')));
-  okSources.forEach((s) => {
-    if (s.mapProxy && getProxy()) {
-      const box = el('figure', { class: 'map-box' });
-      const btn = el('button', { class: 'btn map-load', type: 'button' }, `${s.flag || ''} Kaart ${s.sourceLabel} laden`);
-      btn.addEventListener('click', () => {
-        btn.replaceWith(el('img', { src: getProxy() + s.mapProxy, alt: `Kaart ${s.sourceLabel}`,
-          onerror: function () { this.replaceWith(el('div', { class: 'map-missing' }, 'Kaart kon niet geladen worden.')); } }));
-      });
-      box.append(btn, el('figcaption', {}, `${s.flag || ''} ${s.sourceLabel}`));
-      mapsGrid.append(box);
-    } else {
-      mapsGrid.append(el('figure', { class: 'map-box' },
-        el('div', { class: 'map-missing' }, `${s.flag || ''} ${s.sourceLabel} publiceert geen losse kaart. `,
-          el('a', { href: s.url, target: '_blank', rel: 'noopener' }, 'Bronpagina →'))));
-    }
-  });
-  frag.append(el('h3', { class: 'section-title' }, 'Kaarten'), mapsGrid);
 
   // ---- Notices ----
   if (foreign.notice) frag.append(el('div', { class: 'callout', style: 'background:#eef4fb;border-left-color:var(--nl-blue)' },

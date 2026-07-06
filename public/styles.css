@@ -108,19 +108,22 @@ input:focus, select:focus { outline: 2px solid var(--nl-blue); border-color: var
 .approx-tag { font-size: 11px; background: #eef2f6; color: var(--muted); border-radius: 4px; padding: 1px 6px; margin-left: 6px; }
 .badge-stack { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .c-uncertain { background: #94a3b8; }
-.regional-flag {
-  font-size: 11px; font-weight: 700; background: #fff3d6; color: #8a5a00;
-  border: 1px solid #f0d98a; border-radius: 10px; padding: 2px 8px; cursor: help;
-}
+.regional-toggle { font-size: 12.5px; color: #8a5a00; white-space: nowrap; }
+.regional-toggle:hover { text-decoration: underline; }
+.regional-detail-row td { background: #fffaf0; border-top: none; padding: 12px 18px; }
+.regional-detail { font-size: 13.5px; }
+.regional-caveat { margin: 0 0 10px; color: #8a5a00; font-size: 12.5px; }
+.regional-group { display: inline-block; vertical-align: top; margin: 0 22px 10px 0; }
+.regional-group h5 { margin: 0 0 4px; font-size: 12px; text-transform: uppercase; letter-spacing: .03em; }
+.regional-group.c-rood h5 { color: var(--rood); }
+.regional-group.c-oranje h5 { color: #a85400; }
+.regional-group.c-geel h5 { color: #8a7300; }
+.regional-group.c-groen h5 { color: #2f6d2f; }
+.regional-group ul { margin: 0; padding-left: 18px; }
+.regional-group li { margin: 2px 0; }
+.regional-confidence { color: var(--muted); font-size: 11.5px; font-style: italic; }
 
-/* ---- Maps ---- */
-.maps { margin-bottom: 24px; }
-.maps h3, .section-title { font-size: 18px; margin: 24px 0 12px; padding-bottom: 6px; border-bottom: 2px solid var(--border); }
-.maps-grid { display: flex; gap: 18px; flex-wrap: wrap; }
-.map-box { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 10px; text-align: center; }
-.map-box img { max-width: 320px; max-height: 320px; height: auto; display: block; }
-.map-box figcaption { font-size: 12px; color: var(--muted); margin-top: 6px; }
-.map-missing { padding: 20px; color: var(--muted); font-size: 14px; max-width: 320px; }
+.section-title { font-size: 18px; margin: 24px 0 12px; padding-bottom: 6px; border-bottom: 2px solid var(--border); }
 
 /* ---- Missing themes callout ---- */
 .callout {
@@ -214,9 +217,6 @@ input:focus, select:focus { outline: 2px solid var(--nl-blue); border-color: var
 .dir-card:hover { border-color: var(--nl-blue); background: #eef4fb; }
 .dir-name { font-weight: 500; }
 
-/* ---- Kaart laden-knop ---- */
-.map-load { background: #eef4fb; color: var(--nl-blue); border: 1px dashed var(--nl-blue); width: 300px; max-width: 100%; padding: 40px 12px; }
-.map-load:hover { background: #e0ecfa; }
 .compare-cols.cols-4 { grid-template-columns: repeat(4, 1fr); }
 .compare-cols.cols-5 { grid-template-columns: repeat(5, 1fr); }
 

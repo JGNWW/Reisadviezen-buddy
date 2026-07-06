@@ -13,7 +13,7 @@ import { parse } from 'node-html-parser';
 import { getText } from '../lib/fetch.js';
 import { splitByHeadings, absolutiseLinks } from '../lib/html.js';
 import { classifyTheme } from '../lib/themes.js';
-import { assessFromAnchoredText, REGIONAL_WORDS } from '../lib/level-assessment.js';
+import { assessFromAnchoredText, extractRegionalMentions, findBestMatch, mergeRegionalMax, REGIONAL_WORDS } from '../lib/level-assessment.js';
 
 const SITE = 'https://www.exteriores.gob.es';
 const BASE = `${SITE}/es/ServiciosAlCiudadano/Paginas/Detalle-recomendaciones-de-viaje.aspx`;
@@ -49,6 +49,21 @@ export async function getAdvisory(trc) {
   // sectie); val terug op de eerste sectie als die titel niet gevonden wordt.
   const anchor = themes.find((t) => ANCHOR_HEADING.test(t.heading.trim())) || themes[0] || null;
   const assessment = assessFromAnchoredText(anchor?.text || '', VIG_PATTERNS, REGIONAL_WORDS.es);
+  // regionalBreakdown is aanvullend bewijs, geen vervanging van het
+  // landelijke oordeel hierboven — zie worker/src/lib/level-assessment.js.
+  // Spanje bundelt landelijke én regionale zinnen vaak in "Notas
+  // importantes" zelf, dus wordt ook dat ankerblok (met uitzondering van de
+  // al gebruikte landelijke zin) doorzocht op regionale vermeldingen.
+  const anchorBest = anchor?.text ? findBestMatch(anchor.text, VIG_PATTERNS) : null;
+  const regionalBreakdown = extractRegionalMentions({
+    sections: themes.filter((t) => t !== anchor && !ANCHOR_HEADING.test(t.heading.trim())),
+    anchorText: anchor?.text || '',
+    anchorSkipMatch: anchorBest,
+    patterns: VIG_PATTERNS,
+    regionalWordsRe: REGIONAL_WORDS.es,
+  });
+  const regionalMaxLevel = mergeRegionalMax(assessment.regionalMaxLevel, regionalBreakdown);
+  const hasRegionalWarnings = assessment.hasRegionalWarnings || regionalBreakdown.length > 0;
 
   return {
     source: meta.id,
@@ -60,8 +75,10 @@ export async function getAdvisory(trc) {
     level: assessment.level,
     color: assessment.color,
     levelLabel: assessment.explanation,
-    regionalMaxLevel: assessment.regionalMaxLevel,
-    hasRegionalWarnings: assessment.hasRegionalWarnings,
+    regionalMaxLevel,
+    hasRegionalWarnings,
+    regionalBreakdown: regionalBreakdown.length ? regionalBreakdown : null,
+    regionalCoverage: hasRegionalWarnings ? 'partial' : null,
     confidence: assessment.confidence,
     assessmentStatus: assessment.assessmentStatus,
     hasMap: false,

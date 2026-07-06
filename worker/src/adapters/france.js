@@ -12,7 +12,7 @@ import { parse } from 'node-html-parser';
 import { getText } from '../lib/fetch.js';
 import { splitByHeadings, absolutiseLinks, htmlToText } from '../lib/html.js';
 import { classifyTheme } from '../lib/themes.js';
-import { assessFromAnchoredText, REGIONAL_WORDS } from '../lib/level-assessment.js';
+import { assessFromAnchoredText, extractRegionalMentions, findBestMatch, mergeRegionalMax, REGIONAL_WORDS } from '../lib/level-assessment.js';
 
 const SITE = 'https://www.diplomatie.gouv.fr';
 const BASE = `${SITE}/fr/conseils-aux-voyageurs/conseils-par-pays-destination`;
@@ -50,6 +50,18 @@ export async function getAdvisory(slug) {
   // regiospecifieke subsecties die er in documentvolgorde vaak op volgen).
   const anchor = sections.find((s) => ANCHOR_HEADING.test(s.heading.trim())) || sections[0] || null;
   const assessment = assessFromAnchoredText(anchor?.text || '', VIGILANCE_PATTERNS, REGIONAL_WORDS.fr);
+  // regionalBreakdown is aanvullend bewijs, geen vervanging van het
+  // landelijke oordeel hierboven — zie worker/src/lib/level-assessment.js.
+  const anchorBest = anchor?.text ? findBestMatch(anchor.text, VIGILANCE_PATTERNS) : null;
+  const regionalBreakdown = extractRegionalMentions({
+    sections: sections.filter((s) => s !== anchor),
+    anchorText: anchor?.text || '',
+    anchorSkipMatch: anchorBest,
+    patterns: VIGILANCE_PATTERNS,
+    regionalWordsRe: REGIONAL_WORDS.fr,
+  });
+  const regionalMaxLevel = mergeRegionalMax(assessment.regionalMaxLevel, regionalBreakdown);
+  const hasRegionalWarnings = assessment.hasRegionalWarnings || regionalBreakdown.length > 0;
 
   const themes = sections.map((s) => ({
     category: s.heading,
@@ -69,8 +81,10 @@ export async function getAdvisory(slug) {
     level: assessment.level,
     color: assessment.color,
     levelLabel: assessment.explanation,
-    regionalMaxLevel: assessment.regionalMaxLevel,
-    hasRegionalWarnings: assessment.hasRegionalWarnings,
+    regionalMaxLevel,
+    hasRegionalWarnings,
+    regionalBreakdown: regionalBreakdown.length ? regionalBreakdown : null,
+    regionalCoverage: hasRegionalWarnings ? 'partial' : null,
     confidence: assessment.confidence,
     assessmentStatus: assessment.assessmentStatus,
     hasMap: false,
