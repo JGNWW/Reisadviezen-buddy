@@ -1,15 +1,17 @@
 /**
  * Spanje — Ministerio de Asuntos Exteriores (exteriores.gob.es).
- * De site is een JS-SPA, dus we renderen via de reader-proxy (browser-engine).
- * De landpagina wordt geadresseerd met de Spaanse landnaam (?trc=...).
+ * Server-side gerenderde .aspx-pagina (geen JS-rendering nodig). De
+ * landpagina wordt geadresseerd met de Spaanse landnaam (?trc=...).
  * Spaanstalig; de Worker kan de teksten naar NL vertalen.
  */
-import { getViaReader } from '../lib/fetch.js';
-import { splitMarkdown } from '../lib/html.js';
+import { parse } from 'node-html-parser';
+import { getText } from '../lib/fetch.js';
+import { splitByHeadings, absolutiseLinks, htmlToText } from '../lib/html.js';
 import { classifyTheme } from '../lib/themes.js';
 import { levelToColor } from '../lib/levels.js';
 
-const BASE = 'https://www.exteriores.gob.es/es/ServiciosAlCiudadano/Paginas/Detalle-recomendaciones-de-viaje.aspx';
+const SITE = 'https://www.exteriores.gob.es';
+const BASE = `${SITE}/es/ServiciosAlCiudadano/Paginas/Detalle-recomendaciones-de-viaje.aspx`;
 
 export const meta = { id: 'es', label: 'Spanje (Exteriores)', flag: '🇪🇸', lang: 'es' };
 
@@ -31,20 +33,19 @@ function overallLevel(text) {
 export async function getAdvisory(trc) {
   if (!trc) return null;
   const url = `${BASE}?trc=${encodeURIComponent(trc)}`;
-  const md = await getViaReader(url, { format: 'markdown', browser: true, timeout: 40 });
-  if (!md || !/##\s+/.test(md)) return null;
+  const html = await getText(url);
+  if (!html) return null;
 
-  // Alleen de inhoud vanaf de landkop; sla de sitebrede navigatie ervoor over.
-  const start = md.search(/^#\s+Detalle recomendaciones|^##\s+/m);
-  const body = start > 0 ? md.slice(start) : md;
+  const root = parse(html);
+  // De reisadviesteksten staan als accordion-secties (h3.accordion__main +
+  // bijbehorende content) binnen deze wrapper.
+  const wrap = root.querySelector('.section__accordion-wrapper') || root.querySelector('.single__textDetalleRV') || root;
 
-  const level = overallLevel(body.slice(0, 6000));
+  const level = overallLevel(htmlToText(wrap.innerHTML).slice(0, 6000));
 
-  const BOILER = /^(aviso general|recomendaciones de viaje|men[uú]|compartir|redes sociales|contacto|detalle recomendaciones)/i;
-  const themes = splitMarkdown(body)
-    .filter((s) => s.heading && s.text && s.text.length > 60 && s.level >= 3)
-    .filter((s) => !BOILER.test(s.heading.trim()))
-    .map((s) => ({ category: s.heading, heading: s.heading, themeId: classifyTheme(s.heading, s.text), html: null, text: s.text }));
+  const themes = splitByHeadings(absolutiseLinks(wrap.innerHTML, SITE))
+    .filter((s) => s.heading && s.text && s.text.length > 40)
+    .map((s) => ({ category: s.heading, heading: s.heading, themeId: classifyTheme(s.heading, s.text), html: s.html, text: s.text }));
 
   return {
     source: meta.id,

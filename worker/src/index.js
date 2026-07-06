@@ -20,7 +20,7 @@ import * as australia from './adapters/australia.js';
 import * as spain from './adapters/spain.js';
 import { translate, translateBlocks } from './lib/translate.js';
 import { classifyTheme } from './lib/themes.js';
-import { setReaderKey } from './lib/fetch.js';
+import { setReaderKey, setCorsProxy } from './lib/fetch.js';
 
 const ADAPTERS = { uk, us, ca: canada, ie: ireland, fr: france, au: australia, es: spain };
 
@@ -45,6 +45,7 @@ export default {
   async fetch(request, env) {
     if (request.method === 'OPTIONS') return new Response(null, { headers: CORS });
     setReaderKey(env?.JINA_KEY); // optioneel: hogere limieten voor de reader-proxy
+    setCorsProxy(env?.CORS_PROXY_URL); // optioneel: fallback-proxy als directe fetch faalt
 
     const url = new URL(request.url);
     const parts = url.pathname.split('/').filter(Boolean);

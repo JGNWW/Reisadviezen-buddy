@@ -9,9 +9,25 @@ Affairs), 🇮🇪 Ierland (DFA), 🇫🇷 Frankrijk (France Diplomatie), 🇦�
 (Smartraveller), 🇪🇸 Spanje (Exteriores). Japan is nog open (de anzen.mofa-SPA
 rendert niet landspecifiek via de reader).
 
-Australië en Spanje worden via de publieke reader-proxy `r.jina.ai` opgehaald —
-Australië blokkeert datacenter-IP's, Spanje is een JS-SPA. Zet een (gratis)
-jina.ai-key voor betrouwbaarheid: `npx wrangler secret put JINA_KEY`.
+Australië blokkeert datacenter-IP's en wordt daarom via de publieke
+reader-proxy `r.jina.ai` opgehaald. Zet een (gratis) jina.ai-key voor
+betrouwbaarheid: `npx wrangler secret put JINA_KEY`.
+
+### Fallback-proxy (optioneel)
+
+Alle overige bronnen gebruiken een directe fetch, met een optionele generieke
+proxy als fallback wanneer die directe fetch faalt (bijv. als een bron ooit
+Cloudflare-IP's gaat blokkeren). Dit is bewust **niet** hardcoded: je zet je
+eigen proxy-URL als Worker-secret, zodat de waarde nergens in de repo of in
+gedeelde code terechtkomt.
+
+```bash
+npx wrangler secret put CORS_PROXY_URL
+# plak je proxy-URL wanneer daarom gevraagd wordt (bijv. je eigen
+# passthrough-Worker, gebruik: <jouw-proxy>/?<doel-url>)
+```
+
+Zonder deze secret werkt alles gewoon met alleen de directe fetch.
 
 ## Endpoints
 

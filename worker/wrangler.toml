@@ -15,3 +15,9 @@ compatibility_flags = ["nodejs_compat"]
 # betrouwbaarheid kun je een gratis jina.ai-key als secret zetten:
 #   npx wrangler secret put JINA_KEY
 # Zonder key werkt het ook, maar kan de reader af en toe rate-limiten.
+#
+# Optioneel: een generieke fallback-proxy voor als een directe fetch faalt
+# (bijv. als een bron ooit Cloudflare-IP's gaat blokkeren). Zet je eigen
+# CORS-proxy als secret; de waarde komt nooit in de broncode terecht:
+#   npx wrangler secret put CORS_PROXY_URL
+# Zonder deze secret werkt alles gewoon door met alleen de directe fetch.

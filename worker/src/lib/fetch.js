@@ -1,14 +1,45 @@
 const UA = 'Mozilla/5.0 (compatible; ReisadviezenBuddy/1.0; +https://github.com/JGNWW/Reisadviezen-buddy)';
 
+/**
+ * Optionele generieke CORS/fetch-proxy als fallback wanneer een directe fetch
+ * faalt (bijv. een bron die Cloudflare-IP's ooit blokkeert). De URL wordt
+ * uitsluitend via een Worker-secret aangeleverd (zie wrangler.toml /
+ * worker/README.md) en staat nergens hardcoded in de repo.
+ */
+let CORS_PROXY = null;
+export function setCorsProxy(url) {
+  CORS_PROXY = url ? url.replace(/\/+$/, '') : null;
+}
+
+async function fetchWithFallback(url, accept) {
+  const headers = { 'User-Agent': UA, Accept: accept };
+  let res;
+  try {
+    res = await fetch(url, { headers });
+  } catch {
+    res = null;
+  }
+  const needsFallback = !res || (!res.ok && res.status !== 404);
+  if (needsFallback && CORS_PROXY) {
+    try {
+      res = await fetch(`${CORS_PROXY}/?${url}`, { headers });
+    } catch {
+      /* val terug op het oorspronkelijke (mogelijk ontbrekende) resultaat */
+    }
+  }
+  if (!res) throw new Error(`fetch mislukt: ${url}`);
+  return res;
+}
+
 export async function getText(url) {
-  const res = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'text/html,application/xhtml+xml' } });
+  const res = await fetchWithFallback(url, 'text/html,application/xhtml+xml');
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`${res.status} ${url}`);
   return res.text();
 }
 
 export async function getJson(url) {
-  const res = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'application/json' } });
+  const res = await fetchWithFallback(url, 'application/json');
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`${res.status} ${url}`);
   return res.json();
