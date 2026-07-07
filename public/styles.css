@@ -219,6 +219,19 @@ input:focus, select:focus { outline: 2px solid var(--nl-blue); border-color: var
 .change-row.kind-up, .change-row.kind-regional-new, .change-row.kind-regional-up { border-left-color: var(--rood); }
 .change-row.kind-down, .change-row.kind-regional-down, .change-row.kind-regional-removed { border-left-color: var(--groen); }
 .change-row.kind-status { border-left-color: var(--nl-blue); }
+/* ---- Onderwerp-zoeker in de vergelijker ---- */
+.topic-search { margin-bottom: 24px; }
+.topic-form { margin-bottom: 0; }
+.topic-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; margin-top: 12px; }
+.topic-card { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 16px; }
+.topic-card.no-mention { background: #f6f8fa; }
+.topic-card h4 { margin: 0 0 8px; font-size: 14.5px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.no-mention-tag { font-size: 11px; font-weight: 700; background: #fdeede; color: #a85400; border-radius: 10px; padding: 2px 8px; }
+.topic-match { border-top: 1px dashed var(--border); padding: 8px 0 2px; }
+.topic-match:first-of-type { border-top: none; padding-top: 0; }
+.topic-match .snippet { margin: 2px 0 4px; font-size: 13.5px; }
+.topic-match .snippet mark { background: #fff2a8; padding: 0 2px; }
+
 .change-kind { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .02em; color: var(--muted); }
 .change-country { display: block; font-weight: 600; font-size: 14.5px; margin: 3px 0 4px; padding: 0; }
 .change-desc { margin: 0; font-size: 13.5px; color: var(--text); }
