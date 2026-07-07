@@ -727,6 +727,7 @@ function renderDirectory(filter) {
 // ==========================================================================
 let RECENT_CHANGES = null;
 const CHANGE_KIND_LABEL = {
+  update: '📝 advies bijgewerkt',
   up: '⬆ niveau omhoog', down: '⬇ niveau omlaag', status: '● status',
   'regional-new': '⚠ nieuwe regio', 'regional-up': '⬆ regio omhoog',
   'regional-down': '⬇ regio omlaag', 'regional-removed': '– regio vervallen',
@@ -777,6 +778,43 @@ function renderChanges(sourceFilter) {
       $('#country-input').value = c.countryNl;
       $('#compare-form').requestSubmit();
     });
+
+    // De eigen wijzigingsnotitie van de bron (NL-vertaling indien beschikbaar).
+    if (c.updateNote) {
+      const note = el('blockquote', { class: 'change-note' }, c.updateNoteNl || c.updateNote);
+      if (c.updateNoteNl) note.title = `Origineel: ${c.updateNote}`;
+      row.append(note);
+    }
+
+    // Inhoudelijke details: welke secties, welke zinnen erbij kwamen.
+    if (c.sections?.length) {
+      const det = el('details', { class: 'change-sections' });
+      const totalAdded = c.sections.reduce((n, s) => n + (s.added?.length || 0), 0);
+      const totalRemoved = c.sections.reduce((n, s) => n + (s.removedCount || 0), 0);
+      det.append(el('summary', {},
+        `${c.sections.length} gewijzigde sectie${c.sections.length === 1 ? '' : 's'}` +
+        (totalAdded ? ` · ${totalAdded} nieuwe/gewijzigde zin${totalAdded === 1 ? '' : 'nen'}` : '') +
+        (totalRemoved ? ` · ${totalRemoved} verwijderd` : '')));
+      c.sections.forEach((s) => {
+        const box = el('div', { class: 'change-section' });
+        box.append(el('h5', {},
+          s.heading,
+          s.isNew ? el('span', { class: 'sec-tag new' }, 'nieuwe sectie') : null,
+          s.removed ? el('span', { class: 'sec-tag removed' }, 'sectie vervallen') : null));
+        const shown = s.addedNl || s.added || [];
+        shown.forEach((sentence, i) => {
+          const p = el('p', { class: 'added-sentence' }, '+ ', sentence);
+          if (s.addedNl && s.added?.[i]) p.title = `Origineel: ${s.added[i]}`;
+          box.append(p);
+        });
+        if (s.removedCount && !s.removed) {
+          box.append(el('p', { class: 'removed-note' },
+            `– ${s.removedCount} zin${s.removedCount === 1 ? '' : 'nen'} verwijderd of gewijzigd (oude tekst niet bewaard — zie het origineel via de landvergelijking).`));
+        }
+        det.append(box);
+      });
+      row.append(det);
+    }
     root.append(row);
   });
 }

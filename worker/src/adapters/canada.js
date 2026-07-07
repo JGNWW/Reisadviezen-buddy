@@ -69,6 +69,7 @@ export async function getAdvisory(id) {
     name: entry ? entry['country-eng'] : null,
     url,
     lastModified: entry?.['date-published']?.date || null,
+    updateNote: null,
     level,
     color: levelToColor(level),
     levelLabel: state != null ? STATE_LABEL[state] : null,
