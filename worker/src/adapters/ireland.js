@@ -33,6 +33,17 @@ export async function getAdvisory(slug) {
   const status = m ? m[1].toLowerCase() : null;
   const level = status ? STATUS_LEVEL[status] : null;
 
+  // DFA verstopt per contentblok een "updated-date" (RFC-datum) in de HTML;
+  // de recentste daarvan is de beste benadering van "laatst bijgewerkt".
+  let lastModified = null;
+  for (const dm of html.matchAll(/class="updated-date"[^>]*>([^<]+)</gi)) {
+    const d = new Date(dm[1].trim());
+    if (!isNaN(d)) {
+      const isoDate = d.toISOString().slice(0, 10);
+      if (!lastModified || isoDate > lastModified) lastModified = isoDate;
+    }
+  }
+
   const root = parse(html);
   const main =
     root.querySelector('.main-body--general-content') ||
@@ -51,13 +62,18 @@ export async function getAdvisory(slug) {
     text: s.text,
   }));
 
+  // "Latest Travel Alert" is DFA's eigen mededeling over de recentste wijziging.
+  const alert = themes.find((t) => /^latest travel alert/i.test(t.heading.trim()));
+  const updateNote = alert ? alert.text.slice(0, 400) : null;
+
   return {
     source: meta.id,
     sourceLabel: meta.label,
     flag: meta.flag,
     name: null,
     url,
-    lastModified: null,
+    lastModified,
+    updateNote,
     level,
     color: levelToColor(level),
     levelLabel: status ? STATUS_LABEL[status] : null,

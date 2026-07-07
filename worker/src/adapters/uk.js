@@ -71,6 +71,8 @@ export async function getAdvisory(slug) {
     name: det.country?.name || d.title,
     url: `${SITE}${d.base_path || '/foreign-travel-advice/' + slug}`,
     lastModified: det.updated_at || det.reviewed_at || null,
+    // Redactionele wijzigingsnotitie die FCDO bij elke update publiceert.
+    updateNote: det.change_description || null,
     level: assessment.level,
     color: assessment.color,
     levelLabel: assessment.explanation,

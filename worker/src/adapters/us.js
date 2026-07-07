@@ -8,6 +8,7 @@ import { getText } from '../lib/fetch.js';
 import { htmlToText, splitByHeadings, absolutiseLinks } from '../lib/html.js';
 import { classifyTheme } from '../lib/themes.js';
 import { usLevel, levelToColor } from '../lib/levels.js';
+import { parseHumanDate } from '../lib/dates.js';
 
 const SITE = 'https://travel.state.gov';
 const BASE = `${SITE}/content/travel/en/traveladvisories/traveladvisories`;
@@ -25,6 +26,12 @@ export async function getAdvisory(slug) {
   const level = lvlMatch ? usLevel(lvlMatch[1]) : null;
   const labelMatch = html.match(/Level\s*[1-4]\s*[:\-–]\s*([A-Za-z ]{3,40})/i);
   const levelLabel = labelMatch ? `Level ${lvlMatch[1]}: ${labelMatch[1].trim()}` : null;
+
+  // Uitgiftedatum van het advies zelf ("Date issued: June 12, 2026") —
+  // betrouwbaarder dan de paginavoettekst-datum, die bij elke site-aanpassing
+  // kan verschuiven.
+  const issued = html.match(/Date issued:?\s*<[^>]*>?\s*([A-Za-z]+\s+\d{1,2},?\s+\d{4})/i) || html.match(/Date issued:?\s*([A-Za-z]+\s+\d{1,2},?\s+\d{4})/i);
+  const lastModified = issued ? parseHumanDate(issued[1]) : null;
 
   const root = parse(html);
   const main =
@@ -56,7 +63,8 @@ export async function getAdvisory(slug) {
     flag: meta.flag,
     name: null,
     url,
-    lastModified: null,
+    lastModified,
+    updateNote: null,
     level,
     color: levelToColor(level),
     levelLabel,

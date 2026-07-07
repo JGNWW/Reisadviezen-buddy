@@ -13,6 +13,7 @@ import { getText } from '../lib/fetch.js';
 import { splitByHeadings, absolutiseLinks, htmlToText } from '../lib/html.js';
 import { classifyTheme } from '../lib/themes.js';
 import { assessFromAnchoredText, extractRegionalMentions, findBestMatch, mergeRegionalMax, REGIONAL_WORDS } from '../lib/level-assessment.js';
+import { parseHumanDate } from '../lib/dates.js';
 
 const SITE = 'https://www.diplomatie.gouv.fr';
 const BASE = `${SITE}/fr/conseils-aux-voyageurs/conseils-par-pays-destination`;
@@ -39,9 +40,20 @@ export async function getAdvisory(slug) {
   const root = parse(html);
   const main = root.querySelector('main') || root.querySelector('#main-content') || root;
 
+  // Paginadatum ("Dernière mise à jour le : 7 avril 2026").
+  const dateMatch = htmlToText(html).match(/Derni[eè]re mise [aà] jour le\s*:?\s*(\d{1,2}\s+\S+\s+\d{4})/i);
+  const lastModified = dateMatch ? parseHumanDate(dateMatch[1]) : null;
+
+  const rawSections = splitByHeadings(absolutiseLinks(main.innerHTML, SITE))
+    .filter((s) => s.heading && s.text && s.text.length > 60);
+
+  // "Dernières minutes" is France Diplomatie's eigen blok met recente
+  // wijzigingen — bewaren als notitie vóór het als boilerplate wegvalt.
+  const minutes = rawSections.find((s) => /derni[eè]res? minutes/i.test(s.heading.trim()) && !/Conseils aux voyageurs.*Derni[eè]res minutes/i.test(s.text));
+  const updateNote = minutes ? minutes.text.slice(0, 400) : null;
+
   const BOILER = /^(navigation|menu|partager|sommaire|derni[eè]re|en r[eé]sum|fil d|vous voyagez|donnez-nous|urgence attentat|présentation|nos ambassades|à découvrir|sur le m[êe]me)/i;
-  const sections = splitByHeadings(absolutiseLinks(main.innerHTML, SITE))
-    .filter((s) => s.heading && s.text && s.text.length > 60)
+  const sections = rawSections
     .filter((s) => !BOILER.test(s.heading.trim()))
     // Nav-dumps bevatten typisch de hele menustructuur op één regel.
     .filter((s) => !/Conseils aux voyageurs.*Derni[eè]res minutes/i.test(s.text));
@@ -77,7 +89,8 @@ export async function getAdvisory(slug) {
     flag: meta.flag,
     name: null,
     url,
-    lastModified: null,
+    lastModified,
+    updateNote,
     level: assessment.level,
     color: assessment.color,
     levelLabel: assessment.explanation,

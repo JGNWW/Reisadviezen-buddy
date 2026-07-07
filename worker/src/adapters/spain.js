@@ -14,6 +14,7 @@ import { getText } from '../lib/fetch.js';
 import { splitByHeadings, absolutiseLinks } from '../lib/html.js';
 import { classifyTheme } from '../lib/themes.js';
 import { assessFromAnchoredText, extractRegionalMentions, findBestMatch, mergeRegionalMax, REGIONAL_WORDS } from '../lib/level-assessment.js';
+import { parseHumanDate } from '../lib/dates.js';
 
 const SITE = 'https://www.exteriores.gob.es';
 const BASE = `${SITE}/es/ServiciosAlCiudadano/Paginas/Detalle-recomendaciones-de-viaje.aspx`;
@@ -37,6 +38,11 @@ export async function getAdvisory(trc) {
   if (!html) return null;
 
   const root = parse(html);
+  // "Última actualización el 29 de mayo de 2026" — de echte redactiedatum.
+  // (Niet "Recomendaciones vigentes a …", dat is de dynamische dagdatum.)
+  const dateMatch = html.match(/Última actualización el\s*(\d{1,2}\s+de\s+\S+\s+de\s+\d{4})/i);
+  const lastModified = dateMatch ? parseHumanDate(dateMatch[1]) : null;
+
   // De reisadviesteksten staan als accordion-secties (h3.accordion__main +
   // bijbehorende content) binnen deze wrapper.
   const wrap = root.querySelector('.section__accordion-wrapper') || root.querySelector('.single__textDetalleRV') || root;
@@ -71,7 +77,8 @@ export async function getAdvisory(trc) {
     flag: meta.flag,
     name: null,
     url,
-    lastModified: null,
+    lastModified,
+    updateNote: null,
     level: assessment.level,
     color: assessment.color,
     levelLabel: assessment.explanation,
