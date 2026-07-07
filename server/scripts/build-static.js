@@ -36,6 +36,7 @@ const PUBLIC = join(ROOT, 'public');
 const OUT = join(ROOT, 'docs');
 const DATA = join(OUT, 'data');
 const RECENT_CHANGES_SRC = join(ROOT, 'worker', 'data', 'recent-changes.json');
+const SOURCE_DATES_SRC = join(ROOT, 'worker', 'data', 'source-dates.json');
 
 /** Voert async taken uit met beperkte gelijktijdigheid. */
 async function mapLimit(items, limit, fn) {
@@ -131,6 +132,9 @@ async function main() {
   // niet bij de allereerste build — dan wordt de sectie leeg getoond.
   if (existsSync(RECENT_CHANGES_SRC)) {
     await cp(RECENT_CHANGES_SRC, join(DATA, 'recent-changes.json'));
+  }
+  if (existsSync(SOURCE_DATES_SRC)) {
+    await cp(SOURCE_DATES_SRC, join(DATA, 'source-dates.json'));
   }
 
   // .nojekyll zodat GitHub Pages de map/bestanden ongemoeid laat.

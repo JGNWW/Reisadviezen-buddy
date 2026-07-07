@@ -57,8 +57,12 @@ const DATA_DIR = path.join(__dirname, '..', 'data');
 const HISTORY_DIR = path.join(DATA_DIR, 'history');
 const FINGERPRINT_DIR = path.join(DATA_DIR, 'fingerprints');
 const CHANGES_FILE = path.join(DATA_DIR, 'recent-changes.json');
+const SOURCE_DATES_FILE = path.join(DATA_DIR, 'source-dates.json');
 const MAX_ENTRIES_PER_COUNTRY = 60;
-const MAX_CHANGES = 300;
+// Wijzigingen blijven 3 maanden raadpleegbaar (de periode-kiezer in de
+// frontend gaat tot 92 dagen terug); de cap is een vangnet tegen ontsporing.
+const RETENTION_DAYS = 92;
+const MAX_CHANGES = 2000;
 const CONCURRENCY = 5;
 const MAX_SECTIONS_PER_CHANGE = 8;
 const MAX_ADDED_PER_SECTION = 5;
@@ -244,6 +248,13 @@ async function main() {
   const priorChanges = existsSync(CHANGES_FILE)
     ? JSON.parse(readFileSync(CHANGES_FILE, 'utf8')).changes || []
     : [];
+  // Door de bron gemelde "laatst bijgewerkt"-datums per land/bron. Wordt
+  // elke run volledig ververst (mislukte fetches behouden de vorige waarde),
+  // zodat de frontend ook vóór de start van de monitoring kan tonen welke
+  // landen in een gekozen periode een update kregen.
+  const sourceDates = existsSync(SOURCE_DATES_FILE)
+    ? JSON.parse(readFileSync(SOURCE_DATES_FILE, 'utf8')).dates || {}
+    : {};
   const newChanges = [];
   let checked = 0;
   let failed = 0;
@@ -275,6 +286,9 @@ async function main() {
       const after = compact(adv);
       const before = lastEntry?.sources?.[sid];
       nextSnapshot[sid] = after;
+      if (after.lastModified) {
+        (sourceDates[iso3] ||= {})[sid] = after.lastModified;
+      }
 
       const newFp = fingerprint(adv);
       const oldFp = fps.sources[sid] || null;
@@ -336,10 +350,13 @@ async function main() {
     if (fetchedAny) writeFileSync(fpFile, JSON.stringify(fps));
   });
 
+  const cutoff = new Date(Date.now() - RETENTION_DAYS * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
   const allChanges = [...newChanges, ...priorChanges]
+    .filter((c) => c.date >= cutoff)
     .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0))
     .slice(0, MAX_CHANGES);
   writeFileSync(CHANGES_FILE, JSON.stringify({ generatedAt: new Date().toISOString(), changes: allChanges }));
+  writeFileSync(SOURCE_DATES_FILE, JSON.stringify({ generatedAt: new Date().toISOString(), dates: sourceDates }));
 
   console.log(`Snapshot klaar: ${entries.length} landen, ${checked} bron-aanvragen (${failed} mislukt/overgeslagen), ${newChanges.length} wijziging(en) gevonden vandaag.`);
 }

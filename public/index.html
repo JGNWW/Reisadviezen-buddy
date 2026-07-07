@@ -135,6 +135,24 @@
           <p style="margin:0">Toont welke landen recent een update kregen bij de <strong>buitenlandse</strong> bronnen (VK, VS, Canada, Ierland, Frankrijk, Australië, Spanje) — niet bij NederlandWereldwijd zelf, want die reisadviezen worden door de eigen redactie bijgehouden. Per update zie je de wijzigingsnotitie van de bron zelf én welke secties/zinnen inhoudelijk zijn gewijzigd. Wordt dagelijks automatisch gecontroleerd op de "laatst bijgewerkt"-datum en de inhoud van elke bron.</p>
         </div>
         <div class="field">
+          <label for="changes-period">Periode</label>
+          <select id="changes-period">
+            <option value="1" selected>Laatste 24 uur</option>
+            <option value="7">Afgelopen week</option>
+            <option value="31">Afgelopen maand</option>
+            <option value="92">Afgelopen 3 maanden</option>
+            <option value="custom">Zelf kiezen…</option>
+          </select>
+        </div>
+        <div class="field" id="changes-from-wrap" hidden>
+          <label for="changes-from">Van</label>
+          <input type="date" id="changes-from" />
+        </div>
+        <div class="field" id="changes-to-wrap" hidden>
+          <label for="changes-to">Tot en met</label>
+          <input type="date" id="changes-to" />
+        </div>
+        <div class="field">
           <label for="changes-filter">Filter op bron</label>
           <select id="changes-filter">
             <option value="">Alle bronnen</option>

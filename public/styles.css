@@ -58,6 +58,7 @@ main { max-width: 1180px; margin: 0 auto; padding: 22px 20px 60px; }
   padding: 16px 18px; margin-bottom: 18px;
 }
 .field { display: flex; flex-direction: column; gap: 5px; }
+.field[hidden] { display: none; }
 .field.grow { flex: 1 1 240px; }
 .field label { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .03em; }
 input, select {
@@ -222,6 +223,8 @@ input:focus, select:focus { outline: 2px solid var(--nl-blue); border-color: var
 .change-country { display: block; font-weight: 600; font-size: 14.5px; margin: 3px 0 4px; padding: 0; }
 .change-desc { margin: 0; font-size: 13.5px; color: var(--text); }
 .change-row.kind-update { border-left-color: var(--nl-blue); }
+.change-row.kind-reported { border-left-color: #94a3b8; padding: 7px 14px; }
+.change-row.kind-reported .change-desc { color: var(--muted); font-size: 12.5px; }
 .change-note {
   margin: 8px 0 0; padding: 8px 12px; background: #eef4fb; border-left: 3px solid var(--nl-blue);
   border-radius: 0 6px 6px 0; font-size: 13.5px; font-style: italic;

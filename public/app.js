@@ -726,12 +726,25 @@ function renderDirectory(filter) {
 // RECENTE WIJZIGINGEN (buitenlandse bronnen — niet NL, dat doet de redactie zelf)
 // ==========================================================================
 let RECENT_CHANGES = null;
+let SOURCE_DATES = null; // { ISO3: { uk: 'yyyy-mm-dd', ... } } — door de bron gemeld
 const CHANGE_KIND_LABEL = {
   update: '📝 advies bijgewerkt',
   up: '⬆ niveau omhoog', down: '⬇ niveau omlaag', status: '● status',
   'regional-new': '⚠ nieuwe regio', 'regional-up': '⬆ regio omhoog',
   'regional-down': '⬇ regio omlaag', 'regional-removed': '– regio vervallen',
 };
+
+const isoDay = (d) => d.toISOString().slice(0, 10);
+const daysAgo = (n) => isoDay(new Date(Date.now() - n * 24 * 60 * 60 * 1000));
+
+/** Huidige [van, tot]-periode (yyyy-mm-dd, beide inclusief) uit de UI. */
+function changesPeriod() {
+  const sel = $('#changes-period').value;
+  if (sel !== 'custom') return [daysAgo(Number(sel)), isoDay(new Date())];
+  const from = $('#changes-from').value || daysAgo(92);
+  const to = $('#changes-to').value || isoDay(new Date());
+  return from <= to ? [from, to] : [to, from];
+}
 
 async function buildChanges() {
   const status = $('#changes-status');
@@ -745,24 +758,74 @@ async function buildChanges() {
     RECENT_CHANGES = [];
     status.textContent = 'Nog geen wijzigingsgeschiedenis beschikbaar (de eerste snapshot moet nog draaien).';
   }
+  try {
+    SOURCE_DATES = (await loadJSON('source-dates.json')).dates || {};
+  } catch {
+    SOURCE_DATES = {};
+  }
 
-  const sources = [...new Map(RECENT_CHANGES.map((c) => [c.source, c])).values()];
+  // Bron-filter: alle geconfigureerde bronnen (niet alleen die met wijzigingen).
   const filterSel = $('#changes-filter');
-  sources.forEach((c) => filterSel.append(el('option', { value: c.source }, `${c.flag || ''} ${c.sourceLabel}`)));
-  filterSel.addEventListener('change', () => renderChanges(filterSel.value));
+  (CFG.SOURCES || []).forEach((s) => filterSel.append(el('option', { value: s.id }, `${s.flag || ''} ${s.label}`)));
 
-  renderChanges('');
+  // Periode-kiezer: presets + eigen datums (kalender), max 92 dagen terug.
+  const periodSel = $('#changes-period');
+  const fromInput = $('#changes-from');
+  const toInput = $('#changes-to');
+  fromInput.min = daysAgo(92); fromInput.max = isoDay(new Date());
+  toInput.min = daysAgo(92); toInput.max = isoDay(new Date());
+  fromInput.value = daysAgo(1); toInput.value = isoDay(new Date());
+  const rerender = () => renderChanges(filterSel.value, ...changesPeriod());
+  periodSel.addEventListener('change', () => {
+    const custom = periodSel.value === 'custom';
+    $('#changes-from-wrap').hidden = !custom;
+    $('#changes-to-wrap').hidden = !custom;
+    rerender();
+  });
+  fromInput.addEventListener('change', rerender);
+  toInput.addEventListener('change', rerender);
+  filterSel.addEventListener('change', rerender);
+
+  rerender();
 }
 
-function renderChanges(sourceFilter) {
+function renderChanges(sourceFilter, from, to) {
   const root = $('#changes-result');
   root.innerHTML = '';
-  const items = (RECENT_CHANGES || []).filter((c) => !sourceFilter || c.source === sourceFilter);
-  if (!items.length) {
-    root.append(el('p', { class: 'empty-col' }, 'Geen recente wijzigingen gevonden.'));
+
+  const inPeriod = (d) => d && d >= from && d <= to;
+  const items = (RECENT_CHANGES || []).filter(
+    (c) => (!sourceFilter || c.source === sourceFilter) && inPeriod(c.date)
+  );
+
+  // Door de bron zelf gemelde updatedatums in de periode — ook voor updates
+  // van vóór de start van onze monitoring (details zijn er dan niet, maar
+  // "dit land is toen bijgewerkt" wel). Land+bron-combinaties die hierboven
+  // al als gedetecteerde wijziging staan, worden overgeslagen.
+  const covered = new Set(items.map((c) => `${c.iso3}|${c.source}`));
+  const srcMeta = new Map((CFG.SOURCES || []).map((s) => [s.id, s]));
+  const reported = [];
+  for (const [iso3, perSource] of Object.entries(SOURCE_DATES || {})) {
+    for (const [sid, date] of Object.entries(perSource)) {
+      if (sourceFilter && sid !== sourceFilter) continue;
+      if (!inPeriod(date) || covered.has(`${iso3}|${sid}`)) continue;
+      const country = COUNTRIES.find((c) => c.iso3 === iso3);
+      const meta = srcMeta.get(sid);
+      if (!country || !meta) continue;
+      reported.push({ iso3, countryNl: country.nl, source: sid, label: meta.label, flag: meta.flag, date });
+    }
+  }
+  reported.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : a.countryNl.localeCompare(b.countryNl, 'nl')));
+
+  if (!items.length && !reported.length) {
+    root.append(el('p', { class: 'empty-col' },
+      `Geen wijzigingen of door de bron gemelde updates gevonden tussen ${new Date(from).toLocaleDateString('nl-NL')} en ${new Date(to).toLocaleDateString('nl-NL')}.`));
     return;
   }
 
+  if (items.length) {
+    root.append(el('h3', { class: 'section-title' }, `Gedetecteerde wijzigingen (${items.length})`));
+  }
   let lastDate = null;
   items.forEach((c) => {
     if (c.date !== lastDate) {
@@ -817,6 +880,30 @@ function renderChanges(sourceFilter) {
     }
     root.append(row);
   });
+
+  // Door de bron gemelde updatedatums (zonder inhoudelijke details).
+  if (reported.length) {
+    root.append(el('h3', { class: 'section-title' }, `Door de bron gemelde updates (${reported.length})`));
+    root.append(el('p', { class: 'hint', style: 'margin-top:0' },
+      'De bron meldt zelf dat het advies op deze datum voor het laatst is bijgewerkt. ',
+      'Inhoudelijke details (welke tekst gewijzigd is) zijn alleen beschikbaar voor wijzigingen die plaatsvonden ná de start van de dagelijkse monitoring.'));
+    let lastRepDate = null;
+    reported.forEach((r) => {
+      if (r.date !== lastRepDate) {
+        lastRepDate = r.date;
+        root.append(el('h4', { class: 'change-date' }, new Date(r.date).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })));
+      }
+      const row = el('div', { class: 'change-row kind-reported' },
+        el('button', { type: 'button', class: 'btn-link change-country' }, `${r.flag || ''} ${r.label} — ${r.countryNl}`),
+        el('p', { class: 'change-desc' }, 'Bron meldt: advies voor het laatst bijgewerkt op deze datum.'));
+      row.querySelector('.change-country').addEventListener('click', () => {
+        activateTab('compare');
+        $('#country-input').value = r.countryNl;
+        $('#compare-form').requestSubmit();
+      });
+      root.append(row);
+    });
+  }
 }
 
 // ==========================================================================
