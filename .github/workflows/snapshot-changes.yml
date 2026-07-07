@@ -47,6 +47,8 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/history data/recent-changes.json
+          # Alles onder data/: history, fingerprints (nodig voor de
+          # inhoudsvergelijking van morgen!), recent-changes en source-dates.
+          git add data
           git diff --cached --quiet || git commit -m "Snapshot buitenlandse reisadviezen $(date -u +%Y-%m-%d)"
           git push
