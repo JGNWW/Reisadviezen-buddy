@@ -373,6 +373,93 @@ function renderSummaryTable(nl, okSources) {
   return table;
 }
 
+/**
+ * Onderwerp-zoeker binnen één vergelijking: typ een term (bijv. "ebola") en
+ * zie per bron — NL én alle buitenlandse — de passages waarin die voorkomt.
+ * Bronnen die het onderwerp NIET noemen krijgen expliciet een kaart: juist
+ * die afwezigheid is redactioneel interessant. Nederlandse termen worden
+ * automatisch ook in het Engels/Frans/Spaans gezocht (via het bestaande
+ * vertaal-endpoint); alle bronteksten zijn al binnen, dus het zoeken zelf
+ * kost geen extra proxy-aanroepen.
+ */
+function renderTopicSearch(nl, okSources) {
+  const wrap = el('div', { class: 'topic-search' });
+  const input = el('input', { type: 'text', placeholder: 'Bijv. ebola, verkiezingen, gele koorts…', autocomplete: 'off' });
+  const btn = el('button', { class: 'btn primary', type: 'submit' }, 'Zoek bij alle bronnen');
+  const form = el('form', { class: 'panel controls topic-form' },
+    el('div', { class: 'field grow' },
+      el('label', {}, 'Zoek een onderwerp in dit advies bij alle bronnen'), input),
+    btn);
+  const status = el('p', { class: 'hint', style: 'margin:6px 2px' });
+  const result = el('div', { class: 'topic-result' });
+  wrap.append(el('h3', { class: 'section-title' }, 'Wat zegt elke bron over…'), form, status, result);
+
+  // Welke doeltalen zijn relevant voor de geladen bronnen?
+  const langs = [...new Set(okSources.map((s) => s.lang || 'en'))].filter((l) => l !== 'nl');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const terms = input.value.split(',').map((t) => t.trim()).filter(Boolean);
+    result.innerHTML = '';
+    if (!terms.length) { status.textContent = ''; return; }
+
+    // Vertaal elke term naar de brontalen; behoud ook de letterlijke invoer.
+    status.textContent = 'Termen vertalen…';
+    const variants = new Set(terms.map((t) => t.toLowerCase()));
+    if (getProxy()) {
+      for (const term of terms) {
+        for (const lang of langs) {
+          const tr = await translateText(term, lang, 'nl');
+          if (tr) variants.add(tr.toLowerCase());
+        }
+      }
+    }
+    const variantList = [...variants];
+    status.textContent = `Gezocht op: ${variantList.join(' · ')}`;
+
+    const findMatches = (blocks) => {
+      const matches = [];
+      for (const b of blocks || []) {
+        // Zoek in origineel én (indien aanwezig) de NL-vertaling.
+        const fields = [
+          { text: b.textNl, heading: b.headingNl || b.heading },
+          { text: b.text, heading: b.heading },
+        ].filter((f) => f.text);
+        let hit = null;
+        for (const f of fields) {
+          const low = f.text.toLowerCase();
+          const v = variantList.find((vv) => low.includes(vv));
+          if (v) { hit = { ...f, variant: v }; break; }
+        }
+        if (hit) matches.push({ heading: hit.heading, html: highlight(snippetAround(hit.text, hit.variant), hit.variant) });
+      }
+      return matches;
+    };
+
+    const cards = el('div', { class: 'topic-cards' });
+    const renderCard = (label, url, matches) => {
+      const card = el('div', { class: 'topic-card' + (matches.length ? '' : ' no-mention') });
+      card.append(el('h4', {}, label, ' ',
+        matches.length
+          ? el('span', { class: 'count-pill' }, String(matches.length))
+          : el('span', { class: 'no-mention-tag' }, `noemt "${terms.join(', ')}" niet`)));
+      matches.slice(0, 5).forEach((m) => card.append(
+        el('div', { class: 'topic-match' },
+          el('div', { class: 'block-cat' }, m.heading || ''),
+          el('p', { class: 'snippet', html: m.html }))));
+      if (matches.length > 5) card.append(el('p', { class: 'hint', style: 'margin:4px 0 0' }, `+ ${matches.length - 5} meer passage(s) — zie het origineel.`));
+      if (url) card.append(el('p', { style: 'margin:6px 0 0' }, el('a', { href: url, target: '_blank', rel: 'noopener' }, 'origineel →')));
+      cards.append(card);
+    };
+
+    renderCard('🇳🇱 NederlandWereldwijd', nl.url, findMatches(nl.themes));
+    okSources.forEach((s) => renderCard(`${s.flag || ''} ${s.sourceLabel}`, s.url, findMatches(s.themes)));
+    result.append(cards);
+  });
+
+  return wrap;
+}
+
 function renderComparison(staticData, foreign, root) {
   LAST_COMPARE = { staticData, foreign, root };
   root.innerHTML = '';
@@ -436,6 +523,9 @@ function renderComparison(staticData, foreign, root) {
     el('p', { style: 'margin:0' }, foreign.notice)));
   if (problems.length) frag.append(el('div', { class: 'callout', style: 'background:#f6f8fa;border-left-color:var(--muted)' },
     el('p', { style: 'margin:0' }, 'Geen advies via: ' + problems.map((p) => p.label || p.source).join(', ') + '.')));
+
+  // ---- Onderwerp-zoeker: wat zegt elke bron over X? ----
+  frag.append(renderTopicSearch(nl, okSources));
 
   // ---- Vergelijking per thema ----
   const cmp = buildComparison(nl, okSources);
