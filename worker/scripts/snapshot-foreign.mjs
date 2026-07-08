@@ -346,6 +346,14 @@ async function main() {
       hist.entries.push({ date: today, sources: nextSnapshot });
       if (hist.entries.length > MAX_ENTRIES_PER_COUNTRY) hist.entries = hist.entries.slice(-MAX_ENTRIES_PER_COUNTRY);
       writeFileSync(histFile, JSON.stringify(hist));
+    } else if (fetchedAny) {
+      // Geen wijziging: geen nieuwe datumregel, maar wél de vergelijkings-
+      // basis in place verversen. Zonder dit zouden velden die na een
+      // formaatuitbreiding zijn toegevoegd (lastModified, updateNote) bij
+      // ongewijzigde landen nooit in de basis belanden — waardoor een
+      // latere datum-wijziging onvergelijkbaar en dus onzichtbaar blijft.
+      lastEntry.sources = nextSnapshot;
+      writeFileSync(histFile, JSON.stringify(hist));
     }
     if (fetchedAny) writeFileSync(fpFile, JSON.stringify(fps));
   });

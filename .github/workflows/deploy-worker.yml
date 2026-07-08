@@ -13,6 +13,9 @@ on:
     branches: [main, master]
     paths:
       - 'worker/**'
+      # Snapshot-datacommits (elke 6 uur) zijn geen code en hoeven de
+      # Worker niet opnieuw te deployen.
+      - '!worker/data/**'
       - '.github/workflows/deploy-worker.yml'
   workflow_dispatch:
 
