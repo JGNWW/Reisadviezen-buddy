@@ -8,7 +8,9 @@ name: Snapshot buitenlandse reisadviezen
 # geschiedenis hebben omdat ze alleen live (per bezoek) opgevraagd worden.
 on:
   schedule:
-    - cron: '30 5 * * *' # elke dag 05:30 UTC, vóór de Pages-build om 06:00
+    # Elke 6 uur, zodat "recente wijzigingen" ook binnen de dag ververst;
+    # de datacommit naar main triggert automatisch een Pages-rebuild.
+    - cron: '30 5,11,17,23 * * *'
   workflow_dispatch:
 
 permissions:
@@ -25,7 +27,13 @@ jobs:
       run:
         working-directory: worker
     steps:
+      # Altijd expliciet op main werken: geplande runs draaien op de
+      # default branch van de repo, en die hoeft niet main te zijn —
+      # zonder deze ref belandden de datacommits op een feature branch,
+      # onzichtbaar voor de site (die vanaf main bouwt).
       - uses: actions/checkout@v4
+        with:
+          ref: main
 
       - uses: actions/setup-node@v4
         with:
@@ -50,5 +58,9 @@ jobs:
           # Alles onder data/: history, fingerprints (nodig voor de
           # inhoudsvergelijking van morgen!), recent-changes en source-dates.
           git add data
-          git diff --cached --quiet || git commit -m "Snapshot buitenlandse reisadviezen $(date -u +%Y-%m-%d)"
-          git push
+          if ! git diff --cached --quiet; then
+            git commit -m "Snapshot buitenlandse reisadviezen $(date -u +%Y-%m-%dT%H:%M)"
+            # Main kan tijdens de run opgeschoven zijn; rebase en push dan alsnog.
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
