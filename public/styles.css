@@ -12,6 +12,7 @@
   --rood: #d0021b;
   --radius: 10px;
   --shadow: 0 1px 3px rgba(20, 40, 60, .08), 0 4px 14px rgba(20, 40, 60, .05);
+  --page: 1560px; /* gedeelde breedte voor topbar-inhoud, main en footer */
 }
 
 * { box-sizing: border-box; }
@@ -28,23 +29,25 @@ a { color: var(--nl-blue); }
 .topbar {
   background: linear-gradient(120deg, var(--nl-blue), var(--nl-blue-dark));
   color: #fff;
-  padding: 18px 24px 0;
+  padding: 18px 0 0;
 }
+/* Topbar-achtergrond blijft volledige breedte; de inhoud lijnt uit op main. */
+.brand, .tabs { max-width: var(--page); margin: 0 auto; padding-inline: 24px; width: 100%; }
 .brand { display: flex; align-items: center; gap: 14px; }
 .brand .logo { font-size: 40px; line-height: 1; }
 .topbar h1 { margin: 0; font-size: 22px; }
 .tagline { margin: 2px 0 0; font-size: 13px; opacity: .85; max-width: 70ch; }
-.tabs { display: flex; gap: 4px; margin-top: 16px; }
+.tabs { display: flex; gap: 4px; margin-top: 16px; overflow-x: auto; scrollbar-width: thin; }
 .tab {
   background: transparent; border: none; color: #cfe0f0;
-  padding: 10px 18px; font-size: 15px; cursor: pointer;
+  padding: 10px 18px; font-size: 15px; cursor: pointer; white-space: nowrap; flex: 0 0 auto;
   border-radius: 8px 8px 0 0; border-bottom: 3px solid transparent;
 }
 .tab:hover { color: #fff; }
 .tab.active { color: #fff; background: var(--bg); border-bottom-color: var(--geel); }
 .tab.active { color: var(--nl-blue); font-weight: 600; }
 
-main { max-width: 1180px; margin: 0 auto; padding: 22px 20px 60px; }
+main { max-width: var(--page); margin: 0 auto; padding: 22px 24px 60px; }
 .view { display: none; }
 .view.active { display: block; }
 
@@ -60,6 +63,10 @@ main { max-width: 1180px; margin: 0 auto; padding: 22px 20px 60px; }
 .field { display: flex; flex-direction: column; gap: 5px; }
 .field[hidden] { display: none; }
 .field.grow { flex: 1 1 240px; }
+/* Bronnen op een eigen, volledige regel zodat ze de hele breedte benutten;
+   min-width:0 laat de rij binnen dit veld scrollen i.p.v. de flexbox op te rekken. */
+.field-sources { flex: 1 1 100%; min-width: 0; order: 3; }
+.src-hint { font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--muted); opacity: .85; }
 .field label { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .03em; }
 input, select {
   padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px;
@@ -72,10 +79,15 @@ input:focus, select:focus { outline: 2px solid var(--nl-blue); border-color: var
 }
 .btn.primary { background: var(--nl-blue); color: #fff; }
 .btn.primary:hover { background: var(--nl-blue-dark); }
-.source-toggles { display: flex; gap: 8px; flex-wrap: wrap; }
+/* Bronnen op één rij; bij te veel bronnen horizontaal scrollen i.p.v. wrappen. */
+.source-toggles {
+  display: flex; gap: 8px; flex-wrap: nowrap; overflow-x: auto;
+  padding-bottom: 6px; scrollbar-width: thin; scroll-snap-type: x proximity;
+}
 .chip-toggle {
   display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px;
   border: 1px solid var(--border); border-radius: 20px; cursor: pointer; background: #fff; font-size: 14px;
+  flex: 0 0 auto; white-space: nowrap; scroll-snap-align: start;
 }
 .chip-toggle input { min-width: auto; }
 .chip-toggle.on { border-color: var(--nl-blue); background: #eef4fb; }
@@ -186,7 +198,7 @@ input:focus, select:focus { outline: 2px solid var(--nl-blue); border-color: var
   .compare-col { border-right: none; border-bottom: 1px solid var(--border); }
 }
 
-.footer { max-width: 1180px; margin: 0 auto; padding: 20px; color: var(--muted); font-size: 12.5px; border-top: 1px solid var(--border); }
+.footer { max-width: var(--page); margin: 0 auto; padding: 20px 24px; color: var(--muted); font-size: 12.5px; border-top: 1px solid var(--border); }
 .footer a { color: var(--nl-blue); }
 .build-meta { font-weight: 600; color: var(--text); }
 
