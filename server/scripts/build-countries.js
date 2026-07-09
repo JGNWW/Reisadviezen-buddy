@@ -91,6 +91,26 @@ const ES_NAME_OVERRIDES = {
   ZAF: 'Sudáfrica', SAU: 'Arabia Saudí', ARE: 'Emiratos Árabes Unidos',
 };
 
+// Nieuw-Zeeland (SafeTravel): /destinations/{slug}, slug = Engelse landnaam.
+const NZ_SLUG_OVERRIDES = {
+  USA: 'united-states-of-america', GBR: 'united-kingdom', KOR: 'south-korea',
+  PRK: 'north-korea', RUS: 'russia', CZE: 'czech-republic', LAO: 'laos',
+  SYR: 'syria', MMR: 'myanmar', CPV: 'cape-verde', BRN: 'brunei',
+  COD: 'democratic-republic-of-the-congo', COG: 'republic-of-congo',
+  MKD: 'north-macedonia', TLS: 'timor-leste', SWZ: 'eswatini', TUR: 'turkey',
+};
+
+// Denemarken (Udenrigsministeriet): /rejsevejledninger/{slug}, slug = Deense
+// landnaam. Afgeleid via vertaling (en->da); overrides voor bekende namen.
+const DK_NAME_OVERRIDES = {
+  USA: 'usa', GBR: 'storbritannien', DEU: 'tyskland', FRA: 'frankrig',
+  NLD: 'nederlandene', BEL: 'belgien', ESP: 'spanien', ITA: 'italien',
+  KOR: 'sydkorea', PRK: 'nordkorea', RUS: 'rusland', CHN: 'kina',
+  EGY: 'egypten', GRC: 'graekenland', TUR: 'tyrkiet', MAR: 'marokko',
+  ZAF: 'sydafrika', SAU: 'saudi-arabien', ARE: 'de-forenede-arabiske-emirater',
+  CHE: 'schweiz', AUT: 'ostrig', SWE: 'sverige', NOR: 'norge', POL: 'polen',
+};
+
 // Handmatige ISO3 -> ISO2 aanvullingen voor NL-bijzonderheden (Caribisch NL).
 const ISO2_OVERRIDES = { 'BQ-BO': 'BQ', 'BQ-SA': 'BQ', 'BQ-SE': 'BQ' };
 
@@ -221,13 +241,20 @@ async function main() {
       nl: doc.location,
       en: enName,
       key: doc.locationkey,
-      sources: { uk, us, ca, ie, fr: null, au, es: null, de: deIso3.has(iso) ? iso : null },
+      sources: {
+        uk, us, ca, ie, fr: null, au, es: null,
+        de: deIso3.has(iso) ? iso : null,
+        nz: NZ_SLUG_OVERRIDES[iso] || normalise(enName),
+        dk: null,
+      },
     };
     if (countries[iso].sources.de) counts.de = (counts.de || 0) + 1;
+    if (countries[iso].sources.nz) counts.nz = (counts.nz || 0) + 1;
   }
 
-  // Frankrijk (slug) en Spanje (Spaanse naam) afleiden via vertaling.
-  console.log('Franse/Spaanse namen afleiden via vertaling…');
+  // Frankrijk (slug), Spanje (Spaanse naam) en Denemarken (Deense slug)
+  // afleiden via vertaling.
+  console.log('Franse/Spaanse/Deense namen afleiden via vertaling…');
   const isos = Object.keys(countries);
   await mapLimit(isos, 6, async (iso) => {
     let fr = FR_SLUG_OVERRIDES[iso];
@@ -239,6 +266,11 @@ async function main() {
     if (!es) { const esName = await translateName(countries[iso].en, 'es'); es = esName ? esName.trim() : null; }
     countries[iso].sources.es = es;
     if (es) counts.es = (counts.es || 0) + 1;
+
+    let dk = DK_NAME_OVERRIDES[iso];
+    if (!dk) { const daName = await translateName(countries[iso].en, 'da'); dk = daName ? normalise(daName) : null; }
+    countries[iso].sources.dk = dk;
+    if (dk) counts.dk = (counts.dk || 0) + 1;
   });
 
   const payload = JSON.stringify(countries, null, 2) + '\n';
@@ -251,7 +283,8 @@ async function main() {
   console.log(`Geschreven ${total} landen naar ${outPath} en worker/src/data.`);
   console.log(
     `Koppelingen: VK ${counts.uk}, VS ${counts.us}, Canada ${counts.ca}, Ierland ${counts.ie}, ` +
-      `Frankrijk ${counts.fr}, Australië ${counts.au || 0}, Spanje ${counts.es}.`
+      `Frankrijk ${counts.fr}, Australië ${counts.au || 0}, Spanje ${counts.es}, ` +
+      `Duitsland ${counts.de || 0}, Nieuw-Zeeland ${counts.nz || 0}, Denemarken ${counts.dk || 0}.`
   );
 }
 

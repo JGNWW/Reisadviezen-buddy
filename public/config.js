@@ -20,6 +20,8 @@ window.REISADVIEZEN_CONFIG = {
     { id: 'au', label: 'Australië (Smartraveller)', flag: '🇦🇺', lang: 'en', default: true },
     { id: 'es', label: 'Spanje (Exteriores)', flag: '🇪🇸', lang: 'es', default: true },
     { id: 'de', label: 'Duitsland (Auswärtiges Amt)', flag: '🇩🇪', lang: 'de', default: true },
+    { id: 'nz', label: 'Nieuw-Zeeland (SafeTravel)', flag: '🇳🇿', lang: 'en', default: true },
+    { id: 'dk', label: 'Denemarken (Udenrigsministeriet)', flag: '🇩🇰', lang: 'da', default: true },
     // Japan (anzen.mofa.go.jp) rendert niet landspecifiek via de reader; nog open.
   ],
 };
