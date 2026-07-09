@@ -24,7 +24,8 @@
 const REGIONAL_WORDS_EN = /\b(regions?|provinces?|state of|border areas?|city of|routes?|areas?|parts? of)\b/i;
 const REGIONAL_WORDS_FR = /\b(r[ée]gions?|provinces?|zones?|frontali[eè]res?|ville de|routes?|[EÉ]tats? de|certaines? (zones|r[ée]gions))\b/i;
 const REGIONAL_WORDS_ES = /\b(regi[oó]n(es)?|provincias?|zonas?|fronter(a|iz[oa]s?)|ciudad(es)? de|carreteras?|estados? de|determinadas? zonas)\b/i;
-const NATIONWIDE_WORDS = /\b(throughout the country|whole country|entire country|dans l['’]ensemble du pays|tout le pays|todo el pa[ií]s|en la totalidad del pa[ií]s)\b/i;
+const REGIONAL_WORDS_DA = /\b(regionen?|provins|omr[åa]der?|delstat|byen? |gr[æa]nse|nordlige|sydlige|[øo]stlige|vestlige|dele af)\b/i;
+const NATIONWIDE_WORDS = /\b(throughout the country|whole country|entire country|dans l['’]ensemble du pays|tout le pays|todo el pa[ií]s|en la totalidad del pa[ií]s|hele landet)\b/i;
 
 // Koppen/onderwerpen die vrijwel nooit een regionamen zijn, ook al bevatten ze
 // soms een woord dat op de regionale-scope-regex lijkt (bijv. "area", "zone").
@@ -263,4 +264,4 @@ export function mergeRegionalMax(existingMax, mentions) {
 }
 
 export { findBestMatch };
-export const REGIONAL_WORDS = { en: REGIONAL_WORDS_EN, fr: REGIONAL_WORDS_FR, es: REGIONAL_WORDS_ES };
+export const REGIONAL_WORDS = { en: REGIONAL_WORDS_EN, fr: REGIONAL_WORDS_FR, es: REGIONAL_WORDS_ES, da: REGIONAL_WORDS_DA };
