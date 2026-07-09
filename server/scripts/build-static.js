@@ -12,7 +12,6 @@
  *   docs/data/themes.json                  (canonieke thema's)
  *   docs/data/compare/<iso>.json           (kant-en-klare vergelijking per land)
  *   docs/data/search/nl.json               (zoekindex NL-adviezen)
- *   docs/data/search/foreign.json          (zoekindex buitenlandse adviezen)
  *   docs/data/recent-changes.json          (recente wijzigingen buitenlandse bronnen,
  *                                            bijgehouden door de aparte snapshot-workflow)
  *
@@ -91,10 +90,9 @@ async function main() {
   console.log(`Nederlandse reisadviezen ophalen voor ${list.length} landen…`);
 
   // De buitenlandse vergelijking komt tijdens runtime live van de proxy
-  // (Cloudflare Worker). De statische build bevat alleen de NL-data, de
-  // NL-zoekindex en een lichte directory met NL-kleurcodes per land.
+  // (Cloudflare Worker). De statische build bevat alleen de NL-data en de
+  // NL-zoekindex.
   const nlIndex = [];
-  const directory = [];
   let ok = 0;
   const failures = [];
 
@@ -107,7 +105,6 @@ async function main() {
       const payload = { country: { iso3: iso, nl: nl.name, en: item.nl }, nl };
       await writeFile(join(DATA, 'compare', `${iso}.json`), JSON.stringify(payload));
 
-      directory.push({ iso3: iso, nl: nl.name, color: nl.colors?.overall || null });
       nlIndex.push({
         iso3: iso,
         name: nl.name,
@@ -123,9 +120,7 @@ async function main() {
   });
 
   nlIndex.sort((a, b) => a.name.localeCompare(b.name, 'nl'));
-  directory.sort((a, b) => a.nl.localeCompare(b.nl, 'nl'));
   await writeFile(join(DATA, 'search', 'nl.json'), JSON.stringify(nlIndex));
-  await writeFile(join(DATA, 'directory.json'), JSON.stringify(directory));
 
   // Recente wijzigingen bij buitenlandse bronnen (bijgehouden door de aparte
   // snapshot-workflow, zie .github/workflows/snapshot-changes.yml). Bestaat
@@ -147,7 +142,7 @@ async function main() {
   );
 
   const secs = ((Date.now() - started) / 1000).toFixed(1);
-  console.log(`Klaar in ${secs}s: ${ok} landen weggeschreven (NL-data + directory + zoekindex).`);
+  console.log(`Klaar in ${secs}s: ${ok} landen weggeschreven (NL-data + zoekindex).`);
   if (failures.length) {
     console.log(`\n${failures.length} land(en) overgeslagen:`);
     console.log(failures.join('\n'));

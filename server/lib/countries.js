@@ -24,7 +24,7 @@ const norm = (s) =>
 
 export function allCountries() {
   return Object.values(DATA)
-    .map((c) => ({ iso3: c.iso3, nl: c.nl, en: c.en, key: c.key, hasUk: !!c.sources.uk }))
+    .map((c) => ({ iso3: c.iso3, iso2: c.iso2 || null, nl: c.nl, en: c.en, key: c.key, hasUk: !!c.sources.uk }))
     .sort((a, b) => a.nl.localeCompare(b.nl, 'nl'));
 }
 

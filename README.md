@@ -25,7 +25,7 @@ De tool bestaat uit twee delen:
    niet rechtstreeks mag scrapen (CORS) en de NL open data geen CORS toestaat.
 
 ```
-Browser ── statische NL-data (Pages) ──► NL-reisadvies + directory + zoeken
+Browser ── statische NL-data (Pages) ──► NL-reisadvies + zoeken
    │
    └────── live proxy (Worker) ────────► buitenlandse adviezen + kaarten (op verzoek)
 ```
@@ -43,14 +43,14 @@ Browser ── statische NL-data (Pages) ──► NL-reisadvies + directory + z
    NederlandWereldwijd (de kop *In het kort* wordt overgeslagen); alle bronnen
    worden op een canonieke themalijst geplaatst.
 5. **Ontbrekende thema's** — wat andere landen wél behandelen en NL niet.
-6. **Landenoverzicht** — bladerbare directory met de NL-kleurcode per land.
-7. **Zoeken op thema/zoekwoord** — in alle Nederlandse reisadviezen, en per land
+6. **Zoeken op thema/zoekwoord** — in alle Nederlandse reisadviezen, en per land
    live in de buitenlandse reisadviezen. Een Nederlandse zoekterm wordt
    automatisch naar het Engels (en de brontaal) vertaald, zodat ook anderstalige
    adviezen doorzocht worden.
-8. **Automatische vertaling** — anderstalige bronnen (bijv. Frankrijk) worden
-   standaard in het Nederlands getoond, met een knop naar het origineel.
-9. **Datumscanner** — doorzoekt de Nederlandse reisadviezen op datums in de
+7. **Automatische vertaling** — anderstalige bronnen (bijv. Frankrijk) worden
+   standaard in het Nederlands getoond; met de taalknop (Nederlands · English ·
+   Origineel) schakel je naar Engels of de originele brontaal.
+8. **Datumscanner** — doorzoekt de Nederlandse reisadviezen op datums in de
    *tekst* die in het verleden liggen (mogelijk verouderde inhoud). De metadata
    “laatst gewijzigd”/“geldig op” wordt bewust genegeerd.
 
