@@ -37,10 +37,38 @@ const COLOR_MEANING = {
   rood: 'Niet reizen',
 };
 const COLOR_LEVEL = { groen: 1, geel: 2, oranje: 3, rood: 4 };
+const LEVEL_COLORS = ['', 'groen', 'geel', 'oranje', 'rood'];
 
-// Toon buitenlandse teksten in het origineel (true) of vertaald naar NL (false).
-let SHOW_ORIGINAL = false;
+// Taal waarin buitenlandse teksten worden getoond:
+//   'nl'   → vertaald naar Nederlands (Engelse bronnen blijven Engels)
+//   'en'   → vertaald naar Engels (Engelse bronnen blijven origineel)
+//   'orig' → onvertaald, in de brontaal
+let COMPARE_LANG = localStorage.getItem('compareLang') || 'nl';
 let LAST_COMPARE = null;
+
+// ---- Bronselectie (gedeeld tussen Vergelijken en Wat ontbreekt) -----------
+const allSourceIds = () => (CFG.SOURCES || []).map((s) => s.id);
+const sourceMeta = (id) => (CFG.SOURCES || []).find((s) => s.id === id) || null;
+function loadSelectedSources() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('selectedSources'));
+    if (Array.isArray(saved)) {
+      const valid = saved.filter((id) => allSourceIds().includes(id));
+      if (valid.length) return valid;
+    }
+  } catch { /* val terug op standaard */ }
+  return (CFG.SOURCES || []).filter((s) => s.default !== false).map((s) => s.id);
+}
+let SELECTED_SOURCES = loadSelectedSources();
+const saveSelectedSources = () => localStorage.setItem('selectedSources', JSON.stringify(SELECTED_SOURCES));
+// Bronnen in de vaste config-volgorde (chips/kolommen blijven zo stabiel).
+const orderedSelected = () => allSourceIds().filter((id) => SELECTED_SOURCES.includes(id));
+
+/** Landvlag-emoji uit een ISO-2-code (regional indicator symbols). */
+function countryFlag(iso2) {
+  if (!iso2 || iso2.length !== 2) return '';
+  return String.fromCodePoint(...[...iso2.toUpperCase()].map((c) => 0x1f1e6 + c.charCodeAt(0) - 65));
+}
 
 // ---- Proxy-configuratie ---------------------------------------------------
 function getProxy() {
@@ -164,15 +192,8 @@ async function bootstrap() {
   const list = $('#country-list');
   countries.forEach((c) => list.append(el('option', { value: c.nl })));
 
-  const toggles = $('#source-toggles');
-  (CFG.SOURCES || []).forEach((s) => {
-    const on = s.default !== false;
-    const label = el('label', { class: 'chip-toggle' + (on ? ' on' : '') },
-      el('input', { type: 'checkbox', value: s.id, ...(on ? { checked: 'checked' } : {}) }),
-      `${s.flag || ''} ${s.label}`);
-    label.querySelector('input').addEventListener('change', (e) => label.classList.toggle('on', e.target.checked));
-    toggles.append(label);
-  });
+  setupSourcePicker();
+  setupLangSeg();
 
   if (meta?.builtAt) {
     $('#build-meta').textContent =
@@ -182,35 +203,137 @@ async function bootstrap() {
     $('#build-meta').textContent += ' · ⚠️ proxy niet ingesteld (klik ⚙)';
   }
 
-  buildDirectory();
   buildChanges();
+}
+
+// ==========================================================================
+// Bronselectie-UI: chips (met vlag + ×) + "Bron toevoegen"-dropdown.
+// Zelfde geselecteerde bronnen worden gebruikt door Vergelijken én Wat ontbreekt.
+// ==========================================================================
+function setupSourcePicker() {
+  const addBtn = $('#source-add .btn-drop');
+  const menu = $('#source-menu');
+  const closeMenu = () => { menu.hidden = true; addBtn.setAttribute('aria-expanded', 'false'); };
+  addBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const open = menu.hidden;
+    if (open) renderSourceMenu();
+    menu.hidden = !open;
+    addBtn.setAttribute('aria-expanded', String(open));
+  });
+  document.addEventListener('click', (e) => { if (!$('#source-add').contains(e.target)) closeMenu(); });
+  renderSourcePicker();
+}
+
+function renderSourcePicker() {
+  const chips = $('#source-chips');
+  if (!chips) return;
+  chips.innerHTML = '';
+  const sel = orderedSelected();
+  if (!sel.length) {
+    chips.append(el('span', { class: 'hint', style: 'margin:0' }, 'Geen bronnen gekozen — voeg er minstens één toe.'));
+  }
+  sel.forEach((id) => {
+    const m = sourceMeta(id);
+    if (!m) return;
+    const x = el('button', { type: 'button', class: 'chip-x', title: 'Verwijderen', 'aria-label': `${m.label} verwijderen` }, '×');
+    x.addEventListener('click', () => removeSource(id));
+    chips.append(el('span', { class: 'src-chip' }, el('span', { class: 'fl' }, m.flag || ''), ` ${m.label} `, x));
+  });
+  renderSourceMenu();
+}
+
+function renderSourceMenu() {
+  const menu = $('#source-menu');
+  if (!menu) return;
+  menu.innerHTML = '';
+  const avail = allSourceIds().filter((id) => !SELECTED_SOURCES.includes(id));
+  if (!avail.length) { menu.append(el('div', { class: 'menu-empty' }, 'Alle bronnen zijn toegevoegd.')); return; }
+  avail.forEach((id) => {
+    const m = sourceMeta(id);
+    const item = el('div', { class: 'menu-item', role: 'button', tabindex: '0' }, el('span', { class: 'fl' }, m.flag || ''), ` ${m.label}`);
+    const pick = () => { addSource(id); menu.hidden = true; $('#source-add .btn-drop').setAttribute('aria-expanded', 'false'); };
+    item.addEventListener('click', pick);
+    item.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
+    menu.append(item);
+  });
+}
+
+/** Voegt een bron toe en herlaadt de lopende vergelijking (indien getoond). */
+function addSource(id) {
+  if (SELECTED_SOURCES.includes(id)) return;
+  SELECTED_SOURCES.push(id);
+  saveSelectedSources();
+  renderSourcePicker();
+  rerunLastCompare();
+}
+function removeSource(id) {
+  if (!SELECTED_SOURCES.includes(id)) return;
+  SELECTED_SOURCES = SELECTED_SOURCES.filter((s) => s !== id);
+  saveSelectedSources();
+  renderSourcePicker();
+  rerunLastCompare();
+}
+function rerunLastCompare() {
+  if (LAST_COMPARE) runComparison(LAST_COMPARE.country, orderedSelected(), COMPARE_LANG);
+}
+
+// ---- Taalkeuze (Nederlands · English · Origineel) -------------------------
+function setupLangSeg() {
+  const seg = $('#lang-seg');
+  if (!seg) return;
+  $$('#lang-seg button').forEach((b) => b.classList.toggle('on', b.dataset.lang === COMPARE_LANG));
+  seg.addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-lang]');
+    if (!b) return;
+    setCompareLang(b.dataset.lang);
+  });
+}
+function setCompareLang(lang) {
+  if (lang === COMPARE_LANG) return;
+  const prev = COMPARE_LANG;
+  COMPARE_LANG = lang;
+  localStorage.setItem('compareLang', lang);
+  $$('#lang-seg button').forEach((b) => b.classList.toggle('on', b.dataset.lang === lang));
+  if (!LAST_COMPARE) return;
+  // Alleen 'en' gebruikt een andere vertaalophaling; nl↔orig delen dezelfde data.
+  if ((lang === 'en') !== (prev === 'en')) {
+    runComparison(LAST_COMPARE.country, LAST_COMPARE.sources, lang);
+  } else {
+    LAST_COMPARE.lang = lang;
+    renderComparison(LAST_COMPARE.staticData, LAST_COMPARE.foreign, $('#compare-result'));
+  }
 }
 
 // ==========================================================================
 // VERGELIJKEN
 // ==========================================================================
-$('#compare-form').addEventListener('submit', async (e) => {
+$('#compare-form').addEventListener('submit', (e) => {
   e.preventDefault();
   const input = $('#country-input').value.trim();
-  const selected = $$('#source-toggles input:checked').map((i) => i.value);
   const status = $('#compare-status'), result = $('#compare-result');
   if (!input) return;
   const country = resolveCountry(input);
   if (!country) { status.className = 'status error'; status.textContent = `Land “${input}” niet gevonden.`; result.innerHTML = ''; return; }
+  runComparison(country, orderedSelected(), COMPARE_LANG);
+});
 
+async function runComparison(country, sources, lang) {
+  const status = $('#compare-status'), result = $('#compare-result');
   status.className = 'status';
   status.innerHTML = `<span class="spinner"></span>Reisadvies laden voor ${esc(country.nl)}…`;
-  result.innerHTML = '';
   try {
     const staticData = await loadJSON(`compare/${country.iso3}.json`);
-    let foreign = { sources: [], notice: null };
-    if (selected.length) {
+    const foreign = { sources: [], notice: null };
+    if (sources.length) {
       if (!getProxy()) {
         foreign.notice = 'Stel de proxy in (⚙ rechtsboven) om buitenlandse reisadviezen te vergelijken.';
       } else {
         status.innerHTML = `<span class="spinner"></span>Buitenlandse adviezen live ophalen…`;
         try {
-          const res = await fetchForeign(country.iso3, selected);
+          // 'en' vertaalt niet-Engelse bronnen naar Engels; 'nl'/'orig' naar NL
+          // (bij 'orig' tonen we de opgehaalde vertaling niet, maar het origineel).
+          const res = await fetchForeign(country.iso3, sources, lang === 'en' ? 'en' : 'nl');
           foreign.sources = res?.sources || [];
         } catch (err) {
           foreign.notice = 'Kon de proxy niet bereiken: ' + err.message;
@@ -218,11 +341,12 @@ $('#compare-form').addEventListener('submit', async (e) => {
       }
     }
     status.textContent = '';
+    LAST_COMPARE = { country, sources, lang, staticData, foreign };
     renderComparison(staticData, foreign, result);
   } catch (err) {
     status.className = 'status error'; status.textContent = err.message;
   }
-});
+}
 
 /** Groepeert thema-blokken per canoniek thema-id. */
 function indexByTheme(themes) {
@@ -263,16 +387,75 @@ function buildComparison(nl, foreignSources) {
   return { themes, missingFromNl, onlyNl };
 }
 
+const colorSquare = (color, cls = '') => el('span', { class: `sq c-${color || 'none'}${cls ? ' ' + cls : ''}` });
+
+/** Inline gekleurde pil (bijv. voor de internationale-consensusregel). */
 function colorBadge(color, opts = {}) {
   const { uncertain, explanation } = opts;
   if (uncertain) {
     return el('span', {
       class: 'color-badge c-uncertain',
       title: explanation || 'Niveau kon niet betrouwbaar worden vastgesteld — geen gok gedaan.',
-    }, el('span', { class: 'dot' }), 'Onzeker');
+    }, colorSquare('onzeker'), 'Onzeker');
   }
   if (!color) return el('span', { class: 'empty-col' }, 'geen kleurcode');
-  return el('span', { class: `color-badge c-${color}` }, el('span', { class: 'dot' }), COLOR_LABELS[color] || color);
+  return el('span', { class: `color-badge c-${color}` }, colorSquare(color), COLOR_LABELS[color] || color);
+}
+
+/**
+ * Regionale extra-kleuren van een bron: de kleuren die alleen regionaal
+ * voorkomen en afwijken van het landelijke niveau, gesorteerd van zwaar naar
+ * licht. Alleen getoond als de bron expliciet regionale afwijkingen meldt.
+ */
+function regionalExtraColors(s) {
+  if (!s.hasRegionalWarnings) return [];
+  const nat = s.level || COLOR_LEVEL[s.color] || 0;
+  const levels = new Set();
+  if (s.regionalBreakdown?.length) {
+    s.regionalBreakdown.forEach((r) => { if (r.level && r.level !== nat) levels.add(r.level); });
+  } else if (s.regionalMaxLevel && s.regionalMaxLevel !== nat) {
+    levels.add(s.regionalMaxLevel);
+  }
+  return [...levels].sort((a, b) => b - a).map((l) => LEVEL_COLORS[l]).filter(Boolean);
+}
+
+/**
+ * Rijk kleurcode-icoon: de overwegende (landelijke) kleur groot met naam,
+ * gevolgd door eventuele regionale extra-kleuren klein ("ook regionaal").
+ * spec = { predominant, uncertain, explanation, extras }
+ */
+function colorCode({ predominant, uncertain, explanation, extras = [] }) {
+  if (uncertain) {
+    return el('span', { class: 'kc' },
+      el('span', { class: 'prim', title: explanation || 'Niveau kon niet betrouwbaar worden vastgesteld — geen gok gedaan.' },
+        colorSquare('onzeker'), 'Onzeker'));
+  }
+  if (!predominant) return el('span', { class: 'empty-col' }, 'geen kleurcode');
+  const kc = el('span', { class: 'kc' },
+    el('span', { class: 'prim' }, colorSquare(predominant), COLOR_LABELS[predominant] || predominant));
+  if (extras.length) {
+    const also = el('span', { class: 'also', title: 'Kleuren die alleen regionaal voorkomen' }, 'ook regionaal:');
+    extras.forEach((c) => also.append(colorSquare(c, 'mini')));
+    kc.append(also);
+  }
+  return kc;
+}
+
+/** Kleurcode-cel voor een buitenlandse bron (inclusief onzeker + regionaal). */
+const sourceColorCode = (s) => colorCode({
+  predominant: s.color,
+  uncertain: s.assessmentStatus === 'uncertain',
+  explanation: s.levelLabel,
+  extras: regionalExtraColors(s),
+});
+
+/** Regionale extra-kleuren van het NL-advies (kleuren per regio, uit open data). */
+function nlExtraColors(nl) {
+  const overall = nl.colors?.overall;
+  const list = nl.colors?.colors || [];
+  const levels = new Set();
+  list.forEach((c) => { const lv = COLOR_LEVEL[c.color]; if (lv && c.color !== overall) levels.add(lv); });
+  return [...levels].sort((a, b) => b - a).map((l) => LEVEL_COLORS[l]).filter(Boolean);
 }
 
 /** Groepeert regionale vermeldingen per niveau, hoogste niveau eerst. */
@@ -328,7 +511,7 @@ function renderSummaryTable(nl, okSources) {
 
   tbody.append(el('tr', {},
     el('td', {}, '🇳🇱 NederlandWereldwijd'),
-    el('td', {}, colorBadge(nl.colors?.overall)),
+    el('td', {}, colorCode({ predominant: nl.colors?.overall, extras: nlExtraColors(nl) })),
     el('td', { class: 'muted' }, '—'),
     el('td', { class: 'muted' }, '—'),
     el('td', { class: 'muted' }, nl.modificationDate ? nl.modificationDate.split('|')[0].replace('Laatst gewijzigd op:', '').trim() : fmtDateShort(nl.lastModified)),
@@ -351,7 +534,7 @@ function renderSummaryTable(nl, okSources) {
       regionalCell = el('td', {}, btn);
       tbody.append(el('tr', {},
         el('td', {}, `${s.flag || ''} ${s.sourceLabel}`),
-        el('td', {}, colorBadge(s.color, { uncertain: s.assessmentStatus === 'uncertain', explanation: s.levelLabel }),
+        el('td', {}, sourceColorCode(s),
           ' ', el('span', { class: 'approx-tag', title: 'Vertaald naar de Nederlandse kleurenschaal' }, 'benadering')),
         regionalCell,
         el('td', { class: 'muted' }, s.levelLabel || '—'),
@@ -361,7 +544,7 @@ function renderSummaryTable(nl, okSources) {
     } else {
       tbody.append(el('tr', {},
         el('td', {}, `${s.flag || ''} ${s.sourceLabel}`),
-        el('td', {}, colorBadge(s.color, { uncertain: s.assessmentStatus === 'uncertain', explanation: s.levelLabel }),
+        el('td', {}, sourceColorCode(s),
           ' ', el('span', { class: 'approx-tag', title: 'Vertaald naar de Nederlandse kleurenschaal' }, 'benadering')),
         el('td', { class: 'muted' }, '—'),
         el('td', { class: 'muted' }, s.levelLabel || '—'),
@@ -460,17 +643,21 @@ function renderTopicSearch(nl, okSources) {
   return wrap;
 }
 
+const countryFlagByIso3 = (iso3) => {
+  const c = COUNTRIES.find((x) => x.iso3 === iso3);
+  return c?.iso2 ? countryFlag(c.iso2) : '';
+};
+
 function renderComparison(staticData, foreign, root) {
-  LAST_COMPARE = { staticData, foreign, root };
   root.innerHTML = '';
   const nl = staticData.nl;
   const okSources = (foreign.sources || []).filter((s) => !s.unavailable && !s.error && s.themes);
   const problems = (foreign.sources || []).filter((s) => s.unavailable || s.error);
-  const hasTranslated = okSources.some((s) => s.translated);
   const frag = document.createDocumentFragment();
 
+  const cflag = countryFlagByIso3(staticData.country.iso3);
   frag.append(el('div', { class: 'result-head' },
-    el('h2', {}, staticData.country.nl),
+    el('h2', {}, cflag ? `${cflag} ${staticData.country.nl}` : staticData.country.nl),
     el('p', { class: 'meta' }, nl.modificationDate || `Laatst gewijzigd: ${(nl.lastModified || '').slice(0, 10)}`)));
 
   // ---- Divergentie-highlight ----
@@ -496,16 +683,16 @@ function renderComparison(staticData, foreign, root) {
     const consensusLevel = consensusLevels.length % 2
       ? consensusLevels[mid]
       : Math.round((consensusLevels[mid - 1] + consensusLevels[mid]) / 2);
-    const consensusColor = ['', 'groen', 'geel', 'oranje', 'rood'][consensusLevel];
+    const consensusColor = LEVEL_COLORS[consensusLevel];
     divWrap.append(el('p', { class: 'consensus-line' },
       '🌍 Internationale consensus: ',
-      el('span', { class: `color-badge c-${consensusColor}` }, el('span', { class: 'dot' }), COLOR_LABELS[consensusColor]),
+      colorBadge(consensusColor),
       ` (mediaan van ${consensusLevels.length} bron${consensusLevels.length === 1 ? '' : 'nen'}, NL niet meegeteld)`));
   }
 
   const chipRow = el('div', { class: 'chip-row' });
   chips.forEach((c) => chipRow.append(el('span', { class: 'div-chip' },
-    el('span', { class: `dot c-${c.color || 'none'}` }), ` ${c.label}: `, el('strong', {}, c.color ? COLOR_LABELS[c.color] : '—'))));
+    colorSquare(c.color, 'mini'), ` ${c.label}: `, el('strong', {}, c.color ? COLOR_LABELS[c.color] : '—'))));
   divWrap.append(chipRow);
   frag.append(divWrap);
 
@@ -542,23 +729,100 @@ function renderComparison(staticData, foreign, root) {
       gapBtn));
   }
 
-  const themeHead = el('div', { class: 'theme-head-row' }, el('h3', { class: 'section-title', style: 'flex:1;margin:0;border:none' }, 'Vergelijking per thema'));
-  if (hasTranslated) {
-    themeHead.append(el('button', {
-      class: 'btn toggle-lang', type: 'button',
-      onclick: () => { SHOW_ORIGINAL = !SHOW_ORIGINAL; renderComparison(LAST_COMPARE.staticData, LAST_COMPARE.foreign, LAST_COMPARE.root); },
-    }, SHOW_ORIGINAL ? '🌐 Toon vertaald (Nederlands)' : '🌐 Toon origineel'));
-  }
-  frag.append(themeHead);
-  const foreignCols = okSources.map((f) => ({ id: f.source, label: f.sourceLabel, flag: f.flag }));
-  let lastGroup = null;
-  cmp.themes.forEach((t) => {
-    const g = t.theme.group || 'Overig';
-    if (g !== lastGroup) { frag.append(el('div', { class: 'theme-group-label' }, g)); lastGroup = g; }
-    frag.append(renderThemeCard(t, foreignCols));
-  });
+  frag.append(el('h3', { class: 'section-title' }, 'Vergelijking per thema — naast elkaar'));
+  frag.append(renderMatrix(cmp, nl, okSources));
+  frag.append(el('p', { class: 'hint', style: 'margin-top:10px' },
+    'De kolomkoppen blijven staan tijdens scrollen. Verwijder een bron met × in de kop; voeg er een toe met "+ Bron toevoegen". ',
+    'Lege cel = die bron behandelt het thema niet apart (lichtgekleurd = de andere bronnen doen dat wél). Bij veel bronnen scrolt de matrix horizontaal.'));
 
   root.append(frag);
+}
+
+/**
+ * Matrix-vergelijker: thema's (rijen) × bronnen (kolommen), met de kleurcode
+ * als eerste rij. Kolomkoppen blijven sticky; een bron is per kolom te
+ * verwijderen (×) of toe te voegen (+ Bron toevoegen). Veel bronnen → de matrix
+ * scrolt horizontaal.
+ */
+function renderMatrix(cmp, nl, okSources) {
+  const cols = [
+    { id: '__nl', label: 'NederlandWereldwijd', flag: '🇳🇱', nl: true },
+    ...okSources.map((s) => ({ id: s.source, label: s.sourceLabel, flag: s.flag, src: s })),
+  ];
+  const nCols = cols.length;
+  const gridCols = `160px repeat(${nCols}, minmax(230px, 1fr)) 150px`;
+  const minW = 160 + nCols * 230 + 150;
+  const grid = el('div', { class: 'grid', style: `grid-template-columns:${gridCols};min-width:${minW}px` });
+
+  // ---- Kolomkoppen ----
+  grid.append(el('div', { class: 'cell head colhead corner' }, 'Thema'));
+  cols.forEach((c) => {
+    const head = el('div', { class: 'cell head colhead' + (c.nl ? ' nl' : '') });
+    head.append(el('span', { class: 'src' }, el('span', { class: 'fl' }, c.flag || ''), ` ${c.label}`));
+    if (!c.nl) {
+      const x = el('button', { type: 'button', class: 'colx', title: `${c.label} verwijderen`, 'aria-label': `${c.label} verwijderen` }, '×');
+      x.addEventListener('click', () => removeSource(c.id));
+      head.append(x);
+    }
+    grid.append(head);
+  });
+  const addHead = el('div', { class: 'cell head addcol' });
+  const addWrap = el('div', { class: 'adddrop matrix-add' });
+  const addBtn = el('button', { type: 'button', class: 'btn-drop', 'aria-haspopup': 'true' }, '+ Bron toevoegen');
+  const addMenu = el('div', { class: 'menu', hidden: true });
+  addWrap.append(addBtn, addMenu);
+  addBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const open = addMenu.hidden;
+    addMenu.innerHTML = '';
+    const avail = allSourceIds().filter((id) => !SELECTED_SOURCES.includes(id));
+    if (!avail.length) addMenu.append(el('div', { class: 'menu-empty' }, 'Alle bronnen toegevoegd.'));
+    else avail.forEach((id) => {
+      const m = sourceMeta(id);
+      const item = el('div', { class: 'menu-item' }, el('span', { class: 'fl' }, m.flag || ''), ` ${m.label}`);
+      item.addEventListener('click', () => addSource(id));
+      addMenu.append(item);
+    });
+    addMenu.hidden = !open;
+    // Sluit bij een klik buiten het menu; verwijder de listener meteen weer,
+    // zodat herhaalde re-renders geen listeners opstapelen.
+    if (open) {
+      const off = (ev) => { if (!addWrap.contains(ev.target)) { addMenu.hidden = true; document.removeEventListener('click', off); } };
+      setTimeout(() => document.addEventListener('click', off), 0);
+    }
+  });
+  addHead.append(addWrap);
+  grid.append(addHead);
+
+  // ---- Rij: kleurcode ----
+  grid.append(el('div', { class: 'cell rowlabel' }, 'Kleurcode'));
+  grid.append(el('div', { class: 'cell kc-cell' + (nl.colors?.overall ? '' : ' empty') },
+    colorCode({ predominant: nl.colors?.overall, extras: nlExtraColors(nl) })));
+  okSources.forEach((s) => grid.append(el('div', { class: 'cell kc-cell' }, sourceColorCode(s))));
+  grid.append(el('div', { class: 'cell addcol' }));
+
+  // ---- Rijen: thema's ----
+  cmp.themes.forEach((t) => {
+    const anyContent = t.nlHasIt || t.foreignHasIt;
+    grid.append(el('div', { class: 'cell rowlabel' }, t.theme.label));
+    // NL-kolom
+    grid.append(cellFor(t.nlHasIt ? t.nl : null, false, anyContent));
+    // buitenlandse kolommen
+    okSources.forEach((s) => {
+      const entry = t.foreign[s.source] || { blocks: [] };
+      grid.append(cellFor(entry.blocks?.length ? entry.blocks : null, true, anyContent));
+    });
+    grid.append(el('div', { class: 'cell addcol' }));
+  });
+
+  return el('div', { class: 'matrix' }, grid);
+}
+
+/** Eén matrix-cel: thema-blokken of een (eventueel gemarkeerde) leegte. */
+function cellFor(blocks, foreign, anyContent) {
+  if (blocks && blocks.length) return el('div', { class: 'cell txt' }, renderBlocks(blocks, foreign));
+  // Leeg terwijl andere bronnen het thema wél behandelen = opvallend hiaat.
+  return el('div', { class: 'cell txt empty' + (anyContent ? ' miss' : '') }, '— niet apart vermeld');
 }
 
 const SNIPPET_MAXLEN = 320;
@@ -573,11 +837,11 @@ function renderBlocks(blocks, foreign = false) {
   if (!blocks || !blocks.length) return null;
   const wrap = el('div');
   blocks.forEach((b) => {
-    // Voor buitenlandse (vertaalde) blokken: standaard NL, of origineel bij toggle.
-    const useNl = foreign && !SHOW_ORIGINAL && (b.textNl || b.headingNl);
-    const heading = useNl && b.headingNl ? b.headingNl : b.heading;
-    const fullText = useNl && b.textNl ? b.textNl : (b.text || '');
-    const fullHtml = useNl && b.textNl ? null : (b.html || null);
+    // Vertaalde weergave (NL of EN) tenzij de taalkeuze op 'Origineel' staat.
+    const useTranslated = foreign && COMPARE_LANG !== 'orig' && (b.textNl || b.headingNl);
+    const heading = useTranslated && b.headingNl ? b.headingNl : b.heading;
+    const fullText = useTranslated && b.textNl ? b.textNl : (b.text || '');
+    const fullHtml = useTranslated && b.textNl ? null : (b.html || null);
 
     const blockEl = el('div', { class: 'block' },
       heading ? el('div', { class: 'block-heading' }, heading) : null,
@@ -604,29 +868,6 @@ function renderBlocks(blocks, foreign = false) {
   return wrap;
 }
 
-function renderThemeCard(t, foreignCols) {
-  let badge;
-  if (t.nlHasIt && t.foreignHasIt) badge = el('span', { class: 'badge both' }, 'beide');
-  else if (t.nlHasIt) badge = el('span', { class: 'badge nl-only' }, 'alleen NL');
-  else badge = el('span', { class: 'badge foreign-only' }, 'ontbreekt bij NL');
-
-  const details = el('details', { class: 'panel theme-card', ...(t.foreignHasIt && !t.nlHasIt ? { open: 'open' } : {}) });
-  details.append(el('summary', {}, t.theme.label, badge));
-  const nCols = 1 + foreignCols.length;
-  const cols = el('div', { class: 'compare-cols cols-' + Math.min(nCols, 6) });
-  const nlCol = el('div', { class: 'compare-col' }, el('h4', {}, '🇳🇱 NederlandWereldwijd'));
-  nlCol.append(t.nlHasIt ? renderBlocks(t.nl) : el('div', { class: 'empty-col' }, 'Niet apart behandeld.'));
-  cols.append(nlCol);
-  foreignCols.forEach((fc) => {
-    const entry = t.foreign[fc.id] || { blocks: [] };
-    const col = el('div', { class: 'compare-col' }, el('h4', {}, `${fc.flag || ''} ${fc.label}`));
-    col.append(entry.blocks?.length ? renderBlocks(entry.blocks, true) : el('div', { class: 'empty-col' }, 'Niet apart behandeld.'));
-    cols.append(col);
-  });
-  details.append(cols);
-  return details;
-}
-
 // ==========================================================================
 // WAT ONTBREEKT — gap-analyse: losstaand van "Vergelijken" (dat de volledige
 // brontekst per thema naast elkaar toont), focust dit uitsluitend op de
@@ -642,7 +883,7 @@ function activateGapMode(mode) {
 $$('.subtab').forEach((t) => t.addEventListener('click', () => activateGapMode(t.dataset.gapmode)));
 
 function selectedSources() {
-  return $$('#source-toggles input:checked').map((i) => i.value);
+  return orderedSelected();
 }
 
 function renderGapSingle(country, nl, okSources, root) {
@@ -780,36 +1021,6 @@ function renderGapMultiResult(rows, total, root) {
   });
   table.append(tbody);
   root.append(table);
-}
-
-// ==========================================================================
-// LANDENOVERZICHT
-// ==========================================================================
-let DIRECTORY = [];
-async function buildDirectory() {
-  try { DIRECTORY = await loadJSON('directory.json'); } catch { DIRECTORY = []; }
-  const legend = $('#dir-legend');
-  ['groen', 'geel', 'oranje', 'rood'].forEach((c) =>
-    legend.append(el('span', { class: 'legend-item' }, el('span', { class: `dot c-${c}` }), COLOR_LABELS[c])));
-  renderDirectory('');
-  $('#dir-filter').addEventListener('input', (e) => renderDirectory(e.target.value));
-}
-function renderDirectory(filter) {
-  const grid = $('#directory-grid');
-  grid.innerHTML = '';
-  const nq = norm(filter);
-  const items = DIRECTORY.filter((c) => !nq || norm(c.nl).includes(nq));
-  items.forEach((c) => {
-    const card = el('button', { class: 'dir-card', type: 'button', title: 'Vergelijk ' + c.nl },
-      el('span', { class: `dot c-${c.color || 'none'}` }), el('span', { class: 'dir-name' }, c.nl));
-    card.addEventListener('click', () => {
-      activateTab('compare');
-      $('#country-input').value = c.nl;
-      $('#compare-form').requestSubmit();
-    });
-    grid.append(card);
-  });
-  if (!items.length) grid.append(el('p', { class: 'empty-col' }, 'Geen landen gevonden.'));
 }
 
 // ==========================================================================

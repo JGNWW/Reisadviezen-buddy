@@ -87,18 +87,41 @@ input:focus, select:focus { outline: 2px solid var(--link); outline-offset: 0; b
 }
 .btn.primary { background: var(--nl-blue); color: #fff; }
 .btn.primary:hover { background: var(--nl-blue-dark); }
-/* Bronnen op één rij; bij te veel bronnen horizontaal scrollen i.p.v. wrappen. */
-.source-toggles {
-  display: flex; gap: 8px; flex-wrap: nowrap; overflow-x: auto;
-  padding-bottom: 6px; scrollbar-width: thin; scroll-snap-type: x proximity;
+/* Bovenste regel van de compare-controls: land + taalkeuze + knop. */
+.controls-row { flex: 1 1 100%; display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; }
+
+/* Taalkeuze (Nederlands · English · Origineel). */
+.seg { display: inline-flex; border: 1px solid var(--border); }
+.seg button {
+  background: #fff; border: none; border-right: 1px solid var(--border);
+  padding: 9px 14px; font-size: 14px; cursor: pointer; color: var(--link);
 }
-.chip-toggle {
-  display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px;
-  border: 1px solid var(--border); border-radius: 0; cursor: pointer; background: #fff; font-size: 14px;
-  flex: 0 0 auto; white-space: nowrap; scroll-snap-align: start;
+.seg button:last-child { border-right: none; }
+.seg button.on { background: var(--nl-blue); color: #fff; font-weight: 600; }
+
+/* Bronselectie: "Bron toevoegen"-dropdown + verwijderbare chips (met vlag). */
+.source-picker { display: flex; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+.adddrop { position: relative; flex: 0 0 auto; }
+.adddrop .btn-drop {
+  background: #fff; border: 1px dashed var(--link); color: var(--link);
+  padding: 9px 14px; font-weight: 600; font-size: 14px; cursor: pointer; white-space: nowrap;
 }
-.chip-toggle input { min-width: auto; }
-.chip-toggle.on { border-color: var(--link); background: var(--hero); }
+.adddrop .menu {
+  position: absolute; top: calc(100% + 4px); left: 0; z-index: 20;
+  background: #fff; border: 1px solid var(--border); min-width: 260px; max-height: 320px; overflow-y: auto;
+}
+.menu-item { padding: 9px 14px; font-size: 14.5px; display: flex; align-items: center; gap: 9px; cursor: pointer; border-bottom: 1px solid var(--border-soft); }
+.menu-item:hover { background: var(--hero); }
+.menu-empty { padding: 9px 14px; font-size: 13.5px; color: var(--muted); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; flex: 1 1 auto; }
+.src-chip {
+  display: inline-flex; align-items: center; gap: 6px; background: var(--hero);
+  border: 1px solid #bcd8ef; color: var(--nl-blue); padding: 7px 6px 7px 12px; font-size: 14px; font-weight: 600;
+}
+.src-chip .fl { font-size: 16px; }
+.chip-x { background: none; border: none; color: var(--nl-blue); font-size: 17px; line-height: 1; cursor: pointer; padding: 0 5px; }
+.chip-x:hover { color: var(--rood); }
+.fl { font-size: 16px; }
 
 /* ---- Status ---- */
 .status { min-height: 20px; color: var(--muted); font-size: 14px; margin: 6px 2px; }
@@ -123,6 +146,18 @@ input:focus, select:focus { outline: 2px solid var(--link); outline-offset: 0; b
 .dot { width: 14px; height: 14px; border-radius: 50%; display: inline-block; border: 1px solid rgba(0,0,0,.2); }
 .c-groen { background: var(--groen); } .c-geel { background: var(--geel); color: #4a3d00; }
 .c-oranje { background: var(--oranje); } .c-rood { background: var(--rood); }
+
+/* ---- Kleurcode-vierkantjes (gevuld vakje i.p.v. leeg bolletje) ---- */
+.sq { width: 18px; height: 18px; display: inline-block; border: 1px solid rgba(0,0,0,.28); flex: 0 0 auto; }
+.sq.c-none { background: #cbd5e1; }
+.sq.mini { width: 13px; height: 13px; }
+.c-onzeker { background: repeating-linear-gradient(45deg, #c7ccd1, #c7ccd1 4px, #e4e7ea 4px, #e4e7ea 8px); }
+/* Rijk kleurcode-icoon: overwegende (landelijke) kleur groot + naam, daarna
+   eventuele regionale extra-kleuren klein ("ook regionaal"). */
+.kc { display: inline-flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+.kc .prim { display: inline-flex; align-items: center; gap: 7px; font-weight: 700; font-size: 14.5px; }
+.kc .prim .sq { width: 20px; height: 20px; }
+.kc .also { display: inline-flex; align-items: center; gap: 5px; padding-left: 9px; border-left: 1px solid var(--border-soft); color: var(--muted); font-size: 12px; }
 .color-note { font-size: 13px; color: var(--muted); margin-top: 8px; }
 .color-contexts { margin: 10px 0 0; padding-left: 0; list-style: none; font-size: 13.5px; }
 .color-contexts li { padding: 6px 0; border-top: 1px dashed var(--border-soft); }
@@ -185,6 +220,29 @@ input:focus, select:focus { outline: 2px solid var(--link); outline-offset: 0; b
 .rich a { word-break: break-word; }
 .empty-col { color: var(--muted); font-style: italic; font-size: 13.5px; }
 .empty-col.warn { color: #a85400; }
+
+/* ---- Matrix-vergelijker (thema's × bronnen, horizontaal scrollbaar) ---- */
+.matrix { border: 1px solid var(--border); overflow-x: auto; background: #fff; }
+.matrix .grid { display: grid; }
+.matrix .cell { padding: 12px 14px; border-right: 1px solid var(--border-soft); border-bottom: 1px solid var(--border-soft); min-width: 0; }
+.matrix .grid > .cell:nth-last-child(-n + 1) { border-right: none; }
+.matrix .head { position: sticky; top: 0; z-index: 5; background: #fff; }
+.colhead { background: #f2f5f8; font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 8px; justify-content: space-between; }
+.colhead.corner { color: var(--muted); text-transform: uppercase; font-size: 11px; letter-spacing: .03em; }
+.colhead.nl { background: var(--hero); }
+.colhead .src { display: inline-flex; align-items: center; gap: 8px; }
+.colhead .fl { font-size: 18px; }
+.colx { background: none; border: none; color: var(--muted); font-size: 16px; cursor: pointer; padding: 0 2px; line-height: 1; }
+.colx:hover { color: var(--rood); }
+.addcol { background: #fff; display: flex; align-items: flex-start; justify-content: center; }
+.matrix-add .btn-drop { white-space: normal; text-align: center; font-size: 13px; padding: 8px 10px; }
+.matrix-add .menu { left: auto; right: 0; }
+.rowlabel { background: #f8fafc; font-weight: 600; font-size: 13.5px; color: var(--nl-blue); display: flex; align-items: center; }
+.kc-cell { display: flex; align-items: center; }
+.matrix .txt { font-size: 13.5px; }
+.matrix .txt.empty { color: var(--muted); font-style: italic; font-size: 13px; }
+.matrix .txt.empty.miss { background: #fdf6ee; }
+.matrix .block { margin-bottom: 10px; }
 
 /* ---- Search results ---- */
 .result-country { margin-bottom: 14px; }
@@ -275,18 +333,7 @@ input:focus, select:focus { outline: 2px solid var(--link); outline-offset: 0; b
 .div-chip { background: #fff; border: 1px solid var(--border); border-radius: 0; padding: 5px 12px; font-size: 13.5px; display: inline-flex; align-items: center; gap: 4px; }
 .dot.c-none { background: #cbd5e1; }
 
-/* ---- Directory ---- */
-.legend { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
-.legend-item { font-size: 13px; color: var(--muted); display: inline-flex; align-items: center; gap: 5px; }
-.directory-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; }
-.dir-card { display: flex; align-items: center; gap: 9px; padding: 10px 12px; background: #fff; border: 1px solid var(--border); border-radius: 0; cursor: pointer; font-size: 14.5px; text-align: left; }
-.dir-card:hover { border-color: var(--link); background: var(--hero); }
-.dir-name { font-weight: 500; }
-
-.compare-cols.cols-4 { grid-template-columns: repeat(4, 1fr); }
-.compare-cols.cols-5 { grid-template-columns: repeat(5, 1fr); }
-
-/* ---- Vertaal-toggle + datumscanner ---- */
+/* ---- Datumscanner ---- */
 .theme-head-row { display: flex; align-items: center; gap: 12px; margin: 28px 0 12px; border-bottom: 2px solid var(--nl-blue); padding-bottom: 6px; }
 .toggle-lang { background: var(--hero); color: var(--nl-blue); border: 1px solid var(--link); font-size: 13px; padding: 6px 12px; }
 .toggle-lang:hover { background: #d4e9f8; }
