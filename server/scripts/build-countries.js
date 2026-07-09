@@ -23,6 +23,7 @@ const UK_INDEX = 'https://www.gov.uk/api/content/foreign-travel-advice';
 const US_RSS = 'https://travel.state.gov/_res/rss/TAsTWs.xml';
 const IE_AZ = 'https://www.dfa.ie/travel/travel-advice/a-z-list-of-countries/';
 const CA_INDEX = 'https://data.international.gc.ca/travel-voyage/index-alpha-eng.json';
+const DE_INDEX = 'https://www.auswaertiges-amt.de/opendata/travelwarning';
 
 // Handmatige koppelingen waar de genormaliseerde Engelse naam niet matcht.
 const UK_SLUG_OVERRIDES = {
@@ -140,14 +141,22 @@ function matchSlug(iso, enName, slugSet, overrides) {
 
 async function main() {
   console.log('Ophalen bron-indexen (NL, ISO, VK, VS, Canada, Ierland)...');
-  const [nlList, isoData, ukIndex, usXml, ieHtml, caIndex] = await Promise.all([
+  const [nlList, isoData, ukIndex, usXml, ieHtml, caIndex, deIndex] = await Promise.all([
     getJson(NL_LIST),
     getJson(ISO_JSON),
     getJson(UK_INDEX),
     getText(US_RSS).catch((e) => (console.warn('VS-index faalde:', e.message), '')),
     getText(IE_AZ).catch((e) => (console.warn('Ierland-index faalde:', e.message), '')),
     getJson(CA_INDEX).catch((e) => (console.warn('Canada-index faalde:', e.message), { data: {} })),
+    getJson(DE_INDEX).catch((e) => (console.warn('Duitsland-index faalde:', e.message), { response: {} })),
   ]);
+
+  // Duitsland (Auswärtiges Amt): de adapter neemt ISO3 en zoekt zelf de
+  // content-id op. We hoeven hier alleen te weten wélke ISO3-codes de API kent.
+  const deIso3 = new Set();
+  for (const v of Object.values(deIndex?.response || {})) {
+    if (v && typeof v === 'object' && v.iso3CountryCode) deIso3.add(v.iso3CountryCode.toUpperCase());
+  }
 
   const iso3ToEn = {};
   const iso3ToIso2 = {};
@@ -212,8 +221,9 @@ async function main() {
       nl: doc.location,
       en: enName,
       key: doc.locationkey,
-      sources: { uk, us, ca, ie, fr: null, au, es: null },
+      sources: { uk, us, ca, ie, fr: null, au, es: null, de: deIso3.has(iso) ? iso : null },
     };
+    if (countries[iso].sources.de) counts.de = (counts.de || 0) + 1;
   }
 
   // Frankrijk (slug) en Spanje (Spaanse naam) afleiden via vertaling.

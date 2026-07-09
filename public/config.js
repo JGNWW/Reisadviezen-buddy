@@ -19,6 +19,7 @@ window.REISADVIEZEN_CONFIG = {
     { id: 'fr', label: 'Frankrijk (France Diplomatie)', flag: '🇫🇷', lang: 'fr', default: true },
     { id: 'au', label: 'Australië (Smartraveller)', flag: '🇦🇺', lang: 'en', default: true },
     { id: 'es', label: 'Spanje (Exteriores)', flag: '🇪🇸', lang: 'es', default: true },
+    { id: 'de', label: 'Duitsland (Auswärtiges Amt)', flag: '🇩🇪', lang: 'de', default: true },
     // Japan (anzen.mofa.go.jp) rendert niet landspecifiek via de reader; nog open.
   ],
 };

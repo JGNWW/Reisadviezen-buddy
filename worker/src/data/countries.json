@@ -19,7 +19,8 @@
         "continent": "asia",
         "slug": "nepal"
       },
-      "es": "Nepal"
+      "es": "Nepal",
+      "de": "NPL"
     }
   },
   "ARM": {
@@ -42,7 +43,8 @@
         "continent": "middle-east",
         "slug": "armenia"
       },
-      "es": "Armenia"
+      "es": "Armenia",
+      "de": "ARM"
     }
   },
   "MSR": {
@@ -65,7 +67,8 @@
         "continent": "americas",
         "slug": "montserrat"
       },
-      "es": "Montserrat"
+      "es": "Montserrat",
+      "de": null
     }
   },
   "NGA": {
@@ -88,7 +91,8 @@
         "continent": "africa",
         "slug": "nigeria"
       },
-      "es": "Nigeria"
+      "es": "Nigeria",
+      "de": "NGA"
     }
   },
   "DEU": {
@@ -111,7 +115,8 @@
         "continent": "europe",
         "slug": "germany"
       },
-      "es": "Alemania"
+      "es": "Alemania",
+      "de": null
     }
   },
   "REU": {
@@ -134,7 +139,8 @@
         "continent": "africa",
         "slug": "reunion"
       },
-      "es": "Reunión"
+      "es": "Reunión",
+      "de": null
     }
   },
   "SRB": {
@@ -157,7 +163,8 @@
         "continent": "europe",
         "slug": "serbia"
       },
-      "es": "Serbia"
+      "es": "Serbia",
+      "de": "SRB"
     }
   },
   "GRL": {
@@ -180,7 +187,8 @@
         "continent": "americas",
         "slug": "greenland"
       },
-      "es": "Tierra Verde"
+      "es": "Tierra Verde",
+      "de": null
     }
   },
   "AIA": {
@@ -203,7 +211,8 @@
         "continent": "americas",
         "slug": "anguilla"
       },
-      "es": "Anguila"
+      "es": "Anguila",
+      "de": null
     }
   },
   "LCA": {
@@ -226,7 +235,8 @@
         "continent": "americas",
         "slug": "saint-lucia"
       },
-      "es": "Santa Lucía"
+      "es": "Santa Lucía",
+      "de": "LCA"
     }
   },
   "MCO": {
@@ -249,7 +259,8 @@
         "continent": "europe",
         "slug": "monaco"
       },
-      "es": "Mónaco"
+      "es": "Mónaco",
+      "de": "MCO"
     }
   },
   "PRT": {
@@ -272,7 +283,8 @@
         "continent": "europe",
         "slug": "portugal"
       },
-      "es": "Portugal"
+      "es": "Portugal",
+      "de": "PRT"
     }
   },
   "NOR": {
@@ -295,7 +307,8 @@
         "continent": "europe",
         "slug": "norway"
       },
-      "es": "Noruega"
+      "es": "Noruega",
+      "de": "NOR"
     }
   },
   "HUN": {
@@ -318,7 +331,8 @@
         "continent": "europe",
         "slug": "hungary"
       },
-      "es": "Hungría"
+      "es": "Hungría",
+      "de": "HUN"
     }
   },
   "POL": {
@@ -341,7 +355,8 @@
         "continent": "europe",
         "slug": "poland"
       },
-      "es": "Polonia"
+      "es": "Polonia",
+      "de": "POL"
     }
   },
   "SVK": {
@@ -364,7 +379,8 @@
         "continent": "europe",
         "slug": "slovakia"
       },
-      "es": "Eslovaquia"
+      "es": "Eslovaquia",
+      "de": "SVK"
     }
   },
   "HRV": {
@@ -387,7 +403,8 @@
         "continent": "europe",
         "slug": "croatia"
       },
-      "es": "Croacia"
+      "es": "Croacia",
+      "de": "HRV"
     }
   },
   "SVN": {
@@ -410,7 +427,8 @@
         "continent": "europe",
         "slug": "slovenia"
       },
-      "es": "Eslovenia"
+      "es": "Eslovenia",
+      "de": "SVN"
     }
   },
   "CZE": {
@@ -433,7 +451,8 @@
         "continent": "europe",
         "slug": "czech-republic"
       },
-      "es": "Chequia"
+      "es": "Chequia",
+      "de": "CZE"
     }
   },
   "ATG": {
@@ -456,7 +475,8 @@
         "continent": "americas",
         "slug": "antigua-and-barbuda"
       },
-      "es": "Antigua y Barbuda"
+      "es": "Antigua y Barbuda",
+      "de": "ATG"
     }
   },
   "MWI": {
@@ -479,7 +499,8 @@
         "continent": "africa",
         "slug": "malawi"
       },
-      "es": "Malaui"
+      "es": "Malaui",
+      "de": "MWI"
     }
   },
   "GAB": {
@@ -502,7 +523,8 @@
         "continent": "africa",
         "slug": "gabon"
       },
-      "es": "Gabón"
+      "es": "Gabón",
+      "de": "GAB"
     }
   },
   "VGB": {
@@ -525,7 +547,8 @@
         "continent": "americas",
         "slug": "virgin-islands-british"
       },
-      "es": "Islas Vírgenes (Británicas)"
+      "es": "Islas Vírgenes (Británicas)",
+      "de": null
     }
   },
   "GRD": {
@@ -548,7 +571,8 @@
         "continent": "americas",
         "slug": "grenada"
       },
-      "es": "Granada"
+      "es": "Granada",
+      "de": "GRD"
     }
   },
   "HND": {
@@ -571,7 +595,8 @@
         "continent": "americas",
         "slug": "honduras"
       },
-      "es": "Honduras"
+      "es": "Honduras",
+      "de": "HND"
     }
   },
   "CMR": {
@@ -594,7 +619,8 @@
         "continent": "africa",
         "slug": "cameroon"
       },
-      "es": "Camerún"
+      "es": "Camerún",
+      "de": "CMR"
     }
   },
   "IDN": {
@@ -617,7 +643,8 @@
         "continent": "asia",
         "slug": "indonesia"
       },
-      "es": "Indonesia"
+      "es": "Indonesia",
+      "de": "IDN"
     }
   },
   "BLR": {
@@ -640,7 +667,8 @@
         "continent": "europe",
         "slug": "belarus"
       },
-      "es": "Bielorrusia"
+      "es": "Bielorrusia",
+      "de": "BLR"
     }
   },
   "LSO": {
@@ -663,7 +691,8 @@
         "continent": "africa",
         "slug": "lesotho"
       },
-      "es": "Lesoto"
+      "es": "Lesoto",
+      "de": "LSO"
     }
   },
   "DMA": {
@@ -686,7 +715,8 @@
         "continent": "americas",
         "slug": "dominica"
       },
-      "es": "república dominicana"
+      "es": "república dominicana",
+      "de": "DMA"
     }
   },
   "SWZ": {
@@ -709,7 +739,8 @@
         "continent": "africa",
         "slug": "eswatini"
       },
-      "es": "Esuatini"
+      "es": "Esuatini",
+      "de": "SWZ"
     }
   },
   "KAZ": {
@@ -732,7 +763,8 @@
         "continent": "asia",
         "slug": "kazakhstan"
       },
-      "es": "Kazajstán"
+      "es": "Kazajstán",
+      "de": "KAZ"
     }
   },
   "ROU": {
@@ -755,7 +787,8 @@
         "continent": "europe",
         "slug": "romania"
       },
-      "es": "Rumania"
+      "es": "Rumania",
+      "de": "ROU"
     }
   },
   "VCT": {
@@ -778,7 +811,8 @@
         "continent": "americas",
         "slug": "saint-vincent-and-the-grenadines"
       },
-      "es": "San Vicente y las Granadinas"
+      "es": "San Vicente y las Granadinas",
+      "de": "VCT"
     }
   },
   "GUY": {
@@ -801,7 +835,8 @@
         "continent": "americas",
         "slug": "guyana"
       },
-      "es": "Guayana"
+      "es": "Guayana",
+      "de": "GUY"
     }
   },
   "SSD": {
@@ -824,7 +859,8 @@
         "continent": "africa",
         "slug": "south-sudan"
       },
-      "es": "Sudán del Sur"
+      "es": "Sudán del Sur",
+      "de": "SSD"
     }
   },
   "AND": {
@@ -847,7 +883,8 @@
         "continent": "europe",
         "slug": "andorra"
       },
-      "es": "Andorra"
+      "es": "Andorra",
+      "de": "AND"
     }
   },
   "AUT": {
@@ -870,7 +907,8 @@
         "continent": "europe",
         "slug": "austria"
       },
-      "es": "Austria"
+      "es": "Austria",
+      "de": "AUT"
     }
   },
   "FRO": {
@@ -889,7 +927,8 @@
         "continent": "europe",
         "slug": "faroe-islands"
       },
-      "es": "Islas Feroe"
+      "es": "Islas Feroe",
+      "de": null
     }
   },
   "ATA": {
@@ -909,7 +948,8 @@
       "ie": null,
       "fr": "antarctique",
       "au": null,
-      "es": "Antártida"
+      "es": "Antártida",
+      "de": null
     }
   },
   "AZE": {
@@ -932,7 +972,8 @@
         "continent": "middle-east",
         "slug": "azerbaijan"
       },
-      "es": "Azerbaiyán"
+      "es": "Azerbaiyán",
+      "de": "AZE"
     }
   },
   "JAM": {
@@ -955,7 +996,8 @@
         "continent": "americas",
         "slug": "jamaica"
       },
-      "es": "Jamaica"
+      "es": "Jamaica",
+      "de": "JAM"
     }
   },
   "MMR": {
@@ -978,7 +1020,8 @@
         "continent": "asia",
         "slug": "myanmar"
       },
-      "es": "Birmania"
+      "es": "Birmania",
+      "de": "MMR"
     }
   },
   "PRK": {
@@ -1001,7 +1044,8 @@
         "continent": "asia",
         "slug": "north-korea"
       },
-      "es": "Corea del Norte"
+      "es": "Corea del Norte",
+      "de": "PRK"
     }
   },
   "SXM": {
@@ -1024,7 +1068,8 @@
         "continent": "americas",
         "slug": "sint-maarten-dutch-part"
       },
-      "es": "Sint Maarten (parte holandesa)"
+      "es": "Sint Maarten (parte holandesa)",
+      "de": null
     }
   },
   "MYS": {
@@ -1047,7 +1092,8 @@
         "continent": "asia",
         "slug": "malaysia"
       },
-      "es": "Malasia"
+      "es": "Malasia",
+      "de": "MYS"
     }
   },
   "TWN": {
@@ -1067,7 +1113,8 @@
       "ie": null,
       "fr": "taiwan-province-de-chine",
       "au": null,
-      "es": "Taiwán, Provincia de China"
+      "es": "Taiwán, Provincia de China",
+      "de": "TWN"
     }
   },
   "VUT": {
@@ -1090,7 +1137,8 @@
         "continent": "pacific",
         "slug": "vanuatu"
       },
-      "es": "Vanuatu"
+      "es": "Vanuatu",
+      "de": "VUT"
     }
   },
   "SEN": {
@@ -1113,7 +1161,8 @@
         "continent": "africa",
         "slug": "senegal"
       },
-      "es": "Senegal"
+      "es": "Senegal",
+      "de": "SEN"
     }
   },
   "THA": {
@@ -1136,7 +1185,8 @@
         "continent": "asia",
         "slug": "thailand"
       },
-      "es": "Tailandia"
+      "es": "Tailandia",
+      "de": "THA"
     }
   },
   "BDI": {
@@ -1159,7 +1209,8 @@
         "continent": "africa",
         "slug": "burundi"
       },
-      "es": "Burundi"
+      "es": "Burundi",
+      "de": "BDI"
     }
   },
   "BEN": {
@@ -1182,7 +1233,8 @@
         "continent": "africa",
         "slug": "benin"
       },
-      "es": "Benín"
+      "es": "Benín",
+      "de": "BEN"
     }
   },
   "NRU": {
@@ -1205,7 +1257,8 @@
         "continent": "pacific",
         "slug": "nauru"
       },
-      "es": "Nauru"
+      "es": "Nauru",
+      "de": "NRU"
     }
   },
   "NAM": {
@@ -1228,7 +1281,8 @@
         "continent": "africa",
         "slug": "namibia"
       },
-      "es": "Namibia"
+      "es": "Namibia",
+      "de": "NAM"
     }
   },
   "MDG": {
@@ -1251,7 +1305,8 @@
         "continent": "africa",
         "slug": "madagascar"
       },
-      "es": "Madagascar"
+      "es": "Madagascar",
+      "de": "MDG"
     }
   },
   "IND": {
@@ -1274,7 +1329,8 @@
         "continent": "asia",
         "slug": "india"
       },
-      "es": "India"
+      "es": "India",
+      "de": "IND"
     }
   },
   "BFA": {
@@ -1297,7 +1353,8 @@
         "continent": "africa",
         "slug": "burkina-faso"
       },
-      "es": "Burkina Faso"
+      "es": "Burkina Faso",
+      "de": "BFA"
     }
   },
   "ERI": {
@@ -1320,7 +1377,8 @@
         "continent": "africa",
         "slug": "eritrea"
       },
-      "es": "Eritrea"
+      "es": "Eritrea",
+      "de": "ERI"
     }
   },
   "SWE": {
@@ -1343,7 +1401,8 @@
         "continent": "europe",
         "slug": "sweden"
       },
-      "es": "Suecia"
+      "es": "Suecia",
+      "de": "SWE"
     }
   },
   "AFG": {
@@ -1366,7 +1425,8 @@
         "continent": "asia",
         "slug": "afghanistan"
       },
-      "es": "Afganistán"
+      "es": "Afganistán",
+      "de": "AFG"
     }
   },
   "MTQ": {
@@ -1389,7 +1449,8 @@
         "continent": "americas",
         "slug": "martinique"
       },
-      "es": "Martinica"
+      "es": "Martinica",
+      "de": null
     }
   },
   "VNM": {
@@ -1412,7 +1473,8 @@
         "continent": "asia",
         "slug": "viet-nam"
       },
-      "es": "Vietnam"
+      "es": "Vietnam",
+      "de": "VNM"
     }
   },
   "ESP": {
@@ -1435,7 +1497,8 @@
         "continent": "europe",
         "slug": "spain"
       },
-      "es": "España"
+      "es": "España",
+      "de": "ESP"
     }
   },
   "ASM": {
@@ -1458,7 +1521,8 @@
         "continent": "pacific",
         "slug": "american-samoa"
       },
-      "es": "Samoa Americana"
+      "es": "Samoa Americana",
+      "de": null
     }
   },
   "PCN": {
@@ -1477,7 +1541,8 @@
         "continent": "pacific",
         "slug": "pitcairn"
       },
-      "es": "Pitcairn"
+      "es": "Pitcairn",
+      "de": null
     }
   },
   "KIR": {
@@ -1500,7 +1565,8 @@
         "continent": "pacific",
         "slug": "kiribati"
       },
-      "es": "Kiribati"
+      "es": "Kiribati",
+      "de": "KIR"
     }
   },
   "TON": {
@@ -1523,7 +1589,8 @@
         "continent": "pacific",
         "slug": "tonga"
       },
-      "es": "Tonga"
+      "es": "Tonga",
+      "de": "TON"
     }
   },
   "WLF": {
@@ -1542,7 +1609,8 @@
         "continent": "pacific",
         "slug": "wallis-and-futuna"
       },
-      "es": "Wallis y Futuna"
+      "es": "Wallis y Futuna",
+      "de": null
     }
   },
   "NCL": {
@@ -1565,7 +1633,8 @@
         "continent": "pacific",
         "slug": "new-caledonia"
       },
-      "es": "Nueva Caledonia"
+      "es": "Nueva Caledonia",
+      "de": null
     }
   },
   "COK": {
@@ -1588,7 +1657,8 @@
         "continent": "pacific",
         "slug": "cook-islands"
       },
-      "es": "Islas Cook"
+      "es": "Islas Cook",
+      "de": "COK"
     }
   },
   "ISL": {
@@ -1611,7 +1681,8 @@
         "continent": "europe",
         "slug": "iceland"
       },
-      "es": "Islandia"
+      "es": "Islandia",
+      "de": "ISL"
     }
   },
   "PRI": {
@@ -1634,7 +1705,8 @@
         "continent": "americas",
         "slug": "puerto-rico"
       },
-      "es": "Puerto Rico"
+      "es": "Puerto Rico",
+      "de": null
     }
   },
   "BGR": {
@@ -1657,7 +1729,8 @@
         "continent": "europe",
         "slug": "bulgaria"
       },
-      "es": "Bulgaria"
+      "es": "Bulgaria",
+      "de": "BGR"
     }
   },
   "BEL": {
@@ -1680,7 +1753,8 @@
         "continent": "europe",
         "slug": "belgium"
       },
-      "es": "Bélgica"
+      "es": "Bélgica",
+      "de": "BEL"
     }
   },
   "CYM": {
@@ -1703,7 +1777,8 @@
         "continent": "americas",
         "slug": "cayman-islands"
       },
-      "es": "Islas Caimán"
+      "es": "Islas Caimán",
+      "de": null
     }
   },
   "YEM": {
@@ -1726,7 +1801,8 @@
         "continent": "middle-east",
         "slug": "yemen"
       },
-      "es": "Yemen"
+      "es": "Yemen",
+      "de": "YEM"
     }
   },
   "EST": {
@@ -1749,7 +1825,8 @@
         "continent": "europe",
         "slug": "estonia"
       },
-      "es": "Estonia"
+      "es": "Estonia",
+      "de": "EST"
     }
   },
   "LTU": {
@@ -1772,7 +1849,8 @@
         "continent": "europe",
         "slug": "lithuania"
       },
-      "es": "Lituania"
+      "es": "Lituania",
+      "de": "LTU"
     }
   },
   "ITA": {
@@ -1795,7 +1873,8 @@
         "continent": "europe",
         "slug": "italy"
       },
-      "es": "Italia"
+      "es": "Italia",
+      "de": "ITA"
     }
   },
   "CHE": {
@@ -1818,7 +1897,8 @@
         "continent": "europe",
         "slug": "switzerland"
       },
-      "es": "Suiza"
+      "es": "Suiza",
+      "de": "CHE"
     }
   },
   "IRL": {
@@ -1841,7 +1921,8 @@
         "continent": "europe",
         "slug": "ireland"
       },
-      "es": "Irlanda"
+      "es": "Irlanda",
+      "de": "IRL"
     }
   },
   "DNK": {
@@ -1864,7 +1945,8 @@
         "continent": "europe",
         "slug": "denmark"
       },
-      "es": "Dinamarca"
+      "es": "Dinamarca",
+      "de": "DNK"
     }
   },
   "BQ-SA": {
@@ -1884,7 +1966,8 @@
       "ie": null,
       "fr": "saba",
       "au": null,
-      "es": "Sabá"
+      "es": "Sabá",
+      "de": null
     }
   },
   "BQ-SE": {
@@ -1904,7 +1987,8 @@
       "ie": null,
       "fr": "saint-eustache",
       "au": null,
-      "es": "San Eustaquio"
+      "es": "San Eustaquio",
+      "de": null
     }
   },
   "SJM": {
@@ -1923,7 +2007,8 @@
         "continent": "europe",
         "slug": "svalbard-and-jan-mayen"
       },
-      "es": "Svalbard y Jan Mayen"
+      "es": "Svalbard y Jan Mayen",
+      "de": null
     }
   },
   "COM": {
@@ -1946,7 +2031,8 @@
         "continent": "africa",
         "slug": "comoros"
       },
-      "es": "Comoras"
+      "es": "Comoras",
+      "de": "COM"
     }
   },
   "MOZ": {
@@ -1969,7 +2055,8 @@
         "continent": "africa",
         "slug": "mozambique"
       },
-      "es": "Mozambique"
+      "es": "Mozambique",
+      "de": "MOZ"
     }
   },
   "FIN": {
@@ -1992,7 +2079,8 @@
         "continent": "europe",
         "slug": "finland"
       },
-      "es": "Finlandia"
+      "es": "Finlandia",
+      "de": "FIN"
     }
   },
   "FRA": {
@@ -2015,7 +2103,8 @@
         "continent": "europe",
         "slug": "france"
       },
-      "es": "Francia"
+      "es": "Francia",
+      "de": "FRA"
     }
   },
   "GMB": {
@@ -2038,7 +2127,8 @@
         "continent": "africa",
         "slug": "gambia"
       },
-      "es": "Gambia"
+      "es": "Gambia",
+      "de": "GMB"
     }
   },
   "SLV": {
@@ -2061,7 +2151,8 @@
         "continent": "americas",
         "slug": "el-salvador"
       },
-      "es": "Salvador"
+      "es": "Salvador",
+      "de": "SLV"
     }
   },
   "ISR": {
@@ -2084,7 +2175,8 @@
         "continent": "middle-east",
         "slug": "israel"
       },
-      "es": "Israel"
+      "es": "Israel",
+      "de": "ISR"
     }
   },
   "MRT": {
@@ -2107,7 +2199,8 @@
         "continent": "africa",
         "slug": "mauritania"
       },
-      "es": "Mauritania"
+      "es": "Mauritania",
+      "de": "MRT"
     }
   },
   "LIE": {
@@ -2130,7 +2223,8 @@
         "continent": "europe",
         "slug": "liechtenstein"
       },
-      "es": "Liechtenstein"
+      "es": "Liechtenstein",
+      "de": "LIE"
     }
   },
   "RWA": {
@@ -2153,7 +2247,8 @@
         "continent": "africa",
         "slug": "rwanda"
       },
-      "es": "Ruanda"
+      "es": "Ruanda",
+      "de": "RWA"
     }
   },
   "ZMB": {
@@ -2176,7 +2271,8 @@
         "continent": "africa",
         "slug": "zambia"
       },
-      "es": "Zambia"
+      "es": "Zambia",
+      "de": "ZMB"
     }
   },
   "MKD": {
@@ -2199,7 +2295,8 @@
         "continent": "europe",
         "slug": "north-macedonia"
       },
-      "es": "Macedonia del Norte"
+      "es": "Macedonia del Norte",
+      "de": "MKD"
     }
   },
   "AUS": {
@@ -2222,7 +2319,8 @@
         "continent": "pacific",
         "slug": "australia"
       },
-      "es": "Australia"
+      "es": "Australia",
+      "de": "AUS"
     }
   },
   "GUF": {
@@ -2245,7 +2343,8 @@
         "continent": "americas",
         "slug": "french-guiana"
       },
-      "es": "Guayana Francesa"
+      "es": "Guayana Francesa",
+      "de": null
     }
   },
   "GBR": {
@@ -2268,7 +2367,8 @@
         "continent": "europe",
         "slug": "united-kingdom"
       },
-      "es": "Reino Unido"
+      "es": "Reino Unido",
+      "de": "GBR"
     }
   },
   "USA": {
@@ -2291,7 +2391,8 @@
         "continent": "americas",
         "slug": "united-states-of-america"
       },
-      "es": "Estados Unidos"
+      "es": "Estados Unidos",
+      "de": "USA"
     }
   },
   "KOR": {
@@ -2314,7 +2415,8 @@
         "continent": "asia",
         "slug": "south-korea"
       },
-      "es": "Corea del Sur"
+      "es": "Corea del Sur",
+      "de": "KOR"
     }
   },
   "BTN": {
@@ -2337,7 +2439,8 @@
         "continent": "asia",
         "slug": "bhutan"
       },
-      "es": "Bután"
+      "es": "Bután",
+      "de": "BTN"
     }
   },
   "GRC": {
@@ -2360,7 +2463,8 @@
         "continent": "europe",
         "slug": "greece"
       },
-      "es": "Grecia"
+      "es": "Grecia",
+      "de": "GRC"
     }
   },
   "CHN": {
@@ -2383,7 +2487,8 @@
         "continent": "asia",
         "slug": "china"
       },
-      "es": "China"
+      "es": "China",
+      "de": "CHN"
     }
   },
   "PAK": {
@@ -2406,7 +2511,8 @@
         "continent": "asia",
         "slug": "pakistan"
       },
-      "es": "Pakistán"
+      "es": "Pakistán",
+      "de": "PAK"
     }
   },
   "PSE": {
@@ -2425,7 +2531,8 @@
         "continent": "middle-east",
         "slug": "palestine-state-of"
       },
-      "es": "Palestina, Estado de"
+      "es": "Palestina, Estado de",
+      "de": "PSE"
     }
   },
   "ETH": {
@@ -2448,7 +2555,8 @@
         "continent": "africa",
         "slug": "ethiopia"
       },
-      "es": "Etiopía"
+      "es": "Etiopía",
+      "de": "ETH"
     }
   },
   "BIH": {
@@ -2471,7 +2579,8 @@
         "continent": "europe",
         "slug": "bosnia-and-herzegovina"
       },
-      "es": "Bosnia y Herzegovina"
+      "es": "Bosnia y Herzegovina",
+      "de": "BIH"
     }
   },
   "SMR": {
@@ -2494,7 +2603,8 @@
         "continent": "europe",
         "slug": "san-marino"
       },
-      "es": "San Marino"
+      "es": "San Marino",
+      "de": "SMR"
     }
   },
   "RUS": {
@@ -2517,7 +2627,8 @@
         "continent": "europe",
         "slug": "russia"
       },
-      "es": "Rusia"
+      "es": "Rusia",
+      "de": "RUS"
     }
   },
   "GNB": {
@@ -2540,7 +2651,8 @@
         "continent": "africa",
         "slug": "guinea-bissau"
       },
-      "es": "Guinea-Bisáu"
+      "es": "Guinea-Bisáu",
+      "de": "GNB"
     }
   },
   "GNQ": {
@@ -2563,7 +2675,8 @@
         "continent": "africa",
         "slug": "equatorial-guinea"
       },
-      "es": "Guinea Ecuatorial"
+      "es": "Guinea Ecuatorial",
+      "de": "GNQ"
     }
   },
   "VIR": {
@@ -2586,7 +2699,8 @@
         "continent": "americas",
         "slug": "virgin-islands-u-s"
       },
-      "es": "Islas Vírgenes (EE.UU.)"
+      "es": "Islas Vírgenes (EE.UU.)",
+      "de": null
     }
   },
   "BHS": {
@@ -2609,7 +2723,8 @@
         "continent": "americas",
         "slug": "bahamas"
       },
-      "es": "bahamas"
+      "es": "bahamas",
+      "de": "BHS"
     }
   },
   "TUR": {
@@ -2632,7 +2747,8 @@
         "continent": "middle-east",
         "slug": "turkiye"
       },
-      "es": "Turquía"
+      "es": "Turquía",
+      "de": "TUR"
     }
   },
   "MAC": {
@@ -2655,7 +2771,8 @@
         "continent": "asia",
         "slug": "macao"
       },
-      "es": "macao"
+      "es": "macao",
+      "de": "MAC"
     }
   },
   "HKG": {
@@ -2678,7 +2795,8 @@
         "continent": "asia",
         "slug": "hong-kong"
       },
-      "es": "Hong Kong"
+      "es": "Hong Kong",
+      "de": "HKG"
     }
   },
   "UGA": {
@@ -2701,7 +2819,8 @@
         "continent": "africa",
         "slug": "uganda"
       },
-      "es": "Uganda"
+      "es": "Uganda",
+      "de": "UGA"
     }
   },
   "DZA": {
@@ -2724,7 +2843,8 @@
         "continent": "africa",
         "slug": "algeria"
       },
-      "es": "Argelia"
+      "es": "Argelia",
+      "de": "DZA"
     }
   },
   "AGO": {
@@ -2747,7 +2867,8 @@
         "continent": "africa",
         "slug": "angola"
       },
-      "es": "Angola"
+      "es": "Angola",
+      "de": "AGO"
     }
   },
   "ARG": {
@@ -2770,7 +2891,8 @@
         "continent": "americas",
         "slug": "argentina"
       },
-      "es": "Argentina"
+      "es": "Argentina",
+      "de": "ARG"
     }
   },
   "BRB": {
@@ -2793,7 +2915,8 @@
         "continent": "americas",
         "slug": "barbados"
       },
-      "es": "Barbados"
+      "es": "Barbados",
+      "de": "BRB"
     }
   },
   "BRA": {
@@ -2816,7 +2939,8 @@
         "continent": "americas",
         "slug": "brazil"
       },
-      "es": "Brasil"
+      "es": "Brasil",
+      "de": "BRA"
     }
   },
   "KHM": {
@@ -2839,7 +2963,8 @@
         "continent": "asia",
         "slug": "cambodia"
       },
-      "es": "Camboya"
+      "es": "Camboya",
+      "de": "KHM"
     }
   },
   "CAN": {
@@ -2858,7 +2983,8 @@
         "continent": "americas",
         "slug": "canada"
       },
-      "es": "Canadá"
+      "es": "Canadá",
+      "de": "CAN"
     }
   },
   "CAF": {
@@ -2881,7 +3007,8 @@
         "continent": "africa",
         "slug": "central-african-republic"
       },
-      "es": "República Centroafricana"
+      "es": "República Centroafricana",
+      "de": "CAF"
     }
   },
   "CYP": {
@@ -2904,7 +3031,8 @@
         "continent": "middle-east",
         "slug": "cyprus"
       },
-      "es": "Chipre"
+      "es": "Chipre",
+      "de": "CYP"
     }
   },
   "GTM": {
@@ -2927,7 +3055,8 @@
         "continent": "americas",
         "slug": "guatemala"
       },
-      "es": "Guatemala"
+      "es": "Guatemala",
+      "de": "GTM"
     }
   },
   "GIN": {
@@ -2950,7 +3079,8 @@
         "continent": "africa",
         "slug": "guinea"
       },
-      "es": "Guinea"
+      "es": "Guinea",
+      "de": "GIN"
     }
   },
   "HTI": {
@@ -2973,7 +3103,8 @@
         "continent": "americas",
         "slug": "haiti"
       },
-      "es": "Haití"
+      "es": "Haití",
+      "de": "HTI"
     }
   },
   "CIV": {
@@ -2996,7 +3127,8 @@
         "continent": "africa",
         "slug": "cote-d-ivoire"
       },
-      "es": "Costa de Marfil"
+      "es": "Costa de Marfil",
+      "de": "CIV"
     }
   },
   "JPN": {
@@ -3019,7 +3151,8 @@
         "continent": "asia",
         "slug": "japan"
       },
-      "es": "Japón"
+      "es": "Japón",
+      "de": "JPN"
     }
   },
   "KGZ": {
@@ -3042,7 +3175,8 @@
         "continent": "asia",
         "slug": "kyrgyzstan"
       },
-      "es": "Kirguistán"
+      "es": "Kirguistán",
+      "de": "KGZ"
     }
   },
   "BLZ": {
@@ -3065,7 +3199,8 @@
         "continent": "americas",
         "slug": "belize"
       },
-      "es": "Belice"
+      "es": "Belice",
+      "de": "BLZ"
     }
   },
   "MLI": {
@@ -3088,7 +3223,8 @@
         "continent": "africa",
         "slug": "mali"
       },
-      "es": "Malí"
+      "es": "Malí",
+      "de": "MLI"
     }
   },
   "MAR": {
@@ -3111,7 +3247,8 @@
         "continent": "africa",
         "slug": "morocco"
       },
-      "es": "Marruecos"
+      "es": "Marruecos",
+      "de": "MAR"
     }
   },
   "MDA": {
@@ -3134,7 +3271,8 @@
         "continent": "europe",
         "slug": "moldova-republic-of"
       },
-      "es": "Moldavia, República de"
+      "es": "Moldavia, República de",
+      "de": "MDA"
     }
   },
   "MNG": {
@@ -3157,7 +3295,8 @@
         "continent": "asia",
         "slug": "mongolia"
       },
-      "es": "Mongolia"
+      "es": "Mongolia",
+      "de": "MNG"
     }
   },
   "TKL": {
@@ -3180,7 +3319,8 @@
         "continent": "pacific",
         "slug": "tokelau"
       },
-      "es": "Tokelau"
+      "es": "Tokelau",
+      "de": null
     }
   },
   "TUV": {
@@ -3203,7 +3343,8 @@
         "continent": "pacific",
         "slug": "tuvalu"
       },
-      "es": "Tuvalu"
+      "es": "Tuvalu",
+      "de": "TUV"
     }
   },
   "NZL": {
@@ -3226,7 +3367,8 @@
         "continent": "pacific",
         "slug": "new-zealand"
       },
-      "es": "Nueva Zelanda"
+      "es": "Nueva Zelanda",
+      "de": "NZL"
     }
   },
   "NER": {
@@ -3249,7 +3391,8 @@
         "continent": "africa",
         "slug": "niger"
       },
-      "es": "Níger"
+      "es": "Níger",
+      "de": "NER"
     }
   },
   "UKR": {
@@ -3272,7 +3415,8 @@
         "continent": "europe",
         "slug": "ukraine"
       },
-      "es": "Ucrania"
+      "es": "Ucrania",
+      "de": "UKR"
     }
   },
   "UZB": {
@@ -3295,7 +3439,8 @@
         "continent": "asia",
         "slug": "uzbekistan"
       },
-      "es": "Uzbekistán"
+      "es": "Uzbekistán",
+      "de": "UZB"
     }
   },
   "PRY": {
@@ -3318,7 +3463,8 @@
         "continent": "americas",
         "slug": "paraguay"
       },
-      "es": "Paraguay"
+      "es": "Paraguay",
+      "de": "PRY"
     }
   },
   "SLE": {
@@ -3341,7 +3487,8 @@
         "continent": "africa",
         "slug": "sierra-leone"
       },
-      "es": "Sierra Leona"
+      "es": "Sierra Leona",
+      "de": "SLE"
     }
   },
   "SOM": {
@@ -3364,7 +3511,8 @@
         "continent": "africa",
         "slug": "somalia"
       },
-      "es": "Somalia"
+      "es": "Somalia",
+      "de": "SOM"
     }
   },
   "LKA": {
@@ -3387,7 +3535,8 @@
         "continent": "asia",
         "slug": "sri-lanka"
       },
-      "es": "Sri Lanka"
+      "es": "Sri Lanka",
+      "de": "LKA"
     }
   },
   "SDN": {
@@ -3410,7 +3559,8 @@
         "continent": "africa",
         "slug": "sudan"
       },
-      "es": "Sudán"
+      "es": "Sudán",
+      "de": "SDN"
     }
   },
   "TJK": {
@@ -3433,7 +3583,8 @@
         "continent": "asia",
         "slug": "tajikistan"
       },
-      "es": "Tayikistán"
+      "es": "Tayikistán",
+      "de": "TJK"
     }
   },
   "TCD": {
@@ -3456,7 +3607,8 @@
         "continent": "africa",
         "slug": "chad"
       },
-      "es": "Chad"
+      "es": "Chad",
+      "de": "TCD"
     }
   },
   "TUN": {
@@ -3479,7 +3631,8 @@
         "continent": "africa",
         "slug": "tunisia"
       },
-      "es": "Túnez"
+      "es": "Túnez",
+      "de": "TUN"
     }
   },
   "TKM": {
@@ -3502,7 +3655,8 @@
         "continent": "asia",
         "slug": "turkmenistan"
       },
-      "es": "Turkmenistán"
+      "es": "Turkmenistán",
+      "de": "TKM"
     }
   },
   "URY": {
@@ -3525,7 +3679,8 @@
         "continent": "americas",
         "slug": "uruguay"
       },
-      "es": "Uruguay"
+      "es": "Uruguay",
+      "de": "URY"
     }
   },
   "NIC": {
@@ -3548,7 +3703,8 @@
         "continent": "americas",
         "slug": "nicaragua"
       },
-      "es": "Nicaragua"
+      "es": "Nicaragua",
+      "de": "NIC"
     }
   },
   "ABW": {
@@ -3571,7 +3727,8 @@
         "continent": "americas",
         "slug": "aruba"
       },
-      "es": "Aruba"
+      "es": "Aruba",
+      "de": null
     }
   },
   "BQ-BO": {
@@ -3591,7 +3748,8 @@
       "ie": null,
       "fr": "bonaire",
       "au": null,
-      "es": "Bonaire"
+      "es": "Bonaire",
+      "de": null
     }
   },
   "LBR": {
@@ -3614,7 +3772,8 @@
         "continent": "africa",
         "slug": "liberia"
       },
-      "es": "Liberia"
+      "es": "Liberia",
+      "de": "LBR"
     }
   },
   "CUW": {
@@ -3637,7 +3796,8 @@
         "continent": "americas",
         "slug": "curacao"
       },
-      "es": "Curazao"
+      "es": "Curazao",
+      "de": null
     }
   },
   "COG": {
@@ -3660,7 +3820,8 @@
         "continent": "africa",
         "slug": "congo"
       },
-      "es": "Congo"
+      "es": "Congo",
+      "de": "COG"
     }
   },
   "SUR": {
@@ -3683,7 +3844,8 @@
         "continent": "americas",
         "slug": "suriname"
       },
-      "es": "Surinam"
+      "es": "Surinam",
+      "de": "SUR"
     }
   },
   "TGO": {
@@ -3706,7 +3868,8 @@
         "continent": "africa",
         "slug": "togo"
       },
-      "es": "Ir"
+      "es": "Ir",
+      "de": "TGO"
     }
   },
   "GLP": {
@@ -3729,7 +3892,8 @@
         "continent": "americas",
         "slug": "guadeloupe"
       },
-      "es": "Guadalupe"
+      "es": "Guadalupe",
+      "de": null
     }
   },
   "MUS": {
@@ -3752,7 +3916,8 @@
         "continent": "africa",
         "slug": "mauritius"
       },
-      "es": "Mauricio"
+      "es": "Mauricio",
+      "de": "MUS"
     }
   },
   "PYF": {
@@ -3775,7 +3940,8 @@
         "continent": "pacific",
         "slug": "french-polynesia"
       },
-      "es": "Polinesia Francesa"
+      "es": "Polinesia Francesa",
+      "de": null
     }
   },
   "LUX": {
@@ -3798,7 +3964,8 @@
         "continent": "europe",
         "slug": "luxembourg"
       },
-      "es": "Luxemburgo"
+      "es": "Luxemburgo",
+      "de": "LUX"
     }
   },
   "KNA": {
@@ -3821,7 +3988,8 @@
         "continent": "americas",
         "slug": "saint-kitts-and-nevis"
       },
-      "es": "San Cristóbal y Nieves"
+      "es": "San Cristóbal y Nieves",
+      "de": "KNA"
     }
   },
   "SYC": {
@@ -3844,7 +4012,8 @@
         "continent": "africa",
         "slug": "seychelles"
       },
-      "es": "Seychelles"
+      "es": "Seychelles",
+      "de": "SYC"
     }
   },
   "GHA": {
@@ -3867,7 +4036,8 @@
         "continent": "africa",
         "slug": "ghana"
       },
-      "es": "Ghana"
+      "es": "Ghana",
+      "de": "GHA"
     }
   },
   "CUB": {
@@ -3890,7 +4060,8 @@
         "continent": "americas",
         "slug": "cuba"
       },
-      "es": "Cuba"
+      "es": "Cuba",
+      "de": "CUB"
     }
   },
   "COL": {
@@ -3913,7 +4084,8 @@
         "continent": "americas",
         "slug": "colombia"
       },
-      "es": "Colombia"
+      "es": "Colombia",
+      "de": "COL"
     }
   },
   "GEO": {
@@ -3936,7 +4108,8 @@
         "continent": "middle-east",
         "slug": "georgia"
       },
-      "es": "Georgia"
+      "es": "Georgia",
+      "de": "GEO"
     }
   },
   "IRQ": {
@@ -3959,7 +4132,8 @@
         "continent": "middle-east",
         "slug": "iraq"
       },
-      "es": "Irak"
+      "es": "Irak",
+      "de": "IRQ"
     }
   },
   "ARE": {
@@ -3982,7 +4156,8 @@
         "continent": "middle-east",
         "slug": "united-arab-emirates"
       },
-      "es": "Emiratos Árabes Unidos"
+      "es": "Emiratos Árabes Unidos",
+      "de": "ARE"
     }
   },
   "SAU": {
@@ -4005,7 +4180,8 @@
         "continent": "middle-east",
         "slug": "saudi-arabia"
       },
-      "es": "Arabia Saudí"
+      "es": "Arabia Saudí",
+      "de": "SAU"
     }
   },
   "KWT": {
@@ -4028,7 +4204,8 @@
         "continent": "middle-east",
         "slug": "kuwait"
       },
-      "es": "Kuwait"
+      "es": "Kuwait",
+      "de": "KWT"
     }
   },
   "QAT": {
@@ -4051,7 +4228,8 @@
         "continent": "middle-east",
         "slug": "qatar"
       },
-      "es": "Catar"
+      "es": "Catar",
+      "de": "QAT"
     }
   },
   "BHR": {
@@ -4074,7 +4252,8 @@
         "continent": "middle-east",
         "slug": "bahrain"
       },
-      "es": "Bahréin"
+      "es": "Bahréin",
+      "de": "BHR"
     }
   },
   "OMN": {
@@ -4097,7 +4276,8 @@
         "continent": "middle-east",
         "slug": "oman"
       },
-      "es": "Omán"
+      "es": "Omán",
+      "de": "OMN"
     }
   },
   "COD": {
@@ -4120,7 +4300,8 @@
         "continent": "africa",
         "slug": "congo-democratic-republic-of-the"
       },
-      "es": "Congo, República Democrática del"
+      "es": "Congo, República Democrática del",
+      "de": "COD"
     }
   },
   "SYR": {
@@ -4143,7 +4324,8 @@
         "continent": "middle-east",
         "slug": "syria"
       },
-      "es": "República Árabe Siria"
+      "es": "República Árabe Siria",
+      "de": "SYR"
     }
   },
   "BRN": {
@@ -4166,7 +4348,8 @@
         "continent": "asia",
         "slug": "brunei"
       },
-      "es": "Brunéi Darussalam"
+      "es": "Brunéi Darussalam",
+      "de": "BRN"
     }
   },
   "TLS": {
@@ -4189,7 +4372,8 @@
         "continent": "asia",
         "slug": "timor-leste"
       },
-      "es": "Timor Oriental"
+      "es": "Timor Oriental",
+      "de": "TLS"
     }
   },
   "BGD": {
@@ -4212,7 +4396,8 @@
         "continent": "asia",
         "slug": "bangladesh"
       },
-      "es": "Bangladesh"
+      "es": "Bangladesh",
+      "de": "BGD"
     }
   },
   "LBN": {
@@ -4235,7 +4420,8 @@
         "continent": "middle-east",
         "slug": "lebanon"
       },
-      "es": "Líbano"
+      "es": "Líbano",
+      "de": "LBN"
     }
   },
   "LAO": {
@@ -4258,7 +4444,8 @@
         "continent": "asia",
         "slug": "laos"
       },
-      "es": "República Democrática Popular Lao"
+      "es": "República Democrática Popular Lao",
+      "de": "LAO"
     }
   },
   "JOR": {
@@ -4281,7 +4468,8 @@
         "continent": "middle-east",
         "slug": "jordan"
       },
-      "es": "Jordán"
+      "es": "Jordán",
+      "de": "JOR"
     }
   },
   "TCA": {
@@ -4304,7 +4492,8 @@
         "continent": "americas",
         "slug": "turks-and-caicos-islands"
       },
-      "es": "Islas Turcas y Caicos"
+      "es": "Islas Turcas y Caicos",
+      "de": null
     }
   },
   "DOM": {
@@ -4327,7 +4516,8 @@
         "continent": "americas",
         "slug": "dominican-republic"
       },
-      "es": "República Dominicana"
+      "es": "República Dominicana",
+      "de": "DOM"
     }
   },
   "TTO": {
@@ -4350,7 +4540,8 @@
         "continent": "americas",
         "slug": "trinidad-and-tobago"
       },
-      "es": "Trinidad y Tobago"
+      "es": "Trinidad y Tobago",
+      "de": "TTO"
     }
   },
   "PAN": {
@@ -4373,7 +4564,8 @@
         "continent": "americas",
         "slug": "panama"
       },
-      "es": "Panamá"
+      "es": "Panamá",
+      "de": "PAN"
     }
   },
   "CRI": {
@@ -4396,7 +4588,8 @@
         "continent": "americas",
         "slug": "costa-rica"
       },
-      "es": "Costa Rica"
+      "es": "Costa Rica",
+      "de": "CRI"
     }
   },
   "MEX": {
@@ -4419,7 +4612,8 @@
         "continent": "americas",
         "slug": "mexico"
       },
-      "es": "México"
+      "es": "México",
+      "de": "MEX"
     }
   },
   "NIU": {
@@ -4442,7 +4636,8 @@
         "continent": "pacific",
         "slug": "niue"
       },
-      "es": "Niue"
+      "es": "Niue",
+      "de": "NIU"
     }
   },
   "WSM": {
@@ -4465,7 +4660,8 @@
         "continent": "pacific",
         "slug": "samoa"
       },
-      "es": "Samoa"
+      "es": "Samoa",
+      "de": "WSM"
     }
   },
   "FSM": {
@@ -4488,7 +4684,8 @@
         "continent": "pacific",
         "slug": "micronesia-federated-states-of"
       },
-      "es": "Micronesia, Estados Federados de"
+      "es": "Micronesia, Estados Federados de",
+      "de": "FSM"
     }
   },
   "SLB": {
@@ -4511,7 +4708,8 @@
         "continent": "pacific",
         "slug": "solomon-islands"
       },
-      "es": "Islas Salomón"
+      "es": "Islas Salomón",
+      "de": "SLB"
     }
   },
   "FJI": {
@@ -4534,7 +4732,8 @@
         "continent": "pacific",
         "slug": "fiji"
       },
-      "es": "Fiyi"
+      "es": "Fiyi",
+      "de": "FJI"
     }
   },
   "PLW": {
@@ -4557,7 +4756,8 @@
         "continent": "pacific",
         "slug": "palau"
       },
-      "es": "Palaos"
+      "es": "Palaos",
+      "de": "PLW"
     }
   }
 }
