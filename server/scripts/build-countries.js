@@ -30,10 +30,12 @@ const UK_SLUG_OVERRIDES = {
   USA: 'usa', GBR: 'uk', KOR: 'south-korea', PRK: 'north-korea', RUS: 'russia',
   SYR: 'syria', IRN: 'iran', VEN: 'venezuela', BOL: 'bolivia', TZA: 'tanzania',
   MDA: 'moldova', LAO: 'laos', BRN: 'brunei', CPV: 'cape-verde', CIV: 'ivory-coast',
-  COD: 'democratic-republic-of-the-congo', COG: 'congo', SWZ: 'swaziland',
-  MKD: 'north-macedonia', PSE: 'the-occupied-palestinian-territories', VAT: 'vatican-city',
-  TLS: 'east-timor', FSM: 'micronesia', VNM: 'vietnam', SVK: 'slovakia',
-  CZE: 'czech-republic', MMR: 'myanmar-burma', TUR: 'turkey', GMB: 'the-gambia',
+  COD: 'democratic-republic-of-the-congo', COG: 'congo', SWZ: 'eswatini',
+  MKD: 'north-macedonia', VAT: 'vatican-city',
+  // De OPT-pagina van gov.uk is opgegaan in de gecombineerde Israël-pagina.
+  PSE: 'israel',
+  TLS: 'east-timor', FSM: 'federated-states-of-micronesia', VNM: 'vietnam', SVK: 'slovakia',
+  CZE: 'czechia', MMR: 'myanmar-burma', TUR: 'turkey', GMB: 'the-gambia',
   LCA: 'st-lucia', VCT: 'st-vincent-and-the-grenadines', KNA: 'st-kitts-and-nevis', TWN: 'taiwan',
 };
 
@@ -68,7 +70,7 @@ const FR_SLUG_OVERRIDES = {
 
 // Australië (Smartraveller): URL = /destinations/{continent}/{slug}.
 const AU_SLUG_OVERRIDES = {
-  USA: 'united-states-of-america', GBR: 'united-kingdom', KOR: 'south-korea',
+  USA: 'united-states-america', GBR: 'united-kingdom', KOR: 'south-korea',
   PRK: 'north-korea', RUS: 'russia', AE: 'united-arab-emirates', CZE: 'czech-republic',
   LAO: 'laos', BRN: 'brunei', SYR: 'syria', MMR: 'myanmar', CPV: 'cape-verde',
 };

@@ -396,7 +396,7 @@
     "en": "Czechia",
     "key": "tsjechie",
     "sources": {
-      "uk": "czech-republic",
+      "uk": "czechia",
       "us": "czechia",
       "ca": {
         "iso2": "CZ",
@@ -2351,7 +2351,7 @@
     "en": "Palestine, State of",
     "key": "palestijnse-gebieden",
     "sources": {
-      "uk": "the-occupied-palestinian-territories",
+      "uk": "israel",
       "us": "israel-the-west-bank-and-gaza",
       "ca": null,
       "ie": null,
@@ -4524,7 +4524,7 @@
     "en": "Micronesia, Federated States of",
     "key": "micronesie",
     "sources": {
-      "uk": "micronesia",
+      "uk": "federated-states-of-micronesia",
       "us": "micronesia-federated-states-of",
       "ca": {
         "iso2": "FM",
@@ -5628,7 +5628,7 @@
     "en": "Eswatini",
     "key": "eswatini",
     "sources": {
-      "uk": "swaziland",
+      "uk": "eswatini",
       "us": "eswatini",
       "ca": {
         "iso2": "SZ",
@@ -5691,7 +5691,7 @@
       "fr": "etats-unis",
       "au": {
         "continent": "americas",
-        "slug": "united-states-of-america"
+        "slug": "united-states-america"
       },
       "es": "Estados Unidos",
       "de": "USA",
@@ -5777,32 +5777,6 @@
       "dk": "brunei-darussalam"
     }
   },
-  "ESP": {
-    "iso3": "ESP",
-    "iso2": "ES",
-    "nl": "Spanje",
-    "en": "Spain",
-    "key": "spanje",
-    "sources": {
-      "uk": "spain",
-      "us": "spain",
-      "ca": {
-        "iso2": "ES",
-        "id": 274000,
-        "slug": "spain"
-      },
-      "ie": "spain",
-      "fr": "espagne",
-      "au": {
-        "continent": "europe",
-        "slug": "spain"
-      },
-      "es": "España",
-      "de": "ESP",
-      "nz": "spain",
-      "dk": "spanien"
-    }
-  },
   "FRA": {
     "iso3": "FRA",
     "iso2": "FR",
@@ -5827,6 +5801,32 @@
       "de": "FRA",
       "nz": "france",
       "dk": "frankrig"
+    }
+  },
+  "ESP": {
+    "iso3": "ESP",
+    "iso2": "ES",
+    "nl": "Spanje",
+    "en": "Spain",
+    "key": "spanje",
+    "sources": {
+      "uk": "spain",
+      "us": "spain",
+      "ca": {
+        "iso2": "ES",
+        "id": 274000,
+        "slug": "spain"
+      },
+      "ie": "spain",
+      "fr": "espagne",
+      "au": {
+        "continent": "europe",
+        "slug": "spain"
+      },
+      "es": "España",
+      "de": "ESP",
+      "nz": "spain",
+      "dk": "spanien"
     }
   }
 }
