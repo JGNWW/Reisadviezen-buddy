@@ -313,7 +313,17 @@ input:focus, select:focus { outline: 2px solid var(--link); outline-offset: 0; b
 .change-kind { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .02em; color: var(--muted); }
 .change-country { display: block; font-weight: 600; font-size: 14.5px; margin: 3px 0 4px; padding: 0; }
 .change-desc { margin: 0; font-size: 13.5px; color: var(--text); }
+/* ---- Werklijst (divergentie) ---- */
+.delta { font-weight: 700; font-size: 13px; padding: 3px 10px; display: inline-block; }
+.delta.same { background: #e3f0e3; color: #2f6d2f; }
+.delta.stricter { background: #fdecea; color: var(--rood); }
+.delta.looser { background: #fdf0e2; color: #a85400; }
+.worklist-country { font-weight: 600; font-size: 14.5px; padding: 0; }
+
 .change-row.kind-update { border-left-color: var(--link); }
+.change-row.kind-bulk { border-left-color: #949494; background: #f6f8fa; }
+.change-row.kind-bulk .change-desc { color: var(--muted); }
+.change-country.plain { color: var(--muted); }
 .change-row.kind-reported { border-left-color: #949494; padding: 7px 14px; }
 .change-row.kind-reported .change-desc { color: var(--muted); font-size: 12.5px; }
 .change-note {
@@ -367,3 +377,20 @@ input:focus, select:focus { outline: 2px solid var(--link); outline-offset: 0; b
 .gap-bar-wrap { position: relative; background: #eef1f4; border-radius: 0; height: 22px; width: 200px; max-width: 100%; overflow: hidden; }
 .gap-bar { position: absolute; inset: 0 auto 0 0; background: var(--oranje); opacity: .35; border-radius: 0; }
 .gap-bar-wrap span { position: relative; z-index: 1; font-size: 12.5px; font-weight: 600; padding: 0 8px; line-height: 22px; display: block; }
+
+/* ---- Print / PDF: compacte samenvatting (zonder matrix en interactie) ---- */
+.print-note { display: none; }
+@media print {
+  .tabs, .settings-panel, .settings-btn, .controls, .status, .hint, .footer,
+  .topic-search, .matrix, .adddrop, .btn, .regional-toggle { display: none !important; }
+  .topbar { padding: 8px 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  main { max-width: none; padding: 6px 0 0; }
+  .print-note { display: block; font-size: 10px; color: #555; margin: 0 0 10px; }
+  .result-head { margin: 0 0 12px; padding: 10px 14px; }
+  body { font-size: 12px; }
+  .section-title, .theme-head-row { font-size: 14px; margin-top: 16px; }
+  .summary-table th, .summary-table td { padding: 5px 8px; font-size: 11px; }
+  .sq, .color-badge, .delta { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  a { color: #000; text-decoration: none; }
+  .divergence, .callout, .panel { break-inside: avoid; }
+}

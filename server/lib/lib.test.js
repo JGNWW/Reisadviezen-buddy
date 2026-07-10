@@ -28,9 +28,23 @@ test('extractNlColors haalt meerdere kleuren met context', () => {
     '<h2>In het kort</h2><ul><li>De kleurcode is rood voor het grensgebied.</li>' +
     '<li>Voor de rest geldt kleurcode geel.</li></ul>';
   const { overall, colors } = extractNlColors(html);
-  assert.equal(overall, 'rood'); // zwaarste kleur
+  // Overwegend = de kleur van "de rest van het land"; een zwaardere kleur
+  // voor alleen een deelgebied mag het landelijke beeld niet overschrijven.
+  assert.equal(overall, 'geel');
   const found = colors.map((c) => c.color).sort();
   assert.deepEqual(found, ['geel', 'rood']);
+});
+
+test('extractNlColors valt zonder "rest"-formulering terug op de zwaarste kleur', () => {
+  const html =
+    '<h2>In het kort</h2><ul><li>De kleurcode is oranje voor het noorden.</li>' +
+    '<li>Kleurcode geel geldt voor het zuiden.</li></ul>';
+  assert.equal(extractNlColors(html).overall, 'oranje');
+});
+
+test('extractNlColors: één kleur blijft die kleur', () => {
+  const html = '<h2>In het kort</h2><p>Voor heel Syrië geldt kleurcode rood.</p>';
+  assert.equal(extractNlColors(html).overall, 'rood');
 });
 
 test('mapForeignToNlColor mapt FCDO-formuleringen', () => {

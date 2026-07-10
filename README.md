@@ -43,14 +43,16 @@ Browser ── statische NL-data (Pages) ──► NL-reisadvies + zoeken
    NederlandWereldwijd (de kop *In het kort* wordt overgeslagen); alle bronnen
    worden op een canonieke themalijst geplaatst.
 5. **Ontbrekende thema's** — wat andere landen wél behandelen en NL niet.
-6. **Zoeken op thema/zoekwoord** — in alle Nederlandse reisadviezen, en per land
+6. **Werklijst** — waar wijkt NL af van de internationale consensus (mediaan
+   van de buitenlandse bronnen), gesorteerd op grootte van de afwijking.
+7. **Zoeken op thema/zoekwoord** — in alle Nederlandse reisadviezen, en per land
    live in de buitenlandse reisadviezen. Een Nederlandse zoekterm wordt
    automatisch naar het Engels (en de brontaal) vertaald, zodat ook anderstalige
    adviezen doorzocht worden.
-7. **Automatische vertaling** — anderstalige bronnen (bijv. Frankrijk) worden
+8. **Automatische vertaling** — anderstalige bronnen (bijv. Frankrijk) worden
    standaard in het Nederlands getoond; met de taalknop (Nederlands · English ·
    Origineel) schakel je naar Engels of de originele brontaal.
-8. **Datumscanner** — doorzoekt de Nederlandse reisadviezen op datums in de
+9. **Datumscanner** — doorzoekt de Nederlandse reisadviezen op datums in de
    *tekst* die in het verleden liggen (mogelijk verouderde inhoud). De metadata
    “laatst gewijzigd”/“geldig op” wordt bewust genegeerd.
 

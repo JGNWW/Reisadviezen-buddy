@@ -70,6 +70,54 @@ function countryFlag(iso2) {
   return String.fromCodePoint(...[...iso2.toUpperCase()].map((c) => 0x1f1e6 + c.charCodeAt(0) - 65));
 }
 
+// ---- URL-state: deelbare links ---------------------------------------------
+// land/bronnen/taal/tab staan in de URL zodat een vergelijking te bookmarken
+// en door te sturen is. Bestaande parameters (zoals ?proxy=) blijven staan.
+function updateUrl(patch, push = false) {
+  const sp = new URLSearchParams(location.search);
+  for (const [k, v] of Object.entries(patch)) {
+    if (v == null || v === '') sp.delete(k); else sp.set(k, v);
+  }
+  const qs = sp.toString();
+  try { history[push ? 'pushState' : 'replaceState'](null, '', location.pathname + (qs ? `?${qs}` : '')); } catch { /* bijv. file:// */ }
+}
+
+const defaultSourceIds = () => (CFG.SOURCES || []).filter((s) => s.default !== false).map((s) => s.id);
+
+/** Schrijft de huidige vergelijkingsstaat naar de URL (default-waarden blijven weg). */
+function syncUrl(push = false) {
+  const cur = orderedSelected().join(',');
+  updateUrl({
+    land: LAST_COMPARE?.country?.iso3 || null,
+    bronnen: cur === defaultSourceIds().join(',') ? null : cur,
+    taal: COMPARE_LANG === 'nl' ? null : COMPARE_LANG,
+  }, push);
+}
+
+/** Leest taal/bronnen uit de URL in de globale staat (vóór de UI-opbouw). */
+function initFromUrl() {
+  const sp = new URLSearchParams(location.search);
+  const taal = sp.get('taal');
+  if (['nl', 'en', 'orig'].includes(taal)) COMPARE_LANG = taal;
+  const bronnen = sp.get('bronnen');
+  if (bronnen != null) {
+    const ids = bronnen.split(',').map((s) => s.trim()).filter((id) => allSourceIds().includes(id));
+    if (ids.length) SELECTED_SOURCES = ids;
+  }
+}
+
+/** Past tab + land uit de URL toe (ná de UI-opbouw); start zo nodig de vergelijking. */
+function activateFromUrl() {
+  const sp = new URLSearchParams(location.search);
+  const tab = sp.get('tab');
+  if (tab && $(`.tab[data-view="${tab}"]`)) activateTab(tab);
+  const land = sp.get('land');
+  if (land) {
+    const c = resolveCountry(land);
+    if (c) { $('#country-input').value = c.nl; runComparison(c, orderedSelected(), COMPARE_LANG); }
+  }
+}
+
 // ---- Proxy-configuratie ---------------------------------------------------
 function getProxy() {
   const qs = new URLSearchParams(location.search).get('proxy');
@@ -152,6 +200,7 @@ function resolveCountry(query) {
 function activateTab(view) {
   $$('.tab').forEach((t) => t.classList.toggle('active', t.dataset.view === view));
   $$('.view').forEach((v) => v.classList.toggle('active', v.id === `view-${view}`));
+  updateUrl({ tab: view === 'compare' ? null : view });
 }
 $$('.tab').forEach((t) => t.addEventListener('click', () => activateTab(t.dataset.view)));
 
@@ -192,6 +241,7 @@ async function bootstrap() {
   const list = $('#country-list');
   countries.forEach((c) => list.append(el('option', { value: c.nl })));
 
+  initFromUrl();
   setupSourcePicker();
   setupLangSeg();
 
@@ -204,7 +254,28 @@ async function bootstrap() {
   }
 
   buildChanges();
+  buildWorklist();
+  activateFromUrl();
 }
+
+// Terug/vooruit in de browser: staat uit de URL opnieuw toepassen.
+window.addEventListener('popstate', () => {
+  initFromUrl();
+  $$('#lang-seg button').forEach((b) => b.classList.toggle('on', b.dataset.lang === COMPARE_LANG));
+  renderSourcePicker();
+  const sp = new URLSearchParams(location.search);
+  const tab = sp.get('tab') || 'compare';
+  if ($(`.tab[data-view="${tab}"]`)) {
+    $$('.tab').forEach((t) => t.classList.toggle('active', t.dataset.view === tab));
+    $$('.view').forEach((v) => v.classList.toggle('active', v.id === `view-${tab}`));
+  }
+  const land = sp.get('land');
+  const c = land ? resolveCountry(land) : null;
+  if (c && LAST_COMPARE?.country?.iso3 !== c.iso3) {
+    $('#country-input').value = c.nl;
+    runComparison(c, orderedSelected(), COMPARE_LANG);
+  }
+});
 
 // ==========================================================================
 // Bronselectie-UI: chips (met vlag + ×) + "Bron toevoegen"-dropdown.
@@ -265,6 +336,7 @@ function addSource(id) {
   SELECTED_SOURCES.push(id);
   saveSelectedSources();
   renderSourcePicker();
+  syncUrl();
   rerunLastCompare();
 }
 function removeSource(id) {
@@ -272,6 +344,7 @@ function removeSource(id) {
   SELECTED_SOURCES = SELECTED_SOURCES.filter((s) => s !== id);
   saveSelectedSources();
   renderSourcePicker();
+  syncUrl();
   rerunLastCompare();
 }
 function rerunLastCompare() {
@@ -295,6 +368,7 @@ function setCompareLang(lang) {
   COMPARE_LANG = lang;
   localStorage.setItem('compareLang', lang);
   $$('#lang-seg button').forEach((b) => b.classList.toggle('on', b.dataset.lang === lang));
+  syncUrl();
   if (!LAST_COMPARE) return;
   // Alleen 'en' gebruikt een andere vertaalophaling; nl↔orig delen dezelfde data.
   if ((lang === 'en') !== (prev === 'en')) {
@@ -342,6 +416,10 @@ async function runComparison(country, sources, lang) {
     }
     status.textContent = '';
     LAST_COMPARE = { country, sources, lang, staticData, foreign };
+    // Ander land dan de URL nu toont = nieuwe history-entry (terug-knop
+    // werkt); zelfde land (herladen/taalwissel/bron erbij) = vervangen.
+    const urlLand = new URLSearchParams(location.search).get('land');
+    syncUrl(urlLand !== country.iso3);
     renderComparison(staticData, foreign, result);
   } catch (err) {
     status.className = 'status error'; status.textContent = err.message;
@@ -448,6 +526,48 @@ const sourceColorCode = (s) => colorCode({
   explanation: s.levelLabel,
   extras: regionalExtraColors(s),
 });
+
+/** Tekstversie van een kleurcode, voor export naar klembord/CSV. */
+function colorTextFor(color, extras = [], uncertain = false) {
+  if (uncertain) return 'Onzeker';
+  if (!color) return '—';
+  let t = COLOR_LABELS[color] || color;
+  if (extras.length) t += ` (ook regionaal: ${extras.map((c) => (COLOR_LABELS[c] || c).toLowerCase()).join(', ')})`;
+  return t;
+}
+
+/**
+ * Kopieert de kleurcode-samenvatting als opgemaakte HTML-tabel (plakt netjes
+ * in Word/Outlook) met platte tekst als terugval.
+ */
+async function copySummaryTable(staticData, nl, okSources, btn) {
+  const fmt = (s) => { if (!s) return '—'; const d = new Date(s); return isNaN(d) ? String(s).slice(0, 10) : d.toLocaleDateString('nl-NL'); };
+  const rows = [['Bron', 'Kleurcode', 'Origineel niveau', 'Bijgewerkt', 'Link']];
+  rows.push(['NederlandWereldwijd', colorTextFor(nl.colors?.overall, nlExtraColors(nl)), '—',
+    nl.modificationDate ? nl.modificationDate.split('|')[0].replace('Laatst gewijzigd op:', '').trim() : fmt(nl.lastModified), nl.url || '']);
+  okSources.forEach((s) => rows.push([
+    s.sourceLabel,
+    colorTextFor(s.color, regionalExtraColors(s), s.assessmentStatus === 'uncertain') + ' (benadering)',
+    s.levelLabel || '—', fmt(s.lastModified), s.url || '',
+  ]));
+  const title = `Reisadvies ${staticData.country.nl} — kleurcodes per bron (${new Date().toLocaleDateString('nl-NL')})`;
+  const html = `<h3>${esc(title)}</h3>` +
+    '<table border="1" cellpadding="6" style="border-collapse:collapse;font-family:sans-serif;font-size:13px">' +
+    rows.map((r, i) => `<tr>${r.map((c) => (i === 0 ? `<th align="left">${esc(c)}</th>` : `<td>${esc(c)}</td>`)).join('')}</tr>`).join('') +
+    '</table>';
+  const text = title + '\n' + rows.map((r) => r.join('\t')).join('\n');
+  try {
+    await navigator.clipboard.write([new ClipboardItem({
+      'text/html': new Blob([html], { type: 'text/html' }),
+      'text/plain': new Blob([text], { type: 'text/plain' }),
+    })]);
+  } catch {
+    try { await navigator.clipboard.writeText(text); } catch { btn.textContent = '⚠ Kopiëren mislukt'; return; }
+  }
+  const orig = btn.textContent;
+  btn.textContent = '✓ Gekopieerd';
+  setTimeout(() => { btn.textContent = orig; }, 2000);
+}
 
 /** Regionale extra-kleuren van het NL-advies (kleuren per regio, uit open data). */
 function nlExtraColors(nl) {
@@ -697,7 +817,18 @@ function renderComparison(staticData, foreign, root) {
   frag.append(divWrap);
 
   // ---- Samenvattingstabel (kleurcode + niveau + datum + link per bron) ----
-  frag.append(el('h3', { class: 'section-title' }, 'Kleurcodes op een rij'), renderSummaryTable(nl, okSources));
+  const copyBtn = el('button', { class: 'btn', type: 'button', title: 'Kopieert de kleurcode-tabel als opgemaakte tabel — plakt netjes in Word/Outlook.' }, '📋 Kopieer als tabel');
+  copyBtn.addEventListener('click', () => copySummaryTable(staticData, nl, okSources, copyBtn));
+  const printBtn = el('button', {
+    class: 'btn', type: 'button', onclick: () => window.print(),
+    title: 'Print of bewaar als PDF: een compacte samenvatting (kleurcodes + afwijkingen, zonder de matrix).',
+  }, '🖨 Print / PDF');
+  frag.append(el('div', { class: 'theme-head-row' },
+    el('h3', { class: 'section-title', style: 'flex:1;margin:0;border:none' }, 'Kleurcodes op een rij'),
+    copyBtn, printBtn));
+  frag.append(el('p', { class: 'print-note' },
+    `Reisadviezen-buddy · afgedrukt op ${new Date().toLocaleString('nl-NL')} · ${location.href}`));
+  frag.append(renderSummaryTable(nl, okSources));
   if (nl.colors?.colors?.length > 1) {
     const ul = el('ul', { class: 'color-contexts' });
     nl.colors.colors.forEach((c) => ul.append(el('li', {}, el('strong', {}, `${COLOR_LABELS[c.color]}: `), c.context)));
@@ -1024,15 +1155,91 @@ function renderGapMultiResult(rows, total, root) {
 }
 
 // ==========================================================================
+// WERKLIJST — divergentie tussen NL en de internationale consensus, uit de
+// dagelijkse snapshot (docs/data/divergence.json, gegenereerd door de build).
+// ==========================================================================
+let WORKLIST = null;
+
+async function buildWorklist() {
+  const status = $('#worklist-status');
+  try {
+    WORKLIST = await loadJSON('divergence.json');
+    status.textContent = WORKLIST.generatedAt
+      ? `Berekend op ${new Date(WORKLIST.generatedAt).toLocaleString('nl-NL')} · ${WORKLIST.items.length} landen met ≥3 betrouwbare bronnen.`
+      : '';
+  } catch {
+    WORKLIST = null;
+    status.textContent = 'Nog geen divergentie-gegevens — deze verschijnen na de eerstvolgende dagelijkse snapshot + site-build.';
+    return;
+  }
+  $('#worklist-filter').addEventListener('change', renderWorklist);
+  renderWorklist();
+}
+
+function renderWorklist() {
+  const root = $('#worklist-result');
+  root.innerHTML = '';
+  if (!WORKLIST?.items) return;
+  const onlyDiff = $('#worklist-filter').value === 'diff';
+  const items = WORKLIST.items.filter((i) => !onlyDiff || i.delta !== 0);
+  if (!items.length) {
+    root.append(el('p', { class: 'empty-col' }, 'Geen afwijkingen: NL zit overal op de internationale consensus. 🎉'));
+    return;
+  }
+
+  const srcMeta = new Map((CFG.SOURCES || []).map((s) => [s.id, s]));
+  const table = el('table', { class: 'summary-table' });
+  table.append(el('thead', {}, el('tr', {},
+    el('th', {}, 'Land'), el('th', {}, 'NL'), el('th', {}, 'Consensus'),
+    el('th', {}, 'Verschil'), el('th', {}, 'Bronnen'))));
+  const tbody = el('tbody');
+  items.forEach((i) => {
+    const flag = countryFlagByIso3(i.iso3);
+    const landBtn = el('button', { type: 'button', class: 'btn-link worklist-country' }, `${flag ? flag + ' ' : ''}${i.nl}`);
+    landBtn.addEventListener('click', () => {
+      activateTab('compare');
+      $('#country-input').value = i.nl;
+      $('#compare-form').requestSubmit();
+    });
+
+    let verdict;
+    if (i.delta === 0) verdict = el('span', { class: 'delta same' }, 'gelijk');
+    else if (i.delta > 0) verdict = el('span', { class: 'delta stricter' }, `NL strenger (+${i.delta})`);
+    else verdict = el('span', { class: 'delta looser' }, `NL soepeler (−${Math.abs(i.delta)})`);
+
+    // Per-bron mini-vierkantjes met tooltip, zodat je ziet wie er afwijkt.
+    const srcCell = el('span', { class: 'kc' });
+    Object.entries(i.perSource).forEach(([sid, lvl]) => {
+      const m = srcMeta.get(sid);
+      srcCell.append(el('span', {
+        class: `sq mini c-${LEVEL_COLORS[lvl]}`,
+        title: `${m?.label || sid}: ${COLOR_LABELS[LEVEL_COLORS[lvl]]}`,
+      }));
+    });
+
+    tbody.append(el('tr', {},
+      el('td', {}, landBtn),
+      el('td', {}, colorCode({ predominant: i.nlColor })),
+      el('td', {}, colorCode({ predominant: i.consensusColor })),
+      el('td', {}, verdict),
+      el('td', {}, srcCell, el('span', { class: 'muted', style: 'margin-left:8px' }, `${i.nSources}`))));
+  });
+  table.append(tbody);
+  root.append(table);
+}
+
+// ==========================================================================
 // RECENTE WIJZIGINGEN (buitenlandse bronnen — niet NL, dat doet de redactie zelf)
 // ==========================================================================
 let RECENT_CHANGES = null;
 let SOURCE_DATES = null; // { ISO3: { uk: 'yyyy-mm-dd', ... } } — door de bron gemeld
+let LAST_CHANGES_RENDER = null; // laatst getoonde selectie, t.b.v. CSV-export
 const CHANGE_KIND_LABEL = {
   update: '📝 advies bijgewerkt',
   up: '⬆ niveau omhoog', down: '⬇ niveau omlaag', status: '● status',
   'regional-new': '⚠ nieuwe regio', 'regional-up': '⬆ regio omhoog',
   'regional-down': '⬇ regio omlaag', 'regional-removed': '– regio vervallen',
+  bulk: '⚙ bron-breed',
 };
 
 const isoDay = (d) => d.toISOString().slice(0, 10);
@@ -1087,6 +1294,22 @@ async function buildChanges() {
   toInput.addEventListener('change', rerender);
   filterSel.addEventListener('change', rerender);
 
+  // CSV-export van de op dat moment getoonde selectie (puntkomma's + BOM
+  // zodat Nederlandstalig Excel het bestand direct goed opent).
+  $('#changes-csv').addEventListener('click', () => {
+    const d = LAST_CHANGES_RENDER;
+    if (!d || (!d.items.length && !d.reported.length)) return;
+    const q = (s) => `"${String(s ?? '').replace(/"/g, '""')}"`;
+    const plainKind = (k) => (CHANGE_KIND_LABEL[k] || k).replace(/^[^\p{L}]+/u, '');
+    const lines = [['Datum', 'Bron', 'Land', 'Type', 'Omschrijving', 'Notitie van de bron'].map(q).join(';')];
+    d.items.forEach((c) => lines.push([c.date, c.sourceLabel, c.countryNl || '(bron-breed)', plainKind(c.kind), c.description, c.updateNoteNl || c.updateNote || ''].map(q).join(';')));
+    d.reported.forEach((r) => lines.push([r.date, r.label, r.countryNl, 'door bron gemelde update', 'Bron meldt: advies voor het laatst bijgewerkt op deze datum.', ''].map(q).join(';')));
+    const blob = new Blob(['\ufeff' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+    const a = el('a', { href: URL.createObjectURL(blob), download: `reisadvies-wijzigingen_${d.from}_${d.to}.csv` });
+    document.body.append(a); a.click(); a.remove();
+    URL.revokeObjectURL(a.href);
+  });
+
   rerender();
 }
 
@@ -1117,6 +1340,7 @@ function renderChanges(sourceFilter, from, to) {
     }
   }
   reported.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : a.countryNl.localeCompare(b.countryNl, 'nl')));
+  LAST_CHANGES_RENDER = { items, reported, from, to };
 
   if (!items.length && !reported.length) {
     root.append(el('p', { class: 'empty-col' },
@@ -1133,11 +1357,15 @@ function renderChanges(sourceFilter, from, to) {
       lastDate = c.date;
       root.append(el('h4', { class: 'change-date' }, new Date(c.date).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })));
     }
+    // Bulkmeldingen zijn bron-breed (geen land): geen doorklik, gedempte stijl.
+    const who = c.countryNl
+      ? el('button', { type: 'button', class: 'btn-link change-country' }, `${c.flag || ''} ${c.sourceLabel} — ${c.countryNl}`)
+      : el('span', { class: 'change-country plain' }, `${c.flag || ''} ${c.sourceLabel}`);
     const row = el('div', { class: `change-row kind-${c.kind}` },
       el('span', { class: 'change-kind' }, CHANGE_KIND_LABEL[c.kind] || c.kind),
-      el('button', { type: 'button', class: 'btn-link change-country' }, `${c.flag || ''} ${c.sourceLabel} — ${c.countryNl}`),
+      who,
       el('p', { class: 'change-desc' }, c.description));
-    row.querySelector('.change-country').addEventListener('click', () => {
+    if (c.countryNl) row.querySelector('.change-country').addEventListener('click', () => {
       activateTab('compare');
       $('#country-input').value = c.countryNl;
       $('#compare-form').requestSubmit();

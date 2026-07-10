@@ -24,6 +24,7 @@
     </div>
     <nav class="tabs" role="tablist">
       <button class="tab active" data-view="compare" role="tab">Vergelijken</button>
+      <button class="tab" data-view="worklist" role="tab">Werklijst</button>
       <button class="tab" data-view="gaps" role="tab">Wat ontbreekt?</button>
       <button class="tab" data-view="search" role="tab">Zoeken op thema/woord</button>
       <button class="tab" data-view="datescan" role="tab">Datumscanner</button>
@@ -116,6 +117,24 @@
       </div>
     </section>
 
+    <!-- ================= WERKLIJST (DIVERGENTIE) ================= -->
+    <section id="view-worklist" class="view">
+      <div class="panel controls">
+        <div class="field grow">
+          <p style="margin:0">Waar wijkt het <strong>Nederlandse</strong> reisadvies af van de <strong>internationale consensus</strong> (mediaan van de buitenlandse bronnen, laatste snapshot)? Gesorteerd op grootte van de afwijking — de "kijk hier eerst"-lijst. Alleen landen met minstens 3 betrouwbaar beoordeelde bronnen tellen mee; een afwijking is niet per se fout, maar wel het bekijken waard.</p>
+        </div>
+        <div class="field">
+          <label for="worklist-filter">Toon</label>
+          <select id="worklist-filter">
+            <option value="diff" selected>Alleen afwijkingen</option>
+            <option value="all">Alle landen</option>
+          </select>
+        </div>
+      </div>
+      <div id="worklist-status" class="status"></div>
+      <div id="worklist-result"></div>
+    </section>
+
     <!-- ================= DATUMSCANNER ================= -->
     <section id="view-datescan" class="view">
       <div class="panel controls">
@@ -165,6 +184,7 @@
             <option value="">Alle bronnen</option>
           </select>
         </div>
+        <button id="changes-csv" type="button" class="btn" title="Download de getoonde wijzigingen als CSV (opent in Excel).">⬇ Download CSV</button>
       </div>
       <div id="changes-status" class="status"></div>
       <div id="changes-result"></div>
