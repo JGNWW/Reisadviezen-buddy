@@ -44,12 +44,27 @@ export function extractNlColors(introHtml) {
       colors.push(f);
     }
   }
-  // "Overall" = de zwaarste kleur die geldt, tenzij er expliciet staat dat een
-  // zwaardere kleur alleen voor een deelgebied geldt. We nemen simpelweg de
-  // hoogste rank als indicatie, en tonen alle kleuren met context in de UI.
+  // "Overall" = de OVERWEGENDE (landelijke) kleur. Bij meerdere kleuren is dat
+  // de kleur van "de rest van het land" — NederlandWereldwijd noemt eerst de
+  // afwijkende gebieden en sluit af met "Voor de rest van <land> geldt
+  // kleurcode X". De zwaarste regionale kleur mag het landelijke beeld niet
+  // overschrijven (Japan is niet "rood" omdat alleen zuidoost-Fukushima rood
+  // is); de regionale kleuren blijven via colors[] zichtbaar in de UI.
   let overall = null;
-  for (const { color } of colors) {
-    if (!overall || NL_COLORS[color].rank > NL_COLORS[overall].rank) overall = color;
+  if (colors.length === 1) {
+    overall = colors[0].color;
+  } else if (colors.length > 1) {
+    const REST = /\brest\b|\bhele land\b|\bheel het land\b|\bvoor heel\b|\boverige (deel|delen|gebieden)\b|\belders\b/i;
+    const rest = colors.find((c) => REST.test(c.context));
+    if (rest) {
+      overall = rest.color;
+    } else {
+      // Geen "rest van"-formulering gevonden: terugvallen op de zwaarste
+      // kleur (liever te streng tonen dan een waarschuwing verstoppen).
+      for (const { color } of colors) {
+        if (!overall || NL_COLORS[color].rank > NL_COLORS[overall].rank) overall = color;
+      }
+    }
   }
   return { overall, colors };
 }

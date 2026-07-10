@@ -1,11 +1,25 @@
 import { parse } from 'node-html-parser';
 
 /**
+ * Verwijdert script-, style- en noscript-blokken uit rauwe HTML. Nodig vóór
+ * elke regex-gebaseerde bewerking: een <h2> bínnen een script (bijv. een
+ * chat-widget die HTML in JS-strings opbouwt) zou anders als sectiekop
+ * worden aangezien — met code als "kop" in de data tot gevolg.
+ */
+export function stripNonContent(html) {
+  return String(html || '')
+    .replace(/<script\b[\s\S]*?<\/script\s*>/gi, ' ')
+    .replace(/<style\b[\s\S]*?<\/style\s*>/gi, ' ')
+    .replace(/<noscript\b[\s\S]*?<\/noscript\s*>/gi, ' ')
+    .replace(/<!--[\s\S]*?-->/g, ' ');
+}
+
+/**
  * Zet HTML om naar platte tekst (voor zoeken en snippets).
  */
 export function htmlToText(html) {
   if (!html) return '';
-  const root = parse(html, { blockTextElements: { script: false, style: false } });
+  const root = parse(stripNonContent(html), { blockTextElements: { script: false, style: false, noscript: false } });
   // Voeg spaties toe rond blok-elementen zodat woorden niet aan elkaar plakken.
   root.querySelectorAll('p, li, h1, h2, h3, h4, h5, div, br, tr').forEach((el) => {
     el.insertAdjacentHTML('afterend', ' ');
@@ -22,7 +36,9 @@ export function splitByHeadings(html) {
   if (!html) return [];
   // Werkt op de geserialiseerde HTML zodat het ook koppen vindt die diep
   // genest zijn (overheidssites zoals travel.gc.ca en dfa.ie nesten hun
-  // sectiekoppen in meerdere div/section-lagen).
+  // sectiekoppen in meerdere div/section-lagen). Scripts/styles eerst weg,
+  // anders matcht de kop-regex ook HTML die in JS-strings staat.
+  html = stripNonContent(html);
   const re = /<h([2-4])\b[^>]*>([\s\S]*?)<\/h\1>/gi;
   const sections = [];
   let last = 0;

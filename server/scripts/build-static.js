@@ -20,7 +20,7 @@
  *
  * Draaien: npm run build
  */
-import { mkdir, writeFile, rm, cp } from 'node:fs/promises';
+import { mkdir, writeFile, rm, cp, readdir, readFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -36,6 +36,58 @@ const OUT = join(ROOT, 'docs');
 const DATA = join(OUT, 'data');
 const RECENT_CHANGES_SRC = join(ROOT, 'worker', 'data', 'recent-changes.json');
 const SOURCE_DATES_SRC = join(ROOT, 'worker', 'data', 'source-dates.json');
+const HISTORY_DIR = join(ROOT, 'worker', 'data', 'history');
+
+const COLOR_LEVEL = { groen: 1, geel: 2, oranje: 3, rood: 4 };
+const LEVEL_COLOR = ['', 'groen', 'geel', 'oranje', 'rood'];
+
+/**
+ * Divergentie-werklijst: per land het NL-niveau naast de internationale
+ * consensus (mediaan van de buitenlandse bronnen uit de laatste snapshot).
+ * Gesorteerd op grootte van de afwijking — de redactionele "kijk hier eerst"-
+ * lijst. Alleen landen met minstens 3 betrouwbaar beoordeelde bronnen.
+ */
+async function buildDivergence(nlColors) {
+  if (!existsSync(HISTORY_DIR)) return null;
+  const files = (await readdir(HISTORY_DIR)).filter((f) => f.endsWith('.json'));
+  const items = [];
+  for (const f of files) {
+    const iso3 = f.replace(/\.json$/, '');
+    const nl = nlColors.get(iso3);
+    const nlLevel = nl ? COLOR_LEVEL[nl.color] : null;
+    if (!nlLevel) continue;
+    let hist;
+    try { hist = JSON.parse(await readFile(join(HISTORY_DIR, f), 'utf8')); } catch { continue; }
+    const last = hist.entries?.[hist.entries.length - 1];
+    if (!last?.sources) continue;
+    const perSource = {};
+    const levels = [];
+    for (const [sid, s] of Object.entries(last.sources)) {
+      // assessmentStatus ontbreekt bij sommige bronnen (dan geldt: ok).
+      if (s.level == null || (s.assessmentStatus && s.assessmentStatus !== 'ok')) continue;
+      perSource[sid] = s.level;
+      levels.push(s.level);
+    }
+    if (levels.length < 3) continue;
+    levels.sort((a, b) => a - b);
+    const mid = Math.floor(levels.length / 2);
+    const consensus = levels.length % 2 ? levels[mid] : Math.round((levels[mid - 1] + levels[mid]) / 2);
+    items.push({
+      iso3,
+      nl: nl.name,
+      nlColor: nl.color,
+      nlLevel,
+      consensusLevel: consensus,
+      consensusColor: LEVEL_COLOR[consensus],
+      delta: nlLevel - consensus,
+      nSources: levels.length,
+      perSource,
+      snapshotDate: last.date || null,
+    });
+  }
+  items.sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta) || a.nl.localeCompare(b.nl, 'nl'));
+  return { generatedAt: new Date().toISOString(), items };
+}
 
 /** Voert async taken uit met beperkte gelijktijdigheid. */
 async function mapLimit(items, limit, fn) {
@@ -93,6 +145,7 @@ async function main() {
   // (Cloudflare Worker). De statische build bevat alleen de NL-data en de
   // NL-zoekindex.
   const nlIndex = [];
+  const nlColors = new Map(); // iso3 -> { name, color } t.b.v. de divergentie-werklijst
   let ok = 0;
   const failures = [];
 
@@ -105,6 +158,7 @@ async function main() {
       const payload = { country: { iso3: iso, nl: nl.name, en: item.nl }, nl };
       await writeFile(join(DATA, 'compare', `${iso}.json`), JSON.stringify(payload));
 
+      if (nl.colors?.overall) nlColors.set(iso, { name: nl.name, color: nl.colors.overall });
       nlIndex.push({
         iso3: iso,
         name: nl.name,
@@ -130,6 +184,13 @@ async function main() {
   }
   if (existsSync(SOURCE_DATES_SRC)) {
     await cp(SOURCE_DATES_SRC, join(DATA, 'source-dates.json'));
+  }
+
+  // Divergentie-werklijst uit de laatste snapshot van de buitenlandse bronnen.
+  const divergence = await buildDivergence(nlColors);
+  if (divergence) {
+    await writeFile(join(DATA, 'divergence.json'), JSON.stringify(divergence));
+    console.log(`Divergentie-werklijst: ${divergence.items.length} landen (met ≥3 betrouwbare bronnen).`);
   }
 
   // .nojekyll zodat GitHub Pages de map/bestanden ongemoeid laat.
