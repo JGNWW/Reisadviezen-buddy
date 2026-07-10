@@ -16,7 +16,7 @@ import { dirname, join } from 'node:path';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const NL_LIST =
-  'https://opendata.nederlandwereldwijd.nl/v2/sources/nederlandwereldwijd/infotypes/traveladvice?output=json&rows=500';
+  'https://opendata.nederlandwereldwijd.nl/v2/sources/nederlandwereldwijd/infotypes/traveladvice?output=json';
 const ISO_JSON =
   'https://raw.githubusercontent.com/lukes/ISO-3166-Countries-with-Regional-Codes/master/all/all.json';
 const UK_INDEX = 'https://www.gov.uk/api/content/foreign-travel-advice';
@@ -153,6 +153,23 @@ async function getJson(url) {
   return res.json();
 }
 
+/**
+ * De NW-API geeft maximaal 200 rijen per pagina, ook als je meer vraagt —
+ * pagineer met offset, anders ontbreken er stilletjes ±26 landen (waaronder
+ * de VS en Frankrijk).
+ */
+async function getNlList() {
+  const ROWS = 200;
+  const all = [];
+  for (let offset = 0; ; offset += ROWS) {
+    const page = await getJson(`${NL_LIST}&rows=${ROWS}&offset=${offset}`);
+    if (!Array.isArray(page) || !page.length) break;
+    all.push(...page);
+    if (page.length < ROWS) break;
+  }
+  return all;
+}
+
 function matchSlug(iso, enName, slugSet, overrides) {
   if (iso in overrides) return overrides[iso]; // kan expliciet null zijn
   const cand = normalise(enName);
@@ -162,7 +179,7 @@ function matchSlug(iso, enName, slugSet, overrides) {
 async function main() {
   console.log('Ophalen bron-indexen (NL, ISO, VK, VS, Canada, Ierland)...');
   const [nlList, isoData, ukIndex, usXml, ieHtml, caIndex, deIndex] = await Promise.all([
-    getJson(NL_LIST),
+    getNlList(),
     getJson(ISO_JSON),
     getJson(UK_INDEX),
     getText(US_RSS).catch((e) => (console.warn('VS-index faalde:', e.message), '')),
