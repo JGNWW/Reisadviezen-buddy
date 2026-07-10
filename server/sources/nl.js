@@ -25,11 +25,21 @@ async function getJson(url) {
 }
 
 /**
- * Lijst van alle landen met een NL-reisadvies.
+ * Lijst van alle landen met een NL-reisadvies. De API geeft maximaal 200
+ * rijen per pagina (ook als je meer vraagt) — pagineer met offset tot een
+ * pagina niet meer vol is, anders vallen er stilletjes landen buiten de boot
+ * (de lijst telt er ±226, waaronder de VS en Frankrijk op pagina 2).
  */
 export async function listAdvisories() {
-  const data = await getJson(`${BASE}/traveladvice?output=json&rows=500`);
-  return data.map((d) => ({
+  const ROWS = 200;
+  const all = [];
+  for (let offset = 0; ; offset += ROWS) {
+    const page = await getJson(`${BASE}/traveladvice?output=json&rows=${ROWS}&offset=${offset}`);
+    if (!Array.isArray(page) || !page.length) break;
+    all.push(...page);
+    if (page.length < ROWS) break;
+  }
+  return all.map((d) => ({
     iso3: (d.isocode || '').toUpperCase(),
     nl: d.location,
     key: d.locationkey,

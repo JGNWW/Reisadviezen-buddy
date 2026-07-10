@@ -77,32 +77,6 @@
       "dk": "montserrat"
     }
   },
-  "NGA": {
-    "iso3": "NGA",
-    "iso2": "NG",
-    "nl": "Nigeria",
-    "en": "Nigeria",
-    "key": "nigeria",
-    "sources": {
-      "uk": "nigeria",
-      "us": "nigeria",
-      "ca": {
-        "iso2": "NG",
-        "id": 218000,
-        "slug": "nigeria"
-      },
-      "ie": "nigeria",
-      "fr": "nigeria",
-      "au": {
-        "continent": "africa",
-        "slug": "nigeria"
-      },
-      "es": "Nigeria",
-      "de": "NGA",
-      "nz": "nigeria",
-      "dk": "nigeria"
-    }
-  },
   "DEU": {
     "iso3": "DEU",
     "iso2": "DE",
@@ -259,32 +233,6 @@
       "dk": "sankt-lucia"
     }
   },
-  "MCO": {
-    "iso3": "MCO",
-    "iso2": "MC",
-    "nl": "Monaco",
-    "en": "Monaco",
-    "key": "monaco",
-    "sources": {
-      "uk": "monaco",
-      "us": "monaco",
-      "ca": {
-        "iso2": "MC",
-        "id": 192000,
-        "slug": "monaco"
-      },
-      "ie": "monaco",
-      "fr": "monaco",
-      "au": {
-        "continent": "europe",
-        "slug": "monaco"
-      },
-      "es": "Mónaco",
-      "de": "MCO",
-      "nz": "monaco",
-      "dk": "monaco"
-    }
-  },
   "PRT": {
     "iso3": "PRT",
     "iso2": "PT",
@@ -309,32 +257,6 @@
       "de": "PRT",
       "nz": "portugal",
       "dk": "portugal"
-    }
-  },
-  "NOR": {
-    "iso3": "NOR",
-    "iso2": "NO",
-    "nl": "Noorwegen",
-    "en": "Norway",
-    "key": "noorwegen",
-    "sources": {
-      "uk": "norway",
-      "us": "norway",
-      "ca": {
-        "iso2": "NO",
-        "id": 225000,
-        "slug": "norway"
-      },
-      "ie": "norway",
-      "fr": "norvege",
-      "au": {
-        "continent": "europe",
-        "slug": "norway"
-      },
-      "es": "Noruega",
-      "de": "NOR",
-      "nz": "norway",
-      "dk": "norge"
     }
   },
   "HUN": {
@@ -727,32 +649,6 @@
       "dk": "hviderusland"
     }
   },
-  "LSO": {
-    "iso3": "LSO",
-    "iso2": "LS",
-    "nl": "Lesotho",
-    "en": "Lesotho",
-    "key": "lesotho",
-    "sources": {
-      "uk": "lesotho",
-      "us": "lesotho",
-      "ca": {
-        "iso2": "LS",
-        "id": 160000,
-        "slug": "lesotho"
-      },
-      "ie": "lesotho",
-      "fr": "lesotho",
-      "au": {
-        "continent": "africa",
-        "slug": "lesotho"
-      },
-      "es": "Lesoto",
-      "de": "LSO",
-      "nz": "lesotho",
-      "dk": "lesotho"
-    }
-  },
   "DMA": {
     "iso3": "DMA",
     "iso2": "DM",
@@ -777,32 +673,6 @@
       "de": "DMA",
       "nz": "dominica",
       "dk": "dominica"
-    }
-  },
-  "SWZ": {
-    "iso3": "SWZ",
-    "iso2": "SZ",
-    "nl": "Eswatini (Swaziland)",
-    "en": "Eswatini",
-    "key": "eswatini",
-    "sources": {
-      "uk": "swaziland",
-      "us": "eswatini",
-      "ca": {
-        "iso2": "SZ",
-        "id": 280000,
-        "slug": "swaziland"
-      },
-      "ie": "eswatini",
-      "fr": "eswatini",
-      "au": {
-        "continent": "africa",
-        "slug": "eswatini"
-      },
-      "es": "Esuatini",
-      "de": "SWZ",
-      "nz": "eswatini",
-      "dk": "eswatini"
     }
   },
   "KAZ": {
@@ -935,32 +805,6 @@
       "dk": "sydsudan"
     }
   },
-  "AND": {
-    "iso3": "AND",
-    "iso2": "AD",
-    "nl": "Andorra",
-    "en": "Andorra",
-    "key": "andorra",
-    "sources": {
-      "uk": "andorra",
-      "us": "andorra",
-      "ca": {
-        "iso2": "AD",
-        "id": 6000,
-        "slug": "andorra"
-      },
-      "ie": "andorra",
-      "fr": "andorre",
-      "au": {
-        "continent": "europe",
-        "slug": "andorra"
-      },
-      "es": "Andorra",
-      "de": "AND",
-      "nz": "andorra",
-      "dk": "andorra"
-    }
-  },
   "AUT": {
     "iso3": "AUT",
     "iso2": "AT",
@@ -985,77 +829,6 @@
       "de": "AUT",
       "nz": "austria",
       "dk": "ostrig"
-    }
-  },
-  "FRO": {
-    "iso3": "FRO",
-    "iso2": "FO",
-    "nl": "Faeröer",
-    "en": "Faroe Islands",
-    "key": "faeroer",
-    "sources": {
-      "uk": null,
-      "us": "faroe-islands",
-      "ca": null,
-      "ie": "faroe-islands",
-      "fr": "iles-feroe",
-      "au": {
-        "continent": "europe",
-        "slug": "faroe-islands"
-      },
-      "es": "Islas Feroe",
-      "de": null,
-      "nz": "faroe-islands",
-      "dk": "f-r-erne"
-    }
-  },
-  "ATA": {
-    "iso3": "ATA",
-    "iso2": "AQ",
-    "nl": "Antarctica",
-    "en": "Antarctica",
-    "key": "antarctica",
-    "sources": {
-      "uk": null,
-      "us": "antarctica",
-      "ca": {
-        "iso2": "AQ",
-        "id": 9000,
-        "slug": "antarctica"
-      },
-      "ie": null,
-      "fr": "antarctique",
-      "au": null,
-      "es": "Antártida",
-      "de": null,
-      "nz": "antarctica",
-      "dk": "antarktis"
-    }
-  },
-  "AZE": {
-    "iso3": "AZE",
-    "iso2": "AZ",
-    "nl": "Azerbeidzjan",
-    "en": "Azerbaijan",
-    "key": "azerbeidzjan",
-    "sources": {
-      "uk": "azerbaijan",
-      "us": "azerbajian",
-      "ca": {
-        "iso2": "AZ",
-        "id": 19000,
-        "slug": "azerbaijan"
-      },
-      "ie": "azerbaijan",
-      "fr": "azerbaidjan",
-      "au": {
-        "continent": "middle-east",
-        "slug": "azerbaijan"
-      },
-      "es": "Azerbaiyán",
-      "de": "AZE",
-      "nz": "azerbaijan",
-      "dk": "aserbajdsjan"
     }
   },
   "JAM": {
@@ -1263,32 +1036,6 @@
       "dk": "senegal"
     }
   },
-  "THA": {
-    "iso3": "THA",
-    "iso2": "TH",
-    "nl": "Thailand",
-    "en": "Thailand",
-    "key": "thailand",
-    "sources": {
-      "uk": "thailand",
-      "us": "thailand",
-      "ca": {
-        "iso2": "TH",
-        "id": 290000,
-        "slug": "thailand"
-      },
-      "ie": "thailand",
-      "fr": "thailande",
-      "au": {
-        "continent": "asia",
-        "slug": "thailand"
-      },
-      "es": "Tailandia",
-      "de": "THA",
-      "nz": "thailand",
-      "dk": "thailand"
-    }
-  },
   "BDI": {
     "iso3": "BDI",
     "iso2": "BI",
@@ -1313,32 +1060,6 @@
       "de": "BDI",
       "nz": "burundi",
       "dk": "burundi"
-    }
-  },
-  "BEN": {
-    "iso3": "BEN",
-    "iso2": "BJ",
-    "nl": "Benin",
-    "en": "Benin",
-    "key": "benin",
-    "sources": {
-      "uk": "benin",
-      "us": "benin",
-      "ca": {
-        "iso2": "BJ",
-        "id": 30000,
-        "slug": "benin"
-      },
-      "ie": "benin",
-      "fr": "benin",
-      "au": {
-        "continent": "africa",
-        "slug": "benin"
-      },
-      "es": "Benín",
-      "de": "BEN",
-      "nz": "benin",
-      "dk": "benin"
     }
   },
   "NRU": {
@@ -1573,58 +1294,6 @@
       "de": null,
       "nz": "martinique",
       "dk": "martinique"
-    }
-  },
-  "VNM": {
-    "iso3": "VNM",
-    "iso2": "VN",
-    "nl": "Vietnam",
-    "en": "Viet Nam",
-    "key": "vietnam",
-    "sources": {
-      "uk": "vietnam",
-      "us": "viet-nam",
-      "ca": {
-        "iso2": "VN",
-        "id": 316000,
-        "slug": "vietnam"
-      },
-      "ie": "vietnam",
-      "fr": "vietnam",
-      "au": {
-        "continent": "asia",
-        "slug": "viet-nam"
-      },
-      "es": "Vietnam",
-      "de": "VNM",
-      "nz": "viet-nam",
-      "dk": "vietnam"
-    }
-  },
-  "ESP": {
-    "iso3": "ESP",
-    "iso2": "ES",
-    "nl": "Spanje",
-    "en": "Spain",
-    "key": "spanje",
-    "sources": {
-      "uk": "spain",
-      "us": "spain",
-      "ca": {
-        "iso2": "ES",
-        "id": 274000,
-        "slug": "spain"
-      },
-      "ie": "spain",
-      "fr": "espagne",
-      "au": {
-        "continent": "europe",
-        "slug": "spain"
-      },
-      "es": "España",
-      "de": "ESP",
-      "nz": "spain",
-      "dk": "spanien"
     }
   },
   "ASM": {
@@ -2259,32 +1928,6 @@
       "dk": "finland"
     }
   },
-  "FRA": {
-    "iso3": "FRA",
-    "iso2": "FR",
-    "nl": "Frankrijk",
-    "en": "France",
-    "key": "frankrijk",
-    "sources": {
-      "uk": "france",
-      "us": "france",
-      "ca": {
-        "iso2": "FR",
-        "id": 92000,
-        "slug": "france"
-      },
-      "ie": "france",
-      "fr": "france",
-      "au": {
-        "continent": "europe",
-        "slug": "france"
-      },
-      "es": "Francia",
-      "de": "FRA",
-      "nz": "france",
-      "dk": "frankrig"
-    }
-  },
   "GMB": {
     "iso3": "GMB",
     "iso2": "GM",
@@ -2571,32 +2214,6 @@
       "dk": "storbritannien"
     }
   },
-  "USA": {
-    "iso3": "USA",
-    "iso2": "US",
-    "nl": "Verenigde Staten van Amerika",
-    "en": "United States of America",
-    "key": "verenigde-staten-van-amerika",
-    "sources": {
-      "uk": "usa",
-      "us": null,
-      "ca": {
-        "iso2": "US",
-        "id": 308000,
-        "slug": "united-states"
-      },
-      "ie": "united-states-of-america",
-      "fr": "etats-unis",
-      "au": {
-        "continent": "americas",
-        "slug": "united-states-of-america"
-      },
-      "es": "Estados Unidos",
-      "de": "USA",
-      "nz": "united-states-of-america",
-      "dk": "usa"
-    }
-  },
   "KOR": {
     "iso3": "KOR",
     "iso2": "KR",
@@ -2747,32 +2364,6 @@
       "de": "PSE",
       "nz": "palestine-state-of",
       "dk": "pal-stina-staten"
-    }
-  },
-  "ETH": {
-    "iso3": "ETH",
-    "iso2": "ET",
-    "nl": "Ethiopië",
-    "en": "Ethiopia",
-    "key": "ethiopie",
-    "sources": {
-      "uk": "ethiopia",
-      "us": "ethiopia",
-      "ca": {
-        "iso2": "ET",
-        "id": 85000,
-        "slug": "ethiopia"
-      },
-      "ie": "ethiopia",
-      "fr": "ethiopie",
-      "au": {
-        "continent": "africa",
-        "slug": "ethiopia"
-      },
-      "es": "Etiopía",
-      "de": "ETH",
-      "nz": "ethiopia",
-      "dk": "etiopien"
     }
   },
   "BIH": {
@@ -2955,32 +2546,6 @@
       "de": "BHS",
       "nz": "bahamas",
       "dk": "bahamas"
-    }
-  },
-  "TUR": {
-    "iso3": "TUR",
-    "iso2": "TR",
-    "nl": "Turkije",
-    "en": "Türkiye",
-    "key": "turkije",
-    "sources": {
-      "uk": "turkey",
-      "us": "turkey",
-      "ca": {
-        "iso2": "TR",
-        "id": 300000,
-        "slug": "turkiye"
-      },
-      "ie": "turkey",
-      "fr": "turquie",
-      "au": {
-        "continent": "middle-east",
-        "slug": "turkiye"
-      },
-      "es": "Turquía",
-      "de": "TUR",
-      "nz": "turkey",
-      "dk": "tyrkiet"
     }
   },
   "MAC": {
@@ -3655,32 +3220,6 @@
       "dk": "new-zealand"
     }
   },
-  "NER": {
-    "iso3": "NER",
-    "iso2": "NE",
-    "nl": "Niger",
-    "en": "Niger",
-    "key": "niger",
-    "sources": {
-      "uk": "niger",
-      "us": "niger",
-      "ca": {
-        "iso2": "NE",
-        "id": 217000,
-        "slug": "niger"
-      },
-      "ie": "niger",
-      "fr": "niger",
-      "au": {
-        "continent": "africa",
-        "slug": "niger"
-      },
-      "es": "Níger",
-      "de": "NER",
-      "nz": "niger",
-      "dk": "niger"
-    }
-  },
   "UKR": {
     "iso3": "UKR",
     "iso2": "UA",
@@ -3811,32 +3350,6 @@
       "dk": "somalia"
     }
   },
-  "LKA": {
-    "iso3": "LKA",
-    "iso2": "LK",
-    "nl": "Sri Lanka",
-    "en": "Sri Lanka",
-    "key": "sri-lanka",
-    "sources": {
-      "uk": "sri-lanka",
-      "us": "sri-lanka",
-      "ca": {
-        "iso2": "LK",
-        "id": 276000,
-        "slug": "sri-lanka"
-      },
-      "ie": "sri-lanka",
-      "fr": "sri-lanka",
-      "au": {
-        "continent": "asia",
-        "slug": "sri-lanka"
-      },
-      "es": "Sri Lanka",
-      "de": "LKA",
-      "nz": "sri-lanka",
-      "dk": "sri-lanka"
-    }
-  },
   "SDN": {
     "iso3": "SDN",
     "iso2": "SD",
@@ -3939,32 +3452,6 @@
       "de": "TUN",
       "nz": "tunisia",
       "dk": "tunesien"
-    }
-  },
-  "TKM": {
-    "iso3": "TKM",
-    "iso2": "TM",
-    "nl": "Turkmenistan",
-    "en": "Turkmenistan",
-    "key": "turkmenistan",
-    "sources": {
-      "uk": "turkmenistan",
-      "us": "turkmenistan",
-      "ca": {
-        "iso2": "TM",
-        "id": 301000,
-        "slug": "turkmenistan"
-      },
-      "ie": "turkmenistan",
-      "fr": "turkmenistan",
-      "au": {
-        "continent": "asia",
-        "slug": "turkmenistan"
-      },
-      "es": "Turkmenistán",
-      "de": "TKM",
-      "nz": "turkmenistan",
-      "dk": "turkmenistan"
     }
   },
   "URY": {
@@ -4692,32 +4179,6 @@
       "dk": "syriens-arabiske-republik"
     }
   },
-  "BRN": {
-    "iso3": "BRN",
-    "iso2": "BN",
-    "nl": "Brunei Darussalam",
-    "en": "Brunei Darussalam",
-    "key": "brunei-darussalam",
-    "sources": {
-      "uk": "brunei",
-      "us": "brunei-darussalam",
-      "ca": {
-        "iso2": "BN",
-        "id": 41000,
-        "slug": "brunei"
-      },
-      "ie": "brunei-darussalam",
-      "fr": "brunei-darussalam",
-      "au": {
-        "continent": "asia",
-        "slug": "brunei"
-      },
-      "es": "Brunéi Darussalam",
-      "de": "BRN",
-      "nz": "brunei",
-      "dk": "brunei-darussalam"
-    }
-  },
   "TLS": {
     "iso3": "TLS",
     "iso2": "TL",
@@ -5158,6 +4619,1214 @@
       "de": "PLW",
       "nz": "palau",
       "dk": "palau"
+    }
+  },
+  "PNG": {
+    "iso3": "PNG",
+    "iso2": "PG",
+    "nl": "Papoea-Nieuw-Guinea",
+    "en": "Papua New Guinea",
+    "key": "papoea-nieuw-guinea",
+    "sources": {
+      "uk": "papua-new-guinea",
+      "us": "papua-new-guinea",
+      "ca": {
+        "iso2": "PG",
+        "id": 234000,
+        "slug": "papua-new-guinea"
+      },
+      "ie": "papua-new-guinea",
+      "fr": "papouasie-nouvelle-guinee",
+      "au": {
+        "continent": "pacific",
+        "slug": "papua-new-guinea"
+      },
+      "es": "Papúa Nueva Guinea",
+      "de": "PNG",
+      "nz": "papua-new-guinea",
+      "dk": "papua-ny-guinea"
+    }
+  },
+  "MLT": {
+    "iso3": "MLT",
+    "iso2": "MT",
+    "nl": "Malta",
+    "en": "Malta",
+    "key": "malta",
+    "sources": {
+      "uk": "malta",
+      "us": "malta",
+      "ca": {
+        "iso2": "MT",
+        "id": 174000,
+        "slug": "malta"
+      },
+      "ie": "malta",
+      "fr": "malte",
+      "au": {
+        "continent": "europe",
+        "slug": "malta"
+      },
+      "es": "Malta",
+      "de": "MLT",
+      "nz": "malta",
+      "dk": "malta"
+    }
+  },
+  "ALB": {
+    "iso3": "ALB",
+    "iso2": "AL",
+    "nl": "Albanië",
+    "en": "Albania",
+    "key": "albanie",
+    "sources": {
+      "uk": "albania",
+      "us": "albania",
+      "ca": {
+        "iso2": "AL",
+        "id": 4000,
+        "slug": "albania"
+      },
+      "ie": "albania",
+      "fr": "albanie",
+      "au": {
+        "continent": "europe",
+        "slug": "albania"
+      },
+      "es": "Albania",
+      "de": "ALB",
+      "nz": "albania",
+      "dk": "albanien"
+    }
+  },
+  "TZA": {
+    "iso3": "TZA",
+    "iso2": "TZ",
+    "nl": "Tanzania",
+    "en": "Tanzania, United Republic of",
+    "key": "tanzania",
+    "sources": {
+      "uk": "tanzania",
+      "us": "tanzania-united-republic-of",
+      "ca": {
+        "iso2": "TZ",
+        "id": 286000,
+        "slug": "tanzania"
+      },
+      "ie": null,
+      "fr": "tanzanie-republique-unie-de",
+      "au": {
+        "continent": "africa",
+        "slug": "tanzania-united-republic-of"
+      },
+      "es": "Tanzania, República Unida de",
+      "de": "TZA",
+      "nz": "tanzania-united-republic-of",
+      "dk": "tanzania-den-forenede-republik"
+    }
+  },
+  "PER": {
+    "iso3": "PER",
+    "iso2": "PE",
+    "nl": "Peru",
+    "en": "Peru",
+    "key": "peru",
+    "sources": {
+      "uk": "peru",
+      "us": "peru",
+      "ca": {
+        "iso2": "PE",
+        "id": 238000,
+        "slug": "peru"
+      },
+      "ie": "peru",
+      "fr": "perou",
+      "au": {
+        "continent": "americas",
+        "slug": "peru"
+      },
+      "es": "Perú",
+      "de": "PER",
+      "nz": "peru",
+      "dk": "peru"
+    }
+  },
+  "MHL": {
+    "iso3": "MHL",
+    "iso2": "MH",
+    "nl": "Marshalleilanden",
+    "en": "Marshall Islands",
+    "key": "marshalleilanden",
+    "sources": {
+      "uk": "marshall-islands",
+      "us": "marshall-islands",
+      "ca": {
+        "iso2": "MH",
+        "id": 176000,
+        "slug": "marshall-islands"
+      },
+      "ie": "marshall-islands",
+      "fr": "iles-marshall",
+      "au": {
+        "continent": "pacific",
+        "slug": "marshall-islands"
+      },
+      "es": "Islas Marshall",
+      "de": "MHL",
+      "nz": "marshall-islands",
+      "dk": "marshall-erne"
+    }
+  },
+  "MDV": {
+    "iso3": "MDV",
+    "iso2": "MV",
+    "nl": "Maldiven",
+    "en": "Maldives",
+    "key": "maldiven",
+    "sources": {
+      "uk": "maldives",
+      "us": "maldives",
+      "ca": {
+        "iso2": "MV",
+        "id": 172000,
+        "slug": "maldives"
+      },
+      "ie": "maldives",
+      "fr": "maldives",
+      "au": {
+        "continent": "asia",
+        "slug": "maldives"
+      },
+      "es": "Maldivas",
+      "de": "MDV",
+      "nz": "maldives",
+      "dk": "maldiverne"
+    }
+  },
+  "PHL": {
+    "iso3": "PHL",
+    "iso2": "PH",
+    "nl": "Filipijnen",
+    "en": "Philippines",
+    "key": "filipijnen",
+    "sources": {
+      "uk": "philippines",
+      "us": "philippines",
+      "ca": {
+        "iso2": "PH",
+        "id": 239000,
+        "slug": "philippines"
+      },
+      "ie": null,
+      "fr": "philippines",
+      "au": {
+        "continent": "asia",
+        "slug": "philippines"
+      },
+      "es": "Filipinas",
+      "de": "PHL",
+      "nz": "philippines",
+      "dk": "filippinerne"
+    }
+  },
+  "XKX": {
+    "iso3": "XKX",
+    "iso2": null,
+    "nl": "Kosovo",
+    "en": "Kosovo",
+    "key": "kosovo",
+    "sources": {
+      "uk": "kosovo",
+      "us": "kosovo",
+      "ca": null,
+      "ie": "kosovo",
+      "fr": "kosovo",
+      "au": null,
+      "es": "Kosovo",
+      "de": "XKX",
+      "nz": "kosovo",
+      "dk": "kosovo"
+    }
+  },
+  "DJI": {
+    "iso3": "DJI",
+    "iso2": "DJ",
+    "nl": "Djibouti",
+    "en": "Djibouti",
+    "key": "djibouti",
+    "sources": {
+      "uk": "djibouti",
+      "us": "djibouti",
+      "ca": {
+        "iso2": "DJ",
+        "id": 75000,
+        "slug": "djibouti"
+      },
+      "ie": "djibouti",
+      "fr": "djibouti",
+      "au": {
+        "continent": "africa",
+        "slug": "djibouti"
+      },
+      "es": "Yibuti",
+      "de": "DJI",
+      "nz": "djibouti",
+      "dk": "djibouti"
+    }
+  },
+  "EGY": {
+    "iso3": "EGY",
+    "iso2": "EG",
+    "nl": "Egypte",
+    "en": "Egypt",
+    "key": "egypte",
+    "sources": {
+      "uk": "egypt",
+      "us": "egypt",
+      "ca": {
+        "iso2": "EG",
+        "id": 79000,
+        "slug": "egypt"
+      },
+      "ie": "egypt",
+      "fr": "egypte",
+      "au": {
+        "continent": "africa",
+        "slug": "egypt"
+      },
+      "es": "Egipto",
+      "de": "EGY",
+      "nz": "egypt",
+      "dk": "egypten"
+    }
+  },
+  "MNE": {
+    "iso3": "MNE",
+    "iso2": "ME",
+    "nl": "Montenegro",
+    "en": "Montenegro",
+    "key": "montenegro",
+    "sources": {
+      "uk": "montenegro",
+      "us": "montenegro",
+      "ca": {
+        "iso2": "ME",
+        "id": 348000,
+        "slug": "montenegro"
+      },
+      "ie": "montenegro",
+      "fr": "montenegro",
+      "au": {
+        "continent": "europe",
+        "slug": "montenegro"
+      },
+      "es": "Montenegro",
+      "de": "MNE",
+      "nz": "montenegro",
+      "dk": "montenegro"
+    }
+  },
+  "CHL": {
+    "iso3": "CHL",
+    "iso2": "CL",
+    "nl": "Chili",
+    "en": "Chile",
+    "key": "chili",
+    "sources": {
+      "uk": "chile",
+      "us": "chile",
+      "ca": {
+        "iso2": "CL",
+        "id": 54000,
+        "slug": "chile"
+      },
+      "ie": "chile",
+      "fr": "chili",
+      "au": {
+        "continent": "americas",
+        "slug": "chile"
+      },
+      "es": "Chile",
+      "de": "CHL",
+      "nz": "chile",
+      "dk": "chile"
+    }
+  },
+  "IRN": {
+    "iso3": "IRN",
+    "iso2": "IR",
+    "nl": "Iran",
+    "en": "Iran, Islamic Republic of",
+    "key": "iran",
+    "sources": {
+      "uk": "iran",
+      "us": "iran-islamic-republic-of",
+      "ca": {
+        "iso2": "IR",
+        "id": 132000,
+        "slug": "iran"
+      },
+      "ie": null,
+      "fr": "iran-republique-islamique-d",
+      "au": {
+        "continent": "asia",
+        "slug": "iran-islamic-republic-of"
+      },
+      "es": "Irán, República Islámica de",
+      "de": "IRN",
+      "nz": "iran-islamic-republic-of",
+      "dk": "iran-islamisk-republik"
+    }
+  },
+  "BOL": {
+    "iso3": "BOL",
+    "iso2": "BO",
+    "nl": "Bolivia",
+    "en": "Bolivia, Plurinational State of",
+    "key": "bolivia",
+    "sources": {
+      "uk": "bolivia",
+      "us": "bolivia-plurinational-state-of",
+      "ca": {
+        "iso2": "BO",
+        "id": 33000,
+        "slug": "bolivia"
+      },
+      "ie": null,
+      "fr": "bolivie-etat-plurinational-de",
+      "au": {
+        "continent": "americas",
+        "slug": "bolivia-plurinational-state-of"
+      },
+      "es": "Bolivia, Estado Plurinacional de",
+      "de": "BOL",
+      "nz": "bolivia-plurinational-state-of",
+      "dk": "bolivia-plurinational-stat"
+    }
+  },
+  "ECU": {
+    "iso3": "ECU",
+    "iso2": "EC",
+    "nl": "Ecuador",
+    "en": "Ecuador",
+    "key": "ecuador",
+    "sources": {
+      "uk": "ecuador",
+      "us": "ecuador",
+      "ca": {
+        "iso2": "EC",
+        "id": 78000,
+        "slug": "ecuador"
+      },
+      "ie": "ecuador",
+      "fr": "equateur",
+      "au": {
+        "continent": "americas",
+        "slug": "ecuador"
+      },
+      "es": "Ecuador",
+      "de": "ECU",
+      "nz": "ecuador",
+      "dk": "ecuador"
+    }
+  },
+  "STP": {
+    "iso3": "STP",
+    "iso2": "ST",
+    "nl": "Sao Tomé en Principe",
+    "en": "Sao Tome and Principe",
+    "key": "sao-tome-en-principe",
+    "sources": {
+      "uk": "sao-tome-and-principe",
+      "us": "sao-tome-and-principe",
+      "ca": {
+        "iso2": "ST",
+        "id": 257000,
+        "slug": "sao-tome-and-principe"
+      },
+      "ie": "sao-tome-and-principe",
+      "fr": "sao-tome-et-principe",
+      "au": {
+        "continent": "africa",
+        "slug": "sao-tome-and-principe"
+      },
+      "es": "Santo Tomé y Príncipe",
+      "de": "STP",
+      "nz": "sao-tome-and-principe",
+      "dk": "sao-tome-og-principe"
+    }
+  },
+  "LVA": {
+    "iso3": "LVA",
+    "iso2": "LV",
+    "nl": "Letland",
+    "en": "Latvia",
+    "key": "letland",
+    "sources": {
+      "uk": "latvia",
+      "us": "latvia",
+      "ca": {
+        "iso2": "LV",
+        "id": 158000,
+        "slug": "latvia"
+      },
+      "ie": "latvia",
+      "fr": "lettonie",
+      "au": {
+        "continent": "europe",
+        "slug": "latvia"
+      },
+      "es": "Letonia",
+      "de": "LVA",
+      "nz": "latvia",
+      "dk": "letland"
+    }
+  },
+  "KEN": {
+    "iso3": "KEN",
+    "iso2": "KE",
+    "nl": "Kenia",
+    "en": "Kenya",
+    "key": "kenia",
+    "sources": {
+      "uk": "kenya",
+      "us": "kenya",
+      "ca": {
+        "iso2": "KE",
+        "id": 149000,
+        "slug": "kenya"
+      },
+      "ie": "kenya",
+      "fr": "kenya",
+      "au": {
+        "continent": "africa",
+        "slug": "kenya"
+      },
+      "es": "Kenia",
+      "de": "KEN",
+      "nz": "kenya",
+      "dk": "kenya"
+    }
+  },
+  "LBY": {
+    "iso3": "LBY",
+    "iso2": "LY",
+    "nl": "Libië",
+    "en": "Libya",
+    "key": "libie",
+    "sources": {
+      "uk": "libya",
+      "us": "libya",
+      "ca": {
+        "iso2": "LY",
+        "id": 162000,
+        "slug": "libya"
+      },
+      "ie": "libya",
+      "fr": "libye",
+      "au": {
+        "continent": "africa",
+        "slug": "libya"
+      },
+      "es": "Libia",
+      "de": "LBY",
+      "nz": "libya",
+      "dk": "libyen"
+    }
+  },
+  "SGP": {
+    "iso3": "SGP",
+    "iso2": "SG",
+    "nl": "Singapore",
+    "en": "Singapore",
+    "key": "singapore",
+    "sources": {
+      "uk": "singapore",
+      "us": "singapore",
+      "ca": {
+        "iso2": "SG",
+        "id": 265000,
+        "slug": "singapore"
+      },
+      "ie": "singapore",
+      "fr": "singapour",
+      "au": {
+        "continent": "asia",
+        "slug": "singapore"
+      },
+      "es": "Singapur",
+      "de": "SGP",
+      "nz": "singapore",
+      "dk": "singapore"
+    }
+  },
+  "ZWE": {
+    "iso3": "ZWE",
+    "iso2": "ZW",
+    "nl": "Zimbabwe",
+    "en": "Zimbabwe",
+    "key": "zimbabwe",
+    "sources": {
+      "uk": "zimbabwe",
+      "us": "zimbabwe",
+      "ca": {
+        "iso2": "ZW",
+        "id": 335000,
+        "slug": "zimbabwe"
+      },
+      "ie": "zimbabwe",
+      "fr": "zimbabwe",
+      "au": {
+        "continent": "africa",
+        "slug": "zimbabwe"
+      },
+      "es": "Zimbabue",
+      "de": "ZWE",
+      "nz": "zimbabwe",
+      "dk": "zimbabwe"
+    }
+  },
+  "BWA": {
+    "iso3": "BWA",
+    "iso2": "BW",
+    "nl": "Botswana",
+    "en": "Botswana",
+    "key": "botswana",
+    "sources": {
+      "uk": "botswana",
+      "us": "botswana",
+      "ca": {
+        "iso2": "BW",
+        "id": 36000,
+        "slug": "botswana"
+      },
+      "ie": "botswana",
+      "fr": "botswana",
+      "au": {
+        "continent": "africa",
+        "slug": "botswana"
+      },
+      "es": "Botsuana",
+      "de": "BWA",
+      "nz": "botswana",
+      "dk": "botswana"
+    }
+  },
+  "ETH": {
+    "iso3": "ETH",
+    "iso2": "ET",
+    "nl": "Ethiopië",
+    "en": "Ethiopia",
+    "key": "ethiopie",
+    "sources": {
+      "uk": "ethiopia",
+      "us": "ethiopia",
+      "ca": {
+        "iso2": "ET",
+        "id": 85000,
+        "slug": "ethiopia"
+      },
+      "ie": "ethiopia",
+      "fr": "ethiopie",
+      "au": {
+        "continent": "africa",
+        "slug": "ethiopia"
+      },
+      "es": "Etiopía",
+      "de": "ETH",
+      "nz": "ethiopia",
+      "dk": "etiopien"
+    }
+  },
+  "MCO": {
+    "iso3": "MCO",
+    "iso2": "MC",
+    "nl": "Monaco",
+    "en": "Monaco",
+    "key": "monaco",
+    "sources": {
+      "uk": "monaco",
+      "us": "monaco",
+      "ca": {
+        "iso2": "MC",
+        "id": 192000,
+        "slug": "monaco"
+      },
+      "ie": "monaco",
+      "fr": "monaco",
+      "au": {
+        "continent": "europe",
+        "slug": "monaco"
+      },
+      "es": "Mónaco",
+      "de": "MCO",
+      "nz": "monaco",
+      "dk": "monaco"
+    }
+  },
+  "FRO": {
+    "iso3": "FRO",
+    "iso2": "FO",
+    "nl": "Faeröer",
+    "en": "Faroe Islands",
+    "key": "faeroer",
+    "sources": {
+      "uk": null,
+      "us": "faroe-islands",
+      "ca": null,
+      "ie": "faroe-islands",
+      "fr": "iles-feroe",
+      "au": {
+        "continent": "europe",
+        "slug": "faroe-islands"
+      },
+      "es": "Islas Feroe",
+      "de": null,
+      "nz": "faroe-islands",
+      "dk": "f-r-erne"
+    }
+  },
+  "NOR": {
+    "iso3": "NOR",
+    "iso2": "NO",
+    "nl": "Noorwegen",
+    "en": "Norway",
+    "key": "noorwegen",
+    "sources": {
+      "uk": "norway",
+      "us": "norway",
+      "ca": {
+        "iso2": "NO",
+        "id": 225000,
+        "slug": "norway"
+      },
+      "ie": "norway",
+      "fr": "norvege",
+      "au": {
+        "continent": "europe",
+        "slug": "norway"
+      },
+      "es": "Noruega",
+      "de": "NOR",
+      "nz": "norway",
+      "dk": "norge"
+    }
+  },
+  "TUR": {
+    "iso3": "TUR",
+    "iso2": "TR",
+    "nl": "Turkije",
+    "en": "Türkiye",
+    "key": "turkije",
+    "sources": {
+      "uk": "turkey",
+      "us": "turkey",
+      "ca": {
+        "iso2": "TR",
+        "id": 300000,
+        "slug": "turkiye"
+      },
+      "ie": "turkey",
+      "fr": "turquie",
+      "au": {
+        "continent": "middle-east",
+        "slug": "turkiye"
+      },
+      "es": "Turquía",
+      "de": "TUR",
+      "nz": "turkey",
+      "dk": "tyrkiet"
+    }
+  },
+  "ATA": {
+    "iso3": "ATA",
+    "iso2": "AQ",
+    "nl": "Antarctica",
+    "en": "Antarctica",
+    "key": "antarctica",
+    "sources": {
+      "uk": null,
+      "us": "antarctica",
+      "ca": {
+        "iso2": "AQ",
+        "id": 9000,
+        "slug": "antarctica"
+      },
+      "ie": null,
+      "fr": "antarctique",
+      "au": null,
+      "es": "Antártida",
+      "de": null,
+      "nz": "antarctica",
+      "dk": "antarktis"
+    }
+  },
+  "VNM": {
+    "iso3": "VNM",
+    "iso2": "VN",
+    "nl": "Vietnam",
+    "en": "Viet Nam",
+    "key": "vietnam",
+    "sources": {
+      "uk": "vietnam",
+      "us": "viet-nam",
+      "ca": {
+        "iso2": "VN",
+        "id": 316000,
+        "slug": "vietnam"
+      },
+      "ie": "vietnam",
+      "fr": "vietnam",
+      "au": {
+        "continent": "asia",
+        "slug": "viet-nam"
+      },
+      "es": "Vietnam",
+      "de": "VNM",
+      "nz": "viet-nam",
+      "dk": "vietnam"
+    }
+  },
+  "VEN": {
+    "iso3": "VEN",
+    "iso2": "VE",
+    "nl": "Venezuela",
+    "en": "Venezuela, Bolivarian Republic of",
+    "key": "venezuela",
+    "sources": {
+      "uk": "venezuela",
+      "us": "venezuela-bolivarian-republic-of",
+      "ca": {
+        "iso2": "VE",
+        "id": 313000,
+        "slug": "venezuela"
+      },
+      "ie": null,
+      "fr": "venezuela-republique-bolivarienne-du",
+      "au": {
+        "continent": "americas",
+        "slug": "venezuela-bolivarian-republic-of"
+      },
+      "es": "Venezuela, República Bolivariana de",
+      "de": "VEN",
+      "nz": "venezuela-bolivarian-republic-of",
+      "dk": "venezuela-den-bolivarianske-republik"
+    }
+  },
+  "AZE": {
+    "iso3": "AZE",
+    "iso2": "AZ",
+    "nl": "Azerbeidzjan",
+    "en": "Azerbaijan",
+    "key": "azerbeidzjan",
+    "sources": {
+      "uk": "azerbaijan",
+      "us": "azerbajian",
+      "ca": {
+        "iso2": "AZ",
+        "id": 19000,
+        "slug": "azerbaijan"
+      },
+      "ie": "azerbaijan",
+      "fr": "azerbaidjan",
+      "au": {
+        "continent": "middle-east",
+        "slug": "azerbaijan"
+      },
+      "es": "Azerbaiyán",
+      "de": "AZE",
+      "nz": "azerbaijan",
+      "dk": "aserbajdsjan"
+    }
+  },
+  "NGA": {
+    "iso3": "NGA",
+    "iso2": "NG",
+    "nl": "Nigeria",
+    "en": "Nigeria",
+    "key": "nigeria",
+    "sources": {
+      "uk": "nigeria",
+      "us": "nigeria",
+      "ca": {
+        "iso2": "NG",
+        "id": 218000,
+        "slug": "nigeria"
+      },
+      "ie": "nigeria",
+      "fr": "nigeria",
+      "au": {
+        "continent": "africa",
+        "slug": "nigeria"
+      },
+      "es": "Nigeria",
+      "de": "NGA",
+      "nz": "nigeria",
+      "dk": "nigeria"
+    }
+  },
+  "CPV": {
+    "iso3": "CPV",
+    "iso2": "CV",
+    "nl": "Kaapverdië",
+    "en": "Cabo Verde",
+    "key": "kaapverdie",
+    "sources": {
+      "uk": "cape-verde",
+      "us": "cabo-verde",
+      "ca": {
+        "iso2": "CV",
+        "id": 50000,
+        "slug": "cabo-verde"
+      },
+      "ie": "cape-verde",
+      "fr": "cap-vert",
+      "au": {
+        "continent": "africa",
+        "slug": "cape-verde"
+      },
+      "es": "Cabo Verde",
+      "de": "CPV",
+      "nz": "cape-verde",
+      "dk": "cabo-verde"
+    }
+  },
+  "LKA": {
+    "iso3": "LKA",
+    "iso2": "LK",
+    "nl": "Sri Lanka",
+    "en": "Sri Lanka",
+    "key": "sri-lanka",
+    "sources": {
+      "uk": "sri-lanka",
+      "us": "sri-lanka",
+      "ca": {
+        "iso2": "LK",
+        "id": 276000,
+        "slug": "sri-lanka"
+      },
+      "ie": "sri-lanka",
+      "fr": "sri-lanka",
+      "au": {
+        "continent": "asia",
+        "slug": "sri-lanka"
+      },
+      "es": "Sri Lanka",
+      "de": "LKA",
+      "nz": "sri-lanka",
+      "dk": "sri-lanka"
+    }
+  },
+  "TKM": {
+    "iso3": "TKM",
+    "iso2": "TM",
+    "nl": "Turkmenistan",
+    "en": "Turkmenistan",
+    "key": "turkmenistan",
+    "sources": {
+      "uk": "turkmenistan",
+      "us": "turkmenistan",
+      "ca": {
+        "iso2": "TM",
+        "id": 301000,
+        "slug": "turkmenistan"
+      },
+      "ie": "turkmenistan",
+      "fr": "turkmenistan",
+      "au": {
+        "continent": "asia",
+        "slug": "turkmenistan"
+      },
+      "es": "Turkmenistán",
+      "de": "TKM",
+      "nz": "turkmenistan",
+      "dk": "turkmenistan"
+    }
+  },
+  "BEN": {
+    "iso3": "BEN",
+    "iso2": "BJ",
+    "nl": "Benin",
+    "en": "Benin",
+    "key": "benin",
+    "sources": {
+      "uk": "benin",
+      "us": "benin",
+      "ca": {
+        "iso2": "BJ",
+        "id": 30000,
+        "slug": "benin"
+      },
+      "ie": "benin",
+      "fr": "benin",
+      "au": {
+        "continent": "africa",
+        "slug": "benin"
+      },
+      "es": "Benín",
+      "de": "BEN",
+      "nz": "benin",
+      "dk": "benin"
+    }
+  },
+  "ZAF": {
+    "iso3": "ZAF",
+    "iso2": "ZA",
+    "nl": "Zuid-Afrika",
+    "en": "South Africa",
+    "key": "zuid-afrika",
+    "sources": {
+      "uk": "south-africa",
+      "us": "south-africa",
+      "ca": {
+        "iso2": "ZA",
+        "id": 270000,
+        "slug": "south-africa"
+      },
+      "ie": "south-africa",
+      "fr": "afrique-du-sud",
+      "au": {
+        "continent": "africa",
+        "slug": "south-africa"
+      },
+      "es": "Sudáfrica",
+      "de": "ZAF",
+      "nz": "south-africa",
+      "dk": "sydafrika"
+    }
+  },
+  "AND": {
+    "iso3": "AND",
+    "iso2": "AD",
+    "nl": "Andorra",
+    "en": "Andorra",
+    "key": "andorra",
+    "sources": {
+      "uk": "andorra",
+      "us": "andorra",
+      "ca": {
+        "iso2": "AD",
+        "id": 6000,
+        "slug": "andorra"
+      },
+      "ie": "andorra",
+      "fr": "andorre",
+      "au": {
+        "continent": "europe",
+        "slug": "andorra"
+      },
+      "es": "Andorra",
+      "de": "AND",
+      "nz": "andorra",
+      "dk": "andorra"
+    }
+  },
+  "SWZ": {
+    "iso3": "SWZ",
+    "iso2": "SZ",
+    "nl": "Eswatini (Swaziland)",
+    "en": "Eswatini",
+    "key": "eswatini",
+    "sources": {
+      "uk": "swaziland",
+      "us": "eswatini",
+      "ca": {
+        "iso2": "SZ",
+        "id": 280000,
+        "slug": "swaziland"
+      },
+      "ie": "eswatini",
+      "fr": "eswatini",
+      "au": {
+        "continent": "africa",
+        "slug": "eswatini"
+      },
+      "es": "Esuatini",
+      "de": "SWZ",
+      "nz": "eswatini",
+      "dk": "eswatini"
+    }
+  },
+  "LSO": {
+    "iso3": "LSO",
+    "iso2": "LS",
+    "nl": "Lesotho",
+    "en": "Lesotho",
+    "key": "lesotho",
+    "sources": {
+      "uk": "lesotho",
+      "us": "lesotho",
+      "ca": {
+        "iso2": "LS",
+        "id": 160000,
+        "slug": "lesotho"
+      },
+      "ie": "lesotho",
+      "fr": "lesotho",
+      "au": {
+        "continent": "africa",
+        "slug": "lesotho"
+      },
+      "es": "Lesoto",
+      "de": "LSO",
+      "nz": "lesotho",
+      "dk": "lesotho"
+    }
+  },
+  "USA": {
+    "iso3": "USA",
+    "iso2": "US",
+    "nl": "Verenigde Staten van Amerika",
+    "en": "United States of America",
+    "key": "verenigde-staten-van-amerika",
+    "sources": {
+      "uk": "usa",
+      "us": null,
+      "ca": {
+        "iso2": "US",
+        "id": 308000,
+        "slug": "united-states"
+      },
+      "ie": "united-states-of-america",
+      "fr": "etats-unis",
+      "au": {
+        "continent": "americas",
+        "slug": "united-states-of-america"
+      },
+      "es": "Estados Unidos",
+      "de": "USA",
+      "nz": "united-states-of-america",
+      "dk": "usa"
+    }
+  },
+  "THA": {
+    "iso3": "THA",
+    "iso2": "TH",
+    "nl": "Thailand",
+    "en": "Thailand",
+    "key": "thailand",
+    "sources": {
+      "uk": "thailand",
+      "us": "thailand",
+      "ca": {
+        "iso2": "TH",
+        "id": 290000,
+        "slug": "thailand"
+      },
+      "ie": "thailand",
+      "fr": "thailande",
+      "au": {
+        "continent": "asia",
+        "slug": "thailand"
+      },
+      "es": "Tailandia",
+      "de": "THA",
+      "nz": "thailand",
+      "dk": "thailand"
+    }
+  },
+  "NER": {
+    "iso3": "NER",
+    "iso2": "NE",
+    "nl": "Niger",
+    "en": "Niger",
+    "key": "niger",
+    "sources": {
+      "uk": "niger",
+      "us": "niger",
+      "ca": {
+        "iso2": "NE",
+        "id": 217000,
+        "slug": "niger"
+      },
+      "ie": "niger",
+      "fr": "niger",
+      "au": {
+        "continent": "africa",
+        "slug": "niger"
+      },
+      "es": "Níger",
+      "de": "NER",
+      "nz": "niger",
+      "dk": "niger"
+    }
+  },
+  "BRN": {
+    "iso3": "BRN",
+    "iso2": "BN",
+    "nl": "Brunei Darussalam",
+    "en": "Brunei Darussalam",
+    "key": "brunei-darussalam",
+    "sources": {
+      "uk": "brunei",
+      "us": "brunei-darussalam",
+      "ca": {
+        "iso2": "BN",
+        "id": 41000,
+        "slug": "brunei"
+      },
+      "ie": "brunei-darussalam",
+      "fr": "brunei-darussalam",
+      "au": {
+        "continent": "asia",
+        "slug": "brunei"
+      },
+      "es": "Brunéi Darussalam",
+      "de": "BRN",
+      "nz": "brunei",
+      "dk": "brunei-darussalam"
+    }
+  },
+  "ESP": {
+    "iso3": "ESP",
+    "iso2": "ES",
+    "nl": "Spanje",
+    "en": "Spain",
+    "key": "spanje",
+    "sources": {
+      "uk": "spain",
+      "us": "spain",
+      "ca": {
+        "iso2": "ES",
+        "id": 274000,
+        "slug": "spain"
+      },
+      "ie": "spain",
+      "fr": "espagne",
+      "au": {
+        "continent": "europe",
+        "slug": "spain"
+      },
+      "es": "España",
+      "de": "ESP",
+      "nz": "spain",
+      "dk": "spanien"
+    }
+  },
+  "FRA": {
+    "iso3": "FRA",
+    "iso2": "FR",
+    "nl": "Frankrijk",
+    "en": "France",
+    "key": "frankrijk",
+    "sources": {
+      "uk": "france",
+      "us": "france",
+      "ca": {
+        "iso2": "FR",
+        "id": 92000,
+        "slug": "france"
+      },
+      "ie": "france",
+      "fr": "france",
+      "au": {
+        "continent": "europe",
+        "slug": "france"
+      },
+      "es": "Francia",
+      "de": "FRA",
+      "nz": "france",
+      "dk": "frankrig"
     }
   }
 }
