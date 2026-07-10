@@ -44,6 +44,8 @@ const LEVEL_COLORS = ['', 'groen', 'geel', 'oranje', 'rood'];
 //   'en'   → vertaald naar Engels (Engelse bronnen blijven origineel)
 //   'orig' → onvertaald, in de brontaal
 let COMPARE_LANG = localStorage.getItem('compareLang') || 'nl';
+// Matrix-weergave: 'compact' (cellen ingeklapt tot ±4 regels) of 'volledig'.
+let MATRIX_DENSITY = localStorage.getItem('matrixDensity') || 'compact';
 let LAST_COMPARE = null;
 
 // ---- Bronselectie (gedeeld tussen Vergelijken en Wat ontbreekt) -----------
@@ -860,13 +862,46 @@ function renderComparison(staticData, foreign, root) {
       gapBtn));
   }
 
-  frag.append(el('h3', { class: 'section-title' }, 'Vergelijking per thema — naast elkaar'));
+  const densitySeg = el('span', { class: 'seg', role: 'group', 'aria-label': 'Matrix-weergave' });
+  [['compact', 'Compact'], ['volledig', 'Volledig']].forEach(([val, label]) => {
+    const b = el('button', { type: 'button', class: MATRIX_DENSITY === val ? 'on' : '' }, label);
+    b.addEventListener('click', () => {
+      if (MATRIX_DENSITY === val) return;
+      MATRIX_DENSITY = val;
+      localStorage.setItem('matrixDensity', val);
+      if (LAST_COMPARE) renderComparison(LAST_COMPARE.staticData, LAST_COMPARE.foreign, $('#compare-result'));
+    });
+    densitySeg.append(b);
+  });
+  frag.append(el('div', { class: 'theme-head-row' },
+    el('h3', { class: 'section-title', style: 'flex:1;margin:0;border:none' }, 'Vergelijking per thema — naast elkaar'),
+    el('span', { class: 'hint', style: 'margin:0' }, 'Weergave:'), densitySeg));
   frag.append(renderMatrix(cmp, nl, okSources));
   frag.append(el('p', { class: 'hint', style: 'margin-top:10px' },
-    'De kolomkoppen blijven staan tijdens scrollen. Verwijder een bron met × in de kop; voeg er een toe met "+ Bron toevoegen". ',
+    'De kolomkoppen en de themakolom blijven staan tijdens scrollen. Verwijder een bron met × in de kop; voeg er een toe met "+ Bron toevoegen". ',
+    MATRIX_DENSITY === 'compact'
+      ? 'Compact: elke cel toont de eerste regels — klap per cel uit met "▾ Toon alles". '
+      : '',
     'Lege cel = die bron behandelt het thema niet apart (lichtgekleurd = de andere bronnen doen dat wél). Bij veel bronnen scrolt de matrix horizontaal.'));
 
   root.append(frag);
+  // Compact: pas ná het renderen is meetbaar welke cellen echt afgekapt zijn —
+  // alleen die krijgen een "Toon alles"-knop.
+  if (MATRIX_DENSITY === 'compact') requestAnimationFrame(() => initMatrixClamp(root));
+}
+
+/** Voegt per daadwerkelijk afgekapte matrixcel een uitklap-knop toe. */
+function initMatrixClamp(root) {
+  root.querySelectorAll('.matrix .cell.txt:not(.empty)').forEach((cell) => {
+    const cl = cell.querySelector('.cellclamp');
+    if (!cl || cl.scrollHeight <= cl.clientHeight + 6) return;
+    const btn = el('button', { type: 'button', class: 'cell-more' }, '▾ Toon alles');
+    btn.addEventListener('click', () => {
+      const open = cell.classList.toggle('open');
+      btn.textContent = open ? '▴ Inklappen' : '▾ Toon alles';
+    });
+    cell.append(btn);
+  });
 }
 
 /**
@@ -951,7 +986,15 @@ function renderMatrix(cmp, nl, okSources) {
 
 /** Eén matrix-cel: thema-blokken of een (eventueel gemarkeerde) leegte. */
 function cellFor(blocks, foreign, anyContent) {
-  if (blocks && blocks.length) return el('div', { class: 'cell txt' }, renderBlocks(blocks, foreign));
+  if (blocks && blocks.length) {
+    // Compact: volledige tekst renderen maar visueel afkappen (cellclamp);
+    // de per-blok "Lees volledige tekst"-knoppen zouden daar dubbelop zijn.
+    if (MATRIX_DENSITY === 'compact') {
+      return el('div', { class: 'cell txt' },
+        el('div', { class: 'cellclamp' }, renderBlocks(blocks, foreign, { full: true })));
+    }
+    return el('div', { class: 'cell txt' }, renderBlocks(blocks, foreign));
+  }
   // Leeg terwijl andere bronnen het thema wél behandelen = opvallend hiaat.
   return el('div', { class: 'cell txt empty' + (anyContent ? ' miss' : '') }, '— niet apart vermeld');
 }
@@ -964,7 +1007,8 @@ const SNIPPET_MAXLEN = 320;
  * "muur van tekst" die ontstaat als N bronnen elk hun volledige, vaak
  * uitgebreide, brontekst tonen.
  */
-function renderBlocks(blocks, foreign = false) {
+function renderBlocks(blocks, foreign = false, opts = {}) {
+  const { full = false } = opts;
   if (!blocks || !blocks.length) return null;
   const wrap = el('div');
   blocks.forEach((b) => {
@@ -978,7 +1022,7 @@ function renderBlocks(blocks, foreign = false) {
       heading ? el('div', { class: 'block-heading' }, heading) : null,
       b.category && b.category !== heading ? el('div', { class: 'block-cat' }, b.category) : null);
 
-    if (fullText.length > SNIPPET_MAXLEN) {
+    if (!full && fullText.length > SNIPPET_MAXLEN) {
       let expanded = false;
       const shortNode = el('div', { class: 'rich' }, fullText.slice(0, SNIPPET_MAXLEN).trim() + '…');
       const fullNode = el('div', { class: 'rich', html: fullHtml || esc(fullText) });

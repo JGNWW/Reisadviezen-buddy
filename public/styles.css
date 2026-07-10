@@ -237,7 +237,30 @@ input:focus, select:focus { outline: 2px solid var(--link); outline-offset: 0; b
 .addcol { background: #fff; display: flex; align-items: flex-start; justify-content: center; }
 .matrix-add .btn-drop { white-space: normal; text-align: center; font-size: 13px; padding: 8px 10px; }
 .matrix-add .menu { left: auto; right: 0; }
-.rowlabel { background: #f8fafc; font-weight: 600; font-size: 13.5px; color: var(--nl-blue); display: flex; align-items: center; }
+/* Themakolom links blijft staan bij horizontaal scrollen (sticky); de
+   subtiele rechterrand markeert de vastgezette kolom. */
+.rowlabel {
+  background: #f8fafc; font-weight: 600; font-size: 13.5px; color: var(--nl-blue);
+  display: flex; align-items: center;
+  position: sticky; left: 0; z-index: 3; box-shadow: inset -3px 0 0 #c9d6e4;
+}
+.colhead.corner { position: sticky; left: 0; z-index: 6; box-shadow: inset -3px 0 0 #c9d6e4; }
+
+/* Compacte weergave: cel afgekapt tot ±4 regels met vervaging; "Toon alles"
+   klapt per cel uit. De knop verschijnt alleen bij echt afgekapte cellen. */
+.cellclamp { position: relative; max-height: 7.4em; overflow: hidden; }
+.cellclamp::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2.2em;
+  background: linear-gradient(rgba(255,255,255,0), #fff); pointer-events: none;
+}
+.cell.txt.miss .cellclamp::after { background: linear-gradient(rgba(253,246,238,0), #fdf6ee); }
+.cell.open .cellclamp { max-height: none; }
+.cell.open .cellclamp::after { display: none; }
+.cell-more {
+  display: inline-block; margin-top: 6px; padding: 0; background: none; border: none;
+  color: var(--link); font-size: 12.5px; font-weight: 600; cursor: pointer;
+}
+.cell-more:hover { color: var(--link-hover); text-decoration: underline; }
 .kc-cell { display: flex; align-items: center; }
 .matrix .txt { font-size: 13.5px; }
 .matrix .txt.empty { color: var(--muted); font-style: italic; font-size: 13px; }
