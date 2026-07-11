@@ -821,6 +821,26 @@ function renderSummaryTable(nl, okSources) {
  * vertaal-endpoint); alle bronteksten zijn al binnen, dus het zoeken zelf
  * kost geen extra proxy-aanroepen.
  */
+/**
+ * Text-Fragment-deeplink: opent de bronpagina met de passage geel gemarkeerd
+ * (URL-fragment #:~:text=, ondersteund door Edge/Chrome). Het fragment moet
+ * letterlijk op de pagina staan — daarom nemen we ±6 woorden uit de
+ * ORIGINELE (onvertaalde) tekst, beginnend bij het gevonden zoekwoord.
+ */
+function fragmentUrl(baseUrl, text, term) {
+  if (!baseUrl || !text || !term) return null;
+  const idx = text.toLowerCase().indexOf(term.toLowerCase());
+  if (idx === -1) return null;
+  let start = idx;
+  while (start > 0 && !/\s/.test(text[start - 1])) start--;
+  const words = text.slice(start).split(/\s+/).slice(0, 6).join(' ')
+    .replace(/[)\]}"'.,;:!?]+$/, '');
+  if (words.length < 4) return null;
+  // '-' heeft binnen text-directives een eigen betekenis: extra escapen.
+  const enc = encodeURIComponent(words).replace(/-/g, '%2D');
+  return `${baseUrl.split('#')[0]}#:~:text=${enc}`;
+}
+
 function renderTopicSearch(nl, okSources) {
   const wrap = el('div', { class: 'topic-search' });
   const input = el('input', { type: 'text', placeholder: 'Bijv. ebola, verkiezingen, gele koorts…', autocomplete: 'off' });
@@ -870,7 +890,17 @@ function renderTopicSearch(nl, okSources) {
           const v = variantList.find((vv) => low.includes(vv));
           if (v) { hit = { ...f, variant: v }; break; }
         }
-        if (hit) matches.push({ heading: hit.heading, html: highlight(snippetAround(hit.text, hit.variant), hit.variant) });
+        if (hit) {
+          // Voor de deeplink de treffer in de ORIGINELE tekst zoeken: het
+          // #:~:text=-fragment moet letterlijk op de bronpagina staan.
+          let frag = null;
+          if (b.text) {
+            const low = b.text.toLowerCase();
+            const ov = variantList.find((vv) => low.includes(vv));
+            if (ov) frag = { text: b.text, term: ov };
+          }
+          matches.push({ heading: hit.heading, html: highlight(snippetAround(hit.text, hit.variant), hit.variant), frag });
+        }
       }
       return matches;
     };
@@ -882,10 +912,16 @@ function renderTopicSearch(nl, okSources) {
         matches.length
           ? el('span', { class: 'count-pill' }, String(matches.length))
           : el('span', { class: 'no-mention-tag' }, `noemt "${terms.join(', ')}" niet`)));
-      matches.slice(0, 5).forEach((m) => card.append(
-        el('div', { class: 'topic-match' },
-          el('div', { class: 'block-cat' }, m.heading || ''),
-          el('p', { class: 'snippet', html: m.html }))));
+      matches.slice(0, 5).forEach((m) => {
+        const fragHref = m.frag ? fragmentUrl(url, m.frag.text, m.frag.term) : null;
+        card.append(el('div', { class: 'topic-match' },
+          el('div', { class: 'block-cat' }, m.heading || '',
+            fragHref ? el('a', {
+              href: fragHref, target: '_blank', rel: 'noopener', class: 'frag-link',
+              title: 'Opent de bronpagina met deze passage geel gemarkeerd (Edge/Chrome). Staat de passage op een subpagina, dan opent de hoofdpagina zonder markering.',
+            }, '🔗 toon op bronpagina') : null),
+          el('p', { class: 'snippet', html: m.html })));
+      });
       if (matches.length > 5) card.append(el('p', { class: 'hint', style: 'margin:4px 0 0' }, `+ ${matches.length - 5} meer passage(s) — zie het origineel.`));
       if (url) card.append(el('p', { style: 'margin:6px 0 0' }, el('a', { href: url, target: '_blank', rel: 'noopener' }, 'origineel →')));
       cards.append(card);

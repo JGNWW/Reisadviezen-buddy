@@ -455,3 +455,6 @@ input:focus, select:focus { outline: 2px solid var(--link); outline-offset: 0; b
 .new-badge { background: var(--rood); color: #fff; font-size: 10px; font-weight: 700; padding: 2px 6px; letter-spacing: .04em; vertical-align: 2px; }
 .worklist-quotes { font-size: 13.5px; }
 .worklist-quote { margin: 4px 0; }
+
+/* ---- Text-Fragment-deeplinks (toon passage op de bronpagina) ---- */
+.frag-link { font-size: 12px; margin-left: 8px; white-space: nowrap; font-weight: 400; }
