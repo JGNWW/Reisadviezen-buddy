@@ -44,6 +44,18 @@ jobs:
       - name: Dependencies installeren
         run: npm ci
 
+      # De per-land termenlijsten van de trefwoordindex zijn te groot voor
+      # git-churn (±10 MB per run); ze reizen tussen runs mee via de
+      # Actions-cache. Een cache-miss is onschuldig: de index wordt die run
+      # opnieuw opgebouwd uit de gelukte ophalingen.
+      - name: Trefwoordindex-cache herstellen
+        uses: actions/cache@v4
+        with:
+          path: worker/data/foreign-index/docs.json
+          key: foreign-index-docs-${{ github.run_id }}
+          restore-keys: |
+            foreign-index-docs-
+
       - name: Snapshot ophalen en wijzigingen bepalen
         run: node scripts/snapshot-foreign.mjs
         env:

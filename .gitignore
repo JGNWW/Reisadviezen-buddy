@@ -3,3 +3,8 @@ node_modules/
 .DS_Store
 .env
 docs/
+
+# Persistente per-land termenlijsten voor de trefwoordindex: niet in git
+# (10+ MB churn per snapshot-run) maar in de Actions-cache — zie
+# snapshot-changes.yml. Alleen de afgeleide a-z-shards worden gecommit.
+worker/data/foreign-index/docs.json

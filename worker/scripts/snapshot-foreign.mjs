@@ -84,6 +84,9 @@ function compact(adv) {
   return {
     level: adv.level ?? null,
     color: adv.color ?? null,
+    // Kort citaat van het originele niveau ("Do not travel") — gebruikt door
+    // de werklijst om per bron te tonen wáárop het niveau gebaseerd is.
+    levelLabel: adv.levelLabel ? String(adv.levelLabel).slice(0, 90) : null,
     regionalMaxLevel: adv.regionalMaxLevel ?? null,
     hasRegionalWarnings: !!adv.hasRegionalWarnings,
     assessmentStatus: adv.assessmentStatus ?? null,
@@ -256,6 +259,77 @@ async function toDutch(text, from) {
   }
 }
 
+// ---- Trefwoordindex over alle buitenlandse adviezen -------------------------
+// Beantwoordt offline de vraag "welke landen noemen <term>?". Per land wordt
+// de verzameling betekenisvolle termen bewaard (docs.json, persistent zodat
+// een mislukte ophaling geen gat slaat); daaruit worden per run 26 shards
+// (a.json..z.json) met term -> [iso3] afgeleid. Geen volledige teksten in de
+// repo — alleen termen.
+
+const INDEX_DIR = path.join(DATA_DIR, 'foreign-index');
+const INDEX_DOCS_FILE = path.join(INDEX_DIR, 'docs.json');
+// Termen die in meer dan dit deel van de landen voorkomen zijn niet
+// onderscheidend (boilerplate als "insurance", "embassy") en blijven weg.
+const INDEX_MAX_DF = 0.25;
+
+// Compacte meertalige stopwoordenlijst (en/nl/fr/es/de/da); de lengte-eis
+// (>=4) filtert de rest van de functiewoorden er al uit.
+const INDEX_STOP = new Set(('about above after against also always another around because been before being below between both ' +
+  'could does during each every from further have having here itself more most much other ours over same several shall should ' +
+  'since some such than that their theirs them then there these they this those through under until upon very were what when ' +
+  'where which while whom will with would your yours ' +
+  'aangezien alle alleen als altijd andere anders bijvoorbeeld binnen daar daarom deze dienen dient door echter geen gaat ' +
+  'hebben hebt heeft hier hoe kunnen kunt maar meer meest moet moeten naar niet onder onze over sommige staat tegen tijdens ' +
+  'tussen vaak veel voor vooral waar wanneer want welke wordt worden zijn zich zoals zonder zeer ' +
+  'ainsi aussi autre autres avec cela cette comme dans depuis dont elle elles entre etre était être leur leurs mais même ' +
+  'notamment nous plus pour quand sans selon sont sous tous tout toute toutes très vous votre vos ' +
+  'algunas algunos ante aunque cada como cuando debe deben desde donde durante ella ellos entre esta estas este estos hacia ' +
+  'hasta más para pero puede pueden ser sobre según sino sólo también tiene tienen toda todas todo todos una unas unos usted ' +
+  'aber alle allen andere anderen auch beim bitte dass dem den denen deren diese diesem diesen dieser dieses doch durch eine ' +
+  'einem einen einer eines für gegen haben iher ihre ihren immer kann können mehr muss müssen nach nicht noch oder ohne sein ' +
+  'seine sich sind sowie über unter vom wenn werden wird wurde zwischen ' +
+  'alle andre bliver blevet deres dette efter eller ikke kan mange mere miste ofte over samt sine skal under uden være ved vil').split(/\s+/));
+
+/**
+ * Betekenisvolle termen (4-24 letters, geen stopwoord) uit een tekst.
+ * Een slot-s wordt gevouwen (earthquake/earthquakes -> zelfde term) — de
+ * zoekkant past dezelfde vouwing toe, dus dit is onzichtbaar voor de
+ * gebruiker en scheelt ~25% indexomvang.
+ */
+export function indexTokens(text) {
+  const out = new Set();
+  const clean = String(text || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  for (let w of clean.split(/[^a-z]+/)) {
+    if (w.length < 4 || w.length > 24 || INDEX_STOP.has(w)) continue;
+    if (w.length > 4 && w.endsWith('s')) w = w.slice(0, -1);
+    out.add(w);
+  }
+  return out;
+}
+
+/** Herbouwt de a-z-shards uit de per-land termenlijsten. */
+function writeIndexShards(docs) {
+  const isoList = Object.keys(docs);
+  const maxDf = Math.max(3, Math.floor(isoList.length * INDEX_MAX_DF));
+  const byTerm = new Map();
+  for (const [iso, terms] of Object.entries(docs)) {
+    for (const t of terms) {
+      let set = byTerm.get(t);
+      if (!set) byTerm.set(t, (set = []));
+      set.push(iso);
+    }
+  }
+  const shards = {};
+  for (const [term, isos] of byTerm) {
+    if (isos.length > maxDf) continue;
+    (shards[term[0]] ||= {})[term] = isos.sort();
+  }
+  const generatedAt = new Date().toISOString();
+  for (const letter of 'abcdefghijklmnopqrstuvwxyz') {
+    writeFileSync(path.join(INDEX_DIR, `${letter}.json`), JSON.stringify({ generatedAt, countries: isoList.length, terms: shards[letter] || {} }));
+  }
+}
+
 // ---- Bron-brede onderdrukking ----------------------------------------------
 
 const BULK_MIN = 20;
@@ -318,7 +392,14 @@ async function mapLimit(items, limit, fn) {
 async function main() {
   mkdirSync(HISTORY_DIR, { recursive: true });
   mkdirSync(FINGERPRINT_DIR, { recursive: true });
+  mkdirSync(INDEX_DIR, { recursive: true });
   const today = new Date().toISOString().slice(0, 10);
+
+  // Persistente per-land termenlijsten voor de trefwoordindex: alleen landen
+  // die deze run daadwerkelijk zijn opgehaald worden ververst.
+  const indexDocs = existsSync(INDEX_DOCS_FILE)
+    ? JSON.parse(readFileSync(INDEX_DOCS_FILE, 'utf8')).docs || {}
+    : {};
 
   let entries = Object.entries(countries).filter(
     ([, rec]) => rec.sources && Object.values(rec.sources).some(Boolean)
@@ -350,6 +431,7 @@ async function main() {
     const nextSnapshot = { ...(lastEntry?.sources || {}) };
     let changedAny = false;
     let fetchedAny = false;
+    const countryTerms = new Set(); // voor de trefwoordindex (unie over bronnen)
 
     for (const [sid, adapter] of Object.entries(ADAPTERS)) {
       const id = rec.sources[sid];
@@ -363,6 +445,7 @@ async function main() {
       }
       if (!adv) { failed++; continue; } // tijdelijke fout: vorige staat behouden, geen diff
       fetchedAny = true;
+      for (const t of indexTokens(adv.fullText)) countryTerms.add(t);
 
       const after = compact(adv);
       const before = lastEntry?.sources?.[sid];
@@ -451,6 +534,7 @@ async function main() {
       writeFileSync(histFile, JSON.stringify(hist));
     }
     if (fetchedAny) writeFileSync(fpFile, JSON.stringify(fps));
+    if (fetchedAny && countryTerms.size) indexDocs[iso3] = [...countryTerms].sort();
   });
 
   const cutoff = new Date(Date.now() - RETENTION_DAYS * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
@@ -464,10 +548,21 @@ async function main() {
   writeFileSync(CHANGES_FILE, JSON.stringify({ generatedAt: new Date().toISOString(), changes: allChanges }));
   writeFileSync(SOURCE_DATES_FILE, JSON.stringify({ generatedAt: new Date().toISOString(), dates: sourceDates }));
 
+  // Trefwoordindex wegschrijven (per-land termen + afgeleide a-z-shards).
+  writeFileSync(INDEX_DOCS_FILE, JSON.stringify({ generatedAt: new Date().toISOString(), docs: indexDocs }));
+  writeIndexShards(indexDocs);
+  console.log(`Trefwoordindex: ${Object.keys(indexDocs).length} landen geïndexeerd.`);
+
   console.log(`Snapshot klaar: ${entries.length} landen, ${checked} bron-aanvragen (${failed} mislukt/overgeslagen), ${newChanges.length} wijziging(en) gevonden vandaag.`);
 }
 
-main().catch((e) => {
-  console.error(e);
-  process.exit(1);
-});
+// Alleen draaien bij direct aanroepen — de tests importeren dit bestand om
+// de pure functies (indexTokens e.d.) te kunnen testen zonder een snapshot
+// te starten.
+import { pathToFileURL } from 'node:url';
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().catch((e) => {
+    console.error(e);
+    process.exit(1);
+  });
+}

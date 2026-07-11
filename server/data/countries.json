@@ -25,32 +25,6 @@
       "dk": "nepal"
     }
   },
-  "ARM": {
-    "iso3": "ARM",
-    "iso2": "AM",
-    "nl": "Armenië",
-    "en": "Armenia",
-    "key": "armenie",
-    "sources": {
-      "uk": "armenia",
-      "us": "armenia",
-      "ca": {
-        "iso2": "AM",
-        "id": 14000,
-        "slug": "armenia"
-      },
-      "ie": "armenia",
-      "fr": "armenie",
-      "au": {
-        "continent": "middle-east",
-        "slug": "armenia"
-      },
-      "es": "Armenia",
-      "de": "ARM",
-      "nz": "armenia",
-      "dk": "armenien"
-    }
-  },
   "MSR": {
     "iso3": "MSR",
     "iso2": "MS",
@@ -597,32 +571,6 @@
       "dk": "cameroun"
     }
   },
-  "IDN": {
-    "iso3": "IDN",
-    "iso2": "ID",
-    "nl": "Indonesië",
-    "en": "Indonesia",
-    "key": "indonesie",
-    "sources": {
-      "uk": "indonesia",
-      "us": "indonesia",
-      "ca": {
-        "iso2": "ID",
-        "id": 130000,
-        "slug": "indonesia"
-      },
-      "ie": "indonesia",
-      "fr": "indonesie",
-      "au": {
-        "continent": "asia",
-        "slug": "indonesia"
-      },
-      "es": "Indonesia",
-      "de": "IDN",
-      "nz": "indonesia",
-      "dk": "indonesien"
-    }
-  },
   "BLR": {
     "iso3": "BLR",
     "iso2": "BY",
@@ -864,14 +812,14 @@
     "en": "Myanmar",
     "key": "myanmar",
     "sources": {
-      "uk": "myanmar-burma",
+      "uk": "myanmar",
       "us": "burma",
       "ca": {
         "iso2": "MM",
         "id": 200000,
         "slug": "myanmar"
       },
-      "ie": "myanmar",
+      "ie": "myanmar-burma",
       "fr": "birmanie",
       "au": {
         "continent": "asia",
@@ -897,7 +845,7 @@
         "id": 152000,
         "slug": "north-korea"
       },
-      "ie": "north-korea",
+      "ie": "democratic-republic-of-korea",
       "fr": "coree-du-nord",
       "au": {
         "continent": "asia",
@@ -2124,7 +2072,7 @@
         "id": 183000,
         "slug": "north-macedonia"
       },
-      "ie": "north-macedonia",
+      "ie": "republic-of-north-macedonia",
       "fr": "macedoine-du-nord",
       "au": {
         "continent": "europe",
@@ -2195,14 +2143,14 @@
     "en": "United Kingdom of Great Britain and Northern Ireland",
     "key": "verenigd-koninkrijk",
     "sources": {
-      "uk": "uk",
+      "uk": null,
       "us": "united-kingdom",
       "ca": {
         "iso2": "GB",
         "id": 307000,
         "slug": "united-kingdom"
       },
-      "ie": "united-kingdom",
+      "ie": "great-britain",
       "fr": "royaume-uni",
       "au": {
         "continent": "europe",
@@ -2941,14 +2889,14 @@
     "en": "Côte d'Ivoire",
     "key": "ivoorkust",
     "sources": {
-      "uk": "ivory-coast",
+      "uk": "cote-d-ivoire",
       "us": "cote-d-ivoire",
       "ca": {
         "iso2": "CI",
         "id": 137000,
         "slug": "cote-d-ivoire-ivory-coast"
       },
-      "ie": "cote-divoire",
+      "ie": "ivory-coast",
       "fr": "cote-d-ivoire",
       "au": {
         "continent": "africa",
@@ -4141,7 +4089,7 @@
         "id": 332000,
         "slug": "democratic-republic-of-congo-kinshasa"
       },
-      "ie": "democratic-republic-of-the-congo",
+      "ie": "democratic-republic-of-congo",
       "fr": "congo-republique-democratique-du",
       "au": {
         "continent": "africa",
@@ -4186,7 +4134,7 @@
     "en": "Timor-Leste",
     "key": "oost-timor",
     "sources": {
-      "uk": "east-timor",
+      "uk": "timor-leste",
       "us": "timor-leste",
       "ca": {
         "iso2": "TL",
@@ -4978,32 +4926,6 @@
       "dk": "iran-islamisk-republik"
     }
   },
-  "BOL": {
-    "iso3": "BOL",
-    "iso2": "BO",
-    "nl": "Bolivia",
-    "en": "Bolivia, Plurinational State of",
-    "key": "bolivia",
-    "sources": {
-      "uk": "bolivia",
-      "us": "bolivia-plurinational-state-of",
-      "ca": {
-        "iso2": "BO",
-        "id": 33000,
-        "slug": "bolivia"
-      },
-      "ie": null,
-      "fr": "bolivie-etat-plurinational-de",
-      "au": {
-        "continent": "americas",
-        "slug": "bolivia-plurinational-state-of"
-      },
-      "es": "Bolivia, Estado Plurinacional de",
-      "de": "BOL",
-      "nz": "bolivia-plurinational-state-of",
-      "dk": "bolivia-plurinational-stat"
-    }
-  },
   "ECU": {
     "iso3": "ECU",
     "iso2": "EC",
@@ -5326,7 +5248,7 @@
         "id": 300000,
         "slug": "turkiye"
       },
-      "ie": "turkey",
+      "ie": "turkiye",
       "fr": "turquie",
       "au": {
         "continent": "middle-east",
@@ -5751,32 +5673,6 @@
       "dk": "niger"
     }
   },
-  "BRN": {
-    "iso3": "BRN",
-    "iso2": "BN",
-    "nl": "Brunei Darussalam",
-    "en": "Brunei Darussalam",
-    "key": "brunei-darussalam",
-    "sources": {
-      "uk": "brunei",
-      "us": "brunei-darussalam",
-      "ca": {
-        "iso2": "BN",
-        "id": 41000,
-        "slug": "brunei"
-      },
-      "ie": "brunei-darussalam",
-      "fr": "brunei-darussalam",
-      "au": {
-        "continent": "asia",
-        "slug": "brunei"
-      },
-      "es": "Brunéi Darussalam",
-      "de": "BRN",
-      "nz": "brunei",
-      "dk": "brunei-darussalam"
-    }
-  },
   "FRA": {
     "iso3": "FRA",
     "iso2": "FR",
@@ -5827,6 +5723,110 @@
       "de": "ESP",
       "nz": "spain",
       "dk": "spanien"
+    }
+  },
+  "BRN": {
+    "iso3": "BRN",
+    "iso2": "BN",
+    "nl": "Brunei Darussalam",
+    "en": "Brunei Darussalam",
+    "key": "brunei-darussalam",
+    "sources": {
+      "uk": "brunei",
+      "us": "brunei-darussalam",
+      "ca": {
+        "iso2": "BN",
+        "id": 41000,
+        "slug": "brunei"
+      },
+      "ie": "brunei-darussalam",
+      "fr": "brunei-darussalam",
+      "au": {
+        "continent": "asia",
+        "slug": "brunei"
+      },
+      "es": "Brunéi Darussalam",
+      "de": "BRN",
+      "nz": "brunei",
+      "dk": "brunei-darussalam"
+    }
+  },
+  "BOL": {
+    "iso3": "BOL",
+    "iso2": "BO",
+    "nl": "Bolivia",
+    "en": "Bolivia, Plurinational State of",
+    "key": "bolivia",
+    "sources": {
+      "uk": "bolivia",
+      "us": "bolivia-plurinational-state-of",
+      "ca": {
+        "iso2": "BO",
+        "id": 33000,
+        "slug": "bolivia"
+      },
+      "ie": null,
+      "fr": "bolivie-etat-plurinational-de",
+      "au": {
+        "continent": "americas",
+        "slug": "bolivia-plurinational-state-of"
+      },
+      "es": "Bolivia, Estado Plurinacional de",
+      "de": "BOL",
+      "nz": "bolivia-plurinational-state-of",
+      "dk": "bolivia-plurinational-stat"
+    }
+  },
+  "IDN": {
+    "iso3": "IDN",
+    "iso2": "ID",
+    "nl": "Indonesië",
+    "en": "Indonesia",
+    "key": "indonesie",
+    "sources": {
+      "uk": "indonesia",
+      "us": "indonesia",
+      "ca": {
+        "iso2": "ID",
+        "id": 130000,
+        "slug": "indonesia"
+      },
+      "ie": "indonesia",
+      "fr": "indonesie",
+      "au": {
+        "continent": "asia",
+        "slug": "indonesia"
+      },
+      "es": "Indonesia",
+      "de": "IDN",
+      "nz": "indonesia",
+      "dk": "indonesien"
+    }
+  },
+  "ARM": {
+    "iso3": "ARM",
+    "iso2": "AM",
+    "nl": "Armenië",
+    "en": "Armenia",
+    "key": "armenie",
+    "sources": {
+      "uk": "armenia",
+      "us": "armenia",
+      "ca": {
+        "iso2": "AM",
+        "id": 14000,
+        "slug": "armenia"
+      },
+      "ie": "armenia",
+      "fr": "armenie",
+      "au": {
+        "continent": "middle-east",
+        "slug": "armenia"
+      },
+      "es": "Armenia",
+      "de": "ARM",
+      "nz": "armenia",
+      "dk": "armenien"
     }
   }
 }
