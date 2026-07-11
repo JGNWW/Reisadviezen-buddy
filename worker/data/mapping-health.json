@@ -1,0 +1,22 @@
+{
+  "generatedAt": "2026-07-11T08:32:27.002Z",
+  "sources": {
+    "uk": {
+      "checked": 209,
+      "broken": []
+    },
+    "de": {
+      "checked": 198,
+      "broken": []
+    },
+    "ca": {
+      "checked": 219,
+      "broken": []
+    },
+    "ie": {
+      "checked": 193,
+      "broken": []
+    }
+  },
+  "totalBroken": 0
+}

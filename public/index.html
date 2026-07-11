@@ -49,8 +49,12 @@
         <div class="controls-row">
           <div class="field grow">
             <label for="country-input">Land</label>
-            <input id="country-input" list="country-list" autocomplete="off"
-                   placeholder="Bijv. Ethiopië, Verenigd Koninkrijk, USA…" />
+            <div class="combo">
+              <input id="country-input" autocomplete="off" role="combobox"
+                     aria-expanded="false" aria-controls="country-listbox" aria-autocomplete="list"
+                     placeholder="Bijv. Ethiopië, VS, Oekraine…" />
+              <ul id="country-listbox" class="combo-list" role="listbox" hidden></ul>
+            </div>
             <datalist id="country-list"></datalist>
           </div>
           <div class="field">
@@ -201,6 +205,7 @@
           <label for="search-scope">Waar zoeken</label>
           <select id="search-scope">
             <option value="nl">In Nederlandse reisadviezen</option>
+            <option value="foreign-all">In álle buitenlandse adviezen (welke landen noemen dit?)</option>
             <option value="foreign">In buitenlandse reisadviezen (per land, live)</option>
             <option value="both">Vergelijk NL ↔ buitenland (per land)</option>
           </select>

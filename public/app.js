@@ -47,6 +47,9 @@ let COMPARE_LANG = localStorage.getItem('compareLang') || 'nl';
 // Matrix-weergave: 'compact' (cellen ingeklapt tot ±4 regels) of 'volledig'.
 let MATRIX_DENSITY = localStorage.getItem('matrixDensity') || 'compact';
 let LAST_COMPARE = null;
+// Vooringevulde term voor de onderwerp-zoeker (gezet door de indexzoeker en
+// de gazetteer-chips; wordt na de eerstvolgende vergelijking uitgevoerd).
+let PENDING_TOPIC = null;
 
 // ---- Bronselectie (gedeeld tussen Vergelijken en Wat ontbreekt) -----------
 const allSourceIds = () => (CFG.SOURCES || []).map((s) => s.id);
@@ -185,15 +188,46 @@ let THEMES_META = [];
 let THEME_ORDER = new Map();
 let THEME_BY_ID = new Map();
 
+// Gangbare benamingen die niet (of net anders) in de officiële namen zitten.
+const COUNTRY_ALIASES = {
+  vs: 'USA', usa: 'USA', amerika: 'USA', 'verenigde staten': 'USA',
+  vk: 'GBR', engeland: 'GBR', 'groot brittannie': 'GBR', uk: 'GBR',
+  birma: 'MMR', ivoorkust: 'CIV', vae: 'ARE', emiraten: 'ARE', dubai: 'ARE',
+  congo: 'COD', 'congo kinshasa': 'COD', 'congo brazzaville': 'COG',
+  tsjechie: 'CZE', 'tsjechische republiek': 'CZE', perzie: 'IRN',
+  holland: 'NLD', kaapverdie: 'CPV', 'oost timor': 'TLS', swaziland: 'SWZ',
+  'noord macedonie': 'MKD', macedonie: 'MKD', 'wit rusland': 'BLR',
+  'palestijnse gebieden': 'PSE', palestina: 'PSE', 'vaticaanstad': 'VAT',
+};
+
+/** Dice-coëfficiënt op bigrammen — vangt typefouten ("Oekraine", "Filippijnen"). */
+function diceSimilarity(a, b) {
+  if (a.length < 2 || b.length < 2) return 0;
+  const grams = (s) => { const m = new Map(); for (let i = 0; i < s.length - 1; i++) { const g = s.slice(i, i + 2); m.set(g, (m.get(g) || 0) + 1); } return m; };
+  const ga = grams(a), gb = grams(b);
+  let overlap = 0;
+  for (const [g, n] of ga) overlap += Math.min(n, gb.get(g) || 0);
+  return (2 * overlap) / (a.length - 1 + b.length - 1);
+}
+
 function resolveCountry(query) {
   if (!query) return null;
   const q = query.trim(), upper = q.toUpperCase();
   let c = COUNTRIES.find((x) => x.iso3 === upper); if (c) return c;
-  const nq = norm(q);
+  const nq = norm(q).replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim();
+  const alias = COUNTRY_ALIASES[nq];
+  if (alias) { c = COUNTRIES.find((x) => x.iso3 === alias); if (c) return c; }
   c = COUNTRIES.find((x) => (x.key || '').toLowerCase() === q.toLowerCase()); if (c) return c;
   c = COUNTRIES.find((x) => norm(x.nl) === nq || norm(x.en) === nq); if (c) return c;
   c = COUNTRIES.find((x) => norm(x.nl).startsWith(nq) || norm(x.en).startsWith(nq)); if (c) return c;
-  return COUNTRIES.find((x) => norm(x.nl).includes(nq) || norm(x.en).includes(nq)) || null;
+  c = COUNTRIES.find((x) => norm(x.nl).includes(nq) || norm(x.en).includes(nq)); if (c) return c;
+  // Typefout-tolerantie: beste bigram-overeenkomst boven de drempel.
+  let best = null, bestScore = 0.55;
+  for (const x of COUNTRIES) {
+    const score = Math.max(diceSimilarity(nq, norm(x.nl)), diceSimilarity(nq, norm(x.en)));
+    if (score > bestScore) { best = x; bestScore = score; }
+  }
+  return best;
 }
 
 // ==========================================================================
@@ -246,6 +280,7 @@ async function bootstrap() {
   initFromUrl();
   setupSourcePicker();
   setupLangSeg();
+  setupCountryCombo();
 
   if (meta?.builtAt) {
     $('#build-meta').textContent =
@@ -353,6 +388,104 @@ function rerunLastCompare() {
   if (LAST_COMPARE) runComparison(LAST_COMPARE.country, orderedSelected(), COMPARE_LANG);
 }
 
+// ==========================================================================
+// Land-combobox: vlaggen, aliassen, typefout-tolerantie en recente landen.
+// Toegankelijk (role=combobox/listbox, pijltjes/Enter/Escape).
+// ==========================================================================
+const recentCountries = () => { try { return JSON.parse(localStorage.getItem('recentCountries')) || []; } catch { return []; } };
+function pushRecentCountry(iso3) {
+  const list = [iso3, ...recentCountries().filter((i) => i !== iso3)].slice(0, 6);
+  localStorage.setItem('recentCountries', JSON.stringify(list));
+}
+
+/** Topkandidaten voor de combobox: alias > prefix > bevat > bigram-score. */
+function countrySuggestions(q, max = 8) {
+  const nq = norm(q).replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim();
+  if (!nq) return [];
+  const seen = new Set();
+  const out = [];
+  const add = (c, why) => { if (c && !seen.has(c.iso3) && out.length < max) { seen.add(c.iso3); out.push({ c, why }); } };
+  const alias = COUNTRY_ALIASES[nq];
+  if (alias) add(COUNTRIES.find((x) => x.iso3 === alias), 'alias');
+  for (const x of COUNTRIES) if (norm(x.nl).startsWith(nq)) add(x, 'prefix');
+  for (const x of COUNTRIES) if (norm(x.en).startsWith(nq)) add(x, 'prefix-en');
+  for (const x of COUNTRIES) if (norm(x.nl).includes(nq) || norm(x.en).includes(nq)) add(x, 'bevat');
+  if (out.length < max) {
+    const scored = COUNTRIES
+      .filter((x) => !seen.has(x.iso3))
+      .map((x) => ({ x, s: Math.max(diceSimilarity(nq, norm(x.nl)), diceSimilarity(nq, norm(x.en))) }))
+      .filter((r) => r.s >= 0.45)
+      .sort((a, b) => b.s - a.s);
+    for (const r of scored) add(r.x, 'lijkt op');
+  }
+  return out;
+}
+
+function setupCountryCombo() {
+  const input = $('#country-input');
+  const list = $('#country-listbox');
+  if (!input || !list) return;
+  let active = -1;
+
+  const close = () => { list.hidden = true; input.setAttribute('aria-expanded', 'false'); active = -1; };
+  const render = () => {
+    const q = input.value.trim();
+    list.innerHTML = '';
+    active = -1;
+    let items;
+    if (!q) {
+      const recent = recentCountries().map((iso) => COUNTRIES.find((c) => c.iso3 === iso)).filter(Boolean);
+      if (!recent.length) { close(); return; }
+      list.append(el('li', { class: 'combo-group' }, 'Recent vergeleken'));
+      items = recent.map((c) => ({ c }));
+    } else {
+      items = countrySuggestions(q);
+      if (!items.length) { close(); return; }
+    }
+    items.forEach(({ c, why }, i) => {
+      const li = el('li', {
+        class: 'combo-item', role: 'option', id: `combo-opt-${i}`,
+      }, el('span', { class: 'fl' }, countryFlag(c.iso2)), ` ${c.nl}`,
+        why === 'lijkt op' ? el('span', { class: 'combo-why' }, 'bedoelde je?') : null);
+      // mousedown i.p.v. click: gaat vóór de blur van het input-veld.
+      li.addEventListener('mousedown', (e) => { e.preventDefault(); pick(c); });
+      li.dataset.iso3 = c.iso3;
+      list.append(li);
+    });
+    list.hidden = false;
+    input.setAttribute('aria-expanded', 'true');
+  };
+  const options = () => $$('.combo-item', list);
+  const highlight = (idx) => {
+    const opts = options();
+    if (!opts.length) return;
+    active = (idx + opts.length) % opts.length;
+    opts.forEach((o, i) => o.classList.toggle('active', i === active));
+    input.setAttribute('aria-activedescendant', opts[active].id);
+    opts[active].scrollIntoView({ block: 'nearest' });
+  };
+  const pick = (c) => {
+    input.value = c.nl;
+    close();
+    $('#compare-form').requestSubmit();
+  };
+
+  input.addEventListener('input', render);
+  input.addEventListener('focus', render);
+  input.addEventListener('blur', () => setTimeout(close, 120));
+  input.addEventListener('keydown', (e) => {
+    if (list.hidden && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) { render(); return; }
+    if (e.key === 'ArrowDown') { e.preventDefault(); highlight(active + 1); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); highlight(active - 1); }
+    else if (e.key === 'Enter' && !list.hidden && active >= 0) {
+      e.preventDefault();
+      const iso = options()[active]?.dataset.iso3;
+      const c = COUNTRIES.find((x) => x.iso3 === iso);
+      if (c) pick(c);
+    } else if (e.key === 'Escape') close();
+  });
+}
+
 // ---- Taalkeuze (Nederlands · English · Origineel) -------------------------
 function setupLangSeg() {
   const seg = $('#lang-seg');
@@ -418,6 +551,7 @@ async function runComparison(country, sources, lang) {
     }
     status.textContent = '';
     LAST_COMPARE = { country, sources, lang, staticData, foreign };
+    pushRecentCountry(country.iso3);
     // Ander land dan de URL nu toont = nieuwe history-entry (terug-knop
     // werkt); zelfde land (herladen/taalwissel/bron erbij) = vervangen.
     const urlLand = new URLSearchParams(location.search).get('land');
@@ -762,6 +896,14 @@ function renderTopicSearch(nl, okSources) {
     result.append(cards);
   });
 
+  // Vooringevulde term (vanuit de indexzoeker of een gazetteer-chip):
+  // automatisch invullen en uitvoeren zodra de vergelijking geladen is.
+  if (PENDING_TOPIC) {
+    input.value = PENDING_TOPIC;
+    PENDING_TOPIC = null;
+    setTimeout(() => { form.requestSubmit(); wrap.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 150);
+  }
+
   return wrap;
 }
 
@@ -769,6 +911,86 @@ const countryFlagByIso3 = (iso3) => {
   const c = COUNTRIES.find((x) => x.iso3 === iso3);
   return c?.iso2 ? countryFlag(c.iso2) : '';
 };
+
+// ==========================================================================
+// Gazetteer: concrete risico-onderwerpen die buitenlandse bronnen noemen en
+// het NL-advies niet. Regelgebaseerd (geen AI): een vaste lijst hoge-precisie
+// concepten met meertalige herkenningspatronen (en/fr/es/de/da + nl). De
+// NL-term wordt gebruikt om de onderwerp-zoeker voor in te vullen.
+// ==========================================================================
+const GAZETTEER = [
+  // Ziektes
+  { cat: '🦠', nl: 'dengue (knokkelkoorts)', term: 'dengue', re: /dengue|knokkelkoorts/i },
+  { cat: '🦠', nl: 'malaria', term: 'malaria', re: /malaria|paludisme/i },
+  { cat: '🦠', nl: 'zika', term: 'zika', re: /\bzika/i },
+  { cat: '🦠', nl: 'chikungunya', term: 'chikungunya', re: /chikungunya/i },
+  { cat: '🦠', nl: 'rabiës (hondsdolheid)', term: 'hondsdolheid', re: /rabi[eë]s|\brabies\b|hondsdolheid|tollwut|la rage\b|\brabia\b/i },
+  { cat: '🦠', nl: 'cholera', term: 'cholera', re: /cholera|c[oó]lera/i },
+  { cat: '🦠', nl: 'tyfus', term: 'tyfus', re: /tyfus|typhoid|typho[iï]de|tifoidea/i },
+  { cat: '🦠', nl: 'gele koorts', term: 'gele koorts', re: /gele koorts|yellow fever|fi[eè]vre jaune|fiebre amarilla|gelbfieber|gul feber/i },
+  { cat: '🦠', nl: 'hepatitis', term: 'hepatitis', re: /hepatitis|h[eé]patite/i },
+  { cat: '🦠', nl: 'ebola', term: 'ebola', re: /ebola/i },
+  { cat: '🦠', nl: 'mpox (apenpokken)', term: 'mpox', re: /\bmpox|monkeypox|apenpokken/i },
+  { cat: '🦠', nl: 'polio', term: 'polio', re: /\bpolio/i },
+  { cat: '🦠', nl: 'mazelen', term: 'mazelen', re: /mazelen|measles|rougeole|sarampi[oó]n|masern|mæslinger/i },
+  { cat: '🦠', nl: 'meningitis', term: 'meningitis', re: /meningitis|m[eé]ningite/i },
+  { cat: '🦠', nl: 'bilharzia (schistosomiasis)', term: 'bilharzia', re: /schistosom|bilharzi/i },
+  { cat: '🦠', nl: 'leptospirose', term: 'leptospirose', re: /leptospir/i },
+  { cat: '🦠', nl: 'tekenencefalitis (TBE)', term: 'tekenencefalitis', re: /tekenencefalitis|tick-?borne encephalitis|\btbe\b|fsme/i },
+  { cat: '🦠', nl: 'japanse encefalitis', term: 'japanse encefalitis', re: /japanse encefalitis|japanese encephalitis|enc[eé]phalite japonaise|japanische enzephalitis/i },
+  { cat: '🦠', nl: 'hoogteziekte', term: 'hoogteziekte', re: /hoogteziekte|altitude sickness|acute mountain sickness|mal (aigu )?des montagnes|mal de altura|h[oö]henkrankheit|højdesyge/i },
+  { cat: '🦠', nl: 'methanolvergiftiging', term: 'methanol', re: /methanol/i },
+  { cat: '🦠', nl: 'vogelgriep', term: 'vogelgriep', re: /vogelgriep|avian influenza|bird flu|grippe aviaire|gripe aviar|vogelgrippe|fugleinfluenza/i },
+  // Natuur
+  { cat: '🌋', nl: 'aardbevingen', term: 'aardbeving', re: /aardbeving|earthquake|s[eé]isme|terremoto|erdbeben|jordskælv/i },
+  { cat: '🌋', nl: 'tsunami', term: 'tsunami', re: /tsunami/i },
+  { cat: '🌋', nl: 'orkanen/tyfonen', term: 'orkaan', re: /orkaan|hurricane|cycloon|cyclone|typhoon|tyfoon|hurac[aá]n|taifun|wirbelsturm/i },
+  { cat: '🌋', nl: 'overstromingen', term: 'overstroming', re: /overstroming|flood|inondation|inundaci|hochwasser|überschwemmung|oversvømmelse/i },
+  { cat: '🌋', nl: 'vulkanen', term: 'vulkaan', re: /vulka|volcan/i },
+  { cat: '🌋', nl: 'bos-/natuurbranden', term: 'bosbrand', re: /bosbrand|natuurbrand|wildfire|bushfire|forest fire|feux? de for[eê]t|incendio forestal|waldbr[aä]nd|skovbrand/i },
+  { cat: '🌋', nl: 'lawines', term: 'lawine', re: /lawine|avalanche|\balud\b/i },
+  { cat: '🌋', nl: 'muistromen (rip currents)', term: 'muistromen', re: /muistrom|rip ?currents?|rip ?tides?/i },
+  // Veiligheid
+  { cat: '⚠️', nl: 'ontvoering', term: 'ontvoering', re: /ontvoering|kidnap|enl[eè]vement|secuestro|entf[uü]hrung|bortførelse/i },
+  { cat: '⚠️', nl: 'piraterij', term: 'piraterij', re: /piraterij|piracy|piraterie|pirater[ií]a/i },
+  { cat: '⚠️', nl: 'landmijnen/explosieven', term: 'landmijnen', re: /landmijn|land ?mines?|mines terrestres|minas terrestres|landminen|landminer|unexploded ordnance/i },
+  { cat: '⚠️', nl: 'avondklok', term: 'avondklok', re: /avondklok|curfew|couvre-feu|toque de queda|ausgangssperre|udgangsforbud/i },
+  { cat: '⚠️', nl: 'noodtoestand', term: 'noodtoestand', re: /noodtoestand|state of emergency|[eé]tat d'urgence|estado de (emergencia|excepci[oó]n)|ausnahmezustand|undtagelsestilstand/i },
+  { cat: '⚠️', nl: 'carjacking', term: 'carjacking', re: /carjack/i },
+  { cat: '⚠️', nl: 'drogering (spiked drinks)', term: 'drogering', re: /drink spiking|spiked (drink|food)|scopolamine/i },
+  { cat: '⚠️', nl: 'drones (aanvallen/regels)', term: 'drones', re: /\bdrones?\b/i },
+  // Wetgeving & cultuur
+  { cat: '⚖️', nl: 'doodstraf', term: 'doodstraf', re: /doodstraf|death penalty|peine de mort|pena de muerte|todesstrafe|dødsstraf/i },
+  { cat: '⚖️', nl: 'LHBTIQ+-situatie', term: 'homoseksualiteit', re: /lhbti|lgbt|same-?sex|homoseksualiteit|homosexual|homosexuel|homosexualidad|gleichgeschlechtlich/i },
+  { cat: '⚖️', nl: 'ramadan', term: 'ramadan', re: /ramadan/i },
+  { cat: '⚖️', nl: 'e-sigaret/vapen (verboden?)', term: 'e-sigaret', re: /e-?sigaret|e-?cigarette|vaping|\bvapes?\b|cigarrillo electr[oó]nico|e-?zigarette/i },
+  { cat: '⚖️', nl: 'godslastering (blasfemie)', term: 'godslastering', re: /godslastering|blasphemy|blasph[eè]me|blasfemia|blasphemie/i },
+  { cat: '⚖️', nl: 'majesteitsschennis', term: 'majesteitsschennis', re: /majesteitsschennis|l[eè]se-?majest[eé]|lese majesty|majest[æe]tsfornærmelse/i },
+  { cat: '⚖️', nl: 'kledingvoorschriften', term: 'kledingvoorschriften', re: /dress ?code|kledingvoorschrift|tenue vestimentaire|c[oó]digo de vestimenta|kleiderordnung/i },
+  // Dieren
+  { cat: '🐊', nl: 'krokodillen', term: 'krokodillen', re: /krokodil|crocodile|cocodrilo/i },
+  { cat: '🐊', nl: 'haaien', term: 'haaien', re: /haaien|\bsharks?\b|requins?|tiburon/i },
+  { cat: '🐊', nl: 'kwallen', term: 'kwallen', re: /kwallen|jellyfish|m[eé]duses?|quallen|vandmænd/i },
+  { cat: '🐊', nl: 'slangenbeten', term: 'slangenbeten', re: /slangenbe(et|ten)|snake ?bites?|gifslangen|morsure de serpent|mordedura de serpiente|schlangenbis|slangebid/i },
+  { cat: '🐊', nl: 'straathonden', term: 'straathonden', re: /straathonden|stray dogs|chiens errants|perros callejeros|streunende hunde/i },
+];
+
+/** Onderwerpen die minstens één bron noemt maar het NL-advies niet. */
+function gazetteerGaps(nl, okSources) {
+  const nlText = (nl.themes || []).map((t) => t.text || '').join(' ');
+  const perSource = okSources.map((s) => ({
+    s,
+    text: (s.themes || []).map((t) => `${t.text || ''} ${t.textNl || ''}`).join(' '),
+  }));
+  const out = [];
+  for (const g of GAZETTEER) {
+    if (g.re.test(nlText)) continue;
+    const srcs = perSource.filter((p) => g.re.test(p.text)).map((p) => p.s);
+    if (srcs.length) out.push({ g, srcs });
+  }
+  out.sort((a, b) => b.srcs.length - a.srcs.length || a.g.nl.localeCompare(b.g.nl, 'nl'));
+  return out;
+}
 
 function renderComparison(staticData, foreign, root) {
   root.innerHTML = '';
@@ -845,7 +1067,38 @@ function renderComparison(staticData, foreign, root) {
     el('p', { style: 'margin:0' }, 'Geen advies via: ' + problems.map((p) => p.label || p.source).join(', ') + '.')));
 
   // ---- Onderwerp-zoeker: wat zegt elke bron over X? ----
-  frag.append(renderTopicSearch(nl, okSources));
+  const topicWrap = renderTopicSearch(nl, okSources);
+
+  // ---- Gazetteer: concrete onderwerpen die bronnen wél noemen en NL niet ----
+  const gaps = okSources.length ? gazetteerGaps(nl, okSources) : [];
+  if (gaps.length) {
+    const chipsWrap = el('div', { class: 'gaz-chips' });
+    const renderChip = ({ g, srcs }) => {
+      const chip = el('button', { type: 'button', class: 'gaz-chip', title: `Genoemd door: ${srcs.map((s) => s.sourceLabel).join(', ')} — klik om de passages per bron te zien.` },
+        `${g.cat} ${g.nl} `, el('span', { class: 'gaz-srcs' }, srcs.map((s) => s.flag || '').join('')));
+      chip.addEventListener('click', () => {
+        const input = topicWrap.querySelector('.topic-form input');
+        input.value = g.term;
+        topicWrap.querySelector('.topic-form').requestSubmit();
+        topicWrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      return chip;
+    };
+    const MAXCHIPS = 12;
+    gaps.slice(0, MAXCHIPS).forEach((x) => chipsWrap.append(renderChip(x)));
+    if (gaps.length > MAXCHIPS) {
+      const more = el('button', { type: 'button', class: 'btn-link' }, `+ ${gaps.length - MAXCHIPS} meer`);
+      more.addEventListener('click', () => { more.remove(); gaps.slice(MAXCHIPS).forEach((x) => chipsWrap.append(renderChip(x))); });
+      chipsWrap.append(more);
+    }
+    frag.append(el('div', { class: 'callout gaz-callout' },
+      el('h3', {}, `🔎 ${gaps.length} concrete onderwerp${gaps.length === 1 ? '' : 'en'} die bronnen wél noemen en NederlandWereldwijd niet`),
+      el('p', { class: 'hint', style: 'margin:2px 0 10px' },
+        'Regelgebaseerde controle op een vaste lijst risico-onderwerpen (ziektes, natuurgevaren, wetgeving…) — klik op een onderwerp om de passages per bron te zien. Afwezigheid bij NL is niet per definitie een omissie, maar wel het nakijken waard.'),
+      chipsWrap));
+  }
+
+  frag.append(topicWrap);
 
   // ---- Vergelijking per thema ----
   const cmp = buildComparison(nl, okSources);
@@ -1220,56 +1473,109 @@ async function buildWorklist() {
   renderWorklist();
 }
 
+/** Vorige werklijst-stand van deze gebruiker (voor "NIEUW sinds je vorige bezoek"). */
+function worklistSeen() {
+  try { return JSON.parse(localStorage.getItem('worklistSeen')) || null; } catch { return null; }
+}
+
 function renderWorklist() {
   const root = $('#worklist-result');
   root.innerHTML = '';
   if (!WORKLIST?.items) return;
   const onlyDiff = $('#worklist-filter').value === 'diff';
   const items = WORKLIST.items.filter((i) => !onlyDiff || i.delta !== 0);
+
+  // Delta t.o.v. het vorige bezoek van deze redacteur (localStorage).
+  const seen = worklistSeen();
+  const prevDeltas = seen?.deltas || null;
+  const isNew = (i) => prevDeltas && i.delta !== 0 && !(prevDeltas[i.iso3] && prevDeltas[i.iso3] !== 0);
+  const resolved = prevDeltas
+    ? Object.entries(prevDeltas)
+        .filter(([iso, d]) => d !== 0 && !WORKLIST.items.some((i) => i.iso3 === iso && i.delta !== 0))
+        .map(([iso]) => WORKLIST.items.find((i) => i.iso3 === iso)?.nl || COUNTRIES.find((c) => c.iso3 === iso)?.nl || iso)
+    : [];
+
   if (!items.length) {
     root.append(el('p', { class: 'empty-col' }, 'Geen afwijkingen: NL zit overal op de internationale consensus. 🎉'));
-    return;
+  } else {
+    const srcMeta = new Map((CFG.SOURCES || []).map((s) => [s.id, s]));
+    const table = el('table', { class: 'summary-table' });
+    const COLS = 5;
+    table.append(el('thead', {}, el('tr', {},
+      el('th', {}, 'Land'), el('th', {}, 'NL'), el('th', {}, 'Consensus'),
+      el('th', {}, 'Verschil'), el('th', {}, 'Bronnen'))));
+    const tbody = el('tbody');
+    items.forEach((i) => {
+      const flag = countryFlagByIso3(i.iso3);
+      const landBtn = el('button', { type: 'button', class: 'btn-link worklist-country' }, `${flag ? flag + ' ' : ''}${i.nl}`);
+      landBtn.addEventListener('click', () => {
+        activateTab('compare');
+        $('#country-input').value = i.nl;
+        $('#compare-form').requestSubmit();
+      });
+
+      let verdict;
+      if (i.delta === 0) verdict = el('span', { class: 'delta same' }, 'gelijk');
+      else if (i.delta > 0) verdict = el('span', { class: 'delta stricter' }, `NL strenger (+${i.delta})`);
+      else verdict = el('span', { class: 'delta looser' }, `NL soepeler (−${Math.abs(i.delta)})`);
+
+      // Per-bron mini-vierkantjes; klik op de rij-uitklap toont de citaten.
+      const srcCell = el('span', { class: 'kc' });
+      Object.entries(i.perSource).forEach(([sid, lvl]) => {
+        const m = srcMeta.get(sid);
+        srcCell.append(el('span', {
+          class: `sq mini c-${LEVEL_COLORS[lvl]}`,
+          title: `${m?.label || sid}: ${COLOR_LABELS[LEVEL_COLORS[lvl]]}`,
+        }));
+      });
+
+      const landCell = el('td', {}, landBtn);
+      if (isNew(i)) landCell.append(' ', el('span', { class: 'new-badge', title: 'Nieuw afwijkend sinds je vorige bezoek aan deze lijst.' }, 'NIEUW'));
+
+      // Uitklap met het letterlijke niveau-citaat per bron (uit de snapshot).
+      const hasQuotes = i.quotes && Object.keys(i.quotes).length;
+      const srcTd = el('td', {}, srcCell, el('span', { class: 'muted', style: 'margin-left:8px' }, `${i.nSources}`));
+      const row = el('tr', {},
+        landCell,
+        el('td', {}, colorCode({ predominant: i.nlColor })),
+        el('td', {}, colorCode({ predominant: i.consensusColor })),
+        el('td', {}, verdict),
+        srcTd);
+      tbody.append(row);
+      if (hasQuotes) {
+        const detail = el('tr', { class: 'regional-detail-row', hidden: true },
+          el('td', { colspan: COLS },
+            el('div', { class: 'worklist-quotes' },
+              ...Object.entries(i.quotes).map(([sid, q]) => {
+                const m = srcMeta.get(sid);
+                const lvl = i.perSource[sid];
+                return el('p', { class: 'worklist-quote' },
+                  colorSquare(LEVEL_COLORS[lvl] || 'none', 'mini'),
+                  el('strong', {}, ` ${m?.flag || ''} ${m?.label || sid}: `), `“${q}”`);
+              }))));
+        const toggle = el('button', { type: 'button', class: 'btn-link', style: 'margin-left:8px;font-size:12.5px' }, 'citaten ▸');
+        toggle.addEventListener('click', () => {
+          detail.hidden = !detail.hidden;
+          toggle.textContent = detail.hidden ? 'citaten ▸' : 'citaten ▾';
+        });
+        srcTd.append(toggle);
+        tbody.append(detail);
+      }
+    });
+    table.append(tbody);
+    root.append(table);
   }
 
-  const srcMeta = new Map((CFG.SOURCES || []).map((s) => [s.id, s]));
-  const table = el('table', { class: 'summary-table' });
-  table.append(el('thead', {}, el('tr', {},
-    el('th', {}, 'Land'), el('th', {}, 'NL'), el('th', {}, 'Consensus'),
-    el('th', {}, 'Verschil'), el('th', {}, 'Bronnen'))));
-  const tbody = el('tbody');
-  items.forEach((i) => {
-    const flag = countryFlagByIso3(i.iso3);
-    const landBtn = el('button', { type: 'button', class: 'btn-link worklist-country' }, `${flag ? flag + ' ' : ''}${i.nl}`);
-    landBtn.addEventListener('click', () => {
-      activateTab('compare');
-      $('#country-input').value = i.nl;
-      $('#compare-form').requestSubmit();
-    });
+  if (resolved.length) {
+    root.append(el('p', { class: 'hint', style: 'margin-top:12px' },
+      `✅ Sinds je vorige bezoek van de afwijkingenlijst af: ${resolved.join(', ')}.`));
+  }
 
-    let verdict;
-    if (i.delta === 0) verdict = el('span', { class: 'delta same' }, 'gelijk');
-    else if (i.delta > 0) verdict = el('span', { class: 'delta stricter' }, `NL strenger (+${i.delta})`);
-    else verdict = el('span', { class: 'delta looser' }, `NL soepeler (−${Math.abs(i.delta)})`);
-
-    // Per-bron mini-vierkantjes met tooltip, zodat je ziet wie er afwijkt.
-    const srcCell = el('span', { class: 'kc' });
-    Object.entries(i.perSource).forEach(([sid, lvl]) => {
-      const m = srcMeta.get(sid);
-      srcCell.append(el('span', {
-        class: `sq mini c-${LEVEL_COLORS[lvl]}`,
-        title: `${m?.label || sid}: ${COLOR_LABELS[LEVEL_COLORS[lvl]]}`,
-      }));
-    });
-
-    tbody.append(el('tr', {},
-      el('td', {}, landBtn),
-      el('td', {}, colorCode({ predominant: i.nlColor })),
-      el('td', {}, colorCode({ predominant: i.consensusColor })),
-      el('td', {}, verdict),
-      el('td', {}, srcCell, el('span', { class: 'muted', style: 'margin-left:8px' }, `${i.nSources}`))));
-  });
-  table.append(tbody);
-  root.append(table);
+  // Huidige stand opslaan als "gezien" voor de volgende keer.
+  localStorage.setItem('worklistSeen', JSON.stringify({
+    generatedAt: WORKLIST.generatedAt || null,
+    deltas: Object.fromEntries(WORKLIST.items.map((i) => [i.iso3, i.delta])),
+  }));
 }
 
 // ==========================================================================
@@ -1484,6 +1790,7 @@ function renderChanges(sourceFilter, from, to) {
 // ==========================================================================
 const scopeHints = {
   nl: 'Doorzoekt alle Nederlandse reisadviezen. Toont per land waar iets over je zoekwoord staat.',
+  'foreign-all': 'Doorzoekt de trefwoordindex over álle buitenlandse adviezen (ververst per snapshot): welke landen noemen dit onderwerp? Je Nederlandse term wordt automatisch in alle brontalen gezocht.',
   foreign: 'Doorzoekt buitenlandse reisadviezen live via de proxy. Vul een land in en gebruik een Engelse term (bijv. "election").',
   both: 'Vergelijkt het Nederlandse en de buitenlandse reisadviezen van één land op je zoekwoord. Vul een land in.',
 };
@@ -1532,6 +1839,94 @@ function searchForeignAdvisory(res, qNl, qEn) {
   return out;
 }
 
+// ---- Trefwoordindex over alle buitenlandse adviezen -------------------------
+// Zelfde normalisatie als de indexbouwer (snapshot-foreign.mjs): kleine
+// letters, diakrieten weg, 4-24 letters, slot-s vouwen.
+function indexQueryTerms(text) {
+  const out = new Set();
+  const clean = norm(text);
+  for (let w of clean.split(/[^a-z]+/)) {
+    if (w.length < 4 || w.length > 24) continue;
+    if (w.length > 4 && w.endsWith('s')) w = w.slice(0, -1);
+    out.add(w);
+  }
+  return out;
+}
+
+/** Zoekt de NL-term (plus vertalingen) in de offline index: iso3 -> gevonden varianten. */
+async function searchForeignIndex(qNl, status) {
+  const variants = new Set([qNl]);
+  if (getProxy()) {
+    status.innerHTML = `<span class="spinner"></span>Term vertalen naar de brontalen…`;
+    for (const lang of ['en', 'fr', 'es', 'de', 'da']) {
+      const t = await translateText(qNl, lang, 'nl');
+      if (t) variants.add(t);
+    }
+  }
+  const terms = new Set();
+  for (const v of variants) for (const t of indexQueryTerms(v)) terms.add(t);
+  if (!terms.size) return { hits: new Map(), terms: [], variants: [...variants], generatedAt: null };
+
+  status.innerHTML = `<span class="spinner"></span>Index doorzoeken…`;
+  const letters = [...new Set([...terms].map((t) => t[0]))];
+  const shards = {};
+  let generatedAt = null;
+  await Promise.all(letters.map(async (l) => {
+    try {
+      const d = await loadJSON(`foreign-index/${l}.json`);
+      shards[l] = d.terms || {};
+      generatedAt = generatedAt || d.generatedAt || null;
+    } catch { shards[l] = null; }
+  }));
+  if (letters.every((l) => shards[l] === null)) throw new Error('De trefwoordindex is er nog niet — die verschijnt na de eerstvolgende snapshot-run (elke 6 uur).');
+
+  const hits = new Map(); // iso3 -> Set(term)
+  for (const t of terms) {
+    const posting = shards[t[0]]?.[t];
+    if (!posting) continue;
+    for (const iso of posting) {
+      if (!hits.has(iso)) hits.set(iso, new Set());
+      hits.get(iso).add(t);
+    }
+  }
+  return { hits, terms: [...terms], variants: [...variants], generatedAt };
+}
+
+function renderForeignIndexResult(res, q, root) {
+  const frag = document.createDocumentFragment();
+  const rows = [...res.hits.entries()]
+    .map(([iso3, terms]) => ({ iso3, terms: [...terms], country: COUNTRIES.find((c) => c.iso3 === iso3) }))
+    .filter((r) => r.country)
+    .sort((a, b) => b.terms.length - a.terms.length || a.country.nl.localeCompare(b.country.nl, 'nl'));
+
+  frag.append(el('h3', { class: 'section-title' },
+    `${rows.length} land${rows.length === 1 ? '' : 'en'} waar buitenlandse bronnen "${q}" noemen`));
+  frag.append(el('p', { class: 'hint', style: 'margin-top:0' },
+    `Gezocht op: ${res.variants.join(' · ')}${res.generatedAt ? ` · index van ${new Date(res.generatedAt).toLocaleString('nl-NL')}` : ''}. `,
+    'Klik op een land om de vergelijking te openen met de onderwerp-zoeker vooringevuld — daar zie je de passages per bron.'));
+
+  if (!rows.length) {
+    frag.append(el('p', { class: 'empty-col' }, 'Geen landen gevonden. Tip: probeer een synoniem of de Engelse term.'));
+  } else {
+    const grid = el('div', { class: 'index-hits' });
+    rows.forEach((r) => {
+      const btn = el('button', { type: 'button', class: 'index-hit' },
+        el('span', { class: 'fl' }, countryFlag(r.country.iso2)),
+        el('span', { class: 'index-hit-name' }, r.country.nl),
+        el('span', { class: 'index-hit-terms' }, r.terms.join(', ')));
+      btn.addEventListener('click', () => {
+        PENDING_TOPIC = q;
+        activateTab('compare');
+        $('#country-input').value = r.country.nl;
+        $('#compare-form').requestSubmit();
+      });
+      grid.append(btn);
+    });
+    frag.append(grid);
+  }
+  root.append(frag);
+}
+
 $('#search-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const q = $('#search-input').value.trim();
@@ -1539,6 +1934,16 @@ $('#search-form').addEventListener('submit', async (e) => {
   const countryInput = $('#search-country').value.trim();
   const status = $('#search-status'), result = $('#search-result');
   if (!q) return;
+
+  if (scope === 'foreign-all') {
+    status.className = 'status'; result.innerHTML = '';
+    try {
+      const res = await searchForeignIndex(q, status);
+      status.textContent = '';
+      renderForeignIndexResult(res, q, result);
+    } catch (err) { status.className = 'status error'; status.textContent = err.message; }
+    return;
+  }
   let country = null;
   if (countryInput) { country = resolveCountry(countryInput); if (!country) { status.className = 'status error'; status.textContent = `Land “${countryInput}” niet gevonden.`; result.innerHTML = ''; return; } }
 

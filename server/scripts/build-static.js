@@ -61,11 +61,13 @@ async function buildDivergence(nlColors) {
     const last = hist.entries?.[hist.entries.length - 1];
     if (!last?.sources) continue;
     const perSource = {};
+    const quotes = {};
     const levels = [];
     for (const [sid, s] of Object.entries(last.sources)) {
       // assessmentStatus ontbreekt bij sommige bronnen (dan geldt: ok).
       if (s.level == null || (s.assessmentStatus && s.assessmentStatus !== 'ok')) continue;
       perSource[sid] = s.level;
+      if (s.levelLabel) quotes[sid] = s.levelLabel;
       levels.push(s.level);
     }
     if (levels.length < 3) continue;
@@ -82,6 +84,7 @@ async function buildDivergence(nlColors) {
       delta: nlLevel - consensus,
       nSources: levels.length,
       perSource,
+      quotes,
       snapshotDate: last.date || null,
     });
   }
@@ -184,6 +187,16 @@ async function main() {
   }
   if (existsSync(SOURCE_DATES_SRC)) {
     await cp(SOURCE_DATES_SRC, join(DATA, 'source-dates.json'));
+  }
+
+  // Trefwoordindex over de buitenlandse adviezen (a-z-shards uit de
+  // snapshot-workflow; docs.json is bewust géén onderdeel van de site).
+  const INDEX_SRC = join(ROOT, 'worker', 'data', 'foreign-index');
+  if (existsSync(INDEX_SRC)) {
+    await mkdir(join(DATA, 'foreign-index'), { recursive: true });
+    for (const f of await readdir(INDEX_SRC)) {
+      if (/^[a-z]\.json$/.test(f)) await cp(join(INDEX_SRC, f), join(DATA, 'foreign-index', f));
+    }
   }
 
   // Divergentie-werklijst uit de laatste snapshot van de buitenlandse bronnen.

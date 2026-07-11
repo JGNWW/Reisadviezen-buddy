@@ -417,3 +417,41 @@ input:focus, select:focus { outline: 2px solid var(--link); outline-offset: 0; b
   a { color: #000; text-decoration: none; }
   .divergence, .callout, .panel { break-inside: avoid; }
 }
+
+/* ---- Land-combobox (vlaggen, aliassen, typefout-suggesties) ---- */
+.combo { position: relative; }
+.combo input { width: 100%; }
+.combo-list {
+  position: absolute; top: calc(100% + 2px); left: 0; right: 0; z-index: 30;
+  margin: 0; padding: 0; list-style: none; background: #fff;
+  border: 1px solid var(--border); max-height: 320px; overflow-y: auto;
+}
+.combo-group { padding: 7px 12px 4px; font-size: 11px; text-transform: uppercase; letter-spacing: .03em; color: var(--muted); }
+.combo-item { padding: 8px 12px; font-size: 14.5px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+.combo-item:hover, .combo-item.active { background: var(--hero); }
+.combo-why { margin-left: auto; font-size: 11px; color: var(--muted); font-style: italic; }
+
+/* ---- Indexzoeker: welke landen noemen dit? ---- */
+.index-hits { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; }
+.index-hit {
+  display: flex; align-items: center; gap: 9px; padding: 10px 12px; text-align: left;
+  background: #fff; border: 1px solid var(--border); cursor: pointer; font-size: 14.5px;
+}
+.index-hit:hover { border-color: var(--link); background: var(--hero); }
+.index-hit-name { font-weight: 600; }
+.index-hit-terms { margin-left: auto; font-size: 11.5px; color: var(--muted); text-align: right; }
+
+/* ---- Gazetteer: onderwerpen die bronnen noemen en NL niet ---- */
+.gaz-callout { background: #f3f7fb; border-left-color: var(--nl-blue); }
+.gaz-chips { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.gaz-chip {
+  display: inline-flex; align-items: center; gap: 7px; padding: 7px 12px;
+  background: #fff; border: 1px solid var(--border); font-size: 13.5px; cursor: pointer;
+}
+.gaz-chip:hover { border-color: var(--link); background: var(--hero); }
+.gaz-srcs { font-size: 13px; letter-spacing: 1px; }
+
+/* ---- Werklijst: NIEUW-badge + citaten ---- */
+.new-badge { background: var(--rood); color: #fff; font-size: 10px; font-weight: 700; padding: 2px 6px; letter-spacing: .04em; vertical-align: 2px; }
+.worklist-quotes { font-size: 13.5px; }
+.worklist-quote { margin: 4px 0; }

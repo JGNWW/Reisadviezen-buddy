@@ -1,0 +1,72 @@
+name: Mapping-bewaking
+
+# Wekelijkse controle van de land→bron-koppelingen tegen de indexen van de
+# bronnen zelf (VK/Duitsland/Canada/Ierland). Hernoemingen zoals gov.uk's
+# czech-republic → czechia worden zo gemeld in plaats van maandenlang stil
+# te falen. Rapport wordt gecommit; bij kapotte koppelingen komt er een
+# issue met kant-en-klare suggesties.
+on:
+  schedule:
+    - cron: '30 6 * * 1' # maandag 06:30 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: verify-mappings
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: worker
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: worker/package-lock.json
+      - run: npm ci
+      - name: Koppelingen valideren tegen bron-indexen
+        run: node scripts/verify-mappings.mjs
+
+      - name: Rapport committen
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/mapping-health.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Mapping-gezondheid $(date -u +%Y-%m-%d)"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
+
+      - name: Issue openen bij kapotte koppelingen
+        working-directory: .
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          broken=$(node -e "console.log(require('./worker/data/mapping-health.json').totalBroken || 0)")
+          echo "Kapotte koppelingen: $broken"
+          [ "$broken" = "0" ] && exit 0
+          title="Mapping-check: $broken kapotte bron-koppeling(en)"
+          existing=$(gh issue list --state open --search "Mapping-check in:title" --json number --jq 'length')
+          if [ "$existing" = "0" ]; then
+            body=$(node -e "
+              const r = require('./worker/data/mapping-health.json');
+              const lines = ['De wekelijkse mapping-controle vond kapotte koppelingen (bron heeft waarschijnlijk pagina''s hernoemd):', ''];
+              for (const [sid, s] of Object.entries(r.sources)) {
+                for (const b of s.broken || []) lines.push('- **' + sid + '** ' + b.iso3 + ' (' + b.land + '): \`' + b.id + '\`' + (b.suggestie ? ' → suggestie: \`' + b.suggestie + '\`' : ''));
+              }
+              lines.push('', 'Verwerk de suggesties als overrides in server/scripts/build-countries.js en draai \`npm run build:countries\`.');
+              console.log(lines.join('\n'));
+            ")
+            gh issue create --title "$title" --body "$body"
+          fi
