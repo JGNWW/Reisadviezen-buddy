@@ -10,31 +10,10 @@
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { installFixtureFetch } from './fixtures.mjs';
 
-// ---- fetch-mock: elke URL wordt uit een fixture beantwoord -----------------
-// Volgorde is belangrijk: specifieke routes vóór generieke (de-index).
-const ROUTES = [
-  ['gov.uk/api/content/foreign-travel-advice/nepal', 'uk-nepal.json'],
-  ['nepal-travel-advisory.html', 'us-nepal.html'],
-  ['index-alpha-eng.json', 'ca-index.json'],
-  ['travel.gc.ca/destinations/nepal', 'ca-nepal.html'],
-  ['a-z-list-of-countries/nepal', 'ie-nepal.html'],
-  ['conseils-par-pays-destination/nepal', 'fr-nepal.html'],
-  ['trc=Nepal', 'es-nepal.html'],
-  ['opendata/travelwarning/221216', 'de-nepal.json'],
-  ['opendata/travelwarning', 'de-index.json'],
-  ['safetravel.govt.nz/destinations/nepal', 'nz-nepal.html'],
-  ['rejsevejledninger/nepal', 'dk-nepal.html'],
-];
-
-globalThis.fetch = async (url) => {
-  const u = String(url);
-  const hit = ROUTES.find(([frag]) => u.includes(frag));
-  if (!hit) return { ok: false, status: 404, text: async () => '', json: async () => ({}) };
-  const body = readFileSync(new URL(`./fixtures/${hit[1]}`, import.meta.url), 'utf8');
-  return { ok: true, status: 200, text: async () => body, json: async () => JSON.parse(body) };
-};
+// fetch-mock: elke URL wordt uit een fixture beantwoord (zie fixtures.mjs).
+installFixtureFetch();
 
 // Adapters pas ná de mock importeren.
 const ADAPTERS = [
