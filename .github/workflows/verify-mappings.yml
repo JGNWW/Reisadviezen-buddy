@@ -13,6 +13,7 @@ on:
 permissions:
   contents: write
   issues: write
+  pull-requests: write
 
 concurrency:
   group: verify-mappings
@@ -48,14 +49,60 @@ jobs:
             git push origin HEAD:main
           fi
 
+      # Zelfherstel: hoge-zekerheid-suggesties (score >= 0.8, VK/Ierland)
+      # worden toegepast, live geverifieerd en als kant-en-klare PR
+      # aangeboden. Lage zekerheid of verificatie-falen -> alleen het issue.
+      - name: Auto-fix proberen (hoge zekerheid, live geverifieerd)
+        id: autofix
+        working-directory: .
+        run: |
+          broken=$(node -e "console.log(require('./worker/data/mapping-health.json').totalBroken || 0)")
+          if [ "$broken" = "0" ]; then echo "fixed=0" >> "$GITHUB_OUTPUT"; exit 0; fi
+          node worker/scripts/apply-mapping-fixes.mjs | tee /tmp/fixlog.txt || true
+          fixed=$(grep -c '^FIX ' /tmp/fixlog.txt || true)
+          echo "fixed=$fixed" >> "$GITHUB_OUTPUT"
+
+      - name: Contracttests na auto-fix
+        if: steps.autofix.outputs.fixed != '0'
+        run: node --test test/contract.test.mjs
+
+      - name: Auto-fix-PR openen
+        if: steps.autofix.outputs.fixed != '0'
+        working-directory: .
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          branch="mapping-fix/$(date -u +%Y-%m-%d)"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$branch"
+          git add server/data/slug-overrides.json server/data/countries.json worker/src/data/countries.json
+          git commit -m "Auto-fix: kapotte bron-koppelingen hersteld (mapping-bewaking)"
+          git push -u origin "$branch" --force
+          if [ "$(gh pr list --head "$branch" --state open --json number --jq 'length')" = "0" ]; then
+            {
+              echo "De wekelijkse mapping-bewaking vond kapotte koppelingen en heeft de hoge-zekerheid-fixes automatisch toegepast. Elke fix is live geverifieerd (advies opgehaald, >= 3 secties) en de contracttests zijn groen."
+              echo
+              echo '```'
+              cat /tmp/fixlog.txt
+              echo '```'
+              echo
+              echo "Na de merge rapporteert de eerstvolgende wekelijkse controle deze koppelingen als hersteld."
+            } > /tmp/prbody.md
+            gh pr create --base main --head "$branch" --title "Auto-fix: kapotte bron-koppelingen hersteld" --body-file /tmp/prbody.md
+          fi
+          git checkout main
+
       - name: Issue openen bij kapotte koppelingen
         working-directory: .
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           broken=$(node -e "console.log(require('./worker/data/mapping-health.json').totalBroken || 0)")
-          echo "Kapotte koppelingen: $broken"
+          fixed="${{ steps.autofix.outputs.fixed }}"
+          echo "Kapotte koppelingen: $broken (waarvan $fixed auto-gefixt in een PR)"
           [ "$broken" = "0" ] && exit 0
+          [ "$broken" = "$fixed" ] && exit 0
           title="Mapping-check: $broken kapotte bron-koppeling(en)"
           existing=$(gh issue list --state open --search "Mapping-check in:title" --json number --jq 'length')
           if [ "$existing" = "0" ]; then

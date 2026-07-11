@@ -50,13 +50,22 @@ function dice(a, b) {
   for (const [g, n] of ga) ov += Math.min(n, gb.get(g) || 0);
   return (2 * ov) / (a.length - 1 + b.length - 1);
 }
-function suggest(slug, validSet) {
-  let best = null, score = 0.5;
+const normalise = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+/**
+ * Beste vervangende slug: match op de oude slug ÉN op de Engelse landnaam.
+ * Dat laatste vangt hernoemingen waar de nieuwe naam totaal anders is
+ * (czech-republic → czechia matcht via de landnaam "Czechia" perfect).
+ */
+function suggest(slug, enName, validSet) {
+  const keys = [String(slug).toLowerCase(), normalise(enName)].filter((k) => k.length >= 2);
+  let best = null, score = 0.55;
   for (const cand of validSet) {
-    const s = dice(slug, cand);
+    const s = Math.max(...keys.map((k) => dice(k, cand)));
     if (s > score) { best = cand; score = s; }
   }
-  return best;
+  // Score gaat mee in het rapport: de auto-fix pakt alleen hoge zekerheid op.
+  return best ? { slug: best, score: Math.round(score * 100) / 100 } : null;
 }
 
 async function checkAgainstSet(sid, extract, validSet) {
@@ -67,7 +76,8 @@ async function checkAgainstSet(sid, extract, validSet) {
     if (!id) continue;
     checked++;
     if (!validSet.has(id)) {
-      broken.push({ iso3, land: rec.nl, id, suggestie: suggest(String(id).toLowerCase(), validSet) });
+      const s = suggest(id, rec.en, validSet);
+      broken.push({ iso3, land: rec.nl, en: rec.en, id, suggestie: s?.slug || null, score: s?.score || null, bron: sid });
     }
   }
   return { checked, broken };

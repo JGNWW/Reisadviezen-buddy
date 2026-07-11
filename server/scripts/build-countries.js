@@ -10,10 +10,16 @@
  *   npm run build:countries
  */
 import { writeFile } from 'node:fs/promises';
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// Handmatige koppelingen staan in een databestand (geen code) zodat de
+// wekelijkse mapping-bewaking ze via een auto-fix-PR kan bijwerken:
+// server/data/slug-overrides.json. Waarde null = bron heeft geen advies.
+const OVERRIDES = JSON.parse(readFileSync(join(__dirname, '..', 'data', 'slug-overrides.json'), 'utf8'));
 
 const NL_LIST =
   'https://opendata.nederlandwereldwijd.nl/v2/sources/nederlandwereldwijd/infotypes/traveladvice?output=json';
@@ -25,55 +31,16 @@ const IE_AZ = 'https://www.dfa.ie/travel/travel-advice/a-z-list-of-countries/';
 const CA_INDEX = 'https://data.international.gc.ca/travel-voyage/index-alpha-eng.json';
 const DE_INDEX = 'https://www.auswaertiges-amt.de/opendata/travelwarning';
 
-// Handmatige koppelingen waar de genormaliseerde Engelse naam niet matcht.
-const UK_SLUG_OVERRIDES = {
-  USA: 'usa', GBR: null, KOR: 'south-korea', PRK: 'north-korea', RUS: 'russia',
-  SYR: 'syria', IRN: 'iran', VEN: 'venezuela', BOL: 'bolivia', TZA: 'tanzania',
-  MDA: 'moldova', LAO: 'laos', BRN: 'brunei', CPV: 'cape-verde', CIV: 'cote-d-ivoire',
-  COD: 'democratic-republic-of-the-congo', COG: 'congo', SWZ: 'eswatini',
-  MKD: 'north-macedonia', VAT: 'vatican-city',
-  // De OPT-pagina van gov.uk is opgegaan in de gecombineerde Israël-pagina.
-  PSE: 'israel',
-  TLS: 'timor-leste', FSM: 'federated-states-of-micronesia', VNM: 'vietnam', SVK: 'slovakia',
-  CZE: 'czechia', MMR: 'myanmar', TUR: 'turkey', GMB: 'the-gambia',
-  LCA: 'st-lucia', VCT: 'st-vincent-and-the-grenadines', KNA: 'st-kitts-and-nevis', TWN: 'taiwan',
-};
-
-const US_SLUG_OVERRIDES = {
-  KOR: 'south-korea', PRK: 'north-korea', MMR: 'burma', CPV: 'cabo-verde',
-  AZE: 'azerbajian', BIH: 'bosinia-and-herzegovina', COD: 'democratic-republic-of-the-congo',
-  COG: 'republic-of-the-congo', CIV: 'cote-d-ivoire', SYR: 'syria', RUS: 'russia',
-  MDA: 'moldova', TLS: 'timor-leste', SWZ: 'eswatini', MKD: 'north-macedonia',
-  PSE: 'israel-the-west-bank-and-gaza', VGB: 'british-virgin-islands',
-  VIR: 'us-virgin-islands', TUR: 'turkey', GBR: 'united-kingdom', USA: null,
-};
-
-const IE_SLUG_OVERRIDES = {
-  KOR: 'south-korea', PRK: 'democratic-republic-of-korea', MMR: 'myanmar-burma', CPV: 'cape-verde',
-  BRN: 'brunei-darussalam', COD: 'democratic-republic-of-congo', COG: 'congo',
-  CIV: 'ivory-coast', SYR: 'syria', RUS: 'russian-federation', TLS: 'timor-leste',
-  SWZ: 'eswatini', MKD: 'republic-of-north-macedonia', VAT: 'holy-see-vatican-city-state',
-  MDA: 'moldova', TUR: 'turkiye', USA: 'united-states-of-america', GBR: 'great-britain',
-  VNM: 'vietnam', LAO: 'laos',
-};
-
-// Frankrijk (France Diplomatie): slug = Franse landnaam, genormaliseerd. We
-// leiden die af door de Engelse naam te vertalen; overrides voor bekende namen.
-const FR_SLUG_OVERRIDES = {
-  USA: 'etats-unis', GBR: 'royaume-uni', DEU: 'allemagne', NLD: 'pays-bas',
-  BEL: 'belgique', ESP: 'espagne', ITA: 'italie', CHE: 'suisse', KOR: 'coree-du-sud',
-  PRK: 'coree-du-nord', RUS: 'russie', CHN: 'chine', JPN: 'japon', MAR: 'maroc',
-  EGY: 'egypte', GRC: 'grece', TUR: 'turquie', BRA: 'bresil', MEX: 'mexique',
-  ZAF: 'afrique-du-sud', SAU: 'arabie-saoudite', ARE: 'emirats-arabes-unis',
-  IND: 'inde', IDN: 'indonesie', THA: 'thailande', VNM: 'vietnam', PHL: 'philippines',
-};
-
+// Handmatige koppelingen waar de genormaliseerde Engelse naam niet matcht —
+// zie server/data/slug-overrides.json (bewust data, geen code).
+const UK_SLUG_OVERRIDES = OVERRIDES.uk || {};
+const US_SLUG_OVERRIDES = OVERRIDES.us || {};
+const IE_SLUG_OVERRIDES = OVERRIDES.ie || {};
+// Frankrijk (France Diplomatie): slug = Franse landnaam, genormaliseerd;
+// afgeleid via vertaling, met overrides voor bekende namen.
+const FR_SLUG_OVERRIDES = OVERRIDES.fr || {};
 // Australië (Smartraveller): URL = /destinations/{continent}/{slug}.
-const AU_SLUG_OVERRIDES = {
-  USA: 'united-states-america', GBR: 'united-kingdom', KOR: 'south-korea',
-  PRK: 'north-korea', RUS: 'russia', AE: 'united-arab-emirates', CZE: 'czech-republic',
-  LAO: 'laos', BRN: 'brunei', SYR: 'syria', MMR: 'myanmar', CPV: 'cape-verde',
-};
+const AU_SLUG_OVERRIDES = OVERRIDES.au || {};
 // Smartraveller-continent op basis van ISO-regio/subregio.
 function auContinent(region, subregion) {
   if (region === 'Africa') return 'africa';
@@ -84,34 +51,16 @@ function auContinent(region, subregion) {
   return null;
 }
 
-// Spanje (Exteriores): landpagina via de Spaanse landnaam (?trc=Naam). We
-// leiden de naam af via vertaling (en->es); overrides voor bekende namen.
-const ES_NAME_OVERRIDES = {
-  USA: 'Estados Unidos', GBR: 'Reino Unido', DEU: 'Alemania', NLD: 'Países Bajos',
-  KOR: 'Corea del Sur', PRK: 'Corea del Norte', RUS: 'Rusia', CHN: 'China',
-  JPN: 'Japón', MAR: 'Marruecos', EGY: 'Egipto', TUR: 'Turquía', BRA: 'Brasil',
-  ZAF: 'Sudáfrica', SAU: 'Arabia Saudí', ARE: 'Emiratos Árabes Unidos',
-};
+// Spanje (Exteriores): landpagina via de Spaanse landnaam (?trc=Naam);
+// afgeleid via vertaling (en->es), met overrides voor bekende namen.
+const ES_NAME_OVERRIDES = OVERRIDES.es || {};
 
 // Nieuw-Zeeland (SafeTravel): /destinations/{slug}, slug = Engelse landnaam.
-const NZ_SLUG_OVERRIDES = {
-  USA: 'united-states-of-america', GBR: 'united-kingdom', KOR: 'south-korea',
-  PRK: 'north-korea', RUS: 'russia', CZE: 'czech-republic', LAO: 'laos',
-  SYR: 'syria', MMR: 'myanmar', CPV: 'cape-verde', BRN: 'brunei',
-  COD: 'democratic-republic-of-the-congo', COG: 'republic-of-congo',
-  MKD: 'north-macedonia', TLS: 'timor-leste', SWZ: 'eswatini', TUR: 'turkey',
-};
+const NZ_SLUG_OVERRIDES = OVERRIDES.nz || {};
 
 // Denemarken (Udenrigsministeriet): /rejsevejledninger/{slug}, slug = Deense
-// landnaam. Afgeleid via vertaling (en->da); overrides voor bekende namen.
-const DK_NAME_OVERRIDES = {
-  USA: 'usa', GBR: 'storbritannien', DEU: 'tyskland', FRA: 'frankrig',
-  NLD: 'nederlandene', BEL: 'belgien', ESP: 'spanien', ITA: 'italien',
-  KOR: 'sydkorea', PRK: 'nordkorea', RUS: 'rusland', CHN: 'kina',
-  EGY: 'egypten', GRC: 'graekenland', TUR: 'tyrkiet', MAR: 'marokko',
-  ZAF: 'sydafrika', SAU: 'saudi-arabien', ARE: 'de-forenede-arabiske-emirater',
-  CHE: 'schweiz', AUT: 'ostrig', SWE: 'sverige', NOR: 'norge', POL: 'polen',
-};
+// landnaam; afgeleid via vertaling (en->da), met overrides voor bekende namen.
+const DK_NAME_OVERRIDES = OVERRIDES.dk || {};
 
 // Handmatige ISO3 -> ISO2 aanvullingen voor NL-bijzonderheden (Caribisch NL).
 const ISO2_OVERRIDES = { 'BQ-BO': 'BQ', 'BQ-SA': 'BQ', 'BQ-SE': 'BQ' };
