@@ -493,3 +493,22 @@ input:focus, select:focus { outline: 2px solid var(--link); outline-offset: 0; b
 .briefing-colors { display: flex; gap: 26px; flex-wrap: wrap; }
 .briefing-color { display: flex; flex-direction: column; gap: 3px; }
 .briefing-color-lbl { font-size: 12px; color: var(--muted); }
+
+/* ---- Twee landen vergelijken + volglijst (features 1 & 2) ---- */
+.result-head-actions { display: flex; gap: 8px; flex: 0 0 auto; flex-wrap: wrap; justify-content: flex-end; }
+.watch-btn { background: #fff; border: 1px solid var(--nl-blue); color: var(--nl-blue); }
+.watch-btn.on { background: var(--nl-blue); color: #fff; }
+.check-inline { display: inline-flex; align-items: center; gap: 6px; font-size: 13.5px; color: var(--text); text-transform: none; letter-spacing: 0; font-weight: 400; }
+.check-inline input { min-width: auto; width: auto; }
+
+.watch-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  background: var(--hero); border: 1px solid #bcd8ef; padding: 10px 14px; margin: 0 0 14px; }
+.watch-left { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.watch-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.watch-chip { display: inline-flex; align-items: center; gap: 4px; background: #fff; border: 1px solid #bcd8ef;
+  color: var(--nl-blue); padding: 4px 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.watch-chip:hover { border-color: var(--link); }
+.watch-chip-x { color: var(--muted); font-size: 15px; line-height: 1; padding: 0 2px; }
+.watch-chip-x:hover { color: var(--rood); }
+.watch-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.watch-actions .btn { padding: 8px 12px; font-size: 13px; background: #fff; border: 1px solid var(--border); }

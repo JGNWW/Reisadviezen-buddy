@@ -119,6 +119,21 @@ function activateFromUrl() {
   const sp = new URLSearchParams(location.search);
   const tab = sp.get('tab');
   if (tab && $(`.tab[data-view="${tab}"]`)) activateTab(tab);
+  // ?vs=A,B opent direct de twee-landen-vergelijking (feature 1).
+  const vs = sp.get('vs');
+  if (vs) {
+    const [a, b] = vs.split(',').map((x) => resolveCountry(x.trim()));
+    if (a && b) {
+      $('#vs-field').hidden = false;
+      $('#vs-toggle').textContent = '× Tweede land sluiten';
+      $('#country-input').value = a.nl;
+      $('#country-input-b').value = b.nl;
+      runVersus(a, b, orderedSelected(), COMPARE_LANG);
+      return;
+    }
+  }
+  // ?briefing=watchlist opent de bundel-ochtendbriefing over de volglijst.
+  if (sp.get('briefing') === 'watchlist') { openWatchlistBriefing(); return; }
   // ?briefing=ISO opent na het laden direct de briefing (punt 15).
   const briefing = sp.get('briefing');
   const land = briefing || sp.get('land');
@@ -330,9 +345,10 @@ async function bootstrap() {
     $('#build-meta').textContent += ' · ⚠️ proxy niet ingesteld (klik ⚙)';
   }
 
-  buildChanges();
-  buildWorklist();
-  loadSeasons();
+  loadWatchlistFromUrl();
+  // Await zodat deeplinks (?briefing=watchlist) de offline data al hebben.
+  await Promise.all([buildChanges(), buildWorklist(), loadSeasons()]);
+  updateWatchUI();
   activateFromUrl();
 }
 
@@ -437,6 +453,31 @@ const recentCountries = () => { try { return JSON.parse(localStorage.getItem('re
 function pushRecentCountry(iso3) {
   const list = [iso3, ...recentCountries().filter((i) => i !== iso3)].slice(0, 6);
   localStorage.setItem('recentCountries', JSON.stringify(list));
+}
+
+// ---- Volglijst (feature 2): persoonlijk, in localStorage; deelbaar via link/export ----
+let WATCHLIST = new Set((() => { try { return JSON.parse(localStorage.getItem('watchlist')) || []; } catch { return []; } })());
+const saveWatchlist = () => localStorage.setItem('watchlist', JSON.stringify([...WATCHLIST]));
+const isWatched = (iso3) => WATCHLIST.has(iso3);
+function toggleWatch(iso3) {
+  if (WATCHLIST.has(iso3)) WATCHLIST.delete(iso3); else WATCHLIST.add(iso3);
+  saveWatchlist();
+  updateWatchUI();
+}
+/** Volglijst in config-onafhankelijke, gesorteerde vorm (op NL-naam). */
+const watchlistItems = () => [...WATCHLIST]
+  .map((iso3) => COUNTRIES.find((c) => c.iso3 === iso3)).filter(Boolean)
+  .sort((a, b) => a.nl.localeCompare(b.nl, 'nl'));
+
+/** Werkt alle zichtbare volglijst-affordances bij (oog-knop, balk, filters). */
+function updateWatchUI() {
+  const eye = $('#watch-btn');
+  if (eye && LAST_COMPARE) {
+    const on = isWatched(LAST_COMPARE.country.iso3);
+    eye.classList.toggle('on', on);
+    eye.textContent = on ? '👁 Op volglijst' : '👁 Volgen';
+  }
+  renderWatchBar();
 }
 
 /** Topkandidaten voor de combobox: alias > prefix > bevat > bigram-score. */
@@ -558,6 +599,15 @@ function setCompareLang(lang) {
 // ==========================================================================
 // VERGELIJKEN
 // ==========================================================================
+// Tweede-land-invoer tonen/verbergen (feature 1: A ↔ B).
+$('#vs-toggle').addEventListener('click', () => {
+  const f = $('#vs-field');
+  f.hidden = !f.hidden;
+  $('#vs-toggle').textContent = f.hidden ? '⇄ Twee landen vergelijken' : '× Tweede land sluiten';
+  if (f.hidden) $('#country-input-b').value = '';
+  else $('#country-input-b').focus();
+});
+
 $('#compare-form').addEventListener('submit', (e) => {
   e.preventDefault();
   const input = $('#country-input').value.trim();
@@ -565,31 +615,39 @@ $('#compare-form').addEventListener('submit', (e) => {
   if (!input) return;
   const country = resolveCountry(input);
   if (!country) { status.className = 'status error'; status.textContent = `Land “${input}” niet gevonden.`; result.innerHTML = ''; return; }
+  // Tweede land ingevuld → A-vs-B-modus.
+  const inputB = !$('#vs-field').hidden ? $('#country-input-b').value.trim() : '';
+  if (inputB) {
+    const countryB = resolveCountry(inputB);
+    if (!countryB) { status.className = 'status error'; status.textContent = `Land “${inputB}” niet gevonden.`; result.innerHTML = ''; return; }
+    if (countryB.iso3 === country.iso3) { status.className = 'status error'; status.textContent = 'Kies twee verschillende landen.'; return; }
+    runVersus(country, countryB, orderedSelected(), COMPARE_LANG);
+    return;
+  }
   runComparison(country, orderedSelected(), COMPARE_LANG);
 });
+
+/** Haalt de statische NL-data + (live) buitenlandse bronnen voor één land op. */
+async function fetchCountry(country, sources, lang) {
+  const staticData = await loadJSON(`compare/${country.iso3}.json`);
+  const foreign = { sources: [], notice: null };
+  if (sources.length && getProxy()) {
+    try {
+      const res = await fetchForeign(country.iso3, sources, lang === 'en' ? 'en' : 'nl');
+      foreign.sources = res?.sources || [];
+    } catch (err) { foreign.notice = 'Kon de proxy niet bereiken: ' + err.message; }
+  } else if (sources.length) {
+    foreign.notice = 'Stel de proxy in (⚙ rechtsboven) om buitenlandse reisadviezen te vergelijken.';
+  }
+  return { staticData, foreign };
+}
 
 async function runComparison(country, sources, lang) {
   const status = $('#compare-status'), result = $('#compare-result');
   status.className = 'status';
   status.innerHTML = `<span class="spinner"></span>Reisadvies laden voor ${esc(country.nl)}…`;
   try {
-    const staticData = await loadJSON(`compare/${country.iso3}.json`);
-    const foreign = { sources: [], notice: null };
-    if (sources.length) {
-      if (!getProxy()) {
-        foreign.notice = 'Stel de proxy in (⚙ rechtsboven) om buitenlandse reisadviezen te vergelijken.';
-      } else {
-        status.innerHTML = `<span class="spinner"></span>Buitenlandse adviezen live ophalen…`;
-        try {
-          // 'en' vertaalt niet-Engelse bronnen naar Engels; 'nl'/'orig' naar NL
-          // (bij 'orig' tonen we de opgehaalde vertaling niet, maar het origineel).
-          const res = await fetchForeign(country.iso3, sources, lang === 'en' ? 'en' : 'nl');
-          foreign.sources = res?.sources || [];
-        } catch (err) {
-          foreign.notice = 'Kon de proxy niet bereiken: ' + err.message;
-        }
-      }
-    }
+    const { staticData, foreign } = await fetchCountry(country, sources, lang);
     status.textContent = '';
     LAST_COMPARE = { country, sources, lang, staticData, foreign };
     pushRecentCountry(country.iso3);
@@ -601,6 +659,97 @@ async function runComparison(country, sources, lang) {
   } catch (err) {
     status.className = 'status error'; status.textContent = err.message;
   }
+}
+
+// ==========================================================================
+// TWEE LANDEN VERGELIJKEN (feature 1): kleurcode per bron A ↔ B met verschil.
+// ==========================================================================
+async function runVersus(a, b, sources, lang) {
+  const status = $('#compare-status'), result = $('#compare-result');
+  status.className = 'status';
+  status.innerHTML = `<span class="spinner"></span>${esc(a.nl)} ↔ ${esc(b.nl)} laden…`;
+  try {
+    const [da, db] = await Promise.all([fetchCountry(a, sources, lang), fetchCountry(b, sources, lang)]);
+    status.textContent = '';
+    updateUrl({ vs: `${a.iso3},${b.iso3}`, land: null }, true);
+    renderVersus(a, b, da, db, result);
+  } catch (err) {
+    status.className = 'status error'; status.textContent = err.message;
+  }
+}
+
+function renderVersus(a, b, da, db, root) {
+  root.innerHTML = '';
+  const frag = document.createDocumentFragment();
+  const okA = new Map((da.foreign.sources || []).filter((s) => !s.unavailable && !s.error).map((s) => [s.source, s]));
+  const okB = new Map((db.foreign.sources || []).filter((s) => !s.unavailable && !s.error).map((s) => [s.source, s]));
+  const fa = countryFlagByIso3(a.iso3), fb = countryFlagByIso3(b.iso3);
+
+  frag.append(el('div', { class: 'result-head' },
+    el('div', { class: 'result-head-main' },
+      el('h2', {}, `${fa ? fa + ' ' : ''}${a.nl}  ↔  ${fb ? fb + ' ' : ''}${b.nl}`),
+      el('p', { class: 'meta' }, 'Welk land beoordeelt elke bron als veiliger? Lager niveau = veiliger.'))));
+
+  // Verdict op basis van bronnen die beide landen beoordelen.
+  let aSafer = 0, bSafer = 0, equal = 0;
+  const rows = [];
+  // NL-rij.
+  const nlA = COLOR_LEVEL[da.staticData.nl.colors?.overall], nlB = COLOR_LEVEL[db.staticData.nl.colors?.overall];
+  rows.push({ label: '🇳🇱 NederlandWereldwijd', ca: da.staticData.nl.colors?.overall, cb: db.staticData.nl.colors?.overall, la: nlA, lb: nlB });
+  (CFG.SOURCES || []).forEach((meta) => {
+    const sa = okA.get(meta.id), sb = okB.get(meta.id);
+    if (!sa && !sb) return;
+    rows.push({ label: `${meta.flag || ''} ${meta.label}`, ca: sa?.color, cb: sb?.color, la: sa?.level, lb: sb?.level, ua: sa?.assessmentStatus === 'uncertain', ub: sb?.assessmentStatus === 'uncertain' });
+  });
+  rows.forEach((r) => {
+    if (r.la != null && r.lb != null) { if (r.la < r.lb) aSafer++; else if (r.lb < r.la) bSafer++; else equal++; }
+  });
+
+  const beoordeeld = aSafer + bSafer + equal;
+  const winner = aSafer > bSafer ? a : bSafer > aSafer ? b : null;
+  const verdict = el('div', { class: 'divergence ' + (aSafer && bSafer ? 'some' : 'none') });
+  verdict.append(el('h3', {}, winner
+    ? `➡️ Volgens ${Math.max(aSafer, bSafer)} van ${beoordeeld} beoordelende bron${beoordeeld === 1 ? '' : 'nen'} is ${winner === a ? a.nl : b.nl} veiliger`
+    : !beoordeeld ? 'Geen enkele bron beoordeelt beide landen'
+    : (aSafer === 0 && bSafer === 0) ? 'Beide landen krijgen dezelfde kleurcode van elke beoordelende bron'
+    : 'De bronnen zijn verdeeld over welk land veiliger is'));
+  verdict.append(el('p', { class: 'consensus-line' },
+    `${fa} ${a.nl} veiliger: ${aSafer} · ${fb} ${b.nl} veiliger: ${bSafer} · gelijk: ${equal}`));
+  frag.append(verdict);
+
+  // Kleurcode-tabel A ↔ B per bron.
+  const table = el('table', { class: 'summary-table' });
+  table.append(el('thead', {}, el('tr', {},
+    el('th', {}, 'Bron'), el('th', {}, `${fa} ${a.nl}`), el('th', {}, `${fb} ${b.nl}`), el('th', {}, 'Veiliger'))));
+  const tbody = el('tbody');
+  rows.forEach((r) => {
+    let cmp;
+    if (r.la == null || r.lb == null) cmp = el('span', { class: 'muted' }, '—');
+    else if (r.la < r.lb) cmp = el('span', { class: 'delta looser' }, `${fa} ${a.nl}`);
+    else if (r.lb < r.la) cmp = el('span', { class: 'delta looser' }, `${fb} ${b.nl}`);
+    else cmp = el('span', { class: 'delta same' }, 'gelijk');
+    tbody.append(el('tr', {},
+      el('td', {}, r.label),
+      el('td', {}, r.ua ? colorCode({ uncertain: true }) : colorCode({ predominant: r.ca })),
+      el('td', {}, r.ub ? colorCode({ uncertain: true }) : colorCode({ predominant: r.cb })),
+      el('td', {}, cmp)));
+  });
+  table.append(tbody);
+  frag.append(el('h3', { class: 'section-title' }, 'Kleurcode per bron'), table);
+  frag.append(el('p', { class: 'hint' }, 'Buitenlandse kleurcodes zijn een benadering op de Nederlandse schaal. Bronnen die maar één van beide landen beoordelen, tellen niet mee in het oordeel.'));
+
+  const openSingle = (c) => {
+    if (!$('#vs-field').hidden) $('#vs-toggle').click(); // verbergt B + wist het veld
+    $('#country-input').value = c.nl;
+    $('#compare-form').requestSubmit();
+  };
+  const oa = el('button', { class: 'btn', type: 'button' }, `Volledige vergelijking ${a.nl} →`);
+  oa.addEventListener('click', () => openSingle(a));
+  const ob = el('button', { class: 'btn', type: 'button' }, `Volledige vergelijking ${b.nl} →`);
+  ob.addEventListener('click', () => openSingle(b));
+  frag.append(el('div', { class: 'briefing-actions' }, oa, ob));
+
+  root.append(frag);
 }
 
 /** Groepeert thema-blokken per canoniek thema-id. */
@@ -1156,11 +1305,14 @@ function renderComparison(staticData, foreign, root) {
   const cflag = countryFlagByIso3(staticData.country.iso3);
   const briefingBtn = el('button', { type: 'button', class: 'btn briefing-btn', title: 'Compacte één-scherm-samenvatting voor het ochtendoverleg — printbaar en deelbaar.' }, '📋 Briefing');
   briefingBtn.addEventListener('click', openBriefing);
+  const watchOn = isWatched(staticData.country.iso3);
+  const watchBtn = el('button', { type: 'button', id: 'watch-btn', class: 'btn watch-btn' + (watchOn ? ' on' : ''), title: 'Zet dit land op je persoonlijke volglijst (blijft in deze browser bewaard).' }, watchOn ? '👁 Op volglijst' : '👁 Volgen');
+  watchBtn.addEventListener('click', () => toggleWatch(staticData.country.iso3));
   frag.append(el('div', { class: 'result-head' },
     el('div', { class: 'result-head-main' },
       el('h2', {}, cflag ? `${cflag} ${staticData.country.nl}` : staticData.country.nl),
       el('p', { class: 'meta' }, nl.modificationDate || `Laatst gewijzigd: ${(nl.lastModified || '').slice(0, 10)}`)),
-    briefingBtn));
+    el('div', { class: 'result-head-actions' }, watchBtn, briefingBtn)));
 
   // ---- Divergentie-highlight ----
   const nlColor = nl.colors?.overall || null;
@@ -1684,7 +1836,9 @@ async function buildWorklist() {
   regions.forEach((r) => regionSel.append(el('option', { value: r }, r)));
 
   $('#worklist-filter').addEventListener('change', renderWorklistView);
+  $('#worklist-watch').addEventListener('change', renderWorklistView);
   regionSel.addEventListener('change', renderWorklistView);
+  renderWatchBar();
   $('#worklist-mode').addEventListener('click', (e) => {
     const b = e.target.closest('button[data-mode]');
     if (!b || b.dataset.mode === WORKLIST_MODE) return;
@@ -1717,9 +1871,11 @@ function renderWorklist() {
     : '';
   const onlyDiff = $('#worklist-filter').value === 'diff';
   const region = $('#worklist-region').value;
+  const onlyWatch = $('#worklist-watch')?.checked;
   const items = WORKLIST.items
     .filter((i) => !onlyDiff || i.delta !== 0)
-    .filter((i) => !region || countryRegion(i.iso3) === region);
+    .filter((i) => !region || countryRegion(i.iso3) === region)
+    .filter((i) => !onlyWatch || WATCHLIST.has(i.iso3));
 
   // Delta t.o.v. het vorige bezoek van deze redacteur (localStorage).
   const seen = worklistSeen();
@@ -1823,7 +1979,10 @@ function renderAges() {
   status.textContent = `Bijgewerkt op ${new Date(AGES.generatedAt).toLocaleString('nl-NL')} · NL-datum vs recentste bron-update per land.`;
 
   const region = $('#worklist-region').value;
-  const items = AGES.items.filter((i) => !region || countryRegion(i.iso3) === region);
+  const onlyWatch = $('#worklist-watch')?.checked;
+  const items = AGES.items
+    .filter((i) => !region || countryRegion(i.iso3) === region)
+    .filter((i) => !onlyWatch || WATCHLIST.has(i.iso3));
   const fmt = (s) => (s ? new Date(s).toLocaleDateString('nl-NL') : '—');
 
   const table = el('table', { class: 'summary-table' });
@@ -1860,6 +2019,138 @@ function renderAges() {
   root.append(el('p', { class: 'hint', style: 'margin-top:0' },
     'Achterstand = dagen dat de recentste buitenlandse bron ná NederlandWereldwijd is bijgewerkt. Oranje ≥ 21 dagen, rood ≥ 60 dagen.'),
     table);
+}
+
+// ==========================================================================
+// VOLGLIJST-balk, deel-link, export/import en bundel-ochtendbriefing (feature 2)
+// ==========================================================================
+function renderWatchBar() {
+  const bar = $('#watch-bar');
+  if (!bar) return;
+  bar.hidden = false;
+  bar.innerHTML = '';
+  const items = watchlistItems();
+  const left = el('div', { class: 'watch-left' }, el('strong', {}, `👁 Volglijst (${items.length})`));
+  if (!items.length) {
+    left.append(el('span', { class: 'hint', style: 'margin:0 0 0 10px' }, 'leeg — gebruik "👁 Volgen" bij een land, of importeer een gedeelde lijst →'));
+  } else {
+    const chips = el('span', { class: 'watch-chips' });
+    items.forEach((c) => {
+      const chip = el('button', { type: 'button', class: 'watch-chip', title: 'Open ' + c.nl }, `${countryFlag(c.iso2)} ${c.nl}`);
+      chip.addEventListener('click', () => { activateTab('compare'); $('#country-input').value = c.nl; $('#compare-form').requestSubmit(); });
+      const x = el('span', { class: 'watch-chip-x', title: 'Van volglijst halen' }, '×');
+      x.addEventListener('click', (e) => { e.stopPropagation(); toggleWatch(c.iso3); });
+      chip.append(' ', x);
+      chips.append(chip);
+    });
+    left.append(chips);
+  }
+  const actions = el('div', { class: 'watch-actions' });
+  if (items.length) {
+    const brief = el('button', { type: 'button', class: 'btn' }, '🗓 Ochtendbriefing');
+    brief.addEventListener('click', openWatchlistBriefing);
+    const share = el('button', { type: 'button', class: 'btn' }, '🔗 Deel lijst');
+    share.addEventListener('click', () => shareWatchlist(share));
+    const exp = el('button', { type: 'button', class: 'btn' }, '⬇ Export');
+    exp.addEventListener('click', exportWatchlist);
+    actions.append(brief, share, exp);
+  }
+  const imp = el('label', { class: 'btn', style: 'cursor:pointer' }, '⬆ Import',
+    el('input', { type: 'file', accept: '.json,application/json', hidden: true, onchange: importWatchlist }));
+  actions.append(imp);
+  bar.append(left, actions);
+}
+
+function shareWatchlist(btn) {
+  const url = `${location.origin}${location.pathname}?tab=worklist&volglijst=${[...WATCHLIST].join(',')}`;
+  navigator.clipboard.writeText(url).then(() => {
+    const orig = btn.textContent; btn.textContent = '✓ Link gekopieerd';
+    setTimeout(() => { btn.textContent = orig; }, 2000);
+  }).catch(() => { prompt('Kopieer de deellink:', url); });
+}
+
+function exportWatchlist() {
+  const blob = new Blob([JSON.stringify({ watchlist: [...WATCHLIST], exportedAt: new Date().toISOString() }, null, 2)], { type: 'application/json' });
+  const a = el('a', { href: URL.createObjectURL(blob), download: 'reisadviezen-volglijst.json' });
+  document.body.append(a); a.click(); a.remove(); URL.revokeObjectURL(a.href);
+}
+
+function importWatchlist(e) {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const d = JSON.parse(reader.result);
+      const ids = (Array.isArray(d) ? d : d.watchlist || []).filter((iso) => COUNTRIES.some((c) => c.iso3 === iso));
+      if (!ids.length) throw new Error('geen geldige landen');
+      WATCHLIST = new Set(ids);
+      saveWatchlist();
+      updateWatchUI();
+      renderWorklistView();
+    } catch { alert('Kon de volglijst niet lezen (verwacht een geëxporteerd volglijst-bestand).'); }
+    e.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+/** Laadt een gedeelde volglijst uit ?volglijst=ISO,ISO (vervangt de huidige). */
+function loadWatchlistFromUrl() {
+  const raw = new URLSearchParams(location.search).get('volglijst');
+  if (raw == null) return;
+  const ids = raw.split(',').map((s) => s.trim().toUpperCase()).filter((iso) => COUNTRIES.some((c) => c.iso3 === iso));
+  if (ids.length) { WATCHLIST = new Set(ids); saveWatchlist(); }
+}
+
+function openWatchlistBriefing() {
+  const items = watchlistItems();
+  if (!items.length) return;
+  activateTab('compare');
+  const root = $('#compare-result');
+  root.innerHTML = '';
+  $('#compare-status').textContent = '';
+  updateUrl({ briefing: 'watchlist', land: null, vs: null }, true);
+  root.append(renderWatchlistBriefing(items));
+  window.scrollTo({ top: 0 });
+}
+
+/** Bundel-ochtendbriefing over de hele volglijst, uit offline data (snel + printbaar). */
+function renderWatchlistBriefing(items) {
+  const wrap = el('div', { class: 'briefing' });
+  const back = el('button', { type: 'button', class: 'btn' }, '← Terug naar werklijst');
+  back.addEventListener('click', () => { updateUrl({ briefing: null }, true); activateTab('worklist'); });
+  const printB = el('button', { type: 'button', class: 'btn', onclick: () => window.print() }, '🖨 Print');
+  wrap.append(el('div', { class: 'briefing-actions' }, back, printB));
+  wrap.append(el('div', { class: 'briefing-head' },
+    el('h2', {}, `🗓 Ochtendbriefing — volglijst (${items.length} landen)`),
+    el('p', { class: 'muted' }, `${new Date().toLocaleString('nl-NL')} · samengesteld uit de dagelijkse snapshot`)));
+
+  const divMap = new Map((WORKLIST?.items || []).map((i) => [i.iso3, i]));
+  const ageMap = new Map((AGES?.items || []).map((i) => [i.iso3, i]));
+  const wk = daysAgo(7);
+  const srcMeta = new Map((CFG.SOURCES || []).map((s) => [s.id, s]));
+
+  items.forEach((c) => {
+    const d = divMap.get(c.iso3), ag = ageMap.get(c.iso3);
+    const nlColor = d?.nlColor || ag?.nlColor || null;
+    const block = el('div', { class: 'briefing-block' });
+    const head = el('h3', { style: 'font-size:15px;text-transform:none;color:#000' }, `${countryFlag(c.iso2)} ${c.nl}`);
+    block.append(head);
+    const colors = el('p', { class: 'briefing-line' }, 'NL: ', colorCode({ predominant: nlColor }));
+    if (d?.consensusColor) colors.append('  ·  consensus: ', colorCode({ predominant: d.consensusColor }),
+      d.delta ? el('span', { class: 'muted' }, ` (NL ${d.delta > 0 ? 'strenger' : 'soepeler'})`) : null);
+    block.append(colors);
+    activeSeasons(c.iso3).forEach((s) => block.append(el('p', { class: 'briefing-line' }, `${s.emoji || '🌦️'} ${s.naam} — ${s.hazard}`)));
+    const recent = (RECENT_CHANGES || []).filter((x) => x.iso3 === c.iso3 && x.date >= wk && x.kind !== 'bulk');
+    if (recent.length) block.append(el('p', { class: 'briefing-line' },
+      `📝 ${recent.length} wijziging${recent.length === 1 ? '' : 'en'} (7 dgn): `,
+      recent.slice(0, 3).map((x) => srcMeta.get(x.source)?.label || x.sourceLabel).join(', ')));
+    const open = el('button', { type: 'button', class: 'btn-link', style: 'font-size:12.5px' }, 'volledige vergelijking →');
+    open.addEventListener('click', () => { activateTab('compare'); $('#country-input').value = c.nl; $('#compare-form').requestSubmit(); });
+    block.append(el('p', { style: 'margin:4px 0 0' }, open));
+    wrap.append(block);
+  });
+  return wrap;
 }
 
 // ==========================================================================
@@ -1927,6 +2218,7 @@ async function buildChanges() {
   fromInput.addEventListener('change', rerender);
   toInput.addEventListener('change', rerender);
   filterSel.addEventListener('change', rerender);
+  $('#changes-watch').addEventListener('change', rerender);
 
   // CSV-export van de op dat moment getoonde selectie (puntkomma's + BOM
   // zodat Nederlandstalig Excel het bestand direct goed opent).
@@ -1952,8 +2244,9 @@ function renderChanges(sourceFilter, from, to) {
   root.innerHTML = '';
 
   const inPeriod = (d) => d && d >= from && d <= to;
+  const onlyWatch = $('#changes-watch')?.checked;
   const items = (RECENT_CHANGES || []).filter(
-    (c) => (!sourceFilter || c.source === sourceFilter) && inPeriod(c.date)
+    (c) => (!sourceFilter || c.source === sourceFilter) && inPeriod(c.date) && (!onlyWatch || WATCHLIST.has(c.iso3))
   );
 
   // Door de bron zelf gemelde updatedatums in de periode — ook voor updates
@@ -1964,6 +2257,7 @@ function renderChanges(sourceFilter, from, to) {
   const srcMeta = new Map((CFG.SOURCES || []).map((s) => [s.id, s]));
   const reported = [];
   for (const [iso3, perSource] of Object.entries(SOURCE_DATES || {})) {
+    if (onlyWatch && !WATCHLIST.has(iso3)) continue;
     for (const [sid, date] of Object.entries(perSource)) {
       if (sourceFilter && sid !== sourceFilter) continue;
       if (!inPeriod(date) || covered.has(`${iso3}|${sid}`)) continue;
