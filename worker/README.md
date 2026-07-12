@@ -29,12 +29,26 @@ npx wrangler secret put CORS_PROXY_URL
 
 Zonder deze secret werkt alles gewoon met alleen de directe fetch.
 
+### Optioneel: humanitaire context (ReliefWeb)
+
+Voor het `/context/:iso`-endpoint (humanitaire situatierapporten per land) is
+een gratis ReliefWeb-appname nodig. Vraag er een aan op
+<https://apidoc.reliefweb.int/parameters#appname> en zet die als secret:
+
+```bash
+npx wrangler secret put RELIEFWEB_APP
+```
+
+Zonder deze secret geeft het endpoint `{ available:false }` terug en toont de
+frontend simpelweg geen contextblok.
+
 ## Endpoints
 
 | Endpoint | Beschrijving |
 | --- | --- |
 | `GET /advisory/:iso?sources=uk,us,ca,ie,fr` | Genormaliseerde adviezen (niveau/kleur + thema's) van de gevraagde bronnen |
 | `GET /advisory/:iso?...&translate=nl` | Vertaalt niet-Engelse bronnen naar Nederlands (voegt `headingNl`/`textNl` toe en herclassificeert de thema's) |
+| `GET /context/:iso` | Humanitaire context (ReliefWeb, VN-OCHA). Alleen actief met de optionele secret `RELIEFWEB_APP` (gratis appname, aan te vragen bij apidoc.reliefweb.int); anders `{ available:false }` |
 | `GET /map/:source/:iso` | De kaartafbeelding van die bron (live opgehaald/gescrapet, geproxyd) |
 | `GET /translate?to=nl&from=auto&q=...` | Losse vertaling (o.a. voor het vertalen van zoektermen) |
 | `GET /health` | Status + ondersteunde bronnen |

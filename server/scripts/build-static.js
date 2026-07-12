@@ -149,6 +149,7 @@ async function main() {
   // NL-zoekindex.
   const nlIndex = [];
   const nlColors = new Map(); // iso3 -> { name, color } t.b.v. de divergentie-werklijst
+  const nlDates = new Map(); // iso3 -> { name, color, date } t.b.v. het actualiteitsoverzicht
   let ok = 0;
   const failures = [];
 
@@ -162,6 +163,11 @@ async function main() {
       await writeFile(join(DATA, 'compare', `${iso}.json`), JSON.stringify(payload));
 
       if (nl.colors?.overall) nlColors.set(iso, { name: nl.name, color: nl.colors.overall });
+      nlDates.set(iso, {
+        name: nl.name,
+        color: nl.colors?.overall || null,
+        date: nl.lastModified ? String(nl.lastModified).slice(0, 10) : null,
+      });
       nlIndex.push({
         iso3: iso,
         name: nl.name,
@@ -205,6 +211,37 @@ async function main() {
     await writeFile(join(DATA, 'divergence.json'), JSON.stringify(divergence));
     console.log(`Divergentie-werklijst: ${divergence.items.length} landen (met ≥3 betrouwbare bronnen).`);
   }
+
+  // Actualiteitsoverzicht (punt 7): NL-bijwerkdatum naast de recentste
+  // bron-update per land, zodat "bronnen bijgewerkt, NL al lang niet" een
+  // gesorteerde takenlijst wordt.
+  const sourceDates = existsSync(SOURCE_DATES_SRC)
+    ? (JSON.parse(await readFile(SOURCE_DATES_SRC, 'utf8')).dates || {})
+    : {};
+  const today = new Date();
+  const ageItems = [];
+  for (const [iso3, info] of nlDates) {
+    const foreign = sourceDates[iso3] || {};
+    const foreignDates = Object.values(foreign).filter(Boolean).sort();
+    const latestForeign = foreignDates.length ? foreignDates[foreignDates.length - 1] : null;
+    const nlAgeDays = info.date ? Math.floor((today - new Date(info.date)) / 86400000) : null;
+    // "Achterstand": bron recenter bijgewerkt dan NL (positief = NL loopt achter).
+    const behindDays = (info.date && latestForeign)
+      ? Math.floor((new Date(latestForeign) - new Date(info.date)) / 86400000)
+      : null;
+    ageItems.push({
+      iso3, nl: info.name, nlColor: info.color,
+      nlDate: info.date, nlAgeDays,
+      latestForeign, nForeign: foreignDates.length, behindDays,
+    });
+  }
+  ageItems.sort((a, b) => (b.behindDays ?? -99999) - (a.behindDays ?? -99999));
+  await writeFile(join(DATA, 'advisory-ages.json'), JSON.stringify({ generatedAt: new Date().toISOString(), items: ageItems }));
+
+  // Seizoenskalender (punt 9): handmatige dataset met voorspelbare
+  // natuurrisico's; de frontend toont een banner bij een actief seizoen.
+  const SEASONS_SRC = join(ROOT, 'server', 'data', 'seasons.json');
+  if (existsSync(SEASONS_SRC)) await cp(SEASONS_SRC, join(DATA, 'seasons.json'));
 
   // .nojekyll zodat GitHub Pages de map/bestanden ongemoeid laat.
   await writeFile(join(OUT, '.nojekyll'), '');
