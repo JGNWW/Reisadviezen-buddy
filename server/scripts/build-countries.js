@@ -209,6 +209,8 @@ async function main() {
       nl: doc.location,
       en: enName,
       key: doc.locationkey,
+      region: iso3ToRegion[iso] || null,
+      subregion: iso3ToSub[iso] || null,
       sources: {
         uk, us, ca, ie, fr: null, au, es: null,
         de: deIso3.has(iso) ? iso : null,

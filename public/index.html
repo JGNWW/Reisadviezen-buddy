@@ -121,13 +121,23 @@
       </div>
     </section>
 
-    <!-- ================= WERKLIJST (DIVERGENTIE) ================= -->
+    <!-- ================= WERKLIJST ================= -->
     <section id="view-worklist" class="view">
+      <div class="bar-row">
+        <div id="worklist-mode" class="seg" role="group" aria-label="Werklijst-weergave">
+          <button type="button" data-mode="divergentie" class="on">Divergentie</button>
+          <button type="button" data-mode="actualiteit">Actualiteit</button>
+        </div>
+      </div>
       <div class="panel controls">
         <div class="field grow">
-          <p style="margin:0">Waar wijkt het <strong>Nederlandse</strong> reisadvies af van de <strong>internationale consensus</strong> (mediaan van de buitenlandse bronnen, laatste snapshot)? Gesorteerd op grootte van de afwijking — de "kijk hier eerst"-lijst. Alleen landen met minstens 3 betrouwbaar beoordeelde bronnen tellen mee; een afwijking is niet per se fout, maar wel het bekijken waard.</p>
+          <p id="worklist-intro" style="margin:0">Waar wijkt het <strong>Nederlandse</strong> reisadvies af van de <strong>internationale consensus</strong> (mediaan van de buitenlandse bronnen, laatste snapshot)? Gesorteerd op grootte van de afwijking — de "kijk hier eerst"-lijst. Alleen landen met minstens 3 betrouwbaar beoordeelde bronnen tellen mee; een afwijking is niet per se fout, maar wel het bekijken waard.</p>
         </div>
-        <div class="field">
+        <div class="field" id="worklist-region-wrap">
+          <label for="worklist-region">Regio</label>
+          <select id="worklist-region"><option value="">Alle regio's</option></select>
+        </div>
+        <div class="field" id="worklist-filter-wrap">
           <label for="worklist-filter">Toon</label>
           <select id="worklist-filter">
             <option value="diff" selected>Alleen afwijkingen</option>

@@ -1,0 +1,95 @@
+{
+  "_uitleg": "Handmatige seizoenskalender van voorspelbare natuurrisico's. 'months' = maandnummers (1-12) waarin het seizoen loopt; 'iso3' = getroffen landen. De frontend toont een banner bij een land wanneer de huidige maand in een actief seizoen valt. Bronnen: NOAA/NHC (orkaan/tyfoon), WMO/IMD (moesson), regionale meteodiensten. Grofmazig bedoeld als attentiesignaal, niet als voorspelling.",
+  "seasons": [
+    {
+      "id": "atl-hurricane",
+      "naam": "Atlantisch orkaanseizoen",
+      "hazard": "orkanen",
+      "emoji": "🌀",
+      "months": [6, 7, 8, 9, 10, 11],
+      "piek": "augustus–oktober",
+      "iso3": ["ATG", "BHS", "BRB", "BLZ", "CUB", "DMA", "DOM", "GRD", "GTM", "HTI", "HND", "JAM", "KNA", "LCA", "VCT", "TTO", "USA", "MEX", "PRI", "VIR", "VGB", "AIA", "CYM", "TCA", "BMU", "MSR", "MTQ", "GLP", "ABW", "CUW", "SXM", "NIC", "PAN"]
+    },
+    {
+      "id": "epac-hurricane",
+      "naam": "Oostelijk-Pacifisch orkaanseizoen",
+      "hazard": "orkanen (westkust)",
+      "emoji": "🌀",
+      "months": [5, 6, 7, 8, 9, 10, 11],
+      "piek": "augustus–september",
+      "iso3": ["MEX", "GTM", "SLV", "NIC", "CRI"]
+    },
+    {
+      "id": "nwpac-typhoon",
+      "naam": "Noordwest-Pacifisch tyfoonseizoen",
+      "hazard": "tyfonen",
+      "emoji": "🌀",
+      "months": [5, 6, 7, 8, 9, 10, 11],
+      "piek": "augustus–oktober",
+      "iso3": ["PHL", "JPN", "CHN", "TWN", "VNM", "KOR", "PRK", "MAC", "GUM", "MNP", "HKG"]
+    },
+    {
+      "id": "nio-cyclone",
+      "naam": "Noord-Indische-Oceaan cycloonseizoen",
+      "hazard": "cyclonen",
+      "emoji": "🌀",
+      "months": [4, 5, 6, 10, 11, 12],
+      "piek": "mei & november",
+      "iso3": ["IND", "BGD", "MMR", "LKA", "PAK", "OMN", "YEM"]
+    },
+    {
+      "id": "sw-monsoon",
+      "naam": "Zuidwestmoesson (Zuid-Azië)",
+      "hazard": "hevige regen & overstromingen",
+      "emoji": "🌧️",
+      "months": [6, 7, 8, 9],
+      "piek": "juli–augustus",
+      "iso3": ["IND", "NPL", "BGD", "PAK", "LKA", "BTN"]
+    },
+    {
+      "id": "swio-cyclone",
+      "naam": "Zuidwest-Indische-Oceaan cycloonseizoen",
+      "hazard": "cyclonen",
+      "emoji": "🌀",
+      "months": [11, 12, 1, 2, 3, 4],
+      "piek": "januari–maart",
+      "iso3": ["MDG", "MOZ", "MUS", "REU", "COM", "MWI", "ZWE", "SYC", "ZMB"]
+    },
+    {
+      "id": "spac-cyclone",
+      "naam": "Australisch/Zuid-Pacifisch cycloonseizoen",
+      "hazard": "cyclonen",
+      "emoji": "🌀",
+      "months": [11, 12, 1, 2, 3, 4],
+      "piek": "januari–maart",
+      "iso3": ["AUS", "FJI", "VUT", "SLB", "TON", "WSM", "PNG", "NCL", "TLS", "COK", "TUV"]
+    },
+    {
+      "id": "med-wildfire",
+      "naam": "Mediterraan bosbrandseizoen",
+      "hazard": "bos- en natuurbranden",
+      "emoji": "🔥",
+      "months": [6, 7, 8, 9],
+      "piek": "juli–augustus",
+      "iso3": ["GRC", "ESP", "PRT", "ITA", "FRA", "HRV", "TUR", "CYP", "DZA", "TUN", "MAR"]
+    },
+    {
+      "id": "sahel-rains",
+      "naam": "West-Afrikaans regenseizoen",
+      "hazard": "overstromingen",
+      "emoji": "🌧️",
+      "months": [6, 7, 8, 9],
+      "piek": "augustus–september",
+      "iso3": ["NER", "NGA", "TCD", "MLI", "BFA", "SEN", "SDN", "GHA", "BEN", "TGO"]
+    },
+    {
+      "id": "eafrica-longrains",
+      "naam": "Oost-Afrikaanse lange regens",
+      "hazard": "overstromingen",
+      "emoji": "🌧️",
+      "months": [3, 4, 5],
+      "piek": "april",
+      "iso3": ["KEN", "TZA", "ETH", "SOM", "UGA", "RWA", "BDI"]
+    }
+  ]
+}

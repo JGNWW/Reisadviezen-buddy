@@ -109,6 +109,36 @@ export default {
         );
       }
 
+      // /context/:iso — humanitaire context (ReliefWeb, VN-OCHA). Alleen actief
+      // als de repository-secret RELIEFWEB_APP is gezet (gratis appname, aan te
+      // vragen bij apidoc.reliefweb.int); anders { available:false }.
+      if (parts[0] === 'context' && parts[1]) {
+        const iso = parts[1].toUpperCase();
+        const app = env?.RELIEFWEB_APP;
+        if (!app) return json({ available: false }, 200, { 'Cache-Control': 'public, max-age=86400' });
+        const api = 'https://api.reliefweb.int/v2/disasters'
+          + `?appname=${encodeURIComponent(app)}`
+          + '&filter[field]=primary_country.iso3'
+          + `&filter[value]=${iso}`
+          + '&filter[operator]=AND'
+          + '&sort[]=date:desc&limit=4'
+          + '&fields[include][]=name&fields[include][]=url&fields[include][]=date&fields[include][]=status';
+        try {
+          const r = await fetch(api, { headers: { 'User-Agent': 'ReisadviezenBuddy/1.0' } });
+          if (!r.ok) return json({ available: true, items: [], note: `ReliefWeb ${r.status}` }, 200);
+          const d = await r.json();
+          const items = (d?.data || []).map((x) => ({
+            name: x.fields?.name || null,
+            url: x.fields?.url || null,
+            date: x.fields?.date?.created ? String(x.fields.date.created).slice(0, 10) : null,
+            status: x.fields?.status || null,
+          })).filter((x) => x.name);
+          return json({ available: true, items }, 200, { 'Cache-Control': 'public, max-age=21600' });
+        } catch (e) {
+          return json({ available: true, items: [], note: String(e.message || e) }, 200);
+        }
+      }
+
       // /translate?to=nl&from=auto&q=...
       if (parts[0] === 'translate') {
         const q = url.searchParams.get('q') || '';
@@ -148,7 +178,7 @@ export default {
         });
       }
 
-      return json({ error: 'Niet gevonden', endpoints: ['/advisory/:iso', '/map/:source/:iso', '/health'] }, 404);
+      return json({ error: 'Niet gevonden', endpoints: ['/advisory/:iso', '/context/:iso', '/map/:source/:iso', '/health'] }, 404);
     } catch (e) {
       return json({ error: String(e.message || e) }, 500);
     }

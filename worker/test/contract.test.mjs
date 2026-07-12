@@ -6,7 +6,7 @@
  * zonder gelekte scriptcode. Als een bronsite z'n HTML verbouwt, halen we
  * nieuwe fixtures op en zien we hier meteen wat er stukgaat.
  *
- * Draaien: cd worker && node --test test/
+ * Draaien: cd worker && node --test test/contract.test.mjs test/coverage.test.mjs
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
