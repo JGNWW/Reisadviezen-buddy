@@ -56,6 +56,11 @@
               <ul id="country-listbox" class="combo-list" role="listbox" hidden></ul>
             </div>
             <datalist id="country-list"></datalist>
+            <button type="button" id="vs-toggle" class="btn-link" style="align-self:flex-start;margin-top:2px">⇄ Twee landen vergelijken</button>
+          </div>
+          <div class="field grow" id="vs-field" hidden>
+            <label for="country-input-b">Tweede land (A ↔ B)</label>
+            <input id="country-input-b" list="country-list" autocomplete="off" placeholder="Bijv. Tanzania" />
           </div>
           <div class="field">
             <label>Taal buitenlandse bronnen</label>
@@ -123,11 +128,13 @@
 
     <!-- ================= WERKLIJST ================= -->
     <section id="view-worklist" class="view">
+      <div id="watch-bar" class="watch-bar" hidden></div>
       <div class="bar-row">
         <div id="worklist-mode" class="seg" role="group" aria-label="Werklijst-weergave">
           <button type="button" data-mode="divergentie" class="on">Divergentie</button>
           <button type="button" data-mode="actualiteit">Actualiteit</button>
         </div>
+        <label class="check-inline"><input type="checkbox" id="worklist-watch" /> Alleen mijn volglijst</label>
       </div>
       <div class="panel controls">
         <div class="field grow">
@@ -197,6 +204,10 @@
           <select id="changes-filter">
             <option value="">Alle bronnen</option>
           </select>
+        </div>
+        <div class="field">
+          <label>&nbsp;</label>
+          <label class="check-inline"><input type="checkbox" id="changes-watch" /> Alleen volglijst</label>
         </div>
         <button id="changes-csv" type="button" class="btn" title="Download de getoonde wijzigingen als CSV (opent in Excel).">⬇ Download CSV</button>
       </div>
