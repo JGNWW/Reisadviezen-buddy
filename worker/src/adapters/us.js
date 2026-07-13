@@ -40,36 +40,60 @@ export async function getAdvisory(slug) {
   const lastModified = issued ? parseHumanDate(issued[1]) : null;
 
   const root = parse(html);
-  const main =
-    root.querySelector('.tsg-rwd-content-page-parsysxxx') ||
-    root.querySelector('#inner-content') ||
-    root.querySelector('#content') ||
-    null;
-  // travel.state.gov migreert geleidelijk naar een nieuwe, tab-gebaseerde
-  // layout zonder de klassieke content-wrapper hierboven — de tekst zit dan
-  // in losse .usa-prose-blokken (niet genest) die we samenvoegen. Zonder
-  // deze val-terug bleef `main` de HELE pagina (root), waardoor <title>,
-  // navigatie en scripts als "inhoud" werden meegescrapet.
-  const mainHtml = main
-    ? main.innerHTML
-    : root.querySelectorAll('.usa-prose').map((n) => n.innerHTML).join('\n') || root.innerHTML;
+  const themes = [];
 
-  // Splits op koppen indien aanwezig; anders het hele blok als één thema.
-  let sections = splitByHeadings(absolutiseLinks(mainHtml, SITE)).filter(
-    (s) => s.text && s.text.length > 40
-  );
-  if (sections.length === 0) {
-    const text = htmlToText(mainHtml);
-    sections = text ? [{ heading: null, html: mainHtml, text }] : [];
+  // Nieuwe, tab-gebaseerde layout (travel.state.gov migreert hiernaartoe): elk
+  // onderwerp zit in een eigen tab-panel dat via CSS verborgen is tot de bij-
+  // behorende tab actief is. Een deeplink moet daarom het tab-anker bevatten
+  // (bijv. #weather) zodat de site-JS de juiste tab opent — anders staat de
+  // tekst op een verborgen paneel en landt de gebruiker op de verkeerde tab.
+  const proseNodes = root.querySelectorAll('.usa-prose');
+  if (proseNodes.length) {
+    // Tab <li id="weather" aria-controls="…-tabpanel"> → paneel-id → anker.
+    const panelToAnchor = {};
+    for (const tab of root.querySelectorAll('li[role="tab"][aria-controls]')) {
+      const anchor = tab.getAttribute('id');
+      const ctrl = tab.getAttribute('aria-controls');
+      if (anchor && ctrl) panelToAnchor[ctrl.replace(/-tabpanel$/, '')] = anchor;
+    }
+    for (const node of proseNodes) {
+      const panel = node.closest('.cmp-tabs__tabpanel');
+      const anchor = panel ? panelToAnchor[panel.getAttribute('id') || ''] : null;
+      const secUrl = anchor ? `${url}#${anchor}` : url;
+      const secs = splitByHeadings(absolutiseLinks(node.innerHTML, SITE)).filter((s) => s.text && s.text.length > 40);
+      for (const s of secs) {
+        themes.push({
+          category: 'Travel advisory',
+          heading: s.heading || 'Country summary',
+          themeId: classifyTheme(s.heading || 'safety security', s.text),
+          html: s.html, text: s.text, url: secUrl,
+        });
+      }
+    }
   }
 
-  const themes = sections.map((s) => ({
-    category: 'Travel advisory',
-    heading: s.heading || 'Country summary',
-    themeId: classifyTheme(s.heading || 'safety security', s.text),
-    html: s.html,
-    text: s.text,
-  }));
+  // Oude layout (landen die nog niet gemigreerd zijn): één content-wrapper,
+  // geen tabs/ankers.
+  if (!themes.length) {
+    const main =
+      root.querySelector('.tsg-rwd-content-page-parsysxxx') ||
+      root.querySelector('#inner-content') ||
+      root.querySelector('#content');
+    const mainHtml = main ? main.innerHTML : html;
+    let sections = splitByHeadings(absolutiseLinks(mainHtml, SITE)).filter((s) => s.text && s.text.length > 40);
+    if (sections.length === 0) {
+      const text = htmlToText(mainHtml);
+      sections = text ? [{ heading: null, html: mainHtml, text }] : [];
+    }
+    for (const s of sections) {
+      themes.push({
+        category: 'Travel advisory',
+        heading: s.heading || 'Country summary',
+        themeId: classifyTheme(s.heading || 'safety security', s.text),
+        html: s.html, text: s.text, url,
+      });
+    }
+  }
 
   return {
     source: meta.id,

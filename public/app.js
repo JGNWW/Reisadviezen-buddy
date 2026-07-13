@@ -1049,38 +1049,71 @@ function renderSummaryTable(nl, okSources) {
  * vertaal-endpoint); alle bronteksten zijn al binnen, dus het zoeken zelf
  * kost geen extra proxy-aanroepen.
  */
+// '-' escapen (%2D): een koppelteken heeft binnen text-directives een eigen
+// betekenis (prefix-/suffix-scheider), dus mag niet onge-escaped voorkomen.
+const encFrag = (s) => encodeURIComponent((s || '').trim()).replace(/-/g, '%2D');
+
 /**
- * Text-Fragment-deeplink: opent de bronpagina met de passage geel gemarkeerd
- * (URL-fragment #:~:text=, ondersteund door Edge/Chrome). Het fragment moet
- * letterlijk op de pagina staan — daarom nemen we ±6 woorden uit de
- * ORIGINELE (onvertaalde) tekst, beginnend bij het gevonden zoekwoord.
+ * Voegt een ":~:text="-fragment toe aan een URL en BEHOUDT daarbij een
+ * bestaand element-anker (bijv. #weather). Sommige bronnen (nieuwe
+ * travel.state.gov) zetten elk onderwerp in een tab die pas zichtbaar wordt
+ * als dat anker in de hash staat — zonder het anker landt de highlight op een
+ * verborgen paneel. Vorm: <pad>#<anker>:~:text=…  (anker mag leeg zijn).
  */
-function fragmentUrl(baseUrl, text, term) {
-  if (!baseUrl || !text || !term) return null;
-  const idx = text.toLowerCase().indexOf(term.toLowerCase());
-  if (idx === -1) return null;
-  let start = idx;
-  while (start > 0 && !/\s/.test(text[start - 1])) start--;
-  const words = text.slice(start).split(/\s+/).slice(0, 6).join(' ')
-    .replace(/[)\]}"'.,;:!?]+$/, '');
-  if (words.length < 4) return null;
-  // '-' heeft binnen text-directives een eigen betekenis: extra escapen.
-  const enc = encodeURIComponent(words).replace(/-/g, '%2D');
-  return `${baseUrl.split('#')[0]}#:~:text=${enc}`;
+function withTextDirective(baseUrl, directive) {
+  const [path, anchor = ''] = String(baseUrl).split('#');
+  if (!directive) return baseUrl;
+  return `${path}#${anchor}:~:text=${directive}`;
 }
 
 /**
- * Text-Fragment-deeplink voor een heel blok (i.p.v. een specifieke
- * zoekterm): markeert de eerste woorden van het blok zelf, zodat elk
- * matrixblok direct doorlinkt naar zíjn eigen passage op de bronpagina.
- * Gebruikt altijd de ORIGINELE (onvertaalde) tekst — die staat letterlijk op
- * de bronpagina, een vertaling niet.
+ * Bouwt een text-directive die de HELE passage markeert i.p.v. alleen de
+ * eerste paar woorden: bij langere tekst de vorm `text=beginwoorden,eindwoorden`
+ * (markeert alles ertussen), bij korte tekst de tekst in z'n geheel. De tekst
+ * moet letterlijk (op witruimte na) op de bronpagina staan, dus we gebruiken
+ * altijd de ORIGINELE (onvertaalde) brontekst.
+ */
+function textDirectiveForPassage(text) {
+  const clean = (text || '').replace(/\s+/g, ' ').trim();
+  if (clean.length < 4) return null;
+  const stripEnd = (s) => s.replace(/[)\]}"'.,;:!?]+$/, '');
+  const words = clean.split(' ');
+  if (words.length <= 12) {
+    const whole = stripEnd(clean);
+    return whole.length >= 4 ? encFrag(whole) : null;
+  }
+  const startText = words.slice(0, 6).join(' ');
+  const endText = stripEnd(words.slice(-6).join(' '));
+  return endText.length >= 3 ? `${encFrag(startText)},${encFrag(endText)}` : encFrag(startText);
+}
+
+/**
+ * Deeplink voor een heel matrixblok: markeert de volledige passage op de
+ * bronpagina. Behoudt het sectie-anker uit block.url (indien aanwezig) zodat
+ * bij tab-bronnen de juiste tab opent.
  */
 function blockFragmentUrl(baseUrl, block) {
-  if (!baseUrl || !block?.text) return null;
-  const firstWord = block.text.trim().split(/\s+/)[0];
-  if (!firstWord) return null;
-  return fragmentUrl(baseUrl, block.text, firstWord);
+  if (!baseUrl) return null;
+  const dir = block?.text ? textDirectiveForPassage(block.text) : null;
+  return withTextDirective(baseUrl, dir);
+}
+
+/**
+ * Deeplink voor de onderwerp-zoeker: markeert de hele ZIN waarin de zoekterm
+ * valt (niet alleen een paar losse woorden). Behoudt een bestaand anker.
+ */
+function fragmentUrl(baseUrl, text, term) {
+  if (!baseUrl || !text || !term) return null;
+  const clean = text.replace(/\s+/g, ' ').trim();
+  const ti = clean.toLowerCase().indexOf(term.toLowerCase());
+  if (ti === -1) return null;
+  // Zinsgrenzen rond de treffer opzoeken.
+  let s = ti;
+  while (s > 0 && !/[.!?]/.test(clean[s - 1])) s--;
+  let e = ti + term.length;
+  while (e < clean.length && !/[.!?]/.test(clean[e])) e++;
+  const dir = textDirectiveForPassage(clean.slice(s, e));
+  return dir ? withTextDirective(baseUrl, dir) : null;
 }
 
 function renderTopicSearch(nl, okSources) {
