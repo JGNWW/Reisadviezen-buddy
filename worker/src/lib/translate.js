@@ -30,17 +30,39 @@ function chunk(text, max = 1800) {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// Gedeelde limiter: begrenst het aantal gelijktijdige uitgaande vertaalcalls
+// over ALLE bronnen van één /advisory-aanroep heen (module-scope = gedeeld
+// binnen dezelfde Worker-invocatie). Zonder dit kan een bron met veel secties
+// (bijv. 57 thema's) haar fetches in één vloedgolf afvuren en zo een kleinere
+// bron (bijv. 7 thema's) volledig verdringen — die bleef dan onvertaald,
+// terwijl de grote bron gedeeltelijk wél lukte. Met een gedeelde FIFO-wachtrij
+// krijgt elke bron eerlijk om de beurt een slot.
+const MAX_CONCURRENT_TRANSLATIONS = 5;
+let activeTranslations = 0;
+const translationQueue = [];
+function runQueued() {
+  if (activeTranslations >= MAX_CONCURRENT_TRANSLATIONS || !translationQueue.length) return;
+  activeTranslations++;
+  const { fn, resolve, reject } = translationQueue.shift();
+  fn().then(resolve, reject).finally(() => { activeTranslations--; runQueued(); });
+}
+function limited(fn) {
+  return new Promise((resolve, reject) => { translationQueue.push({ fn, resolve, reject }); runQueued(); });
+}
+
 /** Eén fetch naar het vertaalendpoint, met retries bij 429/5xx (rate-limit/transiënt). */
 async function translateOnce(part, to, from, tries = 3) {
   const url = `${ENDPOINT}?client=gtx&sl=${from}&tl=${to}&dt=t&q=${encodeURIComponent(part)}`;
   for (let attempt = 1; attempt <= tries; attempt++) {
-    const res = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+    const res = await limited(() => fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' } }));
     if (res.ok) return res.json();
     if (attempt === tries || (res.status !== 429 && res.status < 500)) {
       throw new Error(`Vertaling ${res.status}`);
     }
     // Het publieke gtx-endpoint rate-limit't onder piekbelasting (429) — een
     // korte, oplopende pauze lost het merendeel van die gevallen vanzelf op.
+    // De wachtrij-slot komt tijdens deze pauze vrij zodat andere bronnen
+    // ondertussen aan de beurt kunnen komen.
     await sleep(300 * attempt + Math.random() * 200);
   }
   throw new Error('Vertaling: geen resultaat');
