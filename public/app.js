@@ -1069,6 +1069,20 @@ function fragmentUrl(baseUrl, text, term) {
   return `${baseUrl.split('#')[0]}#:~:text=${enc}`;
 }
 
+/**
+ * Text-Fragment-deeplink voor een heel blok (i.p.v. een specifieke
+ * zoekterm): markeert de eerste woorden van het blok zelf, zodat elk
+ * matrixblok direct doorlinkt naar zíjn eigen passage op de bronpagina.
+ * Gebruikt altijd de ORIGINELE (onvertaalde) tekst — die staat letterlijk op
+ * de bronpagina, een vertaling niet.
+ */
+function blockFragmentUrl(baseUrl, block) {
+  if (!baseUrl || !block?.text) return null;
+  const firstWord = block.text.trim().split(/\s+/)[0];
+  if (!firstWord) return null;
+  return fragmentUrl(baseUrl, block.text, firstWord);
+}
+
 function renderTopicSearch(nl, okSources) {
   const wrap = el('div', { class: 'topic-search' });
   const input = el('input', { type: 'text', placeholder: 'Bijv. ebola, verkiezingen, gele koorts…', autocomplete: 'off' });
@@ -1641,8 +1655,8 @@ function renderMatrix(cmp, nl, okSources) {
     }
     const anyContent = re ? true : (t.nlHasIt || t.foreignHasIt);
     grid.append(el('div', { class: 'cell rowlabel' }, t.theme.label));
-    grid.append(cellFor(nlBlocks, false, anyContent, re));
-    fBlocks.forEach((b) => grid.append(cellFor(b, true, anyContent, re)));
+    grid.append(cellFor(nlBlocks, false, anyContent, re, nl.url));
+    fBlocks.forEach((b, i) => grid.append(cellFor(b, true, anyContent, re, okSources[i].url)));
     grid.append(el('div', { class: 'cell addcol' }));
   });
 
@@ -1650,16 +1664,16 @@ function renderMatrix(cmp, nl, okSources) {
 }
 
 /** Eén matrix-cel: thema-blokken of een (eventueel gemarkeerde) leegte. */
-function cellFor(blocks, foreign, anyContent, mark) {
+function cellFor(blocks, foreign, anyContent, mark, sourceUrl) {
   if (blocks && blocks.length) {
     // 'plain': altijd platte tekst → één uniform lettertype in alle cellen.
     // Compact: volledige tekst renderen maar visueel afkappen (cellclamp);
     // de per-blok "Lees volledige tekst"-knoppen zouden daar dubbelop zijn.
     if (MATRIX_DENSITY === 'compact') {
       return el('div', { class: 'cell txt' },
-        el('div', { class: 'cellclamp' }, renderBlocks(blocks, foreign, { full: true, plain: true, mark })));
+        el('div', { class: 'cellclamp' }, renderBlocks(blocks, foreign, { full: true, plain: true, mark, sourceUrl })));
     }
-    return el('div', { class: 'cell txt' }, renderBlocks(blocks, foreign, { plain: true, mark }));
+    return el('div', { class: 'cell txt' }, renderBlocks(blocks, foreign, { plain: true, mark, sourceUrl }));
   }
   // Leeg terwijl andere bronnen het thema wél behandelen = opvallend hiaat.
   return el('div', { class: 'cell txt empty' + (anyContent ? ' miss' : '') },
@@ -1675,7 +1689,7 @@ const SNIPPET_MAXLEN = 320;
  * uitgebreide, brontekst tonen.
  */
 function renderBlocks(blocks, foreign = false, opts = {}) {
-  const { full = false, plain = false, mark = null } = opts;
+  const { full = false, plain = false, mark = null, sourceUrl = null } = opts;
   if (!blocks || !blocks.length) return null;
   // Bij een actief termfilter tonen we de volledige (gemarkeerde) tekst, niet
   // een afgekapt fragment — anders valt de treffer soms buiten beeld.
@@ -1690,9 +1704,18 @@ function renderBlocks(blocks, foreign = false, opts = {}) {
     // ge-escapete tekst geeft één uniform lettertype in alle cellen.
     const fullHtml = plain ? null : (useTranslated && b.textNl ? null : (b.html || null));
 
+    // Deeplink naar de exacte passage op de bronpagina (Text-Fragment,
+    // Edge/Chrome); zonder geschikte ankertekst valt terug op de kale
+    // bron-URL, zodat er altijd een link is.
+    const frag = sourceUrl ? (blockFragmentUrl(sourceUrl, b) || sourceUrl) : null;
+
     const blockEl = el('div', { class: 'block' },
       heading ? el('div', { class: 'block-heading' }, heading) : null,
-      b.category && b.category !== heading ? el('div', { class: 'block-cat' }, b.category) : null);
+      b.category && b.category !== heading ? el('div', { class: 'block-cat' }, b.category) : null,
+      frag ? el('a', {
+        href: frag, target: '_blank', rel: 'noopener', class: 'frag-link block-frag-link',
+        title: frag === sourceUrl ? 'Opent de bronpagina.' : 'Opent de bronpagina met deze passage gemarkeerd (Edge/Chrome).',
+      }, '🔗 bekijk in bron') : null);
 
     if (!noTrunc && fullText.length > SNIPPET_MAXLEN) {
       let expanded = false;
