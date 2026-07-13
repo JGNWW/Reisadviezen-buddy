@@ -43,9 +43,10 @@ jobs:
           title="Canary: bron-adapter(s) falen op live data"
           existing=$(gh issue list --state open --search "\"$title\" in:title" --json number --jq 'length')
           if [ "$existing" = "0" ]; then
-            gh issue create --title "$title" --body "De wekelijkse live-canary is gefaald: minstens één bron-adapter levert geen geldig advies meer op live data. Waarschijnlijk heeft de bronsite zijn HTML of URL's verbouwd.
-
-Zie de log: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-
-Stappenplan: haal verse fixtures op (worker/test/fixtures/), draai de contracttests, en pas de betreffende adapter in worker/src/adapters/ aan."
+            url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            body=$(printf '%s\n\n%s\n\n%s' \
+              "De wekelijkse live-canary is gefaald: minstens een bron-adapter levert geen geldig advies meer op live data. Waarschijnlijk heeft de bronsite zijn HTML of URL's verbouwd." \
+              "Zie de log: $url" \
+              "Stappenplan: haal verse fixtures op (worker/test/fixtures/), draai de contracttests, en pas de betreffende adapter in worker/src/adapters/ aan.")
+            gh issue create --title "$title" --body "$body"
           fi

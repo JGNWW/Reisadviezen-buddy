@@ -108,7 +108,7 @@ jobs:
           if [ "$existing" = "0" ]; then
             body=$(node -e "
               const r = require('./worker/data/mapping-health.json');
-              const lines = ['De wekelijkse mapping-controle vond kapotte koppelingen (bron heeft waarschijnlijk pagina''s hernoemd):', ''];
+              const lines = ['De wekelijkse mapping-controle vond kapotte koppelingen (bron heeft waarschijnlijk paginanamen gewijzigd):', ''];
               for (const [sid, s] of Object.entries(r.sources)) {
                 for (const b of s.broken || []) lines.push('- **' + sid + '** ' + b.iso3 + ' (' + b.land + '): \`' + b.id + '\`' + (b.suggestie ? ' → suggestie: \`' + b.suggestie + '\`' : ''));
               }
