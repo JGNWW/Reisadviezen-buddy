@@ -49,6 +49,12 @@ for (const [id, adapter, arg] of ADAPTERS) {
     for (const t of adv.themes) {
       assert.ok(t.heading.length <= 140, `${id}: verdacht lange kop: ${t.heading.slice(0, 60)}…`);
       assert.ok(!CODE_HEADING.test(t.heading), `${id}: code in kop: ${t.heading.slice(0, 60)}…`);
+      // Als een site-template verandert en de content-selector niet meer
+      // matcht, valt de scraper soms terug op de HELE pagina (nav, <head>,
+      // scripts) i.p.v. alleen de brontekst — dat is precies gebeurd bij een
+      // eerdere versie van de US-adapter na een sitewijziging.
+      assert.ok(!/<!DOCTYPE|<html[\s>]|<head[\s>]|<script[\s>]/i.test(t.text),
+        `${id}: pagina-HTML gelekt in tekst (kop "${t.heading}"): ${t.text.slice(0, 80)}…`);
     }
     assert.ok(adv.fullText.length > 200, `${id}: fullText verdacht kort`);
 
@@ -63,6 +69,19 @@ for (const [id, adapter, arg] of ADAPTERS) {
     if (id === 'de') {
       assert.match(adv.url, /^https:\/\/www\.auswaertiges-amt\.de\/de\/aussenpolitik\/laender\/[a-z0-9]+-node$/,
         `${id}: onverwachte URL-vorm ${adv.url}`);
+    }
+
+    // UK: GOV.UK verdeelt één advies over meerdere sub-pagina's (één per
+    // "part", bijv. .../nepal/safety-and-security) — elk thema hoort naar
+    // zíjn eigen sub-pagina te linken, niet allemaal naar de hoofdpagina,
+    // anders matcht een Text-Fragment-deeplink de tekst niet.
+    if (id === 'uk') {
+      const urls = new Set(adv.themes.map((t) => t.url));
+      assert.ok(urls.size > 1, `${id}: alle thema's linken naar dezelfde URL (${[...urls]})`);
+      for (const t of adv.themes) {
+        assert.match(t.url, /^https:\/\/www\.gov\.uk\/foreign-travel-advice\/nepal(\/[a-z0-9-]+)?$/,
+          `${id}: onverwachte thema-URL ${t.url}`);
+      }
     }
   });
 }

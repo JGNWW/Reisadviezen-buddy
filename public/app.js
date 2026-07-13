@@ -1134,12 +1134,15 @@ function renderTopicSearch(nl, okSources) {
         }
         if (hit) {
           // Voor de deeplink de treffer in de ORIGINELE tekst zoeken: het
-          // #:~:text=-fragment moet letterlijk op de bronpagina staan.
+          // #:~:text=-fragment moet letterlijk op de bronpagina staan. b.url
+          // (indien aanwezig) is de sub-pagina waar dít blok daadwerkelijk
+          // staat — sommige bronnen verdelen één advies over meerdere
+          // sub-pagina's, met alleen het eerste onderdeel op de hoofd-URL.
           let frag = null;
           if (b.text) {
             const low = b.text.toLowerCase();
             const ov = variantList.find((vv) => low.includes(vv));
-            if (ov) frag = { text: b.text, term: ov };
+            if (ov) frag = { text: b.text, term: ov, url: b.url };
           }
           matches.push({ heading: hit.heading, html: highlight(snippetAround(hit.text, hit.variant), hit.variant), frag });
         }
@@ -1155,12 +1158,12 @@ function renderTopicSearch(nl, okSources) {
           ? el('span', { class: 'count-pill' }, String(matches.length))
           : el('span', { class: 'no-mention-tag' }, `noemt "${terms.join(', ')}" niet`)));
       matches.slice(0, 5).forEach((m) => {
-        const fragHref = m.frag ? fragmentUrl(url, m.frag.text, m.frag.term) : null;
+        const fragHref = m.frag ? fragmentUrl(m.frag.url || url, m.frag.text, m.frag.term) : null;
         card.append(el('div', { class: 'topic-match' },
           el('div', { class: 'block-cat' }, m.heading || '',
             fragHref ? el('a', {
               href: fragHref, target: '_blank', rel: 'noopener', class: 'frag-link',
-              title: 'Opent de bronpagina met deze passage geel gemarkeerd (Edge/Chrome). Staat de passage op een subpagina, dan opent de hoofdpagina zonder markering.',
+              title: 'Opent de bronpagina met deze passage geel gemarkeerd (Edge/Chrome).',
             }, '🔗 toon op bronpagina') : null),
           el('p', { class: 'snippet', html: m.html })));
       });
@@ -1730,11 +1733,16 @@ function renderBlocks(blocks, foreign = false, opts = {}) {
     // bron-URL, zodat er altijd een link is. Ná de tekst, niet ervóór — een
     // link boven de tekst verdrong anders leestekst in de ingeklapte
     // matrixweergave (cellclamp knipt op vaste hoogte af).
-    if (sourceUrl) {
-      const frag = blockFragmentUrl(sourceUrl, b) || sourceUrl;
+    // b.url (indien aanwezig) is de URL van de sub-pagina waar dít blok
+    // daadwerkelijk staat — sommige bronnen (bijv. GOV.UK) verdelen één
+    // advies over meerdere sub-pagina's; de algemene bron-URL bevat dan
+    // alleen het eerste onderdeel.
+    const blockUrl = b.url || sourceUrl;
+    if (blockUrl) {
+      const frag = blockFragmentUrl(blockUrl, b) || blockUrl;
       blockEl.append(el('a', {
         href: frag, target: '_blank', rel: 'noopener', class: 'frag-link block-frag-link',
-        title: frag === sourceUrl ? 'Opent de bronpagina.' : 'Opent de bronpagina met deze passage gemarkeerd (Edge/Chrome).',
+        title: frag === blockUrl ? 'Opent de bronpagina.' : 'Opent de bronpagina met deze passage gemarkeerd (Edge/Chrome).',
       }, '🔗 bekijk in bron'));
     }
     wrap.append(blockEl);
