@@ -266,6 +266,18 @@ input:focus, select:focus { outline: 2px solid var(--link); outline-offset: 0; b
 .matrix .txt.empty { color: var(--muted); font-style: italic; font-size: 13px; }
 .matrix .txt.empty.miss { background: #fdf6ee; }
 .matrix .block { margin-bottom: 10px; }
+/* Uniform lettertype in de matrix: platte tekst wordt gerenderd (geen bron-HTML),
+   maar dwing font/afmeting hoe dan ook af voor een consistente cel-look. */
+.matrix .txt .rich, .matrix .txt .rich * { font-family: inherit; font-size: inherit; font-weight: inherit; }
+.matrix .txt .rich mark, .topic-form mark, mark { background: #fff2a8; color: inherit; padding: 0 1px; }
+/* Wisbalk voor het actieve term-filter boven de matrix. */
+.matrix-filter-bar {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  background: var(--hero); border-left: 4px solid var(--nl-blue);
+  padding: 8px 14px; margin: 4px 0 12px; font-size: 13.5px;
+}
+.matrix-filter-bar strong { color: var(--nl-blue); }
+.matrix-filter-bar .btn-link { margin-left: auto; white-space: nowrap; }
 
 /* ---- Search results ---- */
 .result-country { margin-bottom: 14px; }
