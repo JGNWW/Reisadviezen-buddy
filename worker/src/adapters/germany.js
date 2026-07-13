@@ -12,6 +12,21 @@ import { classifyTheme } from '../lib/themes.js';
 const SITE = 'https://www.auswaertiges-amt.de';
 const INDEX = `${SITE}/opendata/travelwarning`;
 
+/**
+ * Bouwt de publieke landpagina-slug zoals het Auswärtiges Amt die zelf
+ * gebruikt: kleine letters, umlauten getranslitereerd, en alle spaties/
+ * koppeltekens/leestekens verwijderd (niet vervangen door een koppelteken!)
+ * — bijv. "Saudi-Arabien" → "saudiarabien", "Côte d'Ivoire" → "cotedivoire".
+ * Eerder gebruikten we `naam.toLowerCase()` zonder deze transliteratie/
+ * opschoning, wat voor de meeste landen toevallig een 404 opleverde.
+ */
+function countrySlug(name) {
+  return (name || '')
+    .toLowerCase()
+    .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss')
+    .replace(/[^a-z0-9]/g, '');
+}
+
 export const meta = { id: 'de', label: 'Duitsland (Auswärtiges Amt)', flag: '🇩🇪', lang: 'de' };
 
 let indexCache = null;
@@ -94,7 +109,7 @@ export async function getAdvisory(iso3) {
     sourceLabel: meta.label,
     flag: meta.flag,
     name: e.countryName || null,
-    url: `${SITE}/de/ReiseUndSicherheit/${(e.countryName || '').toLowerCase()}`,
+    url: `${SITE}/de/aussenpolitik/laender/${countrySlug(e.countryName)}-node`,
     lastModified: e.lastModified ? new Date(e.lastModified * 1000).toISOString() : null,
     updateNote: note || null,
     level: a.level,

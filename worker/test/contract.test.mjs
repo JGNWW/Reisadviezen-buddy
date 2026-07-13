@@ -56,6 +56,14 @@ for (const [id, adapter, arg] of ADAPTERS) {
     if (adv.lastModified) {
       assert.match(String(adv.lastModified), /^\d{4}-\d{2}-\d{2}/, `${id}: datum ${adv.lastModified}`);
     }
+
+    // DE: de publieke landpagina volgt een vast slugpatroon (kleine letters,
+    // umlauten getranslitereerd, geen koppeltekens/spaties, "-node"-suffix).
+    // Eerder gaf een naïeve toLowerCase() een 404 voor bijna elk land.
+    if (id === 'de') {
+      assert.match(adv.url, /^https:\/\/www\.auswaertiges-amt\.de\/de\/aussenpolitik\/laender\/[a-z0-9]+-node$/,
+        `${id}: onverwachte URL-vorm ${adv.url}`);
+    }
   });
 }
 

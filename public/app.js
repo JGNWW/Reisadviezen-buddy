@@ -1704,18 +1704,9 @@ function renderBlocks(blocks, foreign = false, opts = {}) {
     // ge-escapete tekst geeft één uniform lettertype in alle cellen.
     const fullHtml = plain ? null : (useTranslated && b.textNl ? null : (b.html || null));
 
-    // Deeplink naar de exacte passage op de bronpagina (Text-Fragment,
-    // Edge/Chrome); zonder geschikte ankertekst valt terug op de kale
-    // bron-URL, zodat er altijd een link is.
-    const frag = sourceUrl ? (blockFragmentUrl(sourceUrl, b) || sourceUrl) : null;
-
     const blockEl = el('div', { class: 'block' },
       heading ? el('div', { class: 'block-heading' }, heading) : null,
-      b.category && b.category !== heading ? el('div', { class: 'block-cat' }, b.category) : null,
-      frag ? el('a', {
-        href: frag, target: '_blank', rel: 'noopener', class: 'frag-link block-frag-link',
-        title: frag === sourceUrl ? 'Opent de bronpagina.' : 'Opent de bronpagina met deze passage gemarkeerd (Edge/Chrome).',
-      }, '🔗 bekijk in bron') : null);
+      b.category && b.category !== heading ? el('div', { class: 'block-cat' }, b.category) : null);
 
     if (!noTrunc && fullText.length > SNIPPET_MAXLEN) {
       let expanded = false;
@@ -1732,6 +1723,19 @@ function renderBlocks(blocks, foreign = false, opts = {}) {
       blockEl.append(shortNode, fullNode, toggle);
     } else {
       blockEl.append(el('div', { class: 'rich', html: fullHtml || markText(fullText, mark) }));
+    }
+
+    // Deeplink naar de exacte passage op de bronpagina (Text-Fragment,
+    // Edge/Chrome); zonder geschikte ankertekst valt terug op de kale
+    // bron-URL, zodat er altijd een link is. Ná de tekst, niet ervóór — een
+    // link boven de tekst verdrong anders leestekst in de ingeklapte
+    // matrixweergave (cellclamp knipt op vaste hoogte af).
+    if (sourceUrl) {
+      const frag = blockFragmentUrl(sourceUrl, b) || sourceUrl;
+      blockEl.append(el('a', {
+        href: frag, target: '_blank', rel: 'noopener', class: 'frag-link block-frag-link',
+        title: frag === sourceUrl ? 'Opent de bronpagina.' : 'Opent de bronpagina met deze passage gemarkeerd (Edge/Chrome).',
+      }, '🔗 bekijk in bron'));
     }
     wrap.append(blockEl);
   });
