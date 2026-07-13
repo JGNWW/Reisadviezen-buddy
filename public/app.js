@@ -43,7 +43,10 @@ const LEVEL_COLORS = ['', 'groen', 'geel', 'oranje', 'rood'];
 //   'nl'   → vertaald naar Nederlands (Engelse bronnen blijven Engels)
 //   'en'   → vertaald naar Engels (Engelse bronnen blijven origineel)
 //   'orig' → onvertaald, in de brontaal
-let COMPARE_LANG = localStorage.getItem('compareLang') || 'orig';
+// Sleutel bewust hernoemd (v2): de standaardtaal wijzigde van 'nl' naar
+// 'orig', en zonder nieuwe sleutel zou een eerder opgeslagen voorkeur (bijv.
+// 'nl' of 'en' uit vóór deze wijziging) die nieuwe standaard overschaduwen.
+let COMPARE_LANG = localStorage.getItem('compareLangV2') || 'orig';
 // Matrix-weergave: 'compact' (cellen ingeklapt tot ±4 regels) of 'volledig'.
 let MATRIX_DENSITY = localStorage.getItem('matrixDensity') || 'compact';
 // Verborgen thema-rijen in de matrix (punt 17), gedeeld over alle landen.
@@ -599,7 +602,7 @@ function setCompareLang(lang) {
   if (lang === COMPARE_LANG) return;
   const prev = COMPARE_LANG;
   COMPARE_LANG = lang;
-  localStorage.setItem('compareLang', lang);
+  localStorage.setItem('compareLangV2', lang);
   $$('#lang-seg button').forEach((b) => b.classList.toggle('on', b.dataset.lang === lang));
   syncUrl();
   if (!LAST_COMPARE) return;

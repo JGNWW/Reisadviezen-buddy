@@ -50,15 +50,62 @@ export async function translate(text, to = 'nl', from = 'auto') {
   return v;
 }
 
-/** Vertaalt de thema-blokken van een advies naar het doel (standaard NL). */
+// Scheidingsteken tussen gebatchte tekstdelen — getest dat dit de vertaling
+// (spaties/regeleinden rond de scheiding daargelaten) intact doorstaat.
+const PART_DELIM = '\n@@@\n';
+const MAX_BATCH = 1500; // ruim onder Googles limiet; houdt elke batch tot doorgaans 1 fetch beperkt
+
+/**
+ * Vertaalt de thema-blokken van een advies naar het doel (standaard NL).
+ *
+ * Batcht alle heading/text-velden van een bron in zo min mogelijk
+ * translate()-aanroepen (dus fetch-calls), i.p.v. 2 losse calls per thema.
+ * Bronnen met veel secties (bijv. 50+ thema's) liepen anders tegen de
+ * sub-request-limiet van Cloudflare Workers aan — de vertaling faalde dan
+ * stil (catch → originele tekst) zodra dat plafond werd overschreden.
+ */
 export async function translateBlocks(themes, to = 'nl', from = 'auto') {
-  return Promise.all(
-    (themes || []).map(async (b) => {
-      const [h, t] = await Promise.all([
-        b.heading ? translate(b.heading, to, from).then((r) => r.text).catch(() => b.heading) : Promise.resolve(b.heading),
-        b.text ? translate(b.text, to, from).then((r) => r.text).catch(() => b.text) : Promise.resolve(b.text),
-      ]);
-      return { ...b, headingNl: h, textNl: t };
-    })
-  );
+  const list = themes || [];
+  if (!list.length) return list;
+
+  const jobs = []; // { i, field } — volgorde komt overeen met `texts`
+  const texts = [];
+  list.forEach((b, i) => {
+    if (b.heading) { jobs.push({ i, field: 'headingNl' }); texts.push(b.heading.replaceAll('@@@', '@ @ @')); }
+    if (b.text) { jobs.push({ i, field: 'textNl' }); texts.push(b.text.replaceAll('@@@', '@ @ @')); }
+  });
+  if (!texts.length) return list.map((b) => ({ ...b }));
+
+  // Groepeer in batches die (met scheidingstekens) onder de lengtelimiet
+  // blijven, zodat elke batch met doorgaans één fetch wordt afgehandeld.
+  const batches = [];
+  let cur = [];
+  let curLen = 0;
+  for (const t of texts) {
+    const len = t.length + PART_DELIM.length;
+    if (cur.length && curLen + len > MAX_BATCH) { batches.push(cur); cur = []; curLen = 0; }
+    cur.push(t);
+    curLen += len;
+  }
+  if (cur.length) batches.push(cur);
+
+  // Batches parallel afvuren: het subrequest-plafond geldt voor het tótale
+  // aantal fetches per invocatie, niet voor de gelijktijdigheid — dus dit
+  // blijft ruim binnen de limiet én is vele malen sneller dan sequentieel.
+  const batchResults = await Promise.all(batches.map(async (batch) => {
+    try {
+      const { text } = await translate(batch.join(PART_DELIM), to, from);
+      const pieces = text.split('@@@').map((p) => p.trim());
+      // Aantal delen moet exact kloppen; anders (zeldzaam, bijv. bij een
+      // vertaalfout) originele tekst behouden i.p.v. alles te verschuiven.
+      return pieces.length === batch.length ? pieces : batch;
+    } catch {
+      return batch;
+    }
+  }));
+  const translatedParts = batchResults.flat();
+
+  const out = list.map((b) => ({ ...b }));
+  jobs.forEach((job, idx) => { out[job.i][job.field] = translatedParts[idx]; });
+  return out;
 }
