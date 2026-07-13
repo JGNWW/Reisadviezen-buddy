@@ -38,6 +38,20 @@ export async function getText(url) {
   return res.text();
 }
 
+/**
+ * Als getText, maar geeft ook de uiteindelijke URL terug ná eventuele
+ * redirects (fetch() volgt redirects standaard; res.url is het eindpunt).
+ * Nodig voor bronnen die af en toe doorverwijzen naar een nieuwe
+ * URL-structuur (bijv. travel.state.gov) — een deeplink naar de oude URL zou
+ * anders op een pagina landen die de content niet (meer) toont.
+ */
+export async function getTextResolved(url) {
+  const res = await fetchWithFallback(url, 'text/html,application/xhtml+xml');
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`${res.status} ${url}`);
+  return { text: await res.text(), url: res.url || url };
+}
+
 export async function getJson(url) {
   const res = await fetchWithFallback(url, 'application/json');
   if (res.status === 404) return null;

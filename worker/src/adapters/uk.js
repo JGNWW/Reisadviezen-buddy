@@ -27,10 +27,15 @@ export async function getAdvisory(slug) {
   if (!d) return null;
   const det = d.details || {};
   const parts = det.parts || [];
+  const baseUrl = `${SITE}${d.base_path || '/foreign-travel-advice/' + slug}`;
 
   const fullTextParts = [];
   const themes = [];
   for (const part of parts) {
+    // Elk "part" (Safety and security, Health, …) is een eigen sub-pagina op
+    // GOV.UK, niet de hoofdpagina — een deeplink naar de hoofdpagina alleen
+    // matcht dus voor het EERSTE part; alle andere parts staan er niet op.
+    const partUrl = part.slug ? `${baseUrl}/${part.slug}` : baseUrl;
     const partHtml = absolutiseLinks(part.body || '', SITE);
     fullTextParts.push(htmlToText(partHtml));
     const sections = splitByHeadings(partHtml);
@@ -38,13 +43,13 @@ export async function getAdvisory(slug) {
     const subs = sections.filter((s) => s.heading);
     if (subs.length === 0) {
       const text = htmlToText(partHtml);
-      themes.push({ category: part.title, heading: part.title, themeId: classifyTheme(part.title, text), html: partHtml, text });
+      themes.push({ category: part.title, heading: part.title, themeId: classifyTheme(part.title, text), html: partHtml, text, url: partUrl });
     } else {
       if (intro && intro.text) {
-        themes.push({ category: part.title, heading: part.title, themeId: classifyTheme(part.title, intro.text), html: intro.html, text: intro.text });
+        themes.push({ category: part.title, heading: part.title, themeId: classifyTheme(part.title, intro.text), html: intro.html, text: intro.text, url: partUrl });
       }
       for (const s of subs) {
-        themes.push({ category: part.title, heading: s.heading, themeId: classifyTheme(s.heading, s.text) || classifyTheme(part.title, s.text), html: s.html, text: s.text });
+        themes.push({ category: part.title, heading: s.heading, themeId: classifyTheme(s.heading, s.text) || classifyTheme(part.title, s.text), html: s.html, text: s.text, url: partUrl });
       }
     }
   }
@@ -69,7 +74,7 @@ export async function getAdvisory(slug) {
     sourceLabel: meta.label,
     flag: meta.flag,
     name: det.country?.name || d.title,
-    url: `${SITE}${d.base_path || '/foreign-travel-advice/' + slug}`,
+    url: baseUrl,
     lastModified: det.updated_at || det.reviewed_at || null,
     // Redactionele wijzigingsnotitie die FCDO bij elke update publiceert.
     updateNote: det.change_description || null,

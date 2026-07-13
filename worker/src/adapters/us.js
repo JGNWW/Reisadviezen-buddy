@@ -4,7 +4,7 @@
  * weinig thematisch onderverdeeld; we tonen het samenvattende blok.
  */
 import { parse } from 'node-html-parser';
-import { getText } from '../lib/fetch.js';
+import { getTextResolved } from '../lib/fetch.js';
 import { htmlToText, splitByHeadings, absolutiseLinks } from '../lib/html.js';
 import { classifyTheme } from '../lib/themes.js';
 import { usLevel, levelToColor } from '../lib/levels.js';
@@ -17,9 +17,15 @@ export const meta = { id: 'us', label: 'Verenigde Staten (State Dept)', flag: '�
 
 export async function getAdvisory(slug) {
   if (!slug) return null;
-  const url = `${BASE}/${slug}-travel-advisory.html`;
-  const html = await getText(url);
-  if (!html) return null;
+  // travel.state.gov migreert geleidelijk naar een nieuwe URL-structuur:
+  // sommige landen 301-redirecten al naar /en/international-travel/...
+  // De Text-Fragment-deeplinks in de matrix vereisen de UITEINDELIJKE URL
+  // (waar de tekst daadwerkelijk staat), dus gebruik de na-redirect URL i.p.v.
+  // de aangevraagde.
+  const requestUrl = `${BASE}/${slug}-travel-advisory.html`;
+  const resolved = await getTextResolved(requestUrl);
+  if (!resolved) return null;
+  const { text: html, url } = resolved;
 
   // Niveau uit "... - Level N: ..." kop.
   const lvlMatch = html.match(/Level\s*([1-4])\s*[:\-–]/i);
@@ -38,15 +44,23 @@ export async function getAdvisory(slug) {
     root.querySelector('.tsg-rwd-content-page-parsysxxx') ||
     root.querySelector('#inner-content') ||
     root.querySelector('#content') ||
-    root;
+    null;
+  // travel.state.gov migreert geleidelijk naar een nieuwe, tab-gebaseerde
+  // layout zonder de klassieke content-wrapper hierboven — de tekst zit dan
+  // in losse .usa-prose-blokken (niet genest) die we samenvoegen. Zonder
+  // deze val-terug bleef `main` de HELE pagina (root), waardoor <title>,
+  // navigatie en scripts als "inhoud" werden meegescrapet.
+  const mainHtml = main
+    ? main.innerHTML
+    : root.querySelectorAll('.usa-prose').map((n) => n.innerHTML).join('\n') || root.innerHTML;
 
   // Splits op koppen indien aanwezig; anders het hele blok als één thema.
-  let sections = splitByHeadings(absolutiseLinks(main.innerHTML, SITE)).filter(
+  let sections = splitByHeadings(absolutiseLinks(mainHtml, SITE)).filter(
     (s) => s.text && s.text.length > 40
   );
   if (sections.length === 0) {
-    const text = htmlToText(main.innerHTML);
-    sections = text ? [{ heading: null, html: main.innerHTML, text }] : [];
+    const text = htmlToText(mainHtml);
+    sections = text ? [{ heading: null, html: mainHtml, text }] : [];
   }
 
   const themes = sections.map((s) => ({
