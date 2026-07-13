@@ -598,8 +598,9 @@ function setupLangSeg() {
     setCompareLang(b.dataset.lang);
   });
 }
-function setCompareLang(lang) {
-  if (lang === COMPARE_LANG) return;
+let LANG_SWITCH_BUSY = false;
+async function setCompareLang(lang) {
+  if (lang === COMPARE_LANG || LANG_SWITCH_BUSY) return;
   const prev = COMPARE_LANG;
   COMPARE_LANG = lang;
   localStorage.setItem('compareLangV2', lang);
@@ -607,11 +608,27 @@ function setCompareLang(lang) {
   syncUrl();
   if (!LAST_COMPARE) return;
   // Alleen 'en' gebruikt een andere vertaalophaling; nl↔orig delen dezelfde data.
-  if ((lang === 'en') !== (prev === 'en')) {
-    runComparison(LAST_COMPARE.country, LAST_COMPARE.sources, lang);
-  } else {
+  const needsRefetch = (lang === 'en') !== (prev === 'en');
+  if (!needsRefetch) {
     LAST_COMPARE.lang = lang;
     renderComparison(LAST_COMPARE.staticData, LAST_COMPARE.foreign, $('#compare-result'));
+    return;
+  }
+  // Vertalen kan een paar seconden duren — expliciet zichtbaar maken (niet
+  // alleen de statusregel bovenaan, die bij een gescrolde matrix buiten
+  // beeld valt) zodat het niet lijkt alsof de knop niets doet.
+  LANG_SWITCH_BUSY = true;
+  const seg = $('#lang-seg');
+  seg?.classList.add('busy');
+  $$('#lang-seg button').forEach((b) => { b.disabled = true; });
+  const matrix = $('#compare-result .matrix');
+  matrix?.classList.add('lang-loading');
+  try {
+    await runComparison(LAST_COMPARE.country, LAST_COMPARE.sources, lang);
+  } finally {
+    LANG_SWITCH_BUSY = false;
+    seg?.classList.remove('busy');
+    $$('#lang-seg button').forEach((b) => { b.disabled = false; });
   }
 }
 

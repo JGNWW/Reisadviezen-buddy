@@ -133,6 +133,16 @@ async function main() {
   // Frontend kopiëren
   await cp(PUBLIC, OUT, { recursive: true });
 
+  // Cache-busting: app.js/styles.css krijgen een ?v=<build-timestamp>, zodat
+  // een browser (of GitHub Pages' CDN) na elke nieuwe build gegarandeerd de
+  // nieuwste versie ophaalt i.p.v. een gecachet bestand van vóór een fix.
+  const buildVersion = String(started);
+  const indexPath = join(OUT, 'index.html');
+  const indexHtml = (await readFile(indexPath, 'utf8'))
+    .replace('href="styles.css"', `href="styles.css?v=${buildVersion}"`)
+    .replace('src="app.js"', `src="app.js?v=${buildVersion}"`);
+  await writeFile(indexPath, indexHtml);
+
   // Metadata
   const countries = allCountries();
   await writeFile(join(DATA, 'countries.json'), JSON.stringify(countries));
