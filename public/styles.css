@@ -43,7 +43,7 @@ h3, h4, h5 { font-weight: 600; }
 /* Topbar-achtergrond blijft volledige breedte; de inhoud lijnt uit op main. */
 .brand, .tabs { max-width: var(--page); margin: 0 auto; padding-inline: 24px; width: 100%; }
 .brand { display: flex; align-items: center; gap: 14px; }
-.brand .logo { font-size: 40px; line-height: 1; }
+.brand .logo { height: 48px; width: auto; display: block; }
 .topbar h1 { margin: 0; font-size: 22px; font-weight: 600; }
 .tagline { margin: 2px 0 0; font-size: 13px; opacity: .85; max-width: 70ch; }
 .tabs { display: flex; gap: 2px; margin-top: 16px; overflow-x: auto; scrollbar-width: thin; }
