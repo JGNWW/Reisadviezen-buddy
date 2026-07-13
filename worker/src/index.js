@@ -80,10 +80,11 @@ export default {
               if (!adv) return { source: s, unavailable: true, label: ADAPTERS[s].meta.label };
               adv.mapProxy = adv.hasMap ? `/map/${s}/${iso}` : null;
               adv.lang = ADAPTERS[s].meta.lang || 'en';
-              // Vertaal niet-Engelstalige bronnen op verzoek naar NL (Engels
-              // laten we origineel: het is redelijk leesbaar en scheelt veel
-              // vertaalcalls).
-              if (translateTo && adv.lang !== translateTo && adv.lang !== 'en' && adv.themes?.length) {
+              // Vertaal op verzoek naar de doeltaal. Alleen bronnen die al in
+              // de doeltaal zijn slaan we over (Engelse bron + translate=en, of
+              // een NL-doel dat toevallig al klopt). Zo wordt bij 'Nederlands'
+              // óók de Engelstalige bron (UK/US/…) naar het NL vertaald.
+              if (translateTo && adv.lang !== translateTo && adv.themes?.length) {
                 try {
                   const blocks = await translateBlocks(adv.themes, translateTo, adv.lang);
                   // Herclassificeer op de vertaalde (NL) tekst zodat niet-Engelse

@@ -43,12 +43,15 @@ const LEVEL_COLORS = ['', 'groen', 'geel', 'oranje', 'rood'];
 //   'nl'   → vertaald naar Nederlands (Engelse bronnen blijven Engels)
 //   'en'   → vertaald naar Engels (Engelse bronnen blijven origineel)
 //   'orig' → onvertaald, in de brontaal
-let COMPARE_LANG = localStorage.getItem('compareLang') || 'nl';
+let COMPARE_LANG = localStorage.getItem('compareLang') || 'orig';
 // Matrix-weergave: 'compact' (cellen ingeklapt tot ±4 regels) of 'volledig'.
 let MATRIX_DENSITY = localStorage.getItem('matrixDensity') || 'compact';
 // Verborgen thema-rijen in de matrix (punt 17), gedeeld over alle landen.
 let HIDDEN_THEMES = new Set((() => { try { return JSON.parse(localStorage.getItem('hiddenThemes')) || []; } catch { return []; } })());
 const saveHiddenThemes = () => localStorage.setItem('hiddenThemes', JSON.stringify([...HIDDEN_THEMES]));
+// Actief matrix-termfilter (gezet door een gazetteer-chip): toont alleen de
+// passages die deze term noemen, over alle bronkolommen. { label, term, re }.
+let MATRIX_FILTER = null;
 let LAST_COMPARE = null;
 // Vooringevulde term voor de onderwerp-zoeker (gezet door de indexzoeker en
 // de gazetteer-chips; wordt na de eerstvolgende vergelijking uitgevoerd).
@@ -235,6 +238,19 @@ function highlight(text, term) {
   if (!term) return esc(text);
   const re = new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
   return esc(text).replace(re, '<mark>$1</mark>');
+}
+/** Escapet tekst en markeert (optioneel) de treffers van een RegExp met <mark>. */
+function markText(text, re) {
+  const e = esc(text || '');
+  if (!re) return e;
+  const g = new RegExp(re.source, re.flags.includes('g') ? re.flags : re.flags + 'g');
+  return e.replace(g, (m) => `<mark>${m}</mark>`);
+}
+/** Filtert blokken op die welke een RegExp noemen (heading/tekst/vertaling). */
+function blocksMatching(blocks, re) {
+  if (!blocks || !blocks.length) return null;
+  const m = blocks.filter((b) => re.test(`${b.heading || ''} ${b.text || ''} ${b.headingNl || ''} ${b.textNl || ''}`));
+  return m.length ? m : null;
 }
 
 // ---- Globale data ---------------------------------------------------------
@@ -643,6 +659,8 @@ async function fetchCountry(country, sources, lang) {
 }
 
 async function runComparison(country, sources, lang) {
+  // Nieuwe (her)ophaling: een eventueel termfilter hoort bij het vorige land.
+  if (!LAST_COMPARE || LAST_COMPARE.country?.iso3 !== country.iso3) MATRIX_FILTER = null;
   const status = $('#compare-status'), result = $('#compare-result');
   status.className = 'status';
   status.innerHTML = `<span class="spinner"></span>Reisadvies laden voor ${esc(country.nl)}…`;
@@ -1397,13 +1415,17 @@ function renderComparison(staticData, foreign, root) {
   if (gaps.length) {
     const chipsWrap = el('div', { class: 'gaz-chips' });
     const renderChip = ({ g, srcs }) => {
-      const chip = el('button', { type: 'button', class: 'gaz-chip', title: `Genoemd door: ${srcs.map((s) => s.sourceLabel).join(', ')} — klik om de passages per bron te zien.` },
+      const chip = el('button', { type: 'button', class: 'gaz-chip', title: `Genoemd door: ${srcs.map((s) => s.sourceLabel).join(', ')} — klik om alleen deze term in de matrix te tonen.` },
         `${g.cat} ${g.nl} `, el('span', { class: 'gaz-srcs' }, srcs.map((s) => s.flag || '').join('')));
       chip.addEventListener('click', () => {
-        const input = topicWrap.querySelector('.topic-form input');
-        input.value = g.term;
-        topicWrap.querySelector('.topic-form').requestSubmit();
-        topicWrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Filter de matrix op deze term: alleen passages die de term noemen,
+        // over alle bronkolommen, met de term gemarkeerd.
+        MATRIX_FILTER = { label: `${g.cat} ${g.nl}`, term: g.term, re: g.re };
+        renderComparison(LAST_COMPARE.staticData, LAST_COMPARE.foreign, $('#compare-result'));
+        requestAnimationFrame(() => {
+          const m = $('#compare-result .matrix');
+          if (m) m.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
       });
       return chip;
     };
@@ -1477,6 +1499,19 @@ function renderComparison(staticData, foreign, root) {
     themeChips.append(reset);
   }
   frag.append(themeChips);
+
+  // Termfilter actief (via een gazetteer-chip): toon een wisbalk.
+  if (MATRIX_FILTER) {
+    const clear = el('button', { type: 'button', class: 'btn-link' }, '× filter wissen');
+    clear.addEventListener('click', () => {
+      MATRIX_FILTER = null;
+      renderComparison(LAST_COMPARE.staticData, LAST_COMPARE.foreign, $('#compare-result'));
+    });
+    frag.append(el('div', { class: 'matrix-filter-bar' },
+      el('span', {}, '🔎 Matrix gefilterd op term: ', el('strong', {}, MATRIX_FILTER.label),
+        ' — alleen passages die dit noemen worden getoond.'),
+      clear));
+  }
 
   frag.append(renderMatrix(cmp, nl, okSources));
   frag.append(el('p', { class: 'hint', style: 'margin-top:10px' },
@@ -1572,16 +1607,22 @@ function renderMatrix(cmp, nl, okSources) {
   grid.append(el('div', { class: 'cell addcol' }));
 
   // ---- Rijen: thema's (verborgen thema's overslaan, punt 17) ----
+  const re = MATRIX_FILTER?.re || null;
   cmp.themes.filter((t) => !HIDDEN_THEMES.has(t.theme.id)).forEach((t) => {
-    const anyContent = t.nlHasIt || t.foreignHasIt;
+    // Blokken per kolom bepalen — en bij een actief termfilter uitdunnen tot
+    // alleen de passages die de term noemen.
+    let nlBlocks = t.nlHasIt ? t.nl : null;
+    const fBlocks = okSources.map((s) => (t.foreign[s.source]?.blocks?.length ? t.foreign[s.source].blocks : null));
+    if (re) {
+      nlBlocks = blocksMatching(nlBlocks, re);
+      for (let i = 0; i < fBlocks.length; i++) fBlocks[i] = blocksMatching(fBlocks[i], re);
+      // Geen enkele kolom noemt de term in dit thema → rij overslaan.
+      if (!nlBlocks && fBlocks.every((b) => !b)) return;
+    }
+    const anyContent = re ? true : (t.nlHasIt || t.foreignHasIt);
     grid.append(el('div', { class: 'cell rowlabel' }, t.theme.label));
-    // NL-kolom
-    grid.append(cellFor(t.nlHasIt ? t.nl : null, false, anyContent));
-    // buitenlandse kolommen
-    okSources.forEach((s) => {
-      const entry = t.foreign[s.source] || { blocks: [] };
-      grid.append(cellFor(entry.blocks?.length ? entry.blocks : null, true, anyContent));
-    });
+    grid.append(cellFor(nlBlocks, false, anyContent, re));
+    fBlocks.forEach((b) => grid.append(cellFor(b, true, anyContent, re)));
     grid.append(el('div', { class: 'cell addcol' }));
   });
 
@@ -1589,18 +1630,20 @@ function renderMatrix(cmp, nl, okSources) {
 }
 
 /** Eén matrix-cel: thema-blokken of een (eventueel gemarkeerde) leegte. */
-function cellFor(blocks, foreign, anyContent) {
+function cellFor(blocks, foreign, anyContent, mark) {
   if (blocks && blocks.length) {
+    // 'plain': altijd platte tekst → één uniform lettertype in alle cellen.
     // Compact: volledige tekst renderen maar visueel afkappen (cellclamp);
     // de per-blok "Lees volledige tekst"-knoppen zouden daar dubbelop zijn.
     if (MATRIX_DENSITY === 'compact') {
       return el('div', { class: 'cell txt' },
-        el('div', { class: 'cellclamp' }, renderBlocks(blocks, foreign, { full: true })));
+        el('div', { class: 'cellclamp' }, renderBlocks(blocks, foreign, { full: true, plain: true, mark })));
     }
-    return el('div', { class: 'cell txt' }, renderBlocks(blocks, foreign));
+    return el('div', { class: 'cell txt' }, renderBlocks(blocks, foreign, { plain: true, mark }));
   }
   // Leeg terwijl andere bronnen het thema wél behandelen = opvallend hiaat.
-  return el('div', { class: 'cell txt empty' + (anyContent ? ' miss' : '') }, '— niet apart vermeld');
+  return el('div', { class: 'cell txt empty' + (anyContent ? ' miss' : '') },
+    MATRIX_FILTER ? '— term niet genoemd' : '— niet apart vermeld');
 }
 
 const SNIPPET_MAXLEN = 320;
@@ -1612,24 +1655,29 @@ const SNIPPET_MAXLEN = 320;
  * uitgebreide, brontekst tonen.
  */
 function renderBlocks(blocks, foreign = false, opts = {}) {
-  const { full = false } = opts;
+  const { full = false, plain = false, mark = null } = opts;
   if (!blocks || !blocks.length) return null;
+  // Bij een actief termfilter tonen we de volledige (gemarkeerde) tekst, niet
+  // een afgekapt fragment — anders valt de treffer soms buiten beeld.
+  const noTrunc = full || !!mark;
   const wrap = el('div');
   blocks.forEach((b) => {
     // Vertaalde weergave (NL of EN) tenzij de taalkeuze op 'Origineel' staat.
     const useTranslated = foreign && COMPARE_LANG !== 'orig' && (b.textNl || b.headingNl);
     const heading = useTranslated && b.headingNl ? b.headingNl : b.heading;
     const fullText = useTranslated && b.textNl ? b.textNl : (b.text || '');
-    const fullHtml = useTranslated && b.textNl ? null : (b.html || null);
+    // In 'plain'-modus (matrix) nooit de rijke bron-HTML injecteren: platte,
+    // ge-escapete tekst geeft één uniform lettertype in alle cellen.
+    const fullHtml = plain ? null : (useTranslated && b.textNl ? null : (b.html || null));
 
     const blockEl = el('div', { class: 'block' },
       heading ? el('div', { class: 'block-heading' }, heading) : null,
       b.category && b.category !== heading ? el('div', { class: 'block-cat' }, b.category) : null);
 
-    if (!full && fullText.length > SNIPPET_MAXLEN) {
+    if (!noTrunc && fullText.length > SNIPPET_MAXLEN) {
       let expanded = false;
       const shortNode = el('div', { class: 'rich' }, fullText.slice(0, SNIPPET_MAXLEN).trim() + '…');
-      const fullNode = el('div', { class: 'rich', html: fullHtml || esc(fullText) });
+      const fullNode = el('div', { class: 'rich', html: fullHtml || markText(fullText, mark) });
       fullNode.hidden = true;
       const toggle = el('button', { class: 'btn-link', type: 'button' }, `Lees volledige tekst (${fullText.length} tekens) →`);
       toggle.addEventListener('click', () => {
@@ -1640,7 +1688,7 @@ function renderBlocks(blocks, foreign = false, opts = {}) {
       });
       blockEl.append(shortNode, fullNode, toggle);
     } else {
-      blockEl.append(el('div', { class: 'rich', html: fullHtml || esc(fullText) }));
+      blockEl.append(el('div', { class: 'rich', html: fullHtml || markText(fullText, mark) }));
     }
     wrap.append(blockEl);
   });
