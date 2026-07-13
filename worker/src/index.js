@@ -111,8 +111,13 @@ export default {
       }
 
       // /context/:iso — humanitaire context (ReliefWeb, VN-OCHA). Alleen actief
-      // als de repository-secret RELIEFWEB_APP is gezet (gratis appname, aan te
-      // vragen bij apidoc.reliefweb.int); anders { available:false }.
+      // als de repository-secret RELIEFWEB_APP is gezet. ReliefWebs eigen
+      // documentatie suggereert dat elke zelfgekozen appname-string volstaat,
+      // maar de live API test-verifieerbaar niet: die geeft een harde 403
+      // "You are not using an approved appname" terug tenzij de appname
+      // vooraf bij ReliefWeb is goedgekeurd (aanvragen via
+      // apidoc.reliefweb.int/parameters#appname) — dus wél een echte,
+      // vooraf-goedgekeurde waarde nodig, niet zomaar een vrije tekst.
       if (parts[0] === 'context' && parts[1]) {
         const iso = parts[1].toUpperCase();
         const app = env?.RELIEFWEB_APP;
