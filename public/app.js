@@ -1773,9 +1773,17 @@ function renderBlocks(blocks, foreign = false, opts = {}) {
     const blockUrl = b.url || sourceUrl;
     if (blockUrl) {
       const frag = blockFragmentUrl(blockUrl, b) || blockUrl;
+      // Bronnen met een sectie-anker (#…) verstoppen elk onderwerp in een
+      // JS-tab die pas uitklapt bij een klik (bijv. travel.state.gov): daar
+      // scrolt de link naar het juiste onderwerp-tabblad, maar de gele
+      // markering kan niet oplichten zolang het paneel dicht is. Zeg dat
+      // eerlijk in de tooltip i.p.v. een markering te beloven die uitblijft.
+      const isTabAnchored = blockUrl.includes('#');
       blockEl.append(el('a', {
         href: frag, target: '_blank', rel: 'noopener', class: 'frag-link block-frag-link',
-        title: frag === blockUrl ? 'Opent de bronpagina.' : 'Opent de bronpagina met deze passage gemarkeerd (Edge/Chrome).',
+        title: isTabAnchored
+          ? 'Opent de bron bij dit onderwerp — klik het onderwerp-tabblad aan om het uit te klappen.'
+          : 'Opent de bronpagina met deze passage geel gemarkeerd (Edge/Chrome).',
       }, '🔗 bekijk in bron'));
     }
     wrap.append(blockEl);
