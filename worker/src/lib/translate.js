@@ -91,11 +91,23 @@ async function translateParts(parts, to, from) {
       return [null];
     }
   }
+  let text;
   try {
-    const { text } = await translate(parts.join(PART_DELIM), to, from);
-    const pieces = text.split('@@@').map((p) => p.trim());
-    if (pieces.length === parts.length) return pieces;
-  } catch { /* val door naar bisectie */ }
+    ({ text } = await translate(parts.join(PART_DELIM), to, from));
+  } catch {
+    // Harde fout (bijv. een aanhoudende rate-limit of een uitgeputte
+    // sub-request-limiet): NIET verder bisecteren. Meerdere bronnen delen
+    // hetzelfde sub-request-budget per Worker-invocatie — als er hier al
+    // geen response komt, verbruikt méér proberen alleen budget dat een
+    // andere bron nog nodig heeft. Dit blok blijft onvertaald.
+    return parts.map(() => null);
+  }
+  const pieces = text.split('@@@').map((p) => p.trim());
+  if (pieces.length === parts.length) return pieces;
+  // Alleen bij een structurele mismatch (scheidingsteken niet exact
+  // teruggevonden in een overigens geslaagde respons) bisecteren — dat
+  // isoleert het specifieke probleemitem zonder de rest van de batch te
+  // laten mislukken.
   const mid = Math.ceil(parts.length / 2);
   const [left, right] = await Promise.all([
     translateParts(parts.slice(0, mid), to, from),
