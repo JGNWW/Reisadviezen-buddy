@@ -5,6 +5,9 @@
  * naar dezelfde vorm als de statische NL-data, en geeft ze met CORS terug zodat
  * de statische frontend (GitHub Pages) ze kan gebruiken.
  *
+ * (Deploy-trigger: de deploy voor de deeplink-fix faalde eenmalig op een
+ * tijdelijke GitHub-Actions-storing; deze regel forceert een nieuwe deploy.)
+ *
  * Endpoints:
  *   GET /advisory/:iso?sources=uk,us,ca,ie   → { country, sources: [...] }
  *   GET /map/:source/:iso                     → de kaartafbeelding (geproxyd)
