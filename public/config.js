@@ -25,5 +25,9 @@ window.REISADVIEZEN_CONFIG = {
     // Japan wordt direct opgehaald (geen reader nodig): MOFA blokkeert geen
     // datacenter-IP's en publiceert vaste niveaus (レベル1-4).
     { id: 'jp', label: 'Japan (MOFA)', flag: '🇯🇵', lang: 'ja', default: true },
+    // Italië: statische JSON-API achter de SPA, rechtstreeks op ISO3.
+    { id: 'it', label: 'Italië (Viaggiare Sicuri)', flag: '🇮🇹', lang: 'it', default: true },
+    // Finland: server-gerenderd op ISO2, vast "Turvallisuustaso"-niveauveld.
+    { id: 'fi', label: 'Finland (Ulkoministeriö)', flag: '🇫🇮', lang: 'fi', default: true },
   ],
 };

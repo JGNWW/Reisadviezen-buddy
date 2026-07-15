@@ -19,6 +19,8 @@ const NATIONWIDE = {
   da: /hele landet/i,
   de: /im ganzen land|landesweit|das gesamte land/i,
   ja: /全土|全域|国全体/,
+  it: /in tutto il (paese|territorio)|tutto il territorio nazionale|su tutto il territorio/i,
+  fi: /koko maassa|koko maan alueella/i,
 };
 
 const ELSEWHERE = {
@@ -28,6 +30,8 @@ const ELSEWHERE = {
   da: /resten af landet|[øo]vrige dele/i,
   de: /im rest des landes|[üu]brigen landesteilen?|restlichen landesteilen?/i,
   ja: /その他の地域|それ以外の地域|上記以外の地域/,
+  it: /nel resto del paese|nelle altre (aree|zone|regioni)/i,
+  fi: /muualla maassa|muilla alueilla/i,
 };
 
 const EXCEPTION = {
@@ -37,6 +41,8 @@ const EXCEPTION = {
   da: /undtagen|med undtagelse af/i,
   de: /au[ßs]er\b|mit ausnahme/i,
   ja: /を除く|を除き|以外/,
+  it: /ad eccezione di|salvo\b|eccetto|tranne/i,
+  fi: /lukuun ottamatta|paitsi/i,
 };
 
 // Doeltypen (voor de regio-extractor en de UI). Eén zin kan meerdere typen
