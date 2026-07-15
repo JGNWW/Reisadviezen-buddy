@@ -129,24 +129,50 @@ export default {
         // RELIEFWEB_APP-secret mag niet een dag lang "onbeschikbaar" blijven
         // ogen door een gecachete respons van vóór de configuratie.
         if (!app) return json({ available: false }, 200, { 'Cache-Control': 'public, max-age=300' });
-        const api = 'https://api.reliefweb.int/v2/disasters'
+
+        // `sort[]=date:desc` is een shortcut voor date.created (wanneer het
+        // record werd aangemaakt), NIET voor actualiteit — dat verklaarde
+        // waarom afgesloten rampen van jaren terug boven een lopende crisis
+        // konden staan. date.changed (laatst bijgewerkt) is de betere proxy
+        // voor "meest actueel". Daarnaast filteren we eerst op status
+        // alert/current (lopende/dreigende situaties); alleen als een land
+        // geen enkele lopende crisis heeft, vallen we terug op alle rampen
+        // (incl. past) zodat het blokje niet onterecht leeg blijft.
+        const disastersUrl = (statusFilter) => 'https://api.reliefweb.int/v2/disasters'
           + `?appname=${encodeURIComponent(app)}`
-          + '&filter[field]=primary_country.iso3'
-          + `&filter[value]=${iso}`
           + '&filter[operator]=AND'
-          + '&sort[]=date:desc&limit=4'
+          + '&filter[conditions][0][field]=primary_country.iso3'
+          + `&filter[conditions][0][value]=${iso}`
+          + statusFilter
+          + '&sort[]=date.changed:desc&limit=4'
           + '&fields[include][]=name&fields[include][]=url&fields[include][]=date&fields[include][]=status';
-        try {
-          const r = await fetch(api, { headers: { 'User-Agent': 'ReisadviezenBuddy/1.0' } });
-          if (!r.ok) return json({ available: true, items: [], note: `ReliefWeb ${r.status}` }, 200);
+        const activeStatusFilter = '&filter[conditions][1][field]=status'
+          + '&filter[conditions][1][value][]=alert'
+          + '&filter[conditions][1][value][]=current'
+          + '&filter[conditions][1][operator]=OR';
+
+        const fetchDisasters = async (statusFilter) => {
+          const r = await fetch(disastersUrl(statusFilter), { headers: { 'User-Agent': 'ReisadviezenBuddy/1.0' } });
+          if (!r.ok) return { ok: false, status: r.status };
           const d = await r.json();
           const items = (d?.data || []).map((x) => ({
             name: x.fields?.name || null,
             url: x.fields?.url || null,
-            date: x.fields?.date?.created ? String(x.fields.date.created).slice(0, 10) : null,
+            date: (x.fields?.date?.changed || x.fields?.date?.created)
+              ? String(x.fields.date.changed || x.fields.date.created).slice(0, 10) : null,
             status: x.fields?.status || null,
           })).filter((x) => x.name);
-          return json({ available: true, items }, 200, { 'Cache-Control': 'public, max-age=21600' });
+          return { ok: true, items };
+        };
+
+        try {
+          let res = await fetchDisasters(activeStatusFilter);
+          if (!res.ok) return json({ available: true, items: [], note: `ReliefWeb ${res.status}` }, 200);
+          if (!res.items.length) {
+            res = await fetchDisasters('');
+            if (!res.ok) return json({ available: true, items: [], note: `ReliefWeb ${res.status}` }, 200);
+          }
+          return json({ available: true, items: res.items }, 200, { 'Cache-Control': 'public, max-age=21600' });
         } catch (e) {
           return json({ available: true, items: [], note: String(e.message || e) }, 200);
         }
