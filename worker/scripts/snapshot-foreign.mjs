@@ -59,6 +59,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DATA_DIR = path.join(__dirname, '..', 'data');
 const HISTORY_DIR = path.join(DATA_DIR, 'history');
 const FINGERPRINT_DIR = path.join(DATA_DIR, 'fingerprints');
+// Laatste volledige (genormaliseerde) advies per land — het vangnet waarmee
+// de Worker een bron kan blijven tonen als de live fetch faalt (bot-blokkade,
+// rate-limit, storing). Tekst-only (geen html) om de repo compact te houden.
+const LATEST_DIR = path.join(DATA_DIR, 'latest');
 const CHANGES_FILE = path.join(DATA_DIR, 'recent-changes.json');
 const SOURCE_DATES_FILE = path.join(DATA_DIR, 'source-dates.json');
 const MAX_ENTRIES_PER_COUNTRY = 60;
@@ -77,6 +81,29 @@ function normDate(s) {
   if (!s) return null;
   const m = String(s).match(/^(\d{4}-\d{2}-\d{2})/);
   return m ? m[1] : null;
+}
+
+/**
+ * Volledige-maar-compacte vorm voor het vangnet (data/latest/): alles wat de
+ * frontend nodig heeft om een bron te tonen, zonder html (de frontend valt
+ * automatisch terug op tekst-rendering) en zonder fullText (afleidbaar).
+ */
+function compactFull(adv, lang) {
+  return {
+    source: adv.source, sourceLabel: adv.sourceLabel, flag: adv.flag,
+    name: adv.name ?? null, url: adv.url ?? null,
+    lastModified: adv.lastModified ?? null, updateNote: adv.updateNote ?? null,
+    level: adv.level ?? null, color: adv.color ?? null, levelLabel: adv.levelLabel ?? null,
+    regionalMaxLevel: adv.regionalMaxLevel ?? null, hasRegionalWarnings: !!adv.hasRegionalWarnings,
+    regionalBreakdown: adv.regionalBreakdown || [], regionalCoverage: adv.regionalCoverage ?? null,
+    regions: adv.regions || null, confidence: adv.confidence ?? null,
+    assessmentStatus: adv.assessmentStatus ?? null,
+    hasMap: !!adv.hasMap, lang,
+    themes: (adv.themes || []).filter((t) => t.text).map((t) => ({
+      category: t.category ?? null, heading: t.heading ?? null, themeId: t.themeId ?? null,
+      text: String(t.text).slice(0, 20000), ...(t.url ? { url: t.url } : {}),
+    })),
+  };
 }
 
 /** Compacte, diff-vriendelijke vorm — alleen wat nodig is om wijzigingen te herkennen. */
@@ -392,6 +419,7 @@ async function mapLimit(items, limit, fn) {
 async function main() {
   mkdirSync(HISTORY_DIR, { recursive: true });
   mkdirSync(FINGERPRINT_DIR, { recursive: true });
+  mkdirSync(LATEST_DIR, { recursive: true });
   mkdirSync(INDEX_DIR, { recursive: true });
   const today = new Date().toISOString().slice(0, 10);
 
@@ -424,8 +452,12 @@ async function main() {
   await mapLimit(entries, CONCURRENCY, async ([iso3, rec]) => {
     const histFile = path.join(HISTORY_DIR, `${iso3}.json`);
     const fpFile = path.join(FINGERPRINT_DIR, `${iso3}.json`);
+    const latestFile = path.join(LATEST_DIR, `${iso3}.json`);
     const hist = existsSync(histFile) ? JSON.parse(readFileSync(histFile, 'utf8')) : { iso3, entries: [] };
     const fps = existsSync(fpFile) ? JSON.parse(readFileSync(fpFile, 'utf8')) : { iso3, sources: {} };
+    // Vangnet-bestand: mislukte bronnen behouden hun laatste gelukte staat.
+    const latest = existsSync(latestFile) ? JSON.parse(readFileSync(latestFile, 'utf8')) : { iso3, fetchedAt: {}, sources: {} };
+    let latestChanged = false;
     const lastEntry = hist.entries[hist.entries.length - 1] || null;
     // Begin bij het vorige snapshot; bronnen die dit keer mislukken behouden hun laatste bekende staat.
     const nextSnapshot = { ...(lastEntry?.sources || {}) };
@@ -457,7 +489,15 @@ async function main() {
       const newFp = fingerprint(adv);
       const oldFp = fps.sources[sid] || null;
 
-      if (!before) { fps.sources[sid] = newFp; continue; } // eerste keer voor deze bron: niets om mee te vergelijken
+      if (!before) {
+        // Eerste keer voor deze bron: niets om mee te vergelijken, wel het
+        // vangnet vullen.
+        fps.sources[sid] = newFp;
+        latest.sources[sid] = compactFull(adv, SOURCE_LANG[sid] || 'en');
+        latest.fetchedAt[sid] = today;
+        latestChanged = true;
+        continue;
+      }
 
       const dateChanged = !!(before.lastModified && after.lastModified && before.lastModified !== after.lastModified);
       const diff = oldFp ? diffContent(oldFp, adv) : { sections: [], totalAdded: 0, totalRemoved: 0, sectionsChanged: 0 };
@@ -467,6 +507,13 @@ async function main() {
       // datum-wijziging (laag 1) blijft wél gewoon gemeld.
       const degraded = oldFp && looksDegraded(diff, oldFp, adv);
       fps.sources[sid] = degraded ? oldFp : newFp;
+      // Vangnet alleen verversen met een volwaardige ophaling — een
+      // uitgeklede pagina mag de laatste goede versie niet overschrijven.
+      if (!degraded) {
+        latest.sources[sid] = compactFull(adv, SOURCE_LANG[sid] || 'en');
+        latest.fetchedAt[sid] = today;
+        latestChanged = true;
+      }
       if (degraded) {
         // Ook de compacte staat (niveau/kleur) van een uitgeklede pagina is
         // onbetrouwbaar: behoud de vorige, neem alleen de brondatum over
@@ -534,6 +581,7 @@ async function main() {
       writeFileSync(histFile, JSON.stringify(hist));
     }
     if (fetchedAny) writeFileSync(fpFile, JSON.stringify(fps));
+    if (latestChanged) writeFileSync(latestFile, JSON.stringify(latest));
     if (fetchedAny && countryTerms.size) indexDocs[iso3] = [...countryTerms].sort();
   });
 

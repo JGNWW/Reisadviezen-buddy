@@ -993,6 +993,17 @@ function renderSummaryTable(nl, okSources) {
     return isNaN(d) ? String(s).slice(0, 10) : d.toLocaleDateString('nl-NL');
   };
 
+  // "Bijgewerkt"-cel: bij een snapshot-bron (live ophalen mislukte; de proxy
+  // serveerde de laatste opgeslagen versie) komt er een 📸-markering bij.
+  const dateCell = (s) => {
+    const cell = el('td', { class: 'muted' }, fmtDateShort(s.lastModified));
+    if (s.stale) cell.append(' ', el('span', {
+      class: 'stale-tag',
+      title: `Live ophalen lukte niet; dit is de laatst opgeslagen versie (snapshot van ${fmtDateShort(s.snapshotDate) || 'onbekende datum'}).`,
+    }, `📸 snapshot ${fmtDateShort(s.snapshotDate)}`));
+    return cell;
+  };
+
   tbody.append(el('tr', {},
     el('td', {}, '🇳🇱 NederlandWereldwijd'),
     el('td', {}, colorCode({ predominant: nl.colors?.overall, extras: nlExtraColors(nl) })),
@@ -1022,7 +1033,7 @@ function renderSummaryTable(nl, okSources) {
           ' ', el('span', { class: 'approx-tag', title: 'Vertaald naar de Nederlandse kleurenschaal' }, 'benadering')),
         regionalCell,
         el('td', { class: 'muted' }, s.levelLabel || '—'),
-        el('td', { class: 'muted' }, fmtDateShort(s.lastModified)),
+        dateCell(s),
         el('td', {}, el('a', { href: s.url, target: '_blank', rel: 'noopener' }, 'origineel →'))));
       tbody.append(detailRow);
     } else {
@@ -1032,7 +1043,7 @@ function renderSummaryTable(nl, okSources) {
           ' ', el('span', { class: 'approx-tag', title: 'Vertaald naar de Nederlandse kleurenschaal' }, 'benadering')),
         el('td', { class: 'muted' }, '—'),
         el('td', { class: 'muted' }, s.levelLabel || '—'),
-        el('td', { class: 'muted' }, fmtDateShort(s.lastModified)),
+        dateCell(s),
         el('td', {}, el('a', { href: s.url, target: '_blank', rel: 'noopener' }, 'origineel →'))));
     }
   });
@@ -1476,6 +1487,14 @@ function renderComparison(staticData, foreign, root) {
     el('p', { style: 'margin:0' }, foreign.notice)));
   if (problems.length) frag.append(el('div', { class: 'callout', style: 'background:#f6f8fa;border-left-color:var(--muted)' },
     el('p', { style: 'margin:0' }, 'Geen advies via: ' + problems.map((p) => p.label || p.source).join(', ') + '.')));
+
+  // Bronnen die live niet lukten maar via het snapshot-vangnet tonen: eerlijk
+  // melden dat dit de laatst opgeslagen versie is, niet de live pagina.
+  const staleSources = okSources.filter((s) => s.stale);
+  if (staleSources.length) frag.append(el('div', { class: 'callout', style: 'background:#fdf6ec;border-left-color:#c77d00' },
+    el('p', { style: 'margin:0' }, '📸 Live ophalen lukte niet voor ' +
+      staleSources.map((s) => `${s.flag || ''} ${s.sourceLabel} (snapshot ${s.snapshotDate ? new Date(s.snapshotDate).toLocaleDateString('nl-NL') : 'onbekend'})`).join(', ') +
+      ' — getoond wordt de laatst opgeslagen versie uit de 6-uurlijkse snapshot.')));
 
   // ---- Onderwerp-zoeker: wat zegt elke bron over X? ----
   const topicWrap = renderTopicSearch(nl, okSources);

@@ -47,6 +47,49 @@ function sourceId(iso, source) {
   return countries[iso]?.sources?.[source] ?? null;
 }
 
+// Vangnet: de 6-uurlijkse snapshot-workflow schrijft per land het laatste
+// volledige advies naar worker/data/latest/ (publieke repo). Als een bron
+// live niet lukt (bot-blokkade, rate-limit, storing) serveren we die versie
+// met stale-markering — een bron verdwijnt zo nooit uit de vergelijking.
+const SNAPSHOT_BASE = 'https://raw.githubusercontent.com/JGNWW/Reisadviezen-buddy/main/worker/data/latest';
+
+async function snapshotFallback(iso, sid) {
+  try {
+    const r = await fetch(`${SNAPSHOT_BASE}/${iso}.json`, {
+      headers: { 'User-Agent': 'ReisadviezenBuddy/1.0' },
+      cf: { cacheTtl: 900, cacheEverything: true },
+    });
+    if (!r.ok) return null;
+    const d = await r.json();
+    const entry = d?.sources?.[sid];
+    if (!entry || !entry.themes?.length) return null;
+    return {
+      ...entry,
+      stale: true,
+      snapshotDate: d.fetchedAt?.[sid] || null,
+      mapProxy: entry.hasMap ? `/map/${sid}/${iso}` : null,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/** Vertaalt (indien gevraagd) de thema's van een advies naar de doeltaal. */
+async function applyTranslation(adv, translateTo) {
+  if (!translateTo || adv.lang === translateTo || !adv.themes?.length) return adv;
+  try {
+    const blocks = await translateBlocks(adv.themes, translateTo, adv.lang);
+    // Herclassificeer op de vertaalde (NL) tekst zodat niet-Engelse bronnen
+    // alsnog op de juiste thema's terechtkomen.
+    adv.themes = blocks.map((b) => ({
+      ...b,
+      themeId: b.themeId || classifyTheme(b.headingNl || '', b.textNl || ''),
+    }));
+    adv.translated = translateTo;
+  } catch { /* origineel behouden bij fout */ }
+  return adv;
+}
+
 export default {
   async fetch(request, env) {
     if (request.method === 'OPTIONS') return new Response(null, { headers: CORS });
@@ -87,20 +130,15 @@ export default {
               // de doeltaal zijn slaan we over (Engelse bron + translate=en, of
               // een NL-doel dat toevallig al klopt). Zo wordt bij 'Nederlands'
               // óók de Engelstalige bron (UK/US/…) naar het NL vertaald.
-              if (translateTo && adv.lang !== translateTo && adv.themes?.length) {
-                try {
-                  const blocks = await translateBlocks(adv.themes, translateTo, adv.lang);
-                  // Herclassificeer op de vertaalde (NL) tekst zodat niet-Engelse
-                  // bronnen alsnog op de juiste thema's terechtkomen.
-                  adv.themes = blocks.map((b) => ({
-                    ...b,
-                    themeId: b.themeId || classifyTheme(b.headingNl || '', b.textNl || ''),
-                  }));
-                  adv.translated = translateTo;
-                } catch { /* origineel behouden bij fout */ }
-              }
-              return adv;
+              return await applyTranslation(adv, translateTo);
             } catch (e) {
+              // Live mislukt → laatste snapshot serveren (met stale-markering)
+              // in plaats van de bron te laten verdwijnen.
+              const snap = await snapshotFallback(iso, s);
+              if (snap) {
+                snap.lang = snap.lang || ADAPTERS[s].meta.lang || 'en';
+                return await applyTranslation(snap, translateTo);
+              }
               return { source: s, error: String(e.message || e), label: ADAPTERS[s].meta.label };
             }
           })
