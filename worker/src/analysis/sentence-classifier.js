@@ -27,6 +27,7 @@ const RISK_WORDS = {
   es: /terroris|secuestro|conflicto armado|criminalidad|minas|grupos? armados?/i,
   da: /terror|kidnapning|v[æa]bnede? konflikt|kriminalitet|miner/i,
   de: /terror|entf[üu]hrung|bewaffnet|kriminalit[äa]t|minen|anschl[äa]ge/i,
+  ja: /テロ|誘拐|強盗|殺人|武装|地雷|治安|襲撃|爆発/,
 };
 
 export function classifySentence(sentence, lang = 'en', opts = {}) {
@@ -36,7 +37,10 @@ export function classifySentence(sentence, lang = 'en', opts = {}) {
   const words = text.split(/\s+/).length;
 
   let kind = 'other';
-  if (!severity && words <= 8 && !/[.!?]$/.test(text)) kind = 'header';
+  // Kop-heuristiek: kort én zonder zinseinde. Japans telt zonder spaties als
+  // "1 woord", dus de eindteken-check moet ook 。！？ kennen — anders zou
+  // elke Japanse zin als kop worden weggefilterd.
+  if (!severity && words <= 8 && !/[.!?。！？]$/.test(text)) kind = 'header';
   else if (severity && scope.isElsewhere) kind = 'elsewhere';
   else if (severity && scope.scope === 'regional') kind = 'regional-recommendation';
   else if (severity && (scope.scope === 'national' || scope.scope === 'mixed')) kind = 'national-recommendation';

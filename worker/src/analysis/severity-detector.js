@@ -67,6 +67,17 @@ const PATTERNS = {
     P(/wird (dringend )?abgeraten/i, 3),
     P(/erh[öo]hte vorsicht|besondere vorsicht/i, 2),
   ],
+  // Japan (MOFA) — vier vaste niveaus, zowel met als zonder "レベルN"-prefix.
+  // Let op de volgorde/overlap: レベル2 ("不要不急の渡航は止めてください")
+  // bevat de レベル3-frase ("渡航は止めてください"); de ontdubbeling in
+  // allSeverityMatches (vroegste + langste match wint) vangt dat op zolang
+  // het レベル2-patroon de volledige frase inclusief 不要不急の matcht.
+  ja: [
+    P(/レベル[４4]|退避してください|退避勧告/, 4),
+    P(/不要不急の渡航は止めて|レベル[２2]/, 2),
+    P(/レベル[３3]|渡航中止勧告|渡航は止めてください/, 3),
+    P(/レベル[１1]|十分(に)?注意してください/, 1),
+  ],
 };
 
 export function severityPatterns(lang) {

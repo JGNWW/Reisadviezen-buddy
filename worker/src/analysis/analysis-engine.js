@@ -78,6 +78,17 @@ export function analyzeAdvisory({ sections = [], lang = 'en', structured = null,
     mentionsByKey.set(key, m);
   };
 
+  // Gestructureerde regionale vermeldingen van de bron zelf (bijv. de
+  // ●-bullets van MOFA/Japan) — betrouwbaarder dan tekstanalyse, dus als
+  // eerste toevoegen zodat ze bij gelijke naam winnen van tekst-extracties.
+  for (const r of national.structuredRegional || []) {
+    addMention({
+      region: r.region, normalizedRegion: r.region, level: r.level, color: LEVEL_COLOR[r.level],
+      confidence: 'high', assessmentStatus: 'ok', sourceHeading: null,
+      matchedPhrase: null, excerpt: null, extractionMethod: 'structured_field',
+    });
+  }
+
   for (const { section, role, geo, analyzed } of classified) {
     // a) Geografische kop + niveau-formulering in de sectie → regiokop-vermelding.
     if (geo) {

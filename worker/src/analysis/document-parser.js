@@ -27,6 +27,12 @@ export function splitSentences(text) {
   for (let i = 0; i < clean.length; i++) {
     const ch = clean[i];
     buf += ch;
+    // Japans/CJK: 。！？ beëindigen een zin ZONDER spatie erna.
+    if (ch === '。' || ch === '！' || ch === '？') {
+      out.push(buf.trim());
+      buf = '';
+      continue;
+    }
     if (ch === '.' || ch === '!' || ch === '?') {
       const prev = clean[i - 1] || '';
       const next = clean[i + 1] || '';
