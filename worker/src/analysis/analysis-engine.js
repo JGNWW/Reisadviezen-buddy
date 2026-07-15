@@ -139,8 +139,10 @@ export function analyzeAdvisory({ sections = [], lang = 'en', structured = null,
           });
         }
         // Compat: in het ANKERBLOK ook zonder extraheerbare naam een
-        // vermelding op zinsniveau opnemen (zoals vóór de refactor).
-        if (!regions.length && role === 'anchor') {
+        // vermelding op zinsniveau opnemen (zoals vóór de refactor) — maar
+        // niet als de bron al gestructureerde regiodata leverde (dan is dit
+        // dubbeltelling van hetzelfde blok in ruwere vorm).
+        if (!regions.length && role === 'anchor' && !national.structuredRegional?.length) {
           const trimmed = a.text.trim();
           addMention({
             region: trimmed.length > 90 ? trimmed.slice(0, 90) + '…' : trimmed,

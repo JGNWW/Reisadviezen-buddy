@@ -134,9 +134,17 @@ export function interpretStructured(structured) {
     if (!text.trim() || /危険情報は出ておりません/.test(text)) {
       return ok({ level: 1, regionalMaxLevel: null, label: '危険情報なし (geen waarschuwing)', explanation: 'MOFA (Japan): geen 危険情報 (gevareninformatie) voor dit land.' });
     }
+    // Alleen het deel tússen 【危険レベル】 en 【ポイント】 bevat de
+    // gebied→niveau-bullets. Ervóór staat de paginakop (datum + niveaubadge —
+    // zou anders als "regio" meekomen), erna staan proza-punten.
+    let body = text;
+    const iLevel = body.indexOf('【危険レベル】');
+    if (iLevel >= 0) body = body.slice(iLevel + '【危険レベル】'.length);
+    const iPoints = body.indexOf('【ポイント】');
+    if (iPoints >= 0) body = body.slice(0, iPoints);
     const JA_LEVEL = /レベル([１２３４1234])/;
     const toNum = (d) => '１２３４'.includes(d) ? '１２３４'.indexOf(d) + 1 : Number(d);
-    const bullets = text.split('●').map((s) => s.trim()).filter(Boolean);
+    const bullets = body.split('●').map((s) => s.trim()).filter(Boolean);
     let national = null;
     let nationalLabel = null;
     const structuredRegional = [];
@@ -144,7 +152,10 @@ export function interpretStructured(structured) {
       const m = b.match(JA_LEVEL);
       if (!m) continue;
       const level = toNum(m[1]);
-      const region = b.slice(0, m.index).replace(/[：:、。\s]+$/, '').trim();
+      // Regionaam: tekst vóór レベルN; samengestelde beschrijvingen worden
+      // afgekapt op de sublijst-separator " ・" (spatie + interpunct — de
+      // interpunct ín namen als ジャンム・カシミール heeft geen spatie ervoor).
+      const region = b.slice(0, m.index).split(/\s・/)[0].replace(/[：:、。\s]+$/, '').trim();
       const phrase = (b.slice(m.index).match(/^レベル[１２３４1234][：:]?[^（(●]*/) || [b.slice(m.index)])[0].trim();
       if (/全土|全域|国全体/.test(region) || /その他の地域|それ以外の地域|上記以外の地域/.test(region) || !region) {
         // 全土 wint altijd; その他の地域 alleen als er nog geen landelijk niveau is.

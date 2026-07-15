@@ -33,6 +33,8 @@ export const THEMES = [
       'trekking', 'hiking', 'wanderungen',
       'securite', 'derniere minute',
       'seguridad', 'notas importantes',
+      // ja (MOFA): vaste sectiekoppen
+      '危険情報', '概況', '治安', '地域情勢', '滞在にあたっての注意', '滞在に当たっての注意',
     ],
   },
   {
@@ -43,6 +45,7 @@ export const THEMES = [
       'criminaliteit', 'zakkenroller', 'beroving', 'diefstal', 'oplichting', 'fraude',
       'crime', 'theft', 'scam', 'robbery', 'pickpocket', 'mugging',
       'kriminalitat', 'kriminalitet', 'criminalite', 'delincuencia', 'robo',
+      '犯罪', '窃盗', '強盗', '詐欺', 'スリ',
     ],
   },
   {
@@ -52,6 +55,7 @@ export const THEMES = [
     keywords: [
       'terrorisme', 'terroristische', 'aanslag', 'terrorism', 'terrorist attack',
       'terrorismus', 'terror', 'terrorismo',
+      'テロ',
     ],
   },
   {
@@ -61,6 +65,7 @@ export const THEMES = [
     keywords: [
       'ontvoering', 'gijzeling', 'kidnap', 'hostage', 'abduction',
       'entfuhrung', 'enlevement', 'secuestro', 'bortforelse',
+      '誘拐',
     ],
   },
   {
@@ -72,6 +77,7 @@ export const THEMES = [
       'verkiezing', 'politieke spanning', 'political situation', 'demonstration', 'civil unrest',
       'election', 'protests', 'strikes', 'political tension',
       'innenpolitische', 'manifestation', 'manifestacion', 'politisk',
+      'デモ', '抗議活動', '政情',
     ],
   },
   {
@@ -82,6 +88,7 @@ export const THEMES = [
       'grensgebied', 'regionale risico', 'gewapend conflict', 'oorlog', 'gewapende', 'militair',
       'landmijn', 'regional risks', 'border', 'conflict', 'war', 'armed', 'landmine', 'frontline',
       'grenzgebiet', 'frontiere', 'frontera',
+      '国境', '紛争',
     ],
   },
   {
@@ -96,6 +103,7 @@ export const THEMES = [
       'naturkatastrofer', 'jordskælv', 'jordskaelv',
       'intemperies', 'seisme', 'catastrophes naturelles', 'inondation',
       'terremoto', 'huracan', 'inundacion', 'desastres naturales',
+      '地震', '洪水', '自然災害', 'モンスーン', 'サイクロン',
     ],
   },
   {
@@ -107,6 +115,7 @@ export const THEMES = [
       'zeevaart', 'piraterij', 'road', 'transport', 'driving', 'air travel', 'sea travel',
       'piracy', 'public transport', 'aviation', 'vehicle',
       'fuhrerschein', 'verkehr', 'trafik', 'circulation', 'conduccion', 'liaisons aeriennes',
+      '交通', '道路',
     ],
   },
   {
@@ -135,6 +144,7 @@ export const THEMES = [
       'sundhed', 'sygdom',
       'sante', 'rougeole', 'paludisme', 'epidemie', 'evacuation sanitaire',
       'sanitarias', 'salud', 'vacuna',
+      '感染症', '医療', 'デング',
     ],
   },
   {
@@ -148,6 +158,7 @@ export const THEMES = [
       'indrejse', 'ophold',
       'entree', 'sejour', 'formalites',
       'documentacion', 'visado', 'aduanas',
+      '査証', 'ビザ', 'パスポート', '出入国',
     ],
   },
   {
@@ -177,6 +188,7 @@ export const THEMES = [
       'noodsituatie', 'in geval van nood', 'hulp', 'alarmnummer', 'ambassade', 'consulaat',
       'crisis', 'emergency', 'getting help', 'consular', 'embassy', 'assistance',
       'krisenvorsorge', 'danskerlisten', 'urgence', 'ambassade', 'embajada', 'telefonos',
+      '緊急時', '連絡先', '大使館',
     ],
   },
 ];

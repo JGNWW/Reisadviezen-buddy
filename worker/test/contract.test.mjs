@@ -26,6 +26,7 @@ const ADAPTERS = [
   ['de', (await import('../src/adapters/germany.js')), 'NPL'],
   ['nz', (await import('../src/adapters/newzealand.js')), 'nepal'],
   ['dk', (await import('../src/adapters/denmark.js')), 'nepal'],
+  ['jp', (await import('../src/adapters/japan.js')), '010'],
 ];
 
 const CODE_HEADING = /querySelector|shadowRoot|innerHTML|function\s*\(|=>|[{};$]|document\.|window\./;

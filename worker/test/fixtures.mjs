@@ -17,6 +17,8 @@ export const ROUTES = [
   ['opendata/travelwarning', 'de-index.json'],
   ['safetravel.govt.nz/destinations/nepal', 'nz-nepal.html'],
   ['rejsevejledninger/nepal', 'dk-nepal.html'],
+  ['pcinfectionspothazardinfo_010.html', 'jp-nepal.html'],
+  ['pchazardspecificinfo_', 'jp-nepal-detail.html'],
 ];
 
 export function installFixtureFetch() {
