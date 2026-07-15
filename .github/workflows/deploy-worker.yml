@@ -8,6 +8,11 @@ name: Deploy proxy (Cloudflare Worker)
 #   CLOUDFLARE_API_TOKEN   Cloudflare-token met rechten om Workers te bewerken
 #   CLOUDFLARE_ACCOUNT_ID  Je Cloudflare account-ID
 # Zie worker/README.md voor waar je deze vandaan haalt.
+#
+# Optioneel: RELIEFWEB_APP (goedgekeurde ReliefWeb-appname, zie
+# worker/README.md). Als repository-secret gezet, wordt hij bij elke deploy
+# automatisch als Cloudflare Worker-secret doorgezet — een GitHub-secret komt
+# namelijk NIET vanzelf bij de Worker terecht, alleen tijdens deze CI-run.
 on:
   push:
     branches: [main, master]
@@ -43,3 +48,11 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: worker
+
+      - name: ReliefWeb-secret doorzetten naar Cloudflare (optioneel)
+        if: ${{ secrets.RELIEFWEB_APP != '' }}
+        working-directory: worker
+        run: echo "${{ secrets.RELIEFWEB_APP }}" | npx wrangler secret put RELIEFWEB_APP
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

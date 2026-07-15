@@ -42,6 +42,15 @@ live API test-verifieerbaar niet — een willekeurige waarde geeft een harde
 npx wrangler secret put RELIEFWEB_APP
 ```
 
+Alternatief: zet `RELIEFWEB_APP` als GitHub-repository-secret (Settings →
+Secrets and variables → Actions). Het deploy-workflow
+(`.github/workflows/deploy-worker.yml`) zet die dan bij elke deploy
+automatisch door naar Cloudflare via `wrangler secret put`. Let op: een
+GitHub-secret komt NIET vanzelf bij de Worker terecht — dat gebeurt alleen
+via deze CI-stap, dus na het toevoegen van de secret moet het workflow nog
+één keer draaien (automatisch bij de eerstvolgende push naar `worker/**`, of
+handmatig via "Run workflow" op het Actions-tabblad).
+
 Zonder deze secret geeft het endpoint `{ available:false }` terug en toont de
 frontend simpelweg geen contextblok. ReliefWeb hanteert daarnaast een limiet
 van 1.000 oproepen/dag per IP; bij een 403/foutstatus valt het endpoint terug
