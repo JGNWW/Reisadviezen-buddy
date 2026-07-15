@@ -63,11 +63,13 @@ for (const [id, adapter, arg] of ADAPTERS) {
       assert.match(String(adv.lastModified), /^\d{4}-\d{2}-\d{2}/, `${id}: datum ${adv.lastModified}`);
     }
 
-    // DE: de publieke landpagina volgt een vast slugpatroon (kleine letters,
-    // umlauten getranslitereerd, geen koppeltekens/spaties, "-node"-suffix).
-    // Eerder gaf een naïeve toLowerCase() een 404 voor bijna elk land.
+    // DE: de URL moet naar de "Reise- und Sicherheitshinweise"-pagina zelf
+    // wijzen (slug + opendata-content-ID), niet naar de politieke landen-
+    // pagina (/de/aussenpolitik/laender/{slug}-node) waar het advies níet
+    // staat. Slugpatroon: kleine letters, umlauten getranslitereerd, geen
+    // koppeltekens/spaties — eerder gaf een naïeve toLowerCase() een 404.
     if (id === 'de') {
-      assert.match(adv.url, /^https:\/\/www\.auswaertiges-amt\.de\/de\/aussenpolitik\/laender\/[a-z0-9]+-node$/,
+      assert.match(adv.url, /^https:\/\/www\.auswaertiges-amt\.de\/de\/service\/laender\/[a-z0-9]+-node\/[a-z0-9]+sicherheit-\d+$/,
         `${id}: onverwachte URL-vorm ${adv.url}`);
     }
 
