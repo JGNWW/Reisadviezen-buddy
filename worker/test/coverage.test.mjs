@@ -9,7 +9,7 @@
  * dk 100%, de 96%, es 86%, ie 79%, us 76%, fr 67%) — de rest is echte
  * niet-adviesinhoud (navigatie, podcasts, doelgroep-pagina's).
  *
- * Draaien: cd worker && node --test test/contract.test.mjs test/coverage.test.mjs
+ * Draaien: cd worker && node --test test/analysis.test.mjs test/contract.test.mjs test/coverage.test.mjs
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';

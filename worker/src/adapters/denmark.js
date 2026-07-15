@@ -10,24 +10,13 @@ import { parse } from 'node-html-parser';
 import { getText } from '../lib/fetch.js';
 import { splitByHeadings, absolutiseLinks, htmlToText } from '../lib/html.js';
 import { classifyTheme } from '../lib/themes.js';
-import { assessFromAnchoredText, REGIONAL_WORDS } from '../lib/level-assessment.js';
+import { analyzeAdvisory } from '../analysis/analysis-engine.js';
 import { parseHumanDate } from '../lib/dates.js';
 
 const SITE = 'https://um.dk';
 const BASE = `${SITE}/rejse-og-ophold/rejse-til-udlandet/rejsevejledninger`;
 
 export const meta = { id: 'dk', label: 'Denemarken (Udenrigsministeriet)', flag: '🇩🇰', lang: 'da' };
-
-// Deense formuleringen -> niveau 1..4 (zwaar naar licht). "ikke-nødvendige"
-// staat vóór het bredere "alle rejser" zodat de juiste variant eerst matcht.
-const VIG_PATTERNS = [
-  { re: /fraråder alle ikke-nødvendige rejser/i, level: 3 },
-  { re: /fraråder alle rejser/i, level: 4 },
-  { re: /vær ekstra forsigtig|skærpet (sikkerhed|forsigtighed)/i, level: 2 },
-  { re: /vær forsigtig/i, level: 2 },
-  // "Vær opmærksom" (wees oplettend) is de laagste categorie van um.dk = groen.
-  { re: /vær opmærksom|ingen særlige|normale forholdsregler|ingen (særlig )?rejsevejledning/i, level: 1 },
-];
 
 /** Maandnamen NB: Deense datums zijn dd.mm.yyyy — direct te normaliseren. */
 function danishDate(html) {
@@ -47,18 +36,6 @@ export async function getAdvisory(slug) {
   const gyldig = text.search(/Gyldig:\s*\d{2}\.\d{2}\.\d{4}/i);
   const start = gyldig >= 0 ? gyldig : 0;
   const anchor = text.slice(start, start + 700);
-  const assessment = assessFromAnchoredText(anchor, VIG_PATTERNS, REGIONAL_WORDS.da);
-
-  // um.dk toont regionale afwijkingen als gekleurde "bjælker" (balken). De
-  // zwaarste die genoemd wordt bepaalt regionalMaxLevel; is die hoger dan het
-  // landelijke niveau, dan zijn er regionale waarschuwingen.
-  let barMax = null;
-  if (/r[øo]de? bj[æa]lke/i.test(anchor)) barMax = 4;
-  else if (/orange bj[æa]lke/i.test(anchor)) barMax = 3;
-  else if (/gule? bj[æa]lke/i.test(anchor)) barMax = 2;
-  const natLevel = assessment.level;
-  const regionalMaxLevel = Math.max(natLevel || 0, barMax || 0) || assessment.regionalMaxLevel;
-  const hasRegionalWarnings = assessment.hasRegionalWarnings || (barMax != null && natLevel != null && barMax > natLevel);
 
   const root = parse(html);
   const main = root.querySelector('main') || root.querySelector('article') || root;
@@ -66,6 +43,15 @@ export async function getAdvisory(slug) {
     .filter((s) => s.heading && s.text && s.text.length > 40)
     .filter((s) => !/^(del med|del på|abonner|kontakt|følg os|se også|relaterede|cookie)/i.test(s.heading.trim()))
     .map((s) => ({ category: s.heading, heading: s.heading, themeId: classifyTheme(s.heading, s.text), html: s.html, text: s.text }));
+
+  // Landelijk niveau uit het samenvattende ankerblok (Deense formuleringen);
+  // de gekleurde "bjælker" (balken) van um.dk zijn een regionale-max-hint.
+  const assessment = analyzeAdvisory({
+    sections: themes,
+    lang: 'da',
+    anchorText: anchor,
+    structured: { kind: 'dk_summary_bars', value: anchor },
+  });
 
   return {
     source: meta.id,
@@ -77,9 +63,12 @@ export async function getAdvisory(slug) {
     updateNote: null,
     level: assessment.level,
     color: assessment.color,
-    levelLabel: assessment.explanation,
-    regionalMaxLevel,
-    hasRegionalWarnings,
+    levelLabel: assessment.levelLabel,
+    regionalMaxLevel: assessment.regionalMaxLevel,
+    hasRegionalWarnings: assessment.hasRegionalWarnings,
+    regionalBreakdown: assessment.regionalBreakdown,
+    regionalCoverage: assessment.regionalCoverage,
+    regions: assessment.regions,
     confidence: assessment.confidence,
     assessmentStatus: assessment.assessmentStatus,
     hasMap: false,

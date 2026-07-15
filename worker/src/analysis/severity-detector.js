@@ -1,0 +1,112 @@
+/**
+ * Ernst-detector — normaliseert de uiteenlopende bronformuleringen naar één
+ * canonieke schaal, ongeacht land of taal:
+ *
+ *   1  Exercise normal precautions   (groen)
+ *   2  Exercise increased caution    (geel)
+ *   3  Avoid non-essential travel    (oranje)
+ *   4  Do not travel                 (rood)
+ *
+ * Dit is de ENIGE plek in de codebase met niveau-formuleringen; adapters
+ * bevatten er geen meer. Nieuwe bron of taal? Voeg hier patronen toe.
+ */
+import { levelToColor } from '../lib/levels.js';
+
+export const SEVERITY_LABELS = {
+  1: 'Exercise normal precautions',
+  2: 'Exercise increased caution',
+  3: 'Avoid non-essential travel',
+  4: 'Do not travel',
+};
+
+const P = (re, level) => ({ re, level });
+
+// Per taal, elk patroon exclusief geformuleerd zodat een zwaardere variant
+// nooit per ongeluk in een lichtere matcht ("against all but essential
+// travel" bevat níet de tekenreeks "against all travel").
+const PATTERNS = {
+  en: [
+    P(/\bdo not travel\b/i, 4),
+    P(/advis\w+ against all travel/i, 4),
+    P(/\bavoid all travel\b/i, 4),
+    P(/advis\w+ against all but essential travel/i, 3),
+    P(/\bavoid (all )?non-?essential travel\b/i, 3),
+    P(/\breconsider (your need to )?travel\b/i, 3),
+    P(/\bessential travel only\b/i, 3),
+    P(/exercise (a )?(high(er)? degree of|increased|heightened) caution/i, 2),
+    P(/\bexercise (particular |extra )?caution\b/i, 2),
+    P(/exercise normal (safety |security )?(and security )?precautions/i, 1),
+    P(/take normal (safety |security )?precautions/i, 1),
+    P(/no (specific )?travel advisory/i, 1),
+  ],
+  fr: [
+    P(/formellement d[ée]conseill[ée]/i, 4),
+    P(/d[ée]conseill[ée] sauf raison imp[ée]rative/i, 3),
+    P(/vigilance renforc[ée]e/i, 2),
+    P(/vigilance normale/i, 1),
+  ],
+  es: [
+    P(/se desaconseja (todo|cualquier) (viaje|desplazamiento)/i, 4),
+    P(/se recomienda (valorar )?no viajar\b(?!.*salvo)/i, 4),
+    P(/evitar (todo|cualquier) desplazamiento/i, 4),
+    P(/no viajar salvo|salvo (por )?razones (ineludibles|de fuerza mayor)/i, 3),
+    P(/desaconseja(n)? (los|el) (viajes?|desplazamientos?)/i, 3),
+    P(/viajar con (mucha |extrema |extremada )?precauci[oó]n|extrem(ar|e|a) (las )?precauci|adoptar precauciones|alto grado de precauci/i, 2),
+    P(/viaje sin restricciones|sin restricciones|no hay restricciones/i, 1),
+  ],
+  da: [
+    // Volgorde: "ikke-nødvendige" vóór het bredere "alle rejser".
+    P(/frar[åa]der alle ikke-n[øo]dvendige rejser/i, 3),
+    P(/frar[åa]der alle rejser/i, 4),
+    P(/v[æa]r ekstra forsigtig|sk[æa]rpet (sikkerhed|forsigtighed)/i, 2),
+    P(/v[æa]r forsigtig/i, 2),
+    P(/v[æa]r opm[æa]rksom|ingen s[æa]rlige|normale forholdsregler/i, 1),
+  ],
+  de: [
+    P(/wird gewarnt|reisewarnung/i, 4),
+    P(/wird (dringend )?abgeraten/i, 3),
+    P(/erh[öo]hte vorsicht|besondere vorsicht/i, 2),
+  ],
+};
+
+export function severityPatterns(lang) {
+  return PATTERNS[lang] || PATTERNS.en;
+}
+
+/**
+ * Alle ernst-matches in een tekst, in documentvolgorde. Overlappende matches
+ * op dezelfde plek worden ontdubbeld (langste — meest specifieke — wint).
+ */
+export function allSeverityMatches(text, lang = 'en') {
+  const t = String(text || '');
+  const found = [];
+  for (const p of severityPatterns(lang)) {
+    const re = new RegExp(p.re.source, p.re.flags.includes('g') ? p.re.flags : p.re.flags + 'g');
+    let m;
+    while ((m = re.exec(t))) {
+      found.push({ level: p.level, phrase: m[0], index: m.index, length: m[0].length });
+      if (m.index === re.lastIndex) re.lastIndex++;
+    }
+  }
+  found.sort((a, b) => a.index - b.index || b.length - a.length);
+  const out = [];
+  for (const f of found) {
+    const last = out[out.length - 1];
+    if (last && f.index < last.index + last.length) continue;
+    out.push(f);
+  }
+  return out;
+}
+
+/** Eerste (meest prominente) ernst-formulering in een zin of tekst, of null. */
+export function findSeverity(text, lang = 'en') {
+  const all = allSeverityMatches(text, lang);
+  return all.length ? all[0] : null;
+}
+
+/** Niveau → canoniek label + kleur, voor bronnen zonder eigen label. */
+export function severityLabel(level) {
+  return SEVERITY_LABELS[level] || null;
+}
+
+export { levelToColor };

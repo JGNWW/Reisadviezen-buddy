@@ -8,6 +8,7 @@
 import { getJson } from '../lib/fetch.js';
 import { splitByHeadings, absolutiseLinks, htmlToText } from '../lib/html.js';
 import { classifyTheme } from '../lib/themes.js';
+import { analyzeAdvisory } from '../analysis/analysis-engine.js';
 
 const SITE = 'https://www.auswaertiges-amt.de';
 const INDEX = `${SITE}/opendata/travelwarning`;
@@ -45,46 +46,6 @@ async function getIndex() {
   return indexCache;
 }
 
-/** Leidt niveau/kleur af uit de gestructureerde waarschuwingsvlaggen. */
-function assess(e) {
-  // Volledige reiswaarschuwing voor het hele land.
-  if (e.warning) {
-    return {
-      level: 4, color: 'rood', regionalMaxLevel: 4, hasRegionalWarnings: !!e.partialWarning,
-      confidence: 'high', assessmentStatus: 'ok',
-      levelLabel: 'Reisewarnung (het Auswärtiges Amt raadt reizen af).',
-    };
-  }
-  // Teilreisewarnung: waarschuwing voor delen van het land, niet landelijk.
-  if (e.partialWarning) {
-    return {
-      level: 1, color: 'groen', regionalMaxLevel: 4, hasRegionalWarnings: true,
-      confidence: 'high', assessmentStatus: 'ok',
-      levelLabel: 'Teilreisewarnung: reiswaarschuwing voor delen van het land, niet landelijk.',
-    };
-  }
-  // Landelijke situatie-/veiligheidsaanwijzing zonder reiswaarschuwing.
-  if (e.situationWarning) {
-    return {
-      level: 2, color: 'geel', regionalMaxLevel: 2, hasRegionalWarnings: false,
-      confidence: 'medium', assessmentStatus: 'ok',
-      levelLabel: 'Sicherheitshinweis: verhoogde aandacht voor het hele land.',
-    };
-  }
-  if (e.situationPartWarning) {
-    return {
-      level: 1, color: 'groen', regionalMaxLevel: 2, hasRegionalWarnings: true,
-      confidence: 'medium', assessmentStatus: 'ok',
-      levelLabel: 'Regionale veiligheidsaanwijzing voor delen van het land.',
-    };
-  }
-  return {
-    level: 1, color: 'groen', regionalMaxLevel: null, hasRegionalWarnings: false,
-    confidence: 'high', assessmentStatus: 'ok',
-    levelLabel: 'Geen reiswaarschuwing of veiligheidsaanwijzing.',
-  };
-}
-
 export async function getAdvisory(iso3) {
   if (!iso3) return null;
   const index = await getIndex();
@@ -100,7 +61,21 @@ export async function getAdvisory(iso3) {
     .filter((s) => s.heading && s.text && s.text.length > 30)
     .map((s) => ({ category: s.heading, heading: s.heading, themeId: classifyTheme(s.heading, s.text), html: s.html, text: s.text }));
 
-  const a = assess(e);
+  // Landelijk niveau uit de gestructureerde waarschuwingsvlaggen van de
+  // opendata-API; regionale vermeldingen ("Vor Reisen in das Grenzgebiet zu X
+  // wird gewarnt") uit de Duitse tekst — beide via de gedeelde engine.
+  const assessment = analyzeAdvisory({
+    sections: themes,
+    lang: 'de',
+    structured: {
+      kind: 'de_warning_flags',
+      value: {
+        warning: !!e.warning, partialWarning: !!e.partialWarning,
+        situationWarning: !!e.situationWarning, situationPartWarning: !!e.situationPartWarning,
+      },
+    },
+    countryName: e.countryName || null,
+  });
   // "Letzte Änderungen: ..." → nette wijzigingsnotitie.
   const note = e.lastChanges ? htmlToText(e.lastChanges).replace(/^Letzte Änderungen:\s*/i, '').trim() : null;
 
@@ -112,13 +87,16 @@ export async function getAdvisory(iso3) {
     url: `${SITE}/de/aussenpolitik/laender/${countrySlug(e.countryName)}-node`,
     lastModified: e.lastModified ? new Date(e.lastModified * 1000).toISOString() : null,
     updateNote: note || null,
-    level: a.level,
-    color: a.color,
-    levelLabel: a.levelLabel,
-    regionalMaxLevel: a.regionalMaxLevel,
-    hasRegionalWarnings: a.hasRegionalWarnings,
-    confidence: a.confidence,
-    assessmentStatus: a.assessmentStatus,
+    level: assessment.level,
+    color: assessment.color,
+    levelLabel: assessment.levelLabel,
+    regionalMaxLevel: assessment.regionalMaxLevel,
+    hasRegionalWarnings: assessment.hasRegionalWarnings,
+    regionalBreakdown: assessment.regionalBreakdown,
+    regionalCoverage: assessment.regionalCoverage,
+    regions: assessment.regions,
+    confidence: assessment.confidence,
+    assessmentStatus: assessment.assessmentStatus,
     hasMap: false,
     themes,
     fullText: themes.map((t) => t.text).join('\n'),
