@@ -6,20 +6,12 @@ import { parse } from 'node-html-parser';
 import { getText } from '../lib/fetch.js';
 import { htmlToText, splitByHeadings, absolutiseLinks } from '../lib/html.js';
 import { classifyTheme } from '../lib/themes.js';
-import { levelToColor } from '../lib/levels.js';
+import { analyzeAdvisory } from '../analysis/analysis-engine.js';
 
 const SITE = 'https://www.dfa.ie';
 const BASE = `${SITE}/travel/travel-advice/a-z-list-of-countries`;
 
 export const meta = { id: 'ie', label: 'Ierland (DFA)', flag: '🇮🇪', lang: 'en' };
-
-const STATUS_LEVEL = { normal: 1, 'high-caution': 2, avoid: 3, 'do-not': 4 };
-const STATUS_LABEL = {
-  normal: 'Normal precautions',
-  'high-caution': 'High degree of caution',
-  avoid: 'Avoid non-essential travel',
-  'do-not': 'Do not travel',
-};
 
 export async function getAdvisory(slug) {
   if (!slug) return null;
@@ -28,10 +20,10 @@ export async function getAdvisory(slug) {
   if (!html) return null;
 
   // Huidige status staat in class="... security-status <mod>" (niet de
-  // __status--legenda). De modifier is een los class-token.
+  // __status--legenda). De modifier is een los class-token; de betekenis
+  // (niveau 1..4 + label) wordt door de analyse-engine bepaald.
   const m = html.match(/class="[^"]*\bsecurity-status\s+(normal|high-caution|avoid|do-not)\b/i);
   const status = m ? m[1].toLowerCase() : null;
-  const level = status ? STATUS_LEVEL[status] : null;
 
   // DFA verstopt per contentblok een "updated-date" (RFC-datum) in de HTML;
   // de recentste daarvan is de beste benadering van "laatst bijgewerkt".
@@ -66,6 +58,12 @@ export async function getAdvisory(slug) {
   const alert = themes.find((t) => /^latest travel alert/i.test(t.heading.trim()));
   const updateNote = alert ? alert.text.slice(0, 400) : null;
 
+  const assessment = analyzeAdvisory({
+    sections: themes,
+    lang: 'en',
+    structured: { kind: 'ie_security_status', value: status },
+  });
+
   return {
     source: meta.id,
     sourceLabel: meta.label,
@@ -74,9 +72,16 @@ export async function getAdvisory(slug) {
     url,
     lastModified,
     updateNote,
-    level,
-    color: levelToColor(level),
-    levelLabel: status ? STATUS_LABEL[status] : null,
+    level: assessment.level,
+    color: assessment.color,
+    levelLabel: assessment.levelLabel,
+    regionalMaxLevel: assessment.regionalMaxLevel,
+    hasRegionalWarnings: assessment.hasRegionalWarnings,
+    regionalBreakdown: assessment.regionalBreakdown,
+    regionalCoverage: assessment.regionalCoverage,
+    regions: assessment.regions,
+    confidence: assessment.confidence,
+    assessmentStatus: assessment.assessmentStatus,
     hasMap: false,
     themes,
     fullText: themes.map((t) => t.text).join('\n'),

@@ -7,7 +7,7 @@ import { parse } from 'node-html-parser';
 import { getText, getJson } from '../lib/fetch.js';
 import { splitByHeadings, absolutiseLinks } from '../lib/html.js';
 import { classifyTheme } from '../lib/themes.js';
-import { canadaStateToLevel, levelToColor } from '../lib/levels.js';
+import { analyzeAdvisory } from '../analysis/analysis-engine.js';
 
 const SITE = 'https://travel.gc.ca';
 const INDEX = 'https://data.international.gc.ca/travel-voyage/index-alpha-eng.json';
@@ -24,13 +24,6 @@ async function getIndex() {
   return indexCache;
 }
 
-const STATE_LABEL = {
-  0: 'Take normal security precautions',
-  1: 'Exercise a high degree of caution',
-  2: 'Avoid non-essential travel',
-  3: 'Avoid all travel',
-};
-
 export async function getAdvisory(id) {
   if (!id) return null;
   const { iso2, slug } = typeof id === 'string' ? { iso2: id, slug: id } : id;
@@ -38,17 +31,24 @@ export async function getAdvisory(id) {
   const index = await getIndex();
   const entry = iso2 ? index[iso2] : null;
   const state = entry ? entry['advisory-state'] : null;
-  const level = state != null ? canadaStateToLevel(state) : null;
 
   const url = `${SITE}/destinations/${slug}`;
   const html = await getText(url);
   const themes = [];
+  let analysisSections = [];
   let mapUrl = null;
   if (html) {
     const root = parse(html);
     const main = root.querySelector('main') || root.querySelector('#wb-cont')?.parentNode || root;
-    const sections = splitByHeadings(absolutiseLinks(main.innerHTML, SITE))
-      .filter((s) => s.heading && s.text && s.text.length > 25)
+    const rawSections = splitByHeadings(absolutiseLinks(main.innerHTML, SITE))
+      .filter((s) => s.heading && s.text && s.text.length > 25);
+    // Voor de ANALYSE tellen ook de "Risk level(s)"-blokken mee (daar staan
+    // de regionale "Avoid all travel to …"-zinnen); voor de THEMA-weergave
+    // blijven navigatie- en rubriekblokken uitgefilterd zoals voorheen.
+    analysisSections = rawSections
+      .filter((s) => !/^(search|menu|you are here|language|contact|share|on this page|table of contents|about this)/i.test(s.heading.trim()))
+      .map((s) => ({ heading: s.heading, text: s.text }));
+    const sections = rawSections
       .filter((s) => !/^(search|menu|you are here|language|contact|share|on this page|risk levels|table of contents|about this)/i.test(s.heading.trim()));
     for (const s of sections) {
       themes.push({ category: s.heading, heading: s.heading, themeId: classifyTheme(s.heading, s.text), html: s.html, text: s.text });
@@ -62,6 +62,15 @@ export async function getAdvisory(id) {
     mapUrl = src;
   }
 
+  // Landelijk niveau uit de officiële JSON-index (advisory-state); regionale
+  // afwijkingen uit de paginatekst — beide via de gedeelde analyse-engine.
+  const assessment = analyzeAdvisory({
+    sections: analysisSections,
+    lang: 'en',
+    structured: state != null ? { kind: 'ca_advisory_state', value: state } : null,
+    countryName: entry ? entry['country-eng'] : null,
+  });
+
   return {
     source: meta.id,
     sourceLabel: meta.label,
@@ -70,9 +79,16 @@ export async function getAdvisory(id) {
     url,
     lastModified: entry?.['date-published']?.date || null,
     updateNote: null,
-    level,
-    color: levelToColor(level),
-    levelLabel: state != null ? STATE_LABEL[state] : null,
+    level: assessment.level,
+    color: assessment.color,
+    levelLabel: assessment.levelLabel,
+    regionalMaxLevel: assessment.regionalMaxLevel,
+    hasRegionalWarnings: assessment.hasRegionalWarnings,
+    regionalBreakdown: assessment.regionalBreakdown,
+    regionalCoverage: assessment.regionalCoverage,
+    regions: assessment.regions,
+    confidence: assessment.confidence,
+    assessmentStatus: assessment.assessmentStatus,
     hasMap: !!mapUrl,
     mapUrl,
     themes,

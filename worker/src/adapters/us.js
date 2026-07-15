@@ -7,7 +7,7 @@ import { parse } from 'node-html-parser';
 import { getTextResolved } from '../lib/fetch.js';
 import { htmlToText, splitByHeadings, absolutiseLinks } from '../lib/html.js';
 import { classifyTheme } from '../lib/themes.js';
-import { usLevel, levelToColor } from '../lib/levels.js';
+import { analyzeAdvisory } from '../analysis/analysis-engine.js';
 import { parseHumanDate } from '../lib/dates.js';
 
 const SITE = 'https://travel.state.gov';
@@ -26,12 +26,6 @@ export async function getAdvisory(slug) {
   const resolved = await getTextResolved(requestUrl);
   if (!resolved) return null;
   const { text: html, url } = resolved;
-
-  // Niveau uit "... - Level N: ..." kop.
-  const lvlMatch = html.match(/Level\s*([1-4])\s*[:\-–]/i);
-  const level = lvlMatch ? usLevel(lvlMatch[1]) : null;
-  const labelMatch = html.match(/Level\s*[1-4]\s*[:\-–]\s*([A-Za-z ]{3,40})/i);
-  const levelLabel = labelMatch ? `Level ${lvlMatch[1]}: ${labelMatch[1].trim()}` : null;
 
   // Uitgiftedatum van het advies zelf ("Date issued: June 12, 2026") —
   // betrouwbaarder dan de paginavoettekst-datum, die bij elke site-aanpassing
@@ -95,6 +89,16 @@ export async function getAdvisory(slug) {
     }
   }
 
+  // Landelijk niveau uit de officiële "Level N"-kop (gestructureerd bewijs);
+  // regionale "Do not travel to:"-lijsten worden door de engine per gebied
+  // uit de samenvattingstekst gehaald.
+  const assessment = analyzeAdvisory({
+    sections: themes,
+    lang: 'en',
+    structured: { kind: 'us_level_heading', value: html },
+    countryName: slug.replace(/-/g, ' '),
+  });
+
   return {
     source: meta.id,
     sourceLabel: meta.label,
@@ -103,9 +107,16 @@ export async function getAdvisory(slug) {
     url,
     lastModified,
     updateNote: null,
-    level,
-    color: levelToColor(level),
-    levelLabel,
+    level: assessment.level,
+    color: assessment.color,
+    levelLabel: assessment.levelLabel,
+    regionalMaxLevel: assessment.regionalMaxLevel,
+    hasRegionalWarnings: assessment.hasRegionalWarnings,
+    regionalBreakdown: assessment.regionalBreakdown,
+    regionalCoverage: assessment.regionalCoverage,
+    regions: assessment.regions,
+    confidence: assessment.confidence,
+    assessmentStatus: assessment.assessmentStatus,
     hasMap: false,
     themes,
     fullText: themes.map((t) => t.text).join('\n'),

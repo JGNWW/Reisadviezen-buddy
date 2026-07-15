@@ -7,13 +7,13 @@
  * Niveau: geen gestructureerd veld beschikbaar. Gezocht wordt uitsluitend in
  * de "Notas importantes"-sectie (het algemene overzicht, altijd de eerste
  * accordion-sectie) — nooit de hele pagina — met scope-detectie (landelijk
- * vs. regionaal). Zie worker/src/lib/level-assessment.js voor de achtergrond.
+ * vs. regionaal). Alle interpretatie gebeurt in worker/src/analysis/.
  */
 import { parse } from 'node-html-parser';
 import { getText } from '../lib/fetch.js';
 import { splitByHeadings, absolutiseLinks } from '../lib/html.js';
 import { classifyTheme } from '../lib/themes.js';
-import { assessFromAnchoredText, extractRegionalMentions, findBestMatch, mergeRegionalMax, REGIONAL_WORDS } from '../lib/level-assessment.js';
+import { analyzeAdvisory } from '../analysis/analysis-engine.js';
 import { parseHumanDate } from '../lib/dates.js';
 
 const SITE = 'https://www.exteriores.gob.es';
@@ -21,14 +21,7 @@ const BASE = `${SITE}/es/ServiciosAlCiudadano/Paginas/Detalle-recomendaciones-de
 
 export const meta = { id: 'es', label: 'Spanje (Exteriores)', flag: '🇪🇸', lang: 'es' };
 
-// Spaanse formuleringen -> niveau 1..4, van zwaar naar licht.
-const VIG_PATTERNS = [
-  { re: /se desaconseja (todo|cualquier) (viaje|desplazamiento)|se recomienda (valorar )?no viajar\b(?!.*salvo)|evitar (todo|cualquier) desplazamiento/i, level: 4 },
-  { re: /no viajar salvo|salvo (por )?razones (ineludibles|de fuerza mayor)|desaconseja(n)? (los|el) (viaje|desplazamiento)/i, level: 3 },
-  { re: /viajar con (mucha|extrema|extremada)? ?precauci[oó]n|extrem(ar|e|a) (las )?precauci|adoptar precauciones|alto grado de precauci/i, level: 2 },
-  { re: /viaje sin restricciones|sin restricciones|no hay restricciones/i, level: 1 },
-];
-
+// "Notas importantes" is het algemene overzicht (altijd de eerste sectie).
 const ANCHOR_HEADING = /^notas importantes/i;
 
 export async function getAdvisory(trc) {
@@ -51,25 +44,15 @@ export async function getAdvisory(trc) {
     .filter((s) => s.heading && s.text && s.text.length > 40)
     .map((s) => ({ category: s.heading, heading: s.heading, themeId: classifyTheme(s.heading, s.text), html: s.html, text: s.text }));
 
-  // Anker: "Notas importantes" is het algemene overzicht (altijd eerste
-  // sectie); val terug op de eerste sectie als die titel niet gevonden wordt.
-  const anchor = themes.find((t) => ANCHOR_HEADING.test(t.heading.trim())) || themes[0] || null;
-  const assessment = assessFromAnchoredText(anchor?.text || '', VIG_PATTERNS, REGIONAL_WORDS.es);
-  // regionalBreakdown is aanvullend bewijs, geen vervanging van het
-  // landelijke oordeel hierboven — zie worker/src/lib/level-assessment.js.
+  // Landelijk oordeel + regionale vermeldingen via de gedeelde engine.
   // Spanje bundelt landelijke én regionale zinnen vaak in "Notas
-  // importantes" zelf, dus wordt ook dat ankerblok (met uitzondering van de
-  // al gebruikte landelijke zin) doorzocht op regionale vermeldingen.
-  const anchorBest = anchor?.text ? findBestMatch(anchor.text, VIG_PATTERNS) : null;
-  const regionalBreakdown = extractRegionalMentions({
-    sections: themes.filter((t) => t !== anchor && !ANCHOR_HEADING.test(t.heading.trim())),
-    anchorText: anchor?.text || '',
-    anchorSkipMatch: anchorBest,
-    patterns: VIG_PATTERNS,
-    regionalWordsRe: REGIONAL_WORDS.es,
+  // importantes" zelf; de engine scant dat ankerblok op zinsniveau.
+  const assessment = analyzeAdvisory({
+    sections: themes,
+    lang: 'es',
+    anchorHeadingRe: ANCHOR_HEADING,
+    countryName: trc,
   });
-  const regionalMaxLevel = mergeRegionalMax(assessment.regionalMaxLevel, regionalBreakdown);
-  const hasRegionalWarnings = assessment.hasRegionalWarnings || regionalBreakdown.length > 0;
 
   return {
     source: meta.id,
@@ -81,11 +64,12 @@ export async function getAdvisory(trc) {
     updateNote: null,
     level: assessment.level,
     color: assessment.color,
-    levelLabel: assessment.explanation,
-    regionalMaxLevel,
-    hasRegionalWarnings,
-    regionalBreakdown: regionalBreakdown.length ? regionalBreakdown : null,
-    regionalCoverage: hasRegionalWarnings ? 'partial' : null,
+    levelLabel: assessment.levelLabel,
+    regionalMaxLevel: assessment.regionalMaxLevel,
+    hasRegionalWarnings: assessment.hasRegionalWarnings,
+    regionalBreakdown: assessment.regionalBreakdown,
+    regionalCoverage: assessment.regionalCoverage,
+    regions: assessment.regions,
     confidence: assessment.confidence,
     assessmentStatus: assessment.assessmentStatus,
     hasMap: false,

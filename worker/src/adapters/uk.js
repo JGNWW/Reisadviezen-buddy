@@ -6,20 +6,12 @@ import { parse } from 'node-html-parser';
 import { getJson, getText } from '../lib/fetch.js';
 import { htmlToText, splitByHeadings, absolutiseLinks } from '../lib/html.js';
 import { classifyTheme } from '../lib/themes.js';
-import { assessUkAlertStatus, extractRegionalMentions, mergeRegionalMax, REGIONAL_WORDS } from '../lib/level-assessment.js';
+import { analyzeAdvisory } from '../analysis/analysis-engine.js';
 
 const API = 'https://www.gov.uk/api/content/foreign-travel-advice';
 const SITE = 'https://www.gov.uk';
 
 export const meta = { id: 'uk', label: 'Verenigd Koninkrijk (FCDO)', flag: '🇬🇧', lang: 'en' };
-
-// De GOV.UK-tekst gebruikt voor regionale (niet-landelijke) waarschuwingen
-// vrijwel altijd deze twee vaste FCDO-formuleringen — vandaar dat we hier
-// niet de volledige VIG_PATTERNS-schaal nodig hebben zoals bij FR/ES.
-const UK_REGIONAL_PATTERNS = [
-  { re: /fcdo advises? against all travel/i, level: 4 },
-  { re: /fcdo advises? against all but essential travel/i, level: 3 },
-];
 
 export async function getAdvisory(slug) {
   if (!slug) return null;
@@ -55,20 +47,15 @@ export async function getAdvisory(slug) {
   }
 
   const fullText = fullTextParts.join('\n');
-  // Niveau komt uit het gestructureerde GOV.UK alert_status-veld, niet uit
-  // vrije tekst — zie worker/src/lib/level-assessment.js voor de reden
-  // (regionale waarschuwingen escaleerden anders ten onrechte het hele land).
-  const assessment = assessUkAlertStatus(det.alert_status);
-  // regionalBreakdown is aanvullend bewijs bij het gestructureerde
-  // alert_status-veld — géén vervanging. Alleen concreet gevonden
-  // vermeldingen (kop + niveau-formulering), dus mogelijk onvolledig.
-  const regionalBreakdown = extractRegionalMentions({
+  // Alle interpretatie (landelijk niveau uit het gestructureerde GOV.UK
+  // alert_status-veld, regionale vermeldingen uit de tekst) gebeurt in de
+  // gedeelde analyse-engine; deze adapter levert alleen data aan.
+  const assessment = analyzeAdvisory({
     sections: themes,
-    patterns: UK_REGIONAL_PATTERNS,
-    regionalWordsRe: REGIONAL_WORDS.en,
+    lang: 'en',
+    structured: { kind: 'uk_alert_status', value: det.alert_status },
+    countryName: det.country?.name || d.title,
   });
-  const regionalMaxLevel = mergeRegionalMax(assessment.regionalMaxLevel, regionalBreakdown);
-  const hasRegionalWarnings = assessment.hasRegionalWarnings || regionalBreakdown.length > 0;
   return {
     source: meta.id,
     sourceLabel: meta.label,
@@ -80,11 +67,12 @@ export async function getAdvisory(slug) {
     updateNote: det.change_description || null,
     level: assessment.level,
     color: assessment.color,
-    levelLabel: assessment.explanation,
-    regionalMaxLevel,
-    hasRegionalWarnings,
-    regionalBreakdown: regionalBreakdown.length ? regionalBreakdown : null,
-    regionalCoverage: hasRegionalWarnings ? 'partial' : null,
+    levelLabel: assessment.levelLabel,
+    regionalMaxLevel: assessment.regionalMaxLevel,
+    hasRegionalWarnings: assessment.hasRegionalWarnings,
+    regionalBreakdown: assessment.regionalBreakdown,
+    regionalCoverage: assessment.regionalCoverage,
+    regions: assessment.regions,
     confidence: assessment.confidence,
     assessmentStatus: assessment.assessmentStatus,
     alertStatus: det.alert_status || [],
