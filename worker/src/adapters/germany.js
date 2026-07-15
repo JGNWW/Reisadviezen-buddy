@@ -56,6 +56,12 @@ export async function getAdvisory(iso3) {
   const e = d?.response?.[id];
   if (!e) return null;
 
+  // Publieke URL van de "Reise- und Sicherheitshinweise"-pagina zelf, met het
+  // opendata-content-ID in het pad — NIET de politieke landenpagina
+  // (/de/aussenpolitik/laender/{slug}-node), waar het reisadvies niet staat.
+  const slug = countrySlug(e.countryName);
+  const publicUrl = `${SITE}/de/service/laender/${slug}-node/${slug}sicherheit-${id}`;
+
   const html = absolutiseLinks(e.content || '', SITE);
   const themes = splitByHeadings(html)
     .filter((s) => s.heading && s.text && s.text.length > 30)
@@ -84,7 +90,7 @@ export async function getAdvisory(iso3) {
     sourceLabel: meta.label,
     flag: meta.flag,
     name: e.countryName || null,
-    url: `${SITE}/de/aussenpolitik/laender/${countrySlug(e.countryName)}-node`,
+    url: publicUrl,
     lastModified: e.lastModified ? new Date(e.lastModified * 1000).toISOString() : null,
     updateNote: note || null,
     level: assessment.level,
