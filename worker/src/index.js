@@ -167,12 +167,15 @@ export default {
 
         try {
           let res = await fetchDisasters(activeStatusFilter);
+          let path = 'active';
           if (!res.ok) return json({ available: true, items: [], note: `ReliefWeb ${res.status}` }, 200);
           if (!res.items.length) {
             res = await fetchDisasters('');
+            path = 'fallback-all';
             if (!res.ok) return json({ available: true, items: [], note: `ReliefWeb ${res.status}` }, 200);
           }
-          return json({ available: true, items: res.items }, 200, { 'Cache-Control': 'public, max-age=21600' });
+          const extra = url.searchParams.get('debug') ? { debugPath: path } : {};
+          return json({ available: true, items: res.items, ...extra }, 200, { 'Cache-Control': 'public, max-age=21600' });
         } catch (e) {
           return json({ available: true, items: [], note: String(e.message || e) }, 200);
         }
