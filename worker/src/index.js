@@ -124,7 +124,11 @@ export default {
       if (parts[0] === 'context' && parts[1]) {
         const iso = parts[1].toUpperCase();
         const app = env?.RELIEFWEB_APP;
-        if (!app) return json({ available: false }, 200, { 'Cache-Control': 'public, max-age=86400' });
+        // Korte cache (i.p.v. de 24u van de succes-respons): dit is alleen een
+        // env-var-check, geen dure upstream-call, en een net geactiveerde
+        // RELIEFWEB_APP-secret mag niet een dag lang "onbeschikbaar" blijven
+        // ogen door een gecachete respons van vóór de configuratie.
+        if (!app) return json({ available: false }, 200, { 'Cache-Control': 'public, max-age=300' });
         const api = 'https://api.reliefweb.int/v2/disasters'
           + `?appname=${encodeURIComponent(app)}`
           + '&filter[field]=primary_country.iso3'
