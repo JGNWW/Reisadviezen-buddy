@@ -19,6 +19,8 @@ export const ROUTES = [
   ['rejsevejledninger/nepal', 'dk-nepal.html'],
   ['pcinfectionspothazardinfo_010.html', 'jp-nepal.html'],
   ['pchazardspecificinfo_', 'jp-nepal-detail.html'],
+  ['schede_paese/NPL.json', 'it-nepal.json'],
+  ['matkustustiedote/-/c/NP', 'fi-nepal.html'],
 ];
 
 export function installFixtureFetch() {

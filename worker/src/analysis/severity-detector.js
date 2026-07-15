@@ -67,6 +67,23 @@ const PATTERNS = {
     P(/wird (dringend )?abgeraten/i, 3),
     P(/erh[öo]hte vorsicht|besondere vorsicht/i, 2),
   ],
+  // Italië (Viaggiare Sicuri) — tekstueel, geen vaste niveaus. "sconsigliati
+  // a qualsiasi titolo" (4) bevat "sconsigliati" (3): de ontdubbeling
+  // (langste match op dezelfde positie wint) lost die overlap op.
+  it: [
+    P(/sconsigliat\w+ a qualsiasi titolo|si sconsigliano (tutti )?i viaggi a qualsiasi titolo|evacuare il paese/i, 4),
+    P(/sconsigliat\w+|si sconsigliano?\b/i, 3),
+    P(/particolare cautela|elevata cautela|massima prudenza|particolare prudenza|particolare attenzione/i, 2),
+    P(/normali misure di prudenza/i, 1),
+  ],
+  // Finland (um.fi) — vier vaste niveaus (Turvallisuustaso), met zowel de
+  // korte formulering als het "kehotetaan välttämään"-proza.
+  fi: [
+    P(/v[äa]lt[äa] kaikkea matkust(usta|amista)|kaikkea matkustamista .{0,30}kehotetaan v[äa]ltt[äa]m[äa][äa]n/i, 4),
+    P(/v[äa]lt[äa] (kaikkea )?tarpeetonta matkust(usta|amista)|tarpeetonta matkustamista .{0,30}kehotetaan v[äa]ltt[äa]m[äa][äa]n/i, 3),
+    P(/noudata erityist[äa] varovaisuutta|erityist[äa] varovaisuutta/i, 2),
+    P(/noudata tavanomaista varovaisuutta|tavanomaista varovaisuutta/i, 1),
+  ],
   // Japan (MOFA) — vier vaste niveaus, zowel met als zonder "レベルN"-prefix.
   // Let op de volgorde/overlap: レベル2 ("不要不急の渡航は止めてください")
   // bevat de レベル3-frase ("渡航は止めてください"); de ontdubbeling in

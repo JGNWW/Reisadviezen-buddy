@@ -25,11 +25,13 @@ import * as germany from './adapters/germany.js';
 import * as newzealand from './adapters/newzealand.js';
 import * as denmark from './adapters/denmark.js';
 import * as japan from './adapters/japan.js';
+import * as italy from './adapters/italy.js';
+import * as finland from './adapters/finland.js';
 import { translate, translateBlocks } from './lib/translate.js';
 import { classifyTheme } from './lib/themes.js';
 import { setReaderKey, setCorsProxy } from './lib/fetch.js';
 
-const ADAPTERS = { uk, us, ca: canada, ie: ireland, fr: france, au: australia, es: spain, de: germany, nz: newzealand, dk: denmark, jp: japan };
+const ADAPTERS = { uk, us, ca: canada, ie: ireland, fr: france, au: australia, es: spain, de: germany, nz: newzealand, dk: denmark, jp: japan, it: italy, fi: finland };
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',

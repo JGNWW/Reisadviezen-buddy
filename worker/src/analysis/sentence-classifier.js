@@ -28,6 +28,8 @@ const RISK_WORDS = {
   da: /terror|kidnapning|v[æa]bnede? konflikt|kriminalitet|miner/i,
   de: /terror|entf[üu]hrung|bewaffnet|kriminalit[äa]t|minen|anschl[äa]ge/i,
   ja: /テロ|誘拐|強盗|殺人|武装|地雷|治安|襲撃|爆発/,
+  it: /terrorismo|terroristic|sequestr|criminalit|rapimen|mine antiuomo|conflitto armato/i,
+  fi: /terroris|kidnappau|sieppau|rikollisuu|aseellis|miinoja/i,
 };
 
 export function classifySentence(sentence, lang = 'en', opts = {}) {

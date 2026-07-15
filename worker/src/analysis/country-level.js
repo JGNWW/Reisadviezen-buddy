@@ -123,6 +123,14 @@ export function interpretStructured(structured) {
     return ok({ level: 1, regionalMaxLevel: null, label: 'Geen reiswaarschuwing of veiligheidsaanwijzing.', explanation: 'Geen reiswaarschuwing of veiligheidsaanwijzing.' });
   }
 
+  if (kind === 'fi_security_level') {
+    // um.fi toont het landelijke niveau als vast "Turvallisuustaso"-veld met
+    // één van vier vaste formuleringen — de ernst-detector (fi) vertaalt die.
+    const sev = findSeverity(String(value || ''), 'fi');
+    if (!sev) return uncertain('Geen herkenbare Turvallisuustaso-formulering gevonden bij um.fi.');
+    return ok({ level: sev.level, label: sev.phrase.trim(), explanation: `um.fi (Finland): ${sev.phrase.trim()}.` });
+  }
+
   if (kind === 'jp_hazard_levels') {
     // MOFA (Japan) publiceert per land een 【危険レベル】-blok met ●-bullets:
     //   ●アフガニスタン全土 レベル4：退避してください。…

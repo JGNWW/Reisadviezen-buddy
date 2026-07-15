@@ -35,6 +35,9 @@ export const THEMES = [
       'seguridad', 'notas importantes',
       // ja (MOFA): vaste sectiekoppen
       '危険情報', '概況', '治安', '地域情勢', '滞在にあたっての注意', '滞在に当たっての注意',
+      // it/fi: vaste sectiekoppen (Viaggiare Sicuri / um.fi)
+      'sicurezza', 'aree di particolare cautela', 'avvertenze', 'indicazioni generali',
+      'turvallisuustaso', 'turvallisuustilanne', 'ajankohtaista',
     ],
   },
   {
@@ -46,6 +49,7 @@ export const THEMES = [
       'crime', 'theft', 'scam', 'robbery', 'pickpocket', 'mugging',
       'kriminalitat', 'kriminalitet', 'criminalite', 'delincuencia', 'robo',
       '犯罪', '窃盗', '強盗', '詐欺', 'スリ',
+      'criminalita', 'ordine pubblico', 'rikollisuus',
     ],
   },
   {
@@ -56,6 +60,7 @@ export const THEMES = [
       'terrorisme', 'terroristische', 'aanslag', 'terrorism', 'terrorist attack',
       'terrorismus', 'terror', 'terrorismo',
       'テロ',
+      'rischio terrorismo',
     ],
   },
   {
@@ -104,6 +109,7 @@ export const THEMES = [
       'intemperies', 'seisme', 'catastrophes naturelles', 'inondation',
       'terremoto', 'huracan', 'inundacion', 'desastres naturales',
       '地震', '洪水', '自然災害', 'モンスーン', 'サイクロン',
+      'calamita', 'rischi ambientali', 'luonnonolot', 'luonnonkatastrofit',
     ],
   },
   {
@@ -116,6 +122,7 @@ export const THEMES = [
       'piracy', 'public transport', 'aviation', 'vehicle',
       'fuhrerschein', 'verkehr', 'trafik', 'circulation', 'conduccion', 'liaisons aeriennes',
       '交通', '道路',
+      'mobilita', 'liikenne',
     ],
   },
   {
@@ -128,6 +135,7 @@ export const THEMES = [
       'local laws', 'customs', 'personal id', 'dress', 'illegal drugs', 'criminal penalties',
       'gay and lesbian',
       'rechtliche', 'lokale regler', 'skikke', 'legislation', 'leyes', 'costumbres',
+      'normative locali', 'maan lait ja kaytannot', 'maan lait',
     ],
   },
   {
@@ -145,6 +153,7 @@ export const THEMES = [
       'sante', 'rougeole', 'paludisme', 'epidemie', 'evacuation sanitaire',
       'sanitarias', 'salud', 'vacuna',
       '感染症', '医療', 'デング',
+      'situazione sanitaria', 'vaccinazioni', 'terveys',
     ],
   },
   {
@@ -159,6 +168,7 @@ export const THEMES = [
       'entree', 'sejour', 'formalites',
       'documentacion', 'visado', 'aduanas',
       '査証', 'ビザ', 'パスポート', '出入国',
+      'documenti e visti', 'requisiti di ingresso', 'maahantulosaannokset', 'maahantulo',
     ],
   },
   {
@@ -169,6 +179,7 @@ export const THEMES = [
       'geld', 'betalen', 'pinnen', 'creditcard', 'valuta', 'contant', 'money', 'currency',
       'cash', 'atm', 'credit card', 'payment',
       'wahrung', 'devises', 'monnaie', 'divisas', 'moneda',
+      'moneta', 'valuutta',
     ],
   },
   {
@@ -189,6 +200,7 @@ export const THEMES = [
       'crisis', 'emergency', 'getting help', 'consular', 'embassy', 'assistance',
       'krisenvorsorge', 'danskerlisten', 'urgence', 'ambassade', 'embajada', 'telefonos',
       '緊急時', '連絡先', '大使館',
+      'ambasciata', 'suurlahetysto', 'yhteystiedot',
     ],
   },
 ];
