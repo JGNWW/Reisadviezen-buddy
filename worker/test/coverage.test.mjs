@@ -25,6 +25,7 @@ const CASES = [
   ['es', 'Nepal', '../src/adapters/spain.js', 80],
   ['de', 'NPL', '../src/adapters/germany.js', 85],
   ['dk', 'nepal', '../src/adapters/denmark.js', 90],
+  ['jp', '010', '../src/adapters/japan.js', 75],
 ];
 
 for (const [sid, arg, mod, minPct] of CASES) {

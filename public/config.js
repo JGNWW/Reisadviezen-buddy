@@ -22,6 +22,8 @@ window.REISADVIEZEN_CONFIG = {
     { id: 'de', label: 'Duitsland (Auswärtiges Amt)', flag: '🇩🇪', lang: 'de', default: true },
     { id: 'nz', label: 'Nieuw-Zeeland (SafeTravel)', flag: '🇳🇿', lang: 'en', default: true },
     { id: 'dk', label: 'Denemarken (Udenrigsministeriet)', flag: '🇩🇰', lang: 'da', default: true },
-    // Japan (anzen.mofa.go.jp) rendert niet landspecifiek via de reader; nog open.
+    // Japan wordt direct opgehaald (geen reader nodig): MOFA blokkeert geen
+    // datacenter-IP's en publiceert vaste niveaus (レベル1-4).
+    { id: 'jp', label: 'Japan (MOFA)', flag: '🇯🇵', lang: 'ja', default: true },
   ],
 };

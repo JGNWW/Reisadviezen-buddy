@@ -24,7 +24,8 @@
       "es": "Nepal",
       "de": "NPL",
       "nz": "nepal",
-      "dk": "nepal"
+      "dk": "nepal",
+      "jp": "010"
     }
   },
   "MSR": {
@@ -80,7 +81,8 @@
       "es": "Alemania",
       "de": null,
       "nz": "germany",
-      "dk": "tyskland"
+      "dk": "tyskland",
+      "jp": "165"
     }
   },
   "REU": {
@@ -136,7 +138,8 @@
       "es": "Serbia",
       "de": "SRB",
       "nz": "serbia",
-      "dk": "serbien"
+      "dk": "serbien",
+      "jp": "175"
     }
   },
   "GRL": {
@@ -220,7 +223,8 @@
       "es": "Santa Lucía",
       "de": "LCA",
       "nz": "saint-lucia",
-      "dk": "sankt-lucia"
+      "dk": "sankt-lucia",
+      "jp": "292"
     }
   },
   "PRT": {
@@ -248,7 +252,8 @@
       "es": "Portugal",
       "de": "PRT",
       "nz": "portugal",
-      "dk": "portugal"
+      "dk": "portugal",
+      "jp": "174"
     }
   },
   "HUN": {
@@ -276,7 +281,8 @@
       "es": "Hungría",
       "de": "HUN",
       "nz": "hungary",
-      "dk": "ungarn"
+      "dk": "ungarn",
+      "jp": "168"
     }
   },
   "POL": {
@@ -304,7 +310,8 @@
       "es": "Polonia",
       "de": "POL",
       "nz": "poland",
-      "dk": "polen"
+      "dk": "polen",
+      "jp": "173"
     }
   },
   "SVK": {
@@ -332,7 +339,8 @@
       "es": "Eslovaquia",
       "de": "SVK",
       "nz": "slovakia",
-      "dk": "slovakiet"
+      "dk": "slovakiet",
+      "jp": "184"
     }
   },
   "HRV": {
@@ -360,7 +368,8 @@
       "es": "Croacia",
       "de": "HRV",
       "nz": "croatia",
-      "dk": "kroatien"
+      "dk": "kroatien",
+      "jp": "188"
     }
   },
   "SVN": {
@@ -388,7 +397,8 @@
       "es": "Eslovenia",
       "de": "SVN",
       "nz": "slovenia",
-      "dk": "slovenien"
+      "dk": "slovenien",
+      "jp": "162"
     }
   },
   "CZE": {
@@ -416,7 +426,8 @@
       "es": "Chequia",
       "de": "CZE",
       "nz": "czech-republic",
-      "dk": "tjekkiet"
+      "dk": "tjekkiet",
+      "jp": "163"
     }
   },
   "ATG": {
@@ -444,7 +455,8 @@
       "es": "Antigua y Barbuda",
       "de": "ATG",
       "nz": "antigua-and-barbuda",
-      "dk": "antigua-og-barbuda"
+      "dk": "antigua-og-barbuda",
+      "jp": "286"
     }
   },
   "MWI": {
@@ -472,7 +484,8 @@
       "es": "Malaui",
       "de": "MWI",
       "nz": "malawi",
-      "dk": "malawi"
+      "dk": "malawi",
+      "jp": "120"
     }
   },
   "GAB": {
@@ -500,7 +513,8 @@
       "es": "Gabón",
       "de": "GAB",
       "nz": "gabon",
-      "dk": "gabon"
+      "dk": "gabon",
+      "jp": "097"
     }
   },
   "VGB": {
@@ -556,7 +570,8 @@
       "es": "Granada",
       "de": "GRD",
       "nz": "grenada",
-      "dk": "grenada"
+      "dk": "grenada",
+      "jp": "290"
     }
   },
   "HND": {
@@ -584,7 +599,8 @@
       "es": "Honduras",
       "de": "HND",
       "nz": "honduras",
-      "dk": "honduras"
+      "dk": "honduras",
+      "jp": "263"
     }
   },
   "CMR": {
@@ -612,7 +628,8 @@
       "es": "Camerún",
       "de": "CMR",
       "nz": "cameroon",
-      "dk": "cameroun"
+      "dk": "cameroun",
+      "jp": "098"
     }
   },
   "BLR": {
@@ -640,7 +657,8 @@
       "es": "Bielorrusia",
       "de": "BLR",
       "nz": "belarus",
-      "dk": "hviderusland"
+      "dk": "hviderusland",
+      "jp": "185"
     }
   },
   "DMA": {
@@ -668,7 +686,8 @@
       "es": "república dominicana",
       "de": "DMA",
       "nz": "dominica",
-      "dk": "dominica"
+      "dk": "dominica",
+      "jp": "289"
     }
   },
   "KAZ": {
@@ -696,7 +715,8 @@
       "es": "Kazajstán",
       "de": "KAZ",
       "nz": "kazakhstan",
-      "dk": "kasakhstan"
+      "dk": "kasakhstan",
+      "jp": "187"
     }
   },
   "ROU": {
@@ -724,7 +744,8 @@
       "es": "Rumania",
       "de": "ROU",
       "nz": "romania",
-      "dk": "rum-nien"
+      "dk": "rum-nien",
+      "jp": "177"
     }
   },
   "VCT": {
@@ -752,7 +773,8 @@
       "es": "San Vicente y las Granadinas",
       "de": "VCT",
       "nz": "saint-vincent-and-the-grenadines",
-      "dk": "saint-vincent-og-grenadinerne"
+      "dk": "saint-vincent-og-grenadinerne",
+      "jp": "293"
     }
   },
   "GUY": {
@@ -780,7 +802,8 @@
       "es": "Guayana",
       "de": "GUY",
       "nz": "guyana",
-      "dk": "guyana"
+      "dk": "guyana",
+      "jp": "294"
     }
   },
   "SSD": {
@@ -808,7 +831,8 @@
       "es": "Sudán del Sur",
       "de": "SSD",
       "nz": "south-sudan",
-      "dk": "sydsudan"
+      "dk": "sydsudan",
+      "jp": "301"
     }
   },
   "AUT": {
@@ -836,7 +860,8 @@
       "es": "Austria",
       "de": "AUT",
       "nz": "austria",
-      "dk": "ostrig"
+      "dk": "ostrig",
+      "jp": "156"
     }
   },
   "JAM": {
@@ -864,7 +889,8 @@
       "es": "Jamaica",
       "de": "JAM",
       "nz": "jamaica",
-      "dk": "jamaica"
+      "dk": "jamaica",
+      "jp": "249"
     }
   },
   "MMR": {
@@ -892,7 +918,8 @@
       "es": "Birmania",
       "de": "MMR",
       "nz": "myanmar",
-      "dk": "myanmar"
+      "dk": "myanmar",
+      "jp": "018"
     }
   },
   "PRK": {
@@ -920,7 +947,8 @@
       "es": "Corea del Norte",
       "de": "PRK",
       "nz": "north-korea",
-      "dk": "nordkorea"
+      "dk": "nordkorea",
+      "jp": "035"
     }
   },
   "SXM": {
@@ -976,7 +1004,8 @@
       "es": "Malasia",
       "de": "MYS",
       "nz": "malaysia",
-      "dk": "malaysia"
+      "dk": "malaysia",
+      "jp": "017"
     }
   },
   "TWN": {
@@ -1001,7 +1030,8 @@
       "es": "Taiwán, Provincia de China",
       "de": "TWN",
       "nz": "taiwan-province-of-china",
-      "dk": "taiwan-provinsen-kina"
+      "dk": "taiwan-provinsen-kina",
+      "jp": "008"
     }
   },
   "VUT": {
@@ -1029,7 +1059,8 @@
       "es": "Vanuatu",
       "de": "VUT",
       "nz": "vanuatu",
-      "dk": "vanuatu"
+      "dk": "vanuatu",
+      "jp": "078"
     }
   },
   "SEN": {
@@ -1057,7 +1088,8 @@
       "es": "Senegal",
       "de": "SEN",
       "nz": "senegal",
-      "dk": "senegal"
+      "dk": "senegal",
+      "jp": "109"
     }
   },
   "BDI": {
@@ -1085,7 +1117,8 @@
       "es": "Burundi",
       "de": "BDI",
       "nz": "burundi",
-      "dk": "burundi"
+      "dk": "burundi",
+      "jp": "127"
     }
   },
   "NRU": {
@@ -1113,7 +1146,8 @@
       "es": "Nauru",
       "de": "NRU",
       "nz": "nauru",
-      "dk": "nauru"
+      "dk": "nauru",
+      "jp": "271"
     }
   },
   "NAM": {
@@ -1141,7 +1175,8 @@
       "es": "Namibia",
       "de": "NAM",
       "nz": "namibia",
-      "dk": "namibia"
+      "dk": "namibia",
+      "jp": "143"
     }
   },
   "MDG": {
@@ -1169,7 +1204,8 @@
       "es": "Madagascar",
       "de": "MDG",
       "nz": "madagascar",
-      "dk": "madagaskar"
+      "dk": "madagaskar",
+      "jp": "119"
     }
   },
   "IND": {
@@ -1197,7 +1233,8 @@
       "es": "India",
       "de": "IND",
       "nz": "india",
-      "dk": "indien"
+      "dk": "indien",
+      "jp": "001"
     }
   },
   "BFA": {
@@ -1225,7 +1262,8 @@
       "es": "Burkina Faso",
       "de": "BFA",
       "nz": "burkina-faso",
-      "dk": "burkina-faso"
+      "dk": "burkina-faso",
+      "jp": "117"
     }
   },
   "ERI": {
@@ -1253,7 +1291,8 @@
       "es": "Eritrea",
       "de": "ERI",
       "nz": "eritrea",
-      "dk": "eritrea"
+      "dk": "eritrea",
+      "jp": "139"
     }
   },
   "SWE": {
@@ -1281,7 +1320,8 @@
       "es": "Suecia",
       "de": "SWE",
       "nz": "sweden",
-      "dk": "sverige"
+      "dk": "sverige",
+      "jp": "160"
     }
   },
   "AFG": {
@@ -1309,7 +1349,8 @@
       "es": "Afganistán",
       "de": "AFG",
       "nz": "afghanistan",
-      "dk": "afghanistan"
+      "dk": "afghanistan",
+      "jp": "041"
     }
   },
   "MTQ": {
@@ -1417,7 +1458,8 @@
       "es": "Kiribati",
       "de": "KIR",
       "nz": "kiribati",
-      "dk": "kiribati"
+      "dk": "kiribati",
+      "jp": "268"
     }
   },
   "TON": {
@@ -1445,7 +1487,8 @@
       "es": "Tonga",
       "de": "TON",
       "nz": "tonga",
-      "dk": "tonga"
+      "dk": "tonga",
+      "jp": "273"
     }
   },
   "WLF": {
@@ -1497,7 +1540,8 @@
       "es": "Nueva Caledonia",
       "de": null,
       "nz": "new-caledonia",
-      "dk": "ny-kaledonien"
+      "dk": "ny-kaledonien",
+      "jp": "299"
     }
   },
   "COK": {
@@ -1525,7 +1569,8 @@
       "es": "Islas Cook",
       "de": "COK",
       "nz": "cook-islands",
-      "dk": "cook-erne"
+      "dk": "cook-erne",
+      "jp": "300"
     }
   },
   "ISL": {
@@ -1553,7 +1598,8 @@
       "es": "Islandia",
       "de": "ISL",
       "nz": "iceland",
-      "dk": "island"
+      "dk": "island",
+      "jp": "282"
     }
   },
   "PRI": {
@@ -1609,7 +1655,8 @@
       "es": "Bulgaria",
       "de": "BGR",
       "nz": "bulgaria",
-      "dk": "bulgarien"
+      "dk": "bulgarien",
+      "jp": "171"
     }
   },
   "BEL": {
@@ -1637,7 +1684,8 @@
       "es": "Bélgica",
       "de": "BEL",
       "nz": "belgium",
-      "dk": "belgien"
+      "dk": "belgien",
+      "jp": "172"
     }
   },
   "CYM": {
@@ -1693,7 +1741,8 @@
       "es": "Yemen",
       "de": "YEM",
       "nz": "yemen",
-      "dk": "yemen"
+      "dk": "yemen",
+      "jp": "043"
     }
   },
   "EST": {
@@ -1721,7 +1770,8 @@
       "es": "Estonia",
       "de": "EST",
       "nz": "estonia",
-      "dk": "estland"
+      "dk": "estland",
+      "jp": "155"
     }
   },
   "LTU": {
@@ -1749,7 +1799,8 @@
       "es": "Lituania",
       "de": "LTU",
       "nz": "lithuania",
-      "dk": "litauen"
+      "dk": "litauen",
+      "jp": "192"
     }
   },
   "ITA": {
@@ -1777,7 +1828,8 @@
       "es": "Italia",
       "de": "ITA",
       "nz": "italy",
-      "dk": "italien"
+      "dk": "italien",
+      "jp": "153"
     }
   },
   "CHE": {
@@ -1805,7 +1857,8 @@
       "es": "Suiza",
       "de": "CHE",
       "nz": "switzerland",
-      "dk": "schweiz"
+      "dk": "schweiz",
+      "jp": "159"
     }
   },
   "IRL": {
@@ -1833,7 +1886,8 @@
       "es": "Irlanda",
       "de": "IRL",
       "nz": "ireland",
-      "dk": "irland"
+      "dk": "irland",
+      "jp": "151"
     }
   },
   "DNK": {
@@ -1861,7 +1915,8 @@
       "es": "Dinamarca",
       "de": "DNK",
       "nz": "denmark",
-      "dk": "danmark"
+      "dk": "danmark",
+      "jp": "164"
     }
   },
   "BQ-SA": {
@@ -1963,7 +2018,8 @@
       "es": "Comoras",
       "de": "COM",
       "nz": "comoros",
-      "dk": "comorerne"
+      "dk": "comorerne",
+      "jp": "135"
     }
   },
   "MOZ": {
@@ -1991,7 +2047,8 @@
       "es": "Mozambique",
       "de": "MOZ",
       "nz": "mozambique",
-      "dk": "mozambique"
+      "dk": "mozambique",
+      "jp": "123"
     }
   },
   "FIN": {
@@ -2019,7 +2076,8 @@
       "es": "Finlandia",
       "de": "FIN",
       "nz": "finland",
-      "dk": "finland"
+      "dk": "finland",
+      "jp": "169"
     }
   },
   "GMB": {
@@ -2047,7 +2105,8 @@
       "es": "Gambia",
       "de": "GMB",
       "nz": "gambia",
-      "dk": "gambia"
+      "dk": "gambia",
+      "jp": "277"
     }
   },
   "SLV": {
@@ -2075,7 +2134,8 @@
       "es": "Salvador",
       "de": "SLV",
       "nz": "el-salvador",
-      "dk": "el-salvador"
+      "dk": "el-salvador",
+      "jp": "244"
     }
   },
   "ISR": {
@@ -2103,7 +2163,8 @@
       "es": "Israel",
       "de": "ISR",
       "nz": "israel",
-      "dk": "israel"
+      "dk": "israel",
+      "jp": "044"
     }
   },
   "MRT": {
@@ -2131,7 +2192,8 @@
       "es": "Mauritania",
       "de": "MRT",
       "nz": "mauritania",
-      "dk": "mauretanien"
+      "dk": "mauretanien",
+      "jp": "278"
     }
   },
   "LIE": {
@@ -2159,7 +2221,8 @@
       "es": "Liechtenstein",
       "de": "LIE",
       "nz": "liechtenstein",
-      "dk": "liechtenstein"
+      "dk": "liechtenstein",
+      "jp": "283"
     }
   },
   "RWA": {
@@ -2187,7 +2250,8 @@
       "es": "Ruanda",
       "de": "RWA",
       "nz": "rwanda",
-      "dk": "rwanda"
+      "dk": "rwanda",
+      "jp": "131"
     }
   },
   "ZMB": {
@@ -2215,7 +2279,8 @@
       "es": "Zambia",
       "de": "ZMB",
       "nz": "zambia",
-      "dk": "zambia"
+      "dk": "zambia",
+      "jp": "104"
     }
   },
   "MKD": {
@@ -2243,7 +2308,8 @@
       "es": "Macedonia del Norte",
       "de": "MKD",
       "nz": "north-macedonia",
-      "dk": "nordmakedonien"
+      "dk": "nordmakedonien",
+      "jp": "205"
     }
   },
   "AUS": {
@@ -2271,7 +2337,8 @@
       "es": "Australia",
       "de": "AUS",
       "nz": "australia",
-      "dk": "australien"
+      "dk": "australien",
+      "jp": "071"
     }
   },
   "GUF": {
@@ -2327,7 +2394,8 @@
       "es": "Reino Unido",
       "de": "GBR",
       "nz": "united-kingdom",
-      "dk": "storbritannien"
+      "dk": "storbritannien",
+      "jp": "154"
     }
   },
   "KOR": {
@@ -2355,7 +2423,8 @@
       "es": "Corea del Sur",
       "de": "KOR",
       "nz": "south-korea",
-      "dk": "sydkorea"
+      "dk": "sydkorea",
+      "jp": "003"
     }
   },
   "BTN": {
@@ -2383,7 +2452,8 @@
       "es": "Bután",
       "de": "BTN",
       "nz": "bhutan",
-      "dk": "bhutan"
+      "dk": "bhutan",
+      "jp": "039"
     }
   },
   "GRC": {
@@ -2411,7 +2481,8 @@
       "es": "Grecia",
       "de": "GRC",
       "nz": "greece",
-      "dk": "graekenland"
+      "dk": "graekenland",
+      "jp": "158"
     }
   },
   "CHN": {
@@ -2439,7 +2510,8 @@
       "es": "China",
       "de": "CHN",
       "nz": "china",
-      "dk": "kina"
+      "dk": "kina",
+      "jp": "009"
     }
   },
   "PAK": {
@@ -2467,7 +2539,8 @@
       "es": "Pakistán",
       "de": "PAK",
       "nz": "pakistan",
-      "dk": "pakistan"
+      "dk": "pakistan",
+      "jp": "011"
     }
   },
   "PSE": {
@@ -2519,7 +2592,8 @@
       "es": "Bosnia y Herzegovina",
       "de": "BIH",
       "nz": "bosnia-and-herzegovina",
-      "dk": "bosnien-hercegovina"
+      "dk": "bosnien-hercegovina",
+      "jp": "191"
     }
   },
   "SMR": {
@@ -2547,7 +2621,8 @@
       "es": "San Marino",
       "de": "SMR",
       "nz": "san-marino",
-      "dk": "san-marino"
+      "dk": "san-marino",
+      "jp": "285"
     }
   },
   "RUS": {
@@ -2575,7 +2650,8 @@
       "es": "Rusia",
       "de": "RUS",
       "nz": "russia",
-      "dk": "rusland"
+      "dk": "rusland",
+      "jp": "178"
     }
   },
   "GNB": {
@@ -2603,7 +2679,8 @@
       "es": "Guinea-Bisáu",
       "de": "GNB",
       "nz": "guinea-bissau",
-      "dk": "guinea-bissau"
+      "dk": "guinea-bissau",
+      "jp": "140"
     }
   },
   "GNQ": {
@@ -2631,7 +2708,8 @@
       "es": "Guinea Ecuatorial",
       "de": "GNQ",
       "nz": "equatorial-guinea",
-      "dk": "kvatorial-guinea"
+      "dk": "kvatorial-guinea",
+      "jp": "276"
     }
   },
   "VIR": {
@@ -2687,7 +2765,8 @@
       "es": "bahamas",
       "de": "BHS",
       "nz": "bahamas",
-      "dk": "bahamas"
+      "dk": "bahamas",
+      "jp": "257"
     }
   },
   "MAC": {
@@ -2715,7 +2794,8 @@
       "es": "macao",
       "de": "MAC",
       "nz": "macao",
-      "dk": "macao"
+      "dk": "macao",
+      "jp": "036"
     }
   },
   "HKG": {
@@ -2743,7 +2823,8 @@
       "es": "Hong Kong",
       "de": "HKG",
       "nz": "hong-kong",
-      "dk": "hong-kong"
+      "dk": "hong-kong",
+      "jp": "016"
     }
   },
   "UGA": {
@@ -2771,7 +2852,8 @@
       "es": "Uganda",
       "de": "UGA",
       "nz": "uganda",
-      "dk": "uganda"
+      "dk": "uganda",
+      "jp": "093"
     }
   },
   "DZA": {
@@ -2799,7 +2881,8 @@
       "es": "Argelia",
       "de": "DZA",
       "nz": "algeria",
-      "dk": "algeriet"
+      "dk": "algeriet",
+      "jp": "091"
     }
   },
   "AGO": {
@@ -2827,7 +2910,8 @@
       "es": "Angola",
       "de": "AGO",
       "nz": "angola",
-      "dk": "angola"
+      "dk": "angola",
+      "jp": "092"
     }
   },
   "ARG": {
@@ -2855,7 +2939,8 @@
       "es": "Argentina",
       "de": "ARG",
       "nz": "argentina",
-      "dk": "argentina"
+      "dk": "argentina",
+      "jp": "241"
     }
   },
   "BRB": {
@@ -2883,7 +2968,8 @@
       "es": "Barbados",
       "de": "BRB",
       "nz": "barbados",
-      "dk": "barbados"
+      "dk": "barbados",
+      "jp": "287"
     }
   },
   "BRA": {
@@ -2911,7 +2997,8 @@
       "es": "Brasil",
       "de": "BRA",
       "nz": "brazil",
-      "dk": "brasilien"
+      "dk": "brasilien",
+      "jp": "259"
     }
   },
   "KHM": {
@@ -2939,7 +3026,8 @@
       "es": "Camboya",
       "de": "KHM",
       "nz": "cambodia",
-      "dk": "cambodja"
+      "dk": "cambodja",
+      "jp": "004"
     }
   },
   "CAN": {
@@ -2963,7 +3051,8 @@
       "es": "Canadá",
       "de": "CAN",
       "nz": "canada",
-      "dk": "canada"
+      "dk": "canada",
+      "jp": "222"
     }
   },
   "CAF": {
@@ -2991,7 +3080,8 @@
       "es": "República Centroafricana",
       "de": "CAF",
       "nz": "central-african-republic",
-      "dk": "centralafrikanske-republik"
+      "dk": "centralafrikanske-republik",
+      "jp": "112"
     }
   },
   "CYP": {
@@ -3019,7 +3109,8 @@
       "es": "Chipre",
       "de": "CYP",
       "nz": "cyprus",
-      "dk": "cypern"
+      "dk": "cypern",
+      "jp": "193"
     }
   },
   "GTM": {
@@ -3047,7 +3138,8 @@
       "es": "Guatemala",
       "de": "GTM",
       "nz": "guatemala",
-      "dk": "guatemala"
+      "dk": "guatemala",
+      "jp": "246"
     }
   },
   "GIN": {
@@ -3075,7 +3167,8 @@
       "es": "Guinea",
       "de": "GIN",
       "nz": "guinea",
-      "dk": "guinea"
+      "dk": "guinea",
+      "jp": "099"
     }
   },
   "HTI": {
@@ -3103,7 +3196,8 @@
       "es": "Haití",
       "de": "HTI",
       "nz": "haiti",
-      "dk": "haiti"
+      "dk": "haiti",
+      "jp": "255"
     }
   },
   "CIV": {
@@ -3131,7 +3225,8 @@
       "es": "Costa de Marfil",
       "de": "CIV",
       "nz": "cote-d-ivoire",
-      "dk": "cote-d-ivoire"
+      "dk": "cote-d-ivoire",
+      "jp": "101"
     }
   },
   "JPN": {
@@ -3187,7 +3282,8 @@
       "es": "Kirguistán",
       "de": "KGZ",
       "nz": "kyrgyzstan",
-      "dk": "kirgisistan"
+      "dk": "kirgisistan",
+      "jp": "265"
     }
   },
   "BLZ": {
@@ -3215,7 +3311,8 @@
       "es": "Belice",
       "de": "BLZ",
       "nz": "belize",
-      "dk": "belize"
+      "dk": "belize",
+      "jp": "288"
     }
   },
   "MLI": {
@@ -3243,7 +3340,8 @@
       "es": "Malí",
       "de": "MLI",
       "nz": "mali",
-      "dk": "mali"
+      "dk": "mali",
+      "jp": "121"
     }
   },
   "MAR": {
@@ -3271,7 +3369,8 @@
       "es": "Marruecos",
       "de": "MAR",
       "nz": "morocco",
-      "dk": "marokko"
+      "dk": "marokko",
+      "jp": "124"
     }
   },
   "MDA": {
@@ -3299,7 +3398,8 @@
       "es": "Moldavia, República de",
       "de": "MDA",
       "nz": "moldova-republic-of",
-      "dk": "moldova-republikken"
+      "dk": "moldova-republikken",
+      "jp": "198"
     }
   },
   "MNG": {
@@ -3327,7 +3427,8 @@
       "es": "Mongolia",
       "de": "MNG",
       "nz": "mongolia",
-      "dk": "mongoliet"
+      "dk": "mongoliet",
+      "jp": "019"
     }
   },
   "TKL": {
@@ -3383,7 +3484,8 @@
       "es": "Tuvalu",
       "de": "TUV",
       "nz": "tuvalu",
-      "dk": "tuvalu"
+      "dk": "tuvalu",
+      "jp": "274"
     }
   },
   "NZL": {
@@ -3411,7 +3513,8 @@
       "es": "Nueva Zelanda",
       "de": "NZL",
       "nz": "new-zealand",
-      "dk": "new-zealand"
+      "dk": "new-zealand",
+      "jp": "074"
     }
   },
   "UKR": {
@@ -3439,7 +3542,8 @@
       "es": "Ucrania",
       "de": "UKR",
       "nz": "ukraine",
-      "dk": "ukraine"
+      "dk": "ukraine",
+      "jp": "182"
     }
   },
   "UZB": {
@@ -3467,7 +3571,8 @@
       "es": "Uzbekistán",
       "de": "UZB",
       "nz": "uzbekistan",
-      "dk": "usbekistan"
+      "dk": "usbekistan",
+      "jp": "183"
     }
   },
   "PRY": {
@@ -3495,7 +3600,8 @@
       "es": "Paraguay",
       "de": "PRY",
       "nz": "paraguay",
-      "dk": "paraguay"
+      "dk": "paraguay",
+      "jp": "258"
     }
   },
   "SLE": {
@@ -3523,7 +3629,8 @@
       "es": "Sierra Leona",
       "de": "SLE",
       "nz": "sierra-leone",
-      "dk": "sierra-leone"
+      "dk": "sierra-leone",
+      "jp": "105"
     }
   },
   "SOM": {
@@ -3551,7 +3658,8 @@
       "es": "Somalia",
       "de": "SOM",
       "nz": "somalia",
-      "dk": "somalia"
+      "dk": "somalia",
+      "jp": "110"
     }
   },
   "SDN": {
@@ -3579,7 +3687,8 @@
       "es": "Sudán",
       "de": "SDN",
       "nz": "sudan",
-      "dk": "sudan"
+      "dk": "sudan",
+      "jp": "107"
     }
   },
   "TJK": {
@@ -3607,7 +3716,8 @@
       "es": "Tayikistán",
       "de": "TJK",
       "nz": "tajikistan",
-      "dk": "tadsjikistan"
+      "dk": "tadsjikistan",
+      "jp": "201"
     }
   },
   "TCD": {
@@ -3635,7 +3745,8 @@
       "es": "Chad",
       "de": "TCD",
       "nz": "chad",
-      "dk": "tchad"
+      "dk": "tchad",
+      "jp": "137"
     }
   },
   "TUN": {
@@ -3663,7 +3774,8 @@
       "es": "Túnez",
       "de": "TUN",
       "nz": "tunisia",
-      "dk": "tunesien"
+      "dk": "tunesien",
+      "jp": "113"
     }
   },
   "URY": {
@@ -3691,7 +3803,8 @@
       "es": "Uruguay",
       "de": "URY",
       "nz": "uruguay",
-      "dk": "uruguay"
+      "dk": "uruguay",
+      "jp": "242"
     }
   },
   "NIC": {
@@ -3719,7 +3832,8 @@
       "es": "Nicaragua",
       "de": "NIC",
       "nz": "nicaragua",
-      "dk": "nicaragua"
+      "dk": "nicaragua",
+      "jp": "254"
     }
   },
   "ABW": {
@@ -3800,7 +3914,8 @@
       "es": "Liberia",
       "de": "LBR",
       "nz": "liberia",
-      "dk": "liberia"
+      "dk": "liberia",
+      "jp": "126"
     }
   },
   "CUW": {
@@ -3856,7 +3971,8 @@
       "es": "Congo",
       "de": "COG",
       "nz": "republic-of-congo",
-      "dk": "congo"
+      "dk": "congo",
+      "jp": "102"
     }
   },
   "SUR": {
@@ -3884,7 +4000,8 @@
       "es": "Surinam",
       "de": "SUR",
       "nz": "suriname",
-      "dk": "surinam"
+      "dk": "surinam",
+      "jp": "250"
     }
   },
   "TGO": {
@@ -3912,7 +4029,8 @@
       "es": "Ir",
       "de": "TGO",
       "nz": "togo",
-      "dk": "togo"
+      "dk": "togo",
+      "jp": "114"
     }
   },
   "GLP": {
@@ -3968,7 +4086,8 @@
       "es": "Mauricio",
       "de": "MUS",
       "nz": "mauritius",
-      "dk": "mauritius"
+      "dk": "mauritius",
+      "jp": "279"
     }
   },
   "PYF": {
@@ -3996,7 +4115,8 @@
       "es": "Polinesia Francesa",
       "de": null,
       "nz": "french-polynesia",
-      "dk": "fransk-polynesien"
+      "dk": "fransk-polynesien",
+      "jp": "079"
     }
   },
   "LUX": {
@@ -4024,7 +4144,8 @@
       "es": "Luxemburgo",
       "de": "LUX",
       "nz": "luxembourg",
-      "dk": "luxembourg"
+      "dk": "luxembourg",
+      "jp": "176"
     }
   },
   "KNA": {
@@ -4052,7 +4173,8 @@
       "es": "San Cristóbal y Nieves",
       "de": "KNA",
       "nz": "saint-kitts-and-nevis",
-      "dk": "saint-kitts-og-nevis"
+      "dk": "saint-kitts-og-nevis",
+      "jp": "291"
     }
   },
   "SYC": {
@@ -4080,7 +4202,8 @@
       "es": "Seychelles",
       "de": "SYC",
       "nz": "seychelles",
-      "dk": "seychellerne"
+      "dk": "seychellerne",
+      "jp": "108"
     }
   },
   "GHA": {
@@ -4108,7 +4231,8 @@
       "es": "Ghana",
       "de": "GHA",
       "nz": "ghana",
-      "dk": "ghana"
+      "dk": "ghana",
+      "jp": "096"
     }
   },
   "CUB": {
@@ -4136,7 +4260,8 @@
       "es": "Cuba",
       "de": "CUB",
       "nz": "cuba",
-      "dk": "cuba"
+      "dk": "cuba",
+      "jp": "245"
     }
   },
   "COL": {
@@ -4164,7 +4289,8 @@
       "es": "Colombia",
       "de": "COL",
       "nz": "colombia",
-      "dk": "colombia"
+      "dk": "colombia",
+      "jp": "248"
     }
   },
   "GEO": {
@@ -4192,7 +4318,8 @@
       "es": "Georgia",
       "de": "GEO",
       "nz": "georgia",
-      "dk": "georgien"
+      "dk": "georgien",
+      "jp": "200"
     }
   },
   "IRQ": {
@@ -4220,7 +4347,8 @@
       "es": "Irak",
       "de": "IRQ",
       "nz": "iraq",
-      "dk": "irak"
+      "dk": "irak",
+      "jp": "045"
     }
   },
   "ARE": {
@@ -4248,7 +4376,8 @@
       "es": "Emiratos Árabes Unidos",
       "de": "ARE",
       "nz": "united-arab-emirates",
-      "dk": "de-forenede-arabiske-emirater"
+      "dk": "de-forenede-arabiske-emirater",
+      "jp": "042"
     }
   },
   "SAU": {
@@ -4276,7 +4405,8 @@
       "es": "Arabia Saudí",
       "de": "SAU",
       "nz": "saudi-arabia",
-      "dk": "saudi-arabien"
+      "dk": "saudi-arabien",
+      "jp": "050"
     }
   },
   "KWT": {
@@ -4304,7 +4434,8 @@
       "es": "Kuwait",
       "de": "KWT",
       "nz": "kuwait",
-      "dk": "kuwait"
+      "dk": "kuwait",
+      "jp": "049"
     }
   },
   "QAT": {
@@ -4332,7 +4463,8 @@
       "es": "Catar",
       "de": "QAT",
       "nz": "qatar",
-      "dk": "qatar"
+      "dk": "qatar",
+      "jp": "048"
     }
   },
   "BHR": {
@@ -4360,7 +4492,8 @@
       "es": "Bahréin",
       "de": "BHR",
       "nz": "bahrain",
-      "dk": "bahrain"
+      "dk": "bahrain",
+      "jp": "053"
     }
   },
   "OMN": {
@@ -4388,7 +4521,8 @@
       "es": "Omán",
       "de": "OMN",
       "nz": "oman",
-      "dk": "oman"
+      "dk": "oman",
+      "jp": "047"
     }
   },
   "COD": {
@@ -4416,7 +4550,8 @@
       "es": "Congo, República Democrática del",
       "de": "COD",
       "nz": "democratic-republic-of-the-congo",
-      "dk": "congo-den-demokratiske-republik"
+      "dk": "congo-den-demokratiske-republik",
+      "jp": "103"
     }
   },
   "SYR": {
@@ -4444,7 +4579,8 @@
       "es": "República Árabe Siria",
       "de": "SYR",
       "nz": "syria",
-      "dk": "syrien-arabiske-republik"
+      "dk": "syrien-arabiske-republik",
+      "jp": "051"
     }
   },
   "TLS": {
@@ -4472,7 +4608,8 @@
       "es": "Timor Oriental",
       "de": "TLS",
       "nz": "timor-leste",
-      "dk": "timor-leste"
+      "dk": "timor-leste",
+      "jp": "295"
     }
   },
   "BGD": {
@@ -4500,7 +4637,8 @@
       "es": "Bangladesh",
       "de": "BGD",
       "nz": "bangladesh",
-      "dk": "bangladesh"
+      "dk": "bangladesh",
+      "jp": "012"
     }
   },
   "LBN": {
@@ -4528,7 +4666,8 @@
       "es": "Líbano",
       "de": "LBN",
       "nz": "lebanon",
-      "dk": "libanon"
+      "dk": "libanon",
+      "jp": "055"
     }
   },
   "LAO": {
@@ -4556,7 +4695,8 @@
       "es": "República Democrática Popular Lao",
       "de": "LAO",
       "nz": "laos",
-      "dk": "laos-demokratiske-folkerepublik"
+      "dk": "laos-demokratiske-folkerepublik",
+      "jp": "020"
     }
   },
   "JOR": {
@@ -4584,7 +4724,8 @@
       "es": "Jordán",
       "de": "JOR",
       "nz": "jordan",
-      "dk": "jordan"
+      "dk": "jordan",
+      "jp": "054"
     }
   },
   "TCA": {
@@ -4640,7 +4781,8 @@
       "es": "República Dominicana",
       "de": "DOM",
       "nz": "dominican-republic",
-      "dk": "dominikanske-republik"
+      "dk": "dominikanske-republik",
+      "jp": "252"
     }
   },
   "TTO": {
@@ -4668,7 +4810,8 @@
       "es": "Trinidad y Tobago",
       "de": "TTO",
       "nz": "trinidad-and-tobago",
-      "dk": "trinidad-og-tobago"
+      "dk": "trinidad-og-tobago",
+      "jp": "253"
     }
   },
   "PAN": {
@@ -4696,7 +4839,8 @@
       "es": "Panamá",
       "de": "PAN",
       "nz": "panama",
-      "dk": "panama"
+      "dk": "panama",
+      "jp": "256"
     }
   },
   "CRI": {
@@ -4724,7 +4868,8 @@
       "es": "Costa Rica",
       "de": "CRI",
       "nz": "costa-rica",
-      "dk": "costa-rica"
+      "dk": "costa-rica",
+      "jp": "247"
     }
   },
   "MEX": {
@@ -4752,7 +4897,8 @@
       "es": "México",
       "de": "MEX",
       "nz": "mexico",
-      "dk": "mexico"
+      "dk": "mexico",
+      "jp": "264"
     }
   },
   "NIU": {
@@ -4780,7 +4926,8 @@
       "es": "Niue",
       "de": "NIU",
       "nz": "niue",
-      "dk": "niue"
+      "dk": "niue",
+      "jp": "777"
     }
   },
   "WSM": {
@@ -4808,7 +4955,8 @@
       "es": "Samoa",
       "de": "WSM",
       "nz": "samoa",
-      "dk": "samoa"
+      "dk": "samoa",
+      "jp": "073"
     }
   },
   "FSM": {
@@ -4836,7 +4984,8 @@
       "es": "Micronesia, Estados Federados de",
       "de": "FSM",
       "nz": "micronesia-federated-states-of",
-      "dk": "mikronesien-forenede-stater-af"
+      "dk": "mikronesien-forenede-stater-af",
+      "jp": "270"
     }
   },
   "SLB": {
@@ -4864,7 +5013,8 @@
       "es": "Islas Salomón",
       "de": "SLB",
       "nz": "solomon-islands",
-      "dk": "salomon-erne"
+      "dk": "salomon-erne",
+      "jp": "072"
     }
   },
   "FJI": {
@@ -4892,7 +5042,8 @@
       "es": "Fiyi",
       "de": "FJI",
       "nz": "fiji",
-      "dk": "fiji"
+      "dk": "fiji",
+      "jp": "076"
     }
   },
   "PLW": {
@@ -4920,7 +5071,8 @@
       "es": "Palaos",
       "de": "PLW",
       "nz": "palau",
-      "dk": "palau"
+      "dk": "palau",
+      "jp": "272"
     }
   },
   "PNG": {
@@ -4948,7 +5100,8 @@
       "es": "Papúa Nueva Guinea",
       "de": "PNG",
       "nz": "papua-new-guinea",
-      "dk": "papua-ny-guinea"
+      "dk": "papua-ny-guinea",
+      "jp": "075"
     }
   },
   "MLT": {
@@ -4976,7 +5129,8 @@
       "es": "Malta",
       "de": "MLT",
       "nz": "malta",
-      "dk": "malta"
+      "dk": "malta",
+      "jp": "195"
     }
   },
   "ALB": {
@@ -5004,7 +5158,8 @@
       "es": "Albania",
       "de": "ALB",
       "nz": "albania",
-      "dk": "albanien"
+      "dk": "albanien",
+      "jp": "196"
     }
   },
   "TZA": {
@@ -5032,7 +5187,8 @@
       "es": "Tanzania, República Unida de",
       "de": "TZA",
       "nz": "tanzania-united-republic-of",
-      "dk": "tanzania-den-forenede-republik"
+      "dk": "tanzania-den-forenede-republik",
+      "jp": "111"
     }
   },
   "PER": {
@@ -5060,7 +5216,8 @@
       "es": "Perú",
       "de": "PER",
       "nz": "peru",
-      "dk": "peru"
+      "dk": "peru",
+      "jp": "261"
     }
   },
   "MHL": {
@@ -5088,7 +5245,8 @@
       "es": "Islas Marshall",
       "de": "MHL",
       "nz": "marshall-islands",
-      "dk": "marshall-erne"
+      "dk": "marshall-erne",
+      "jp": "269"
     }
   },
   "MDV": {
@@ -5116,7 +5274,8 @@
       "es": "Maldivas",
       "de": "MDV",
       "nz": "maldives",
-      "dk": "maldiverne"
+      "dk": "maldiverne",
+      "jp": "024"
     }
   },
   "PHL": {
@@ -5144,7 +5303,8 @@
       "es": "Filipinas",
       "de": "PHL",
       "nz": "philippines",
-      "dk": "filippinerne"
+      "dk": "filippinerne",
+      "jp": "013"
     }
   },
   "XKX": {
@@ -5165,7 +5325,8 @@
       "es": "Kosovo",
       "de": "XKX",
       "nz": "kosovo",
-      "dk": "kosovo"
+      "dk": "kosovo",
+      "jp": "180"
     }
   },
   "DJI": {
@@ -5193,7 +5354,8 @@
       "es": "Yibuti",
       "de": "DJI",
       "nz": "djibouti",
-      "dk": "djibouti"
+      "dk": "djibouti",
+      "jp": "141"
     }
   },
   "EGY": {
@@ -5221,7 +5383,8 @@
       "es": "Egipto",
       "de": "EGY",
       "nz": "egypt",
-      "dk": "egypten"
+      "dk": "egypten",
+      "jp": "094"
     }
   },
   "MNE": {
@@ -5249,7 +5412,8 @@
       "es": "Montenegro",
       "de": "MNE",
       "nz": "montenegro",
-      "dk": "montenegro"
+      "dk": "montenegro",
+      "jp": "179"
     }
   },
   "CHL": {
@@ -5277,7 +5441,8 @@
       "es": "Chile",
       "de": "CHL",
       "nz": "chile",
-      "dk": "chile"
+      "dk": "chile",
+      "jp": "251"
     }
   },
   "IRN": {
@@ -5305,7 +5470,8 @@
       "es": "Irán, República Islámica de",
       "de": "IRN",
       "nz": "iran-islamic-republic-of",
-      "dk": "iran-islamisk-republik"
+      "dk": "iran-islamisk-republik",
+      "jp": "046"
     }
   },
   "ECU": {
@@ -5333,7 +5499,8 @@
       "es": "Ecuador",
       "de": "ECU",
       "nz": "ecuador",
-      "dk": "ecuador"
+      "dk": "ecuador",
+      "jp": "243"
     }
   },
   "STP": {
@@ -5361,7 +5528,8 @@
       "es": "Santo Tomé y Príncipe",
       "de": "STP",
       "nz": "sao-tome-and-principe",
-      "dk": "sao-tome-og-principe"
+      "dk": "sao-tome-og-principe",
+      "jp": "280"
     }
   },
   "LVA": {
@@ -5389,7 +5557,8 @@
       "es": "Letonia",
       "de": "LVA",
       "nz": "latvia",
-      "dk": "letland"
+      "dk": "letland",
+      "jp": "186"
     }
   },
   "KEN": {
@@ -5417,7 +5586,8 @@
       "es": "Kenia",
       "de": "KEN",
       "nz": "kenya",
-      "dk": "kenya"
+      "dk": "kenya",
+      "jp": "100"
     }
   },
   "LBY": {
@@ -5445,7 +5615,8 @@
       "es": "Libia",
       "de": "LBY",
       "nz": "libya",
-      "dk": "libyen"
+      "dk": "libyen",
+      "jp": "125"
     }
   },
   "SGP": {
@@ -5473,7 +5644,8 @@
       "es": "Singapur",
       "de": "SGP",
       "nz": "singapore",
-      "dk": "singapore"
+      "dk": "singapore",
+      "jp": "005"
     }
   },
   "ZWE": {
@@ -5501,7 +5673,8 @@
       "es": "Zimbabue",
       "de": "ZWE",
       "nz": "zimbabwe",
-      "dk": "zimbabwe"
+      "dk": "zimbabwe",
+      "jp": "106"
     }
   },
   "BWA": {
@@ -5529,7 +5702,8 @@
       "es": "Botsuana",
       "de": "BWA",
       "nz": "botswana",
-      "dk": "botswana"
+      "dk": "botswana",
+      "jp": "296"
     }
   },
   "ETH": {
@@ -5557,7 +5731,8 @@
       "es": "Etiopía",
       "de": "ETH",
       "nz": "ethiopia",
-      "dk": "etiopien"
+      "dk": "etiopien",
+      "jp": "095"
     }
   },
   "MCO": {
@@ -5585,7 +5760,8 @@
       "es": "Mónaco",
       "de": "MCO",
       "nz": "monaco",
-      "dk": "monaco"
+      "dk": "monaco",
+      "jp": "284"
     }
   },
   "FRO": {
@@ -5637,7 +5813,8 @@
       "es": "Noruega",
       "de": "NOR",
       "nz": "norway",
-      "dk": "norge"
+      "dk": "norge",
+      "jp": "166"
     }
   },
   "TUR": {
@@ -5665,7 +5842,8 @@
       "es": "Turquía",
       "de": "TUR",
       "nz": "turkey",
-      "dk": "tyrkiet"
+      "dk": "tyrkiet",
+      "jp": "052"
     }
   },
   "ATA": {
@@ -5718,7 +5896,8 @@
       "es": "Vietnam",
       "de": "VNM",
       "nz": "viet-nam",
-      "dk": "vietnam"
+      "dk": "vietnam",
+      "jp": "015"
     }
   },
   "VEN": {
@@ -5746,7 +5925,8 @@
       "es": "Venezuela, República Bolivariana de",
       "de": "VEN",
       "nz": "venezuela-bolivarian-republic-of",
-      "dk": "venezuela-den-bolivarianske-republik"
+      "dk": "venezuela-den-bolivarianske-republik",
+      "jp": "260"
     }
   },
   "AZE": {
@@ -5774,7 +5954,8 @@
       "es": "Azerbaiyán",
       "de": "AZE",
       "nz": "azerbaijan",
-      "dk": "aserbajdsjan"
+      "dk": "aserbajdsjan",
+      "jp": "152"
     }
   },
   "NGA": {
@@ -5802,7 +5983,8 @@
       "es": "Nigeria",
       "de": "NGA",
       "nz": "nigeria",
-      "dk": "nigeria"
+      "dk": "nigeria",
+      "jp": "115"
     }
   },
   "CPV": {
@@ -5830,7 +6012,8 @@
       "es": "Cabo Verde",
       "de": "CPV",
       "nz": "cape-verde",
-      "dk": "cabo-verde"
+      "dk": "cabo-verde",
+      "jp": "275"
     }
   },
   "LKA": {
@@ -5858,7 +6041,8 @@
       "es": "Sri Lanka",
       "de": "LKA",
       "nz": "sri-lanka",
-      "dk": "sri-lanka"
+      "dk": "sri-lanka",
+      "jp": "006"
     }
   },
   "TKM": {
@@ -5886,7 +6070,8 @@
       "es": "Turkmenistán",
       "de": "TKM",
       "nz": "turkmenistan",
-      "dk": "turkmenistan"
+      "dk": "turkmenistan",
+      "jp": "202"
     }
   },
   "BEN": {
@@ -5914,7 +6099,8 @@
       "es": "Benín",
       "de": "BEN",
       "nz": "benin",
-      "dk": "benin"
+      "dk": "benin",
+      "jp": "118"
     }
   },
   "ZAF": {
@@ -5942,7 +6128,8 @@
       "es": "Sudáfrica",
       "de": "ZAF",
       "nz": "south-africa",
-      "dk": "sydafrika"
+      "dk": "sydafrika",
+      "jp": "122"
     }
   },
   "AND": {
@@ -5970,7 +6157,8 @@
       "es": "Andorra",
       "de": "AND",
       "nz": "andorra",
-      "dk": "andorra"
+      "dk": "andorra",
+      "jp": "297"
     }
   },
   "SWZ": {
@@ -5998,7 +6186,8 @@
       "es": "Esuatini",
       "de": "SWZ",
       "nz": "eswatini",
-      "dk": "eswatini"
+      "dk": "eswatini",
+      "jp": "281"
     }
   },
   "LSO": {
@@ -6026,7 +6215,8 @@
       "es": "Lesoto",
       "de": "LSO",
       "nz": "lesotho",
-      "dk": "lesotho"
+      "dk": "lesotho",
+      "jp": "130"
     }
   },
   "USA": {
@@ -6054,7 +6244,8 @@
       "es": "Estados Unidos",
       "de": "USA",
       "nz": "united-states-of-america",
-      "dk": "usa"
+      "dk": "usa",
+      "jp": "221"
     }
   },
   "THA": {
@@ -6082,7 +6273,8 @@
       "es": "Tailandia",
       "de": "THA",
       "nz": "thailand",
-      "dk": "thailand"
+      "dk": "thailand",
+      "jp": "007"
     }
   },
   "NER": {
@@ -6110,7 +6302,8 @@
       "es": "Níger",
       "de": "NER",
       "nz": "niger",
-      "dk": "niger"
+      "dk": "niger",
+      "jp": "116"
     }
   },
   "FRA": {
@@ -6138,7 +6331,8 @@
       "es": "Francia",
       "de": "FRA",
       "nz": "france",
-      "dk": "frankrig"
+      "dk": "frankrig",
+      "jp": "170"
     }
   },
   "ESP": {
@@ -6166,7 +6360,8 @@
       "es": "España",
       "de": "ESP",
       "nz": "spain",
-      "dk": "spanien"
+      "dk": "spanien",
+      "jp": "161"
     }
   },
   "BRN": {
@@ -6194,7 +6389,8 @@
       "es": "Brunéi Darussalam",
       "de": "BRN",
       "nz": "brunei",
-      "dk": "brunei-darussalam"
+      "dk": "brunei-darussalam",
+      "jp": "014"
     }
   },
   "BOL": {
@@ -6222,7 +6418,8 @@
       "es": "Bolivia, Estado Plurinacional de",
       "de": "BOL",
       "nz": "bolivia-plurinational-state-of",
-      "dk": "bolivia-plurinational-stat"
+      "dk": "bolivia-plurinational-stat",
+      "jp": "262"
     }
   },
   "IDN": {
@@ -6250,7 +6447,8 @@
       "es": "Indonesia",
       "de": "IDN",
       "nz": "indonesia",
-      "dk": "indonesien"
+      "dk": "indonesien",
+      "jp": "002"
     }
   },
   "ARM": {
@@ -6278,7 +6476,8 @@
       "es": "Armenia",
       "de": "ARM",
       "nz": "armenia",
-      "dk": "armenien"
+      "dk": "armenien",
+      "jp": "199"
     }
   }
 }
