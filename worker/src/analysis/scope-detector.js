@@ -18,6 +18,7 @@ const NATIONWIDE = {
   es: /todo el pa[ií]s|la totalidad del (pa[ií]s|territorio)|todo el territorio/i,
   da: /hele landet/i,
   de: /im ganzen land|landesweit|das gesamte land/i,
+  ja: /全土|全域|国全体/,
 };
 
 const ELSEWHERE = {
@@ -26,6 +27,7 @@ const ELSEWHERE = {
   es: /el resto del pa[ií]s|en el resto/i,
   da: /resten af landet|[øo]vrige dele/i,
   de: /im rest des landes|[üu]brigen landesteilen?|restlichen landesteilen?/i,
+  ja: /その他の地域|それ以外の地域|上記以外の地域/,
 };
 
 const EXCEPTION = {
@@ -34,6 +36,7 @@ const EXCEPTION = {
   es: /\bsalvo\b|excepto|con la excepci[oó]n de|a excepci[oó]n de/i,
   da: /undtagen|med undtagelse af/i,
   de: /au[ßs]er\b|mit ausnahme/i,
+  ja: /を除く|を除き|以外/,
 };
 
 // Doeltypen (voor de regio-extractor en de UI). Eén zin kan meerdere typen

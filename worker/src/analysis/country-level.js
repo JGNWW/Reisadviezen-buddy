@@ -123,6 +123,61 @@ export function interpretStructured(structured) {
     return ok({ level: 1, regionalMaxLevel: null, label: 'Geen reiswaarschuwing of veiligheidsaanwijzing.', explanation: 'Geen reiswaarschuwing of veiligheidsaanwijzing.' });
   }
 
+  if (kind === 'jp_hazard_levels') {
+    // MOFA (Japan) publiceert per land een 【危険レベル】-blok met ●-bullets:
+    //   ●アフガニスタン全土 レベル4：退避してください。…
+    //   ●ジャンム・カシミール州 レベル3：…  ●その他の地域 レベル1：…
+    // 全土/全域 (hele land) of その他の地域 (elders = basislijn) bepaalt het
+    // landelijke niveau; overige bullets zijn regionale vermeldingen. Die
+    // gaan als structuredRegional mee naar de engine.
+    const text = String(value || '');
+    if (!text.trim() || /危険情報は出ておりません/.test(text)) {
+      return ok({ level: 1, regionalMaxLevel: null, label: '危険情報なし (geen waarschuwing)', explanation: 'MOFA (Japan): geen 危険情報 (gevareninformatie) voor dit land.' });
+    }
+    const JA_LEVEL = /レベル([１２３４1234])/;
+    const toNum = (d) => '１２３４'.includes(d) ? '１２３４'.indexOf(d) + 1 : Number(d);
+    const bullets = text.split('●').map((s) => s.trim()).filter(Boolean);
+    let national = null;
+    let nationalLabel = null;
+    const structuredRegional = [];
+    for (const b of bullets) {
+      const m = b.match(JA_LEVEL);
+      if (!m) continue;
+      const level = toNum(m[1]);
+      const region = b.slice(0, m.index).replace(/[：:、。\s]+$/, '').trim();
+      const phrase = (b.slice(m.index).match(/^レベル[１２３４1234][：:]?[^（(●]*/) || [b.slice(m.index)])[0].trim();
+      if (/全土|全域|国全体/.test(region) || /その他の地域|それ以外の地域|上記以外の地域/.test(region) || !region) {
+        // 全土 wint altijd; その他の地域 alleen als er nog geen landelijk niveau is.
+        if (national == null || /全土|全域|国全体/.test(region)) { national = level; nationalLabel = phrase; }
+      } else {
+        structuredRegional.push({ region, level });
+      }
+    }
+    if (national == null) {
+      // Alleen regionale bullets: landelijk bewust laag (zelfde invariant als
+      // overal — regionaal verhoogt landelijk nooit).
+      if (structuredRegional.length) {
+        const maxR = Math.max(...structuredRegional.map((r) => r.level));
+        return ok({
+          level: 1, regionalMaxLevel: maxR, hasRegionalWarnings: true,
+          label: 'Alleen regionale 危険情報 (gevareninformatie).',
+          explanation: 'MOFA (Japan): waarschuwingen gelden voor delen van het land, niet landelijk.',
+          structuredRegional,
+        });
+      }
+      return uncertain('Geen herkenbaar MOFA-niveau (レベル1-4) gevonden in het 危険レベル-blok.');
+    }
+    const maxR = structuredRegional.length ? Math.max(...structuredRegional.map((r) => r.level)) : null;
+    return ok({
+      level: national,
+      regionalMaxLevel: maxR != null ? Math.max(maxR, national) : national,
+      hasRegionalWarnings: structuredRegional.length > 0,
+      label: nationalLabel || null,
+      explanation: `MOFA (Japan): ${nationalLabel || `レベル${national}`}.`,
+      structuredRegional: structuredRegional.length ? structuredRegional : undefined,
+    });
+  }
+
   if (kind === 'dk_summary_bars') {
     // um.dk toont regionale afwijkingen als gekleurde "bjælker" (balken) in
     // het samenvattende blok; dit levert alleen een regionale-max-hint op,
