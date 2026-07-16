@@ -29,6 +29,9 @@ const ADAPTERS = [
   ['jp', (await import('../src/adapters/japan.js')), '010'],
   ['it', (await import('../src/adapters/italy.js')), 'NPL'],
   ['fi', (await import('../src/adapters/finland.js')), 'NP'],
+  // KR/NO-fixtures zijn Afghanistan — Nepal vergde daar een extra mapping-fetch.
+  ['kr', (await import('../src/adapters/southkorea.js')), '284'],
+  ['no', (await import('../src/adapters/norway.js')), 'afghanistan/2415875'],
 ];
 
 const CODE_HEADING = /querySelector|shadowRoot|innerHTML|function\s*\(|=>|[{};$]|document\.|window\./;

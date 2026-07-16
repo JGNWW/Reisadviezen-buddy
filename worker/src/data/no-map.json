@@ -1,0 +1,718 @@
+{
+ "AFG": {
+  "slug": "afghanistan",
+  "id": "2415875"
+ },
+ "ALB": {
+  "slug": "albania",
+  "id": "2428601"
+ },
+ "DZA": {
+  "slug": "algerie",
+  "id": "2414745"
+ },
+ "AGO": {
+  "slug": "angola",
+  "id": "2415995"
+ },
+ "ATG": {
+  "slug": "antigua_barbuda",
+  "id": "2428958"
+ },
+ "ARG": {
+  "slug": "argentina",
+  "id": "2415477"
+ },
+ "ARM": {
+  "slug": "armenia",
+  "id": "2416297"
+ },
+ "AZE": {
+  "slug": "aserbajdsjan",
+  "id": "2428524"
+ },
+ "AUS": {
+  "slug": "australia",
+  "id": "2415524"
+ },
+ "BHS": {
+  "slug": "bahamas",
+  "id": "2428963"
+ },
+ "BGD": {
+  "slug": "bangladesh",
+  "id": "2415564"
+ },
+ "BEL": {
+  "slug": "belgia",
+  "id": "2414842"
+ },
+ "BTN": {
+  "slug": "bhutan",
+  "id": "2414742"
+ },
+ "BOL": {
+  "slug": "bolivia",
+  "id": "2415332"
+ },
+ "BIH": {
+  "slug": "bosnia",
+  "id": "2416500"
+ },
+ "BWA": {
+  "slug": "botswana",
+  "id": "2416413"
+ },
+ "BRA": {
+  "slug": "brasil",
+  "id": "2415169"
+ },
+ "BRN": {
+  "slug": "brunei",
+  "id": "2415974"
+ },
+ "BGR": {
+  "slug": "bulgaria",
+  "id": "2416997"
+ },
+ "BFA": {
+  "slug": "burkinafaso",
+  "id": "2414675"
+ },
+ "BDI": {
+  "slug": "burundi",
+  "id": "2415929"
+ },
+ "CAN": {
+  "slug": "canada",
+  "id": "2414944"
+ },
+ "CHL": {
+  "slug": "chile",
+  "id": "2414751"
+ },
+ "COL": {
+  "slug": "colombia",
+  "id": "2414850"
+ },
+ "COK": {
+  "slug": "cookoyene",
+  "id": "2415553"
+ },
+ "CRI": {
+  "slug": "costarica",
+  "id": "2428563"
+ },
+ "CUB": {
+  "slug": "cuba",
+  "id": "2415595"
+ },
+ "DNK": {
+  "slug": "danmark",
+  "id": "2415976"
+ },
+ "DJI": {
+  "slug": "djibouti",
+  "id": "2414710"
+ },
+ "DOM": {
+  "slug": "dominikanske",
+  "id": "2415685"
+ },
+ "COD": {
+  "slug": "drkongo",
+  "id": "2416057"
+ },
+ "ECU": {
+  "slug": "ecuador",
+  "id": "2414757"
+ },
+ "EGY": {
+  "slug": "egypt",
+  "id": "2415880"
+ },
+ "GNQ": {
+  "slug": "ekvatorialguinea",
+  "id": "2416217"
+ },
+ "CIV": {
+  "slug": "elfernbenskysten",
+  "id": "2414708"
+ },
+ "SLV": {
+  "slug": "elsalvador",
+  "id": "2428564"
+ },
+ "ARE": {
+  "slug": "emiratene",
+  "id": "2428549"
+ },
+ "ERI": {
+  "slug": "eritrea",
+  "id": "2429020"
+ },
+ "EST": {
+  "slug": "estland",
+  "id": "2417117"
+ },
+ "ETH": {
+  "slug": "etiopia",
+  "id": "2414712"
+ },
+ "SWZ": {
+  "slug": "ewatini",
+  "id": "2414925"
+ },
+ "FJI": {
+  "slug": "fiji",
+  "id": "2415529"
+ },
+ "PHL": {
+  "slug": "filippinene",
+  "id": "2416248"
+ },
+ "FIN": {
+  "slug": "finland",
+  "id": "2424334"
+ },
+ "FRA": {
+  "slug": "frankrike",
+  "id": "2429004"
+ },
+ "GAB": {
+  "slug": "gabon",
+  "id": "2416221"
+ },
+ "GMB": {
+  "slug": "gambia",
+  "id": "2414679"
+ },
+ "GEO": {
+  "slug": "georgia",
+  "id": "2428525"
+ },
+ "GRD": {
+  "slug": "grenada",
+  "id": "2428980"
+ },
+ "GTM": {
+  "slug": "guatemala",
+  "id": "2428566"
+ },
+ "GIN": {
+  "slug": "guinea",
+  "id": "2414683"
+ },
+ "GNB": {
+  "slug": "guineabissau",
+  "id": "2414888"
+ },
+ "GUY": {
+  "slug": "guyana",
+  "id": "2415199"
+ },
+ "HTI": {
+  "slug": "haiti",
+  "id": "2415686"
+ },
+ "GRC": {
+  "slug": "hellas",
+  "id": "2414955"
+ },
+ "HND": {
+  "slug": "honduras",
+  "id": "2428569"
+ },
+ "IND": {
+  "slug": "india",
+  "id": "2414743"
+ },
+ "IDN": {
+  "slug": "indonesia",
+  "id": "2415692"
+ },
+ "IRQ": {
+  "slug": "irak",
+  "id": "2428572"
+ },
+ "IRN": {
+  "slug": "iran",
+  "id": "2414831"
+ },
+ "IRL": {
+  "slug": "irland",
+  "id": "2428570"
+ },
+ "ISL": {
+  "slug": "island",
+  "id": "2414936"
+ },
+ "ISR": {
+  "slug": "israel",
+  "id": "2417120"
+ },
+ "ITA": {
+  "slug": "italia",
+  "id": "2416484"
+ },
+ "JAM": {
+  "slug": "jamaica",
+  "id": "2428981"
+ },
+ "JPN": {
+  "slug": "japan",
+  "id": "2415973"
+ },
+ "YEM": {
+  "slug": "jemen",
+  "id": "2416418"
+ },
+ "JOR": {
+  "slug": "jordan",
+  "id": "2428573"
+ },
+ "KHM": {
+  "slug": "kambodsja",
+  "id": "2415096"
+ },
+ "CMR": {
+  "slug": "kamerun",
+  "id": "2424175"
+ },
+ "CPV": {
+  "slug": "kappverde",
+  "id": "2414891"
+ },
+ "KAZ": {
+  "slug": "kasakhstan",
+  "id": "2428578"
+ },
+ "KEN": {
+  "slug": "kenya",
+  "id": "2414927"
+ },
+ "CHN": {
+  "slug": "kina",
+  "id": "2414833"
+ },
+ "KGZ": {
+  "slug": "kirgisistan",
+  "id": "2428584"
+ },
+ "KIR": {
+  "slug": "kiribati",
+  "id": "2429127"
+ },
+ "XKX": {
+  "slug": "kosovo",
+  "id": "2428615"
+ },
+ "HRV": {
+  "slug": "kroatia",
+  "id": "2417198"
+ },
+ "KWT": {
+  "slug": "kuwait",
+  "id": "2428547"
+ },
+ "CYP": {
+  "slug": "kypros",
+  "id": "2414993"
+ },
+ "LAO": {
+  "slug": "laos",
+  "id": "2424428"
+ },
+ "LVA": {
+  "slug": "latvia",
+  "id": "2414940"
+ },
+ "LSO": {
+  "slug": "lesotho",
+  "id": "2424507"
+ },
+ "LBN": {
+  "slug": "libanon",
+  "id": "2415116"
+ },
+ "LBR": {
+  "slug": "liberia",
+  "id": "2414685"
+ },
+ "LBY": {
+  "slug": "libya",
+  "id": "2415885"
+ },
+ "LIE": {
+  "slug": "liechtenstein",
+  "id": "2415978"
+ },
+ "LTU": {
+  "slug": "litauen",
+  "id": "2417192"
+ },
+ "LUX": {
+  "slug": "luxembourg",
+  "id": "2415570"
+ },
+ "MDG": {
+  "slug": "madagaskar",
+  "id": "2414947"
+ },
+ "MKD": {
+  "slug": "makedonia",
+  "id": "2416995"
+ },
+ "MWI": {
+  "slug": "malawi",
+  "id": "2415982"
+ },
+ "MYS": {
+  "slug": "malaysia",
+  "id": "2415975"
+ },
+ "MDV": {
+  "slug": "maldivene",
+  "id": "2428949"
+ },
+ "MLI": {
+  "slug": "mali",
+  "id": "2424320"
+ },
+ "MLT": {
+  "slug": "malta",
+  "id": "2416492"
+ },
+ "MAR": {
+  "slug": "marokko",
+  "id": "2424344"
+ },
+ "MHL": {
+  "slug": "marshallislands",
+  "id": "2429128"
+ },
+ "MRT": {
+  "slug": "mauritania",
+  "id": "2429137"
+ },
+ "MEX": {
+  "slug": "mexico",
+  "id": "2416296"
+ },
+ "FSM": {
+  "slug": "mikronesia",
+  "id": "2428986"
+ },
+ "MDA": {
+  "slug": "moldova",
+  "id": "2414862"
+ },
+ "MNG": {
+  "slug": "mongolia",
+  "id": "2414841"
+ },
+ "MNE": {
+  "slug": "montenegro",
+  "id": "2416376"
+ },
+ "MOZ": {
+  "slug": "mosambik",
+  "id": "2414919"
+ },
+ "MMR": {
+  "slug": "myanmar",
+  "id": "2417496"
+ },
+ "NAM": {
+  "slug": "namibia",
+  "id": "2424510"
+ },
+ "NRU": {
+  "slug": "nauru",
+  "id": "2428988"
+ },
+ "NLD": {
+  "slug": "nederland",
+  "id": "2414872"
+ },
+ "NPL": {
+  "slug": "nepal",
+  "id": "2416354"
+ },
+ "NZL": {
+  "slug": "newzealand",
+  "id": "2415533"
+ },
+ "NIC": {
+  "slug": "nicaragua",
+  "id": "2428567"
+ },
+ "NER": {
+  "slug": "niger",
+  "id": "2424308"
+ },
+ "NGA": {
+  "slug": "nigeria",
+  "id": "2414670"
+ },
+ "PRK": {
+  "slug": "nordkorea",
+  "id": "2429138"
+ },
+ "OMN": {
+  "slug": "oman",
+  "id": "2424415"
+ },
+ "AUT": {
+  "slug": "osterrike",
+  "id": "2414941"
+ },
+ "TLS": {
+  "slug": "osttimor",
+  "id": "2415704"
+ },
+ "PAK": {
+  "slug": "pakistan",
+  "id": "2428616"
+ },
+ "PLW": {
+  "slug": "palau",
+  "id": "2428989"
+ },
+ "PAN": {
+  "slug": "panama",
+  "id": "2428568"
+ },
+ "PRY": {
+  "slug": "paraguay",
+  "id": "2415478"
+ },
+ "PER": {
+  "slug": "peru",
+  "id": "2414760"
+ },
+ "POL": {
+  "slug": "polen",
+  "id": "2429019"
+ },
+ "PRT": {
+  "slug": "portugal",
+  "id": "2414892"
+ },
+ "COG": {
+  "slug": "repkongo",
+  "id": "2416225"
+ },
+ "ROU": {
+  "slug": "romania",
+  "id": "2414864"
+ },
+ "RUS": {
+  "slug": "russland",
+  "id": "2416298"
+ },
+ "RWA": {
+  "slug": "rwanda",
+  "id": "2415941"
+ },
+ "KNA": {
+  "slug": "saintkitts",
+  "id": "2428982"
+ },
+ "LCA": {
+  "slug": "saintlucia",
+  "id": "2428983"
+ },
+ "VCT": {
+  "slug": "saintvincent",
+  "id": "2428984"
+ },
+ "SLB": {
+  "slug": "salomonoyene",
+  "id": "2428990"
+ },
+ "WSM": {
+  "slug": "samoa",
+  "id": "2428993"
+ },
+ "SMR": {
+  "slug": "sanmarino",
+  "id": "2429005"
+ },
+ "STP": {
+  "slug": "saotome",
+  "id": "2416237"
+ },
+ "SAU": {
+  "slug": "saudiarabia",
+  "id": "2416470"
+ },
+ "SEN": {
+  "slug": "senegal",
+  "id": "2414687"
+ },
+ "SRB": {
+  "slug": "serbia",
+  "id": "2415119"
+ },
+ "SYC": {
+  "slug": "seychellene",
+  "id": "2414928"
+ },
+ "SLE": {
+  "slug": "sierraleone",
+  "id": "2414706"
+ },
+ "SGP": {
+  "slug": "singapore",
+  "id": "2416992"
+ },
+ "SVK": {
+  "slug": "slovakia",
+  "id": "2424323"
+ },
+ "SVN": {
+  "slug": "slovenia",
+  "id": "2415327"
+ },
+ "SOM": {
+  "slug": "somalia",
+  "id": "2429007"
+ },
+ "ZAF": {
+  "slug": "sorafrika",
+  "id": "2424513"
+ },
+ "KOR": {
+  "slug": "sorkorea",
+  "id": "2416503"
+ },
+ "SSD": {
+  "slug": "sorsudan",
+  "id": "2429140"
+ },
+ "ESP": {
+  "slug": "spania",
+  "id": "2416245"
+ },
+ "LKA": {
+  "slug": "srilanka",
+  "id": "2424492"
+ },
+ "SDN": {
+  "slug": "sudan",
+  "id": "2429022"
+ },
+ "SUR": {
+  "slug": "surinam",
+  "id": "2415324"
+ },
+ "CHE": {
+  "slug": "sveits",
+  "id": "2416999"
+ },
+ "SWE": {
+  "slug": "sverige",
+  "id": "2416998"
+ },
+ "TJK": {
+  "slug": "tadsjikistan",
+  "id": "2428585"
+ },
+ "TZA": {
+  "slug": "tanzania",
+  "id": "2415554"
+ },
+ "THA": {
+  "slug": "thailand",
+  "id": "2415097"
+ },
+ "TGO": {
+  "slug": "togo",
+  "id": "2424313"
+ },
+ "TON": {
+  "slug": "tonga",
+  "id": "2415548"
+ },
+ "TTO": {
+  "slug": "triogto",
+  "id": "2428985"
+ },
+ "TCD": {
+  "slug": "tsjad",
+  "id": "2429023"
+ },
+ "CZE": {
+  "slug": "tsjekkia",
+  "id": "2416409"
+ },
+ "TUN": {
+  "slug": "tunisia",
+  "id": "2414832"
+ },
+ "TKM": {
+  "slug": "turkmenistan",
+  "id": "2428588"
+ },
+ "TUV": {
+  "slug": "tuvalu",
+  "id": "2415551"
+ },
+ "TUR": {
+  "slug": "tyrkia",
+  "id": "2414945"
+ },
+ "DEU": {
+  "slug": "tyskland",
+  "id": "2415120"
+ },
+ "UGA": {
+  "slug": "uganda",
+  "id": "2415945"
+ },
+ "GBR": {
+  "slug": "uk",
+  "id": "2417495"
+ },
+ "UKR": {
+  "slug": "ukraina",
+  "id": "2429141"
+ },
+ "HUN": {
+  "slug": "ungarn",
+  "id": "2424333"
+ },
+ "URY": {
+  "slug": "uruguay",
+  "id": "2415333"
+ },
+ "USA": {
+  "slug": "usa",
+  "id": "2417194"
+ },
+ "UZB": {
+  "slug": "usbekistan",
+  "id": "2416307"
+ },
+ "VUT": {
+  "slug": "vanuatu",
+  "id": "2428998"
+ },
+ "VEN": {
+  "slug": "venezuela",
+  "id": "2414861"
+ },
+ "VNM": {
+  "slug": "vietnam",
+  "id": "2415578"
+ },
+ "ZMB": {
+  "slug": "zambia",
+  "id": "2429142"
+ },
+ "ZWE": {
+  "slug": "zimbabwe",
+  "id": "2415585"
+ }
+}

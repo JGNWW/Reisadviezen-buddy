@@ -84,6 +84,25 @@ const PATTERNS = {
     P(/noudata erityist[äa] varovaisuutta|erityist[äa] varovaisuutta/i, 2),
     P(/noudata tavanomaista varovaisuutta|tavanomaista varovaisuutta/i, 1),
   ],
+  // Noorwegen (regjeringen.no) — twee vaste reisadvarsel-vormen. De
+  // 3-variant ("… som ikke er strengt nødvendige") bevat de 4-frase
+  // ("fraråder alle reiser"); langste-match-ontdubbeling lost dat op.
+  no: [
+    P(/frar[åa]der (alle )?reiser som ikke er strengt n[øo]dvendige/i, 3),
+    P(/frar[åa]der alle reiser/i, 4),
+    P(/frar[åa]der reiser til/i, 3),
+    P(/utvis (s[æa]rlig )?aktsomhet/i, 2),
+  ],
+  // Zuid-Korea (0404.go.kr) — vier vaste stappen (여행경보) plus de
+  // 특별여행주의보 (speciale waarschuwing, tussen stap 2 en 3 — genormaliseerd
+  // naar 3, conform hoe aggregatoren die duiden).
+  ko: [
+    P(/여행금지/, 4),
+    P(/출국권고|철수권고/, 3),
+    P(/특별여행주의보/, 3),
+    P(/여행자제/, 2),
+    P(/여행유의/, 1),
+  ],
   // Japan (MOFA) — vier vaste niveaus, zowel met als zonder "レベルN"-prefix.
   // Let op de volgorde/overlap: レベル2 ("不要不急の渡航は止めてください")
   // bevat de レベル3-frase ("渡航は止めてください"); de ontdubbeling in

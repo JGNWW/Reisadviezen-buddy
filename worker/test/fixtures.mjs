@@ -21,6 +21,8 @@ export const ROUTES = [
   ['pchazardspecificinfo_', 'jp-nepal-detail.html'],
   ['schede_paese/NPL.json', 'it-nepal.json'],
   ['matkustustiedote/-/c/NP', 'fi-nepal.html'],
+  ['ntnSafetyInfo/284/detail', 'kr-afghanistan.html'],
+  ['reiseinfo_afghanistan/id2415875', 'no-afghanistan.html'],
 ];
 
 export function installFixtureFetch() {

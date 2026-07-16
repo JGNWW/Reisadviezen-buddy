@@ -38,6 +38,9 @@ export const THEMES = [
       // it/fi: vaste sectiekoppen (Viaggiare Sicuri / um.fi)
       'sicurezza', 'aree di particolare cautela', 'avvertenze', 'indicazioni generali',
       'turvallisuustaso', 'turvallisuustilanne', 'ajankohtaista',
+      // ko (0404.go.kr)
+      '여행경보', '안전공지', '치안', '기본정보', '유의사항',
+      'reiseadvarsel', 'sikkerhet',
     ],
   },
   {
@@ -50,6 +53,7 @@ export const THEMES = [
       'kriminalitat', 'kriminalitet', 'criminalite', 'delincuencia', 'robo',
       '犯罪', '窃盗', '強盗', '詐欺', 'スリ',
       'criminalita', 'ordine pubblico', 'rikollisuus',
+      '범죄', '사건', '사고유형',
     ],
   },
   {
@@ -61,6 +65,7 @@ export const THEMES = [
       'terrorismus', 'terror', 'terrorismo',
       'テロ',
       'rischio terrorismo',
+      '테러',
     ],
   },
   {
@@ -110,6 +115,7 @@ export const THEMES = [
       'terremoto', 'huracan', 'inundacion', 'desastres naturales',
       '地震', '洪水', '自然災害', 'モンスーン', 'サイクロン',
       'calamita', 'rischi ambientali', 'luonnonolot', 'luonnonkatastrofit',
+      '자연재해', '날씨',
     ],
   },
   {
@@ -123,6 +129,7 @@ export const THEMES = [
       'fuhrerschein', 'verkehr', 'trafik', 'circulation', 'conduccion', 'liaisons aeriennes',
       '交通', '道路',
       'mobilita', 'liikenne',
+      '교통',
     ],
   },
   {
@@ -136,6 +143,8 @@ export const THEMES = [
       'gay and lesbian',
       'rechtliche', 'lokale regler', 'skikke', 'legislation', 'leyes', 'costumbres',
       'normative locali', 'maan lait ja kaytannot', 'maan lait',
+      '현지 문화', '종교관련', '인사',
+      'lokale lover', 'sedvaner',
     ],
   },
   {
@@ -154,6 +163,7 @@ export const THEMES = [
       'sanitarias', 'salud', 'vacuna',
       '感染症', '医療', 'デング',
       'situazione sanitaria', 'vaccinazioni', 'terveys',
+      'helse',
     ],
   },
   {
@@ -169,6 +179,8 @@ export const THEMES = [
       'documentacion', 'visado', 'aduanas',
       '査証', 'ビザ', 'パスポート', '出入国',
       'documenti e visti', 'requisiti di ingresso', 'maahantulosaannokset', 'maahantulo',
+      '출입국',
+      'innreise', 'utreise',
     ],
   },
   {
@@ -201,6 +213,7 @@ export const THEMES = [
       'krisenvorsorge', 'danskerlisten', 'urgence', 'ambassade', 'embajada', 'telefonos',
       '緊急時', '連絡先', '大使館',
       'ambasciata', 'suurlahetysto', 'yhteystiedot',
+      '대사관', '연락처', '신고',
     ],
   },
 ];

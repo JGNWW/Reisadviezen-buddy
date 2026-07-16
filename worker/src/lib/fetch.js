@@ -11,8 +11,8 @@ export function setCorsProxy(url) {
   CORS_PROXY = url ? url.replace(/\/+$/, '') : null;
 }
 
-async function fetchWithFallback(url, accept) {
-  const headers = { 'User-Agent': UA, Accept: accept };
+async function fetchWithFallback(url, accept, extraHeaders = null) {
+  const headers = extraHeaders ? { ...extraHeaders } : { 'User-Agent': UA, Accept: accept };
   let res;
   try {
     res = await fetch(url, { headers });
@@ -33,6 +33,19 @@ async function fetchWithFallback(url, accept) {
 
 export async function getText(url) {
   const res = await fetchWithFallback(url, 'text/html,application/xhtml+xml');
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`${res.status} ${url}`);
+  return res.text();
+}
+
+/**
+ * Als getText, maar met een volledig eigen header-set. Nodig voor bronnen
+ * met een kieskeurige WAF: 0404.go.kr (Zuid-Korea) eist bijv. een
+ * browser-User-Agent én de volledige browser-Accept-header (mét q-waarden)
+ * en geeft anders een 503.
+ */
+export async function getTextWithHeaders(url, headers) {
+  const res = await fetchWithFallback(url, null, headers);
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`${res.status} ${url}`);
   return res.text();
