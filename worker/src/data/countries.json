@@ -30,7 +30,8 @@
       "fi": "NP",
       "kr": "22",
       "no": "nepal/2416354",
-      "at": "nepal"
+      "at": "nepal",
+      "ch": "nepal/reisehinweise-fuernepal.html"
     }
   },
   "MSR": {
@@ -93,7 +94,8 @@
       "fi": "DE",
       "kr": "34",
       "no": "tyskland/2415120",
-      "at": "deutschland"
+      "at": "deutschland",
+      "ch": "deutschland/reisehinweise-fuerdeutschland.html"
     }
   },
   "REU": {
@@ -156,7 +158,8 @@
       "fi": "RS",
       "kr": "287",
       "no": "serbia/2415119",
-      "at": "serbien"
+      "at": "serbien",
+      "ch": "serbien/reisehinweise-fuerser-bien.html"
     }
   },
   "GRL": {
@@ -247,7 +250,8 @@
       "it": "LCA",
       "kr": "321",
       "no": "saintlucia/2428983",
-      "at": "st-lucia"
+      "at": "st-lucia",
+      "ch": "st-lucia/reisehinweise-fuerstlucia.html"
     }
   },
   "PRT": {
@@ -281,7 +285,8 @@
       "fi": "PT",
       "kr": "244",
       "no": "portugal/2414892",
-      "at": "portugal"
+      "at": "portugal",
+      "ch": "portugal/reisehinweise-fuerportugal.html"
     }
   },
   "HUN": {
@@ -315,7 +320,8 @@
       "fi": "HU",
       "kr": "254",
       "no": "ungarn/2424333",
-      "at": "ungarn"
+      "at": "ungarn",
+      "ch": "ungarn/reisehinweise-fuerungarn.html"
     }
   },
   "POL": {
@@ -349,7 +355,8 @@
       "fi": "PL",
       "kr": "246",
       "no": "polen/2429019",
-      "at": "polen"
+      "at": "polen",
+      "ch": "polen/reisehinweise-fuerpolen.html"
     }
   },
   "SVK": {
@@ -383,7 +390,8 @@
       "fi": "SK",
       "kr": "129",
       "no": "slovakia/2424323",
-      "at": "slowakei"
+      "at": "slowakei",
+      "ch": "slowakei/reisehinweise-fuerdieslowakei.html"
     }
   },
   "HRV": {
@@ -417,7 +425,8 @@
       "fi": "HR",
       "kr": "218",
       "no": "kroatia/2417198",
-      "at": "kroatien"
+      "at": "kroatien",
+      "ch": "kroatien/reisehinweise-fuerkroatien.html"
     }
   },
   "SVN": {
@@ -451,7 +460,8 @@
       "fi": "SI",
       "kr": "130",
       "no": "slovenia/2415327",
-      "at": "slowenien"
+      "at": "slowenien",
+      "ch": "slowenien/reisehinweise-fuerslowenien.html"
     }
   },
   "CZE": {
@@ -485,7 +495,8 @@
       "fi": "CZ",
       "kr": "195",
       "no": "tsjekkia/2416409",
-      "at": "tschechien"
+      "at": "tschechien",
+      "ch": "tschechische-republik/reisehinweise-fuerdietschechischerepublik.html"
     }
   },
   "ATG": {
@@ -518,7 +529,8 @@
       "it": "ATG",
       "kr": "325",
       "no": "antigua_barbuda/2428958",
-      "at": "antigua-und-barbuda"
+      "at": "antigua-und-barbuda",
+      "ch": "antigua-und-barbuda/reisehinweise-fuerantiguaundbarbuda.html"
     }
   },
   "MWI": {
@@ -552,7 +564,8 @@
       "fi": "MW",
       "kr": "55",
       "no": "malawi/2415982",
-      "at": "malawi"
+      "at": "malawi",
+      "ch": "malawi/reisehinweise-fuermalawi.html"
     }
   },
   "GAB": {
@@ -585,7 +598,8 @@
       "it": "GAB",
       "kr": "2",
       "no": "gabon/2416221",
-      "at": "gabun"
+      "at": "gabun",
+      "ch": "gabun/reisehinweise-fuergabun.html"
     }
   },
   "VGB": {
@@ -647,7 +661,8 @@
       "it": "GRD",
       "kr": "316",
       "no": "grenada/2428980",
-      "at": "grenada"
+      "at": "grenada",
+      "ch": "grenada/reisehinweise-fuergrenada.html"
     }
   },
   "HND": {
@@ -681,7 +696,8 @@
       "fi": "HN",
       "kr": "164",
       "no": "honduras/2428569",
-      "at": "honduras"
+      "at": "honduras",
+      "ch": "honduras/reisehinweise-fuerhonduras.html"
     }
   },
   "CMR": {
@@ -714,7 +730,8 @@
       "it": "CMR",
       "kr": "199",
       "no": "kamerun/2424175",
-      "at": "kamerun"
+      "at": "kamerun",
+      "ch": "kamerun/reisehinweise-fuerkamerun.html"
     }
   },
   "BLR": {
@@ -747,7 +764,8 @@
       "it": "BLR",
       "fi": "BY",
       "kr": "333",
-      "at": "belarus"
+      "at": "belarus",
+      "ch": "belarus/reisehinweise-fuerbelarus.html"
     }
   },
   "DMA": {
@@ -779,7 +797,8 @@
       "jp": "289",
       "it": "DMA",
       "kr": "369",
-      "at": "dominica"
+      "at": "dominica",
+      "ch": "dominica/reisehinweise-fuerdominica.html"
     }
   },
   "KAZ": {
@@ -813,7 +832,8 @@
       "fi": "KZ",
       "kr": "201",
       "no": "kasakhstan/2428578",
-      "at": "kasachstan"
+      "at": "kasachstan",
+      "ch": "kasachstan/reisehinweise-fuerkasachstan.html"
     }
   },
   "ROU": {
@@ -847,7 +867,8 @@
       "fi": "RO",
       "kr": "43",
       "no": "romania/2414864",
-      "at": "rumaenien"
+      "at": "rumaenien",
+      "ch": "rumaenien/reisehinweise-fuerrumaenien.html"
     }
   },
   "VCT": {
@@ -880,7 +901,8 @@
       "it": "VCT",
       "kr": "322",
       "no": "saintvincent/2428984",
-      "at": "st-vincent-und-die-grenadinen"
+      "at": "st-vincent-und-die-grenadinen",
+      "ch": "st-vincent-und-diegrenadinen/reisehinweise-fuerstvincentunddiegrenadinen.html"
     }
   },
   "GUY": {
@@ -913,7 +935,8 @@
       "it": "GUY",
       "kr": "315",
       "no": "guyana/2415199",
-      "at": "guyana"
+      "at": "guyana",
+      "ch": "guyana/reisehinweise-fuerguyana.html"
     }
   },
   "SSD": {
@@ -947,7 +970,8 @@
       "fi": "SS",
       "kr": "373",
       "no": "sorsudan/2429140",
-      "at": "suedsudan"
+      "at": "suedsudan",
+      "ch": "suedsudan/reisehinweise-fuerdensuedsudan.html"
     }
   },
   "AUT": {
@@ -981,7 +1005,8 @@
       "fi": "AT",
       "kr": "163",
       "no": "osterrike/2414941",
-      "at": "oesterreich"
+      "at": "oesterreich",
+      "ch": "oesterreich/reisehinweise-fueroesterreich.html"
     }
   },
   "JAM": {
@@ -1015,7 +1040,8 @@
       "fi": "JM",
       "kr": "326",
       "no": "jamaica/2428981",
-      "at": "jamaika"
+      "at": "jamaika",
+      "ch": "jamaika/reisehinweise-fuerjamaika.html"
     }
   },
   "MMR": {
@@ -1049,7 +1075,8 @@
       "fi": "MM",
       "kr": "75",
       "no": "myanmar/2417496",
-      "at": "myanmar"
+      "at": "myanmar",
+      "ch": "myanmar/reisehinweise-fuermyanmar.html"
     }
   },
   "PRK": {
@@ -1082,7 +1109,8 @@
       "it": "PRK",
       "fi": "KP",
       "no": "nordkorea/2429138",
-      "at": "korea-dem-vr"
+      "at": "korea-dem-vr",
+      "ch": "demokratische-volksrepublikkorea/reisehinweise-fuerdemokratischevolksrepublikkorea.html"
     }
   },
   "SXM": {
@@ -1145,7 +1173,8 @@
       "fi": "MY",
       "kr": "56",
       "no": "malaysia/2415975",
-      "at": "malaysia"
+      "at": "malaysia",
+      "ch": "malaysia/reisehinweise-fuermalaysia.html"
     }
   },
   "TWN": {
@@ -1175,7 +1204,8 @@
       "it": "TWN",
       "fi": "TW",
       "kr": "372",
-      "at": "taiwan-chinesisches-taipei"
+      "at": "taiwan-chinesisches-taipei",
+      "ch": "taiwan-taipei/reisehinweise-fuertaiwantaipei.html"
     }
   },
   "VUT": {
@@ -1208,7 +1238,8 @@
       "it": "VUT",
       "kr": "310",
       "no": "vanuatu/2428998",
-      "at": "vanuatu"
+      "at": "vanuatu",
+      "ch": "vanuatu/reisehinweise-fuervanuatu.html"
     }
   },
   "SEN": {
@@ -1242,7 +1273,8 @@
       "fi": "SN",
       "kr": "114",
       "no": "senegal/2414687",
-      "at": "senegal"
+      "at": "senegal",
+      "ch": "senegal/reisehinweise-fuersenegal.html"
     }
   },
   "BDI": {
@@ -1276,7 +1308,8 @@
       "fi": "BI",
       "kr": "93",
       "no": "burundi/2415929",
-      "at": "burundi"
+      "at": "burundi",
+      "ch": "burundi/reisehinweise-fuerburundi.html"
     }
   },
   "NRU": {
@@ -1309,7 +1342,8 @@
       "it": "NRU",
       "kr": "306",
       "no": "nauru/2428988",
-      "at": "nauru"
+      "at": "nauru",
+      "ch": "nauru/reisehinweise-fuernauru.html"
     }
   },
   "NAM": {
@@ -1343,7 +1377,8 @@
       "fi": "NA",
       "kr": "15",
       "no": "namibia/2424510",
-      "at": "namibia"
+      "at": "namibia",
+      "ch": "namibia/reisehinweise-fuernamibia.html"
     }
   },
   "MDG": {
@@ -1377,7 +1412,8 @@
       "fi": "MG",
       "kr": "49",
       "no": "madagaskar/2414947",
-      "at": "madagaskar"
+      "at": "madagaskar",
+      "ch": "madagaskar/reisehinweise-fuermadagaskar.html"
     }
   },
   "IND": {
@@ -1411,7 +1447,8 @@
       "fi": "IN",
       "kr": "285",
       "no": "india/2414743",
-      "at": "indien"
+      "at": "indien",
+      "ch": "indien/reisehinweise-fuerindien.html"
     }
   },
   "BFA": {
@@ -1444,7 +1481,8 @@
       "it": "BFA",
       "kr": "94",
       "no": "burkinafaso/2414675",
-      "at": "burkina-faso"
+      "at": "burkina-faso",
+      "ch": "burkina-faso/reisehinweise-fuerburkinafaso.html"
     }
   },
   "ERI": {
@@ -1478,7 +1516,8 @@
       "fi": "ER",
       "kr": "338",
       "no": "eritrea/2429020",
-      "at": "eritrea"
+      "at": "eritrea",
+      "ch": "eritrea/reisehinweise-fuereritrea.html"
     }
   },
   "SWE": {
@@ -1512,7 +1551,8 @@
       "fi": "SE",
       "kr": "126",
       "no": "sverige/2416998",
-      "at": "schweden"
+      "at": "schweden",
+      "ch": "schweden/reisehinweise-fuerschweden.html"
     }
   },
   "AFG": {
@@ -1546,7 +1586,8 @@
       "fi": "AF",
       "kr": "284",
       "no": "afghanistan/2415875",
-      "at": "afghanistan"
+      "at": "afghanistan",
+      "ch": "afghanistan/reisehinweise-fuerafghanistan.html"
     }
   },
   "MTQ": {
@@ -1661,7 +1702,8 @@
       "it": "KIR",
       "kr": "312",
       "no": "kiribati/2429127",
-      "at": "kiribati"
+      "at": "kiribati",
+      "ch": "kiribati/reisehinweise-fuerkiribati.html"
     }
   },
   "TON": {
@@ -1694,7 +1736,8 @@
       "it": "TON",
       "kr": "230",
       "no": "tonga/2415548",
-      "at": "tonga"
+      "at": "tonga",
+      "ch": "tonga/reisehinweise-fuertonga.html"
     }
   },
   "WLF": {
@@ -1780,7 +1823,8 @@
       "jp": "300",
       "it": "COK",
       "kr": "330",
-      "no": "cookoyene/2415553"
+      "no": "cookoyene/2415553",
+      "ch": "cookinseln/reisehinweise-fuerdiecookinseln.html"
     }
   },
   "ISL": {
@@ -1814,7 +1858,8 @@
       "fi": "IS",
       "kr": "139",
       "no": "island/2414936",
-      "at": "island"
+      "at": "island",
+      "ch": "island/reisehinweise-fuerisland.html"
     }
   },
   "PRI": {
@@ -1876,7 +1921,8 @@
       "fi": "BG",
       "kr": "98",
       "no": "bulgaria/2416997",
-      "at": "bulgarien"
+      "at": "bulgarien",
+      "ch": "bulgarien/reisehinweise-fuerbulgarien.html"
     }
   },
   "BEL": {
@@ -1910,7 +1956,8 @@
       "fi": "BE",
       "kr": "87",
       "no": "belgia/2414842",
-      "at": "belgien"
+      "at": "belgien",
+      "ch": "belgien/reisehinweise-fuerbelgien.html"
     }
   },
   "CYM": {
@@ -1973,7 +2020,8 @@
       "fi": "YE",
       "kr": "294",
       "no": "jemen/2416418",
-      "at": "jemen"
+      "at": "jemen",
+      "ch": "jemen/reisehinweise-fuerje-men.html"
     }
   },
   "EST": {
@@ -2007,7 +2055,8 @@
       "fi": "EE",
       "kr": "154",
       "no": "estland/2417117",
-      "at": "estland"
+      "at": "estland",
+      "ch": "estland/reisehinweise-fuerestland.html"
     }
   },
   "LTU": {
@@ -2041,7 +2090,8 @@
       "fi": "LT",
       "kr": "345",
       "no": "litauen/2417192",
-      "at": "litauen"
+      "at": "litauen",
+      "ch": "litauen/reisehinweise-fuerlitauen.html"
     }
   },
   "ITA": {
@@ -2074,7 +2124,8 @@
       "fi": "IT",
       "kr": "179",
       "no": "italia/2416484",
-      "at": "italien"
+      "at": "italien",
+      "ch": "italien/reisehinweise-fueritalien.html"
     }
   },
   "CHE": {
@@ -2142,7 +2193,8 @@
       "fi": "IE",
       "kr": "141",
       "no": "irland/2428570",
-      "at": "irland"
+      "at": "irland",
+      "ch": "irland/reisehinweise-fuerirland.html"
     }
   },
   "DNK": {
@@ -2176,7 +2228,8 @@
       "fi": "DK",
       "kr": "31",
       "no": "danmark/2415976",
-      "at": "daenemark"
+      "at": "daenemark",
+      "ch": "daenemark/reisehinweise-fuerdaenemark.html"
     }
   },
   "BQ-SA": {
@@ -2282,7 +2335,8 @@
       "jp": "135",
       "it": "COM",
       "kr": "331",
-      "at": "komoren"
+      "at": "komoren",
+      "ch": "komoren/reisehinweise-fuerdiekomoren.html"
     }
   },
   "MOZ": {
@@ -2316,7 +2370,8 @@
       "fi": "MZ",
       "kr": "63",
       "no": "mosambik/2414919",
-      "at": "mosambik"
+      "at": "mosambik",
+      "ch": "mosambik/reisehinweise-fuermosambik.html"
     }
   },
   "FIN": {
@@ -2349,7 +2404,8 @@
       "it": "FIN",
       "kr": "251",
       "no": "finland/2424334",
-      "at": "finnland"
+      "at": "finnland",
+      "ch": "finnland/reisehinweise-fuerfinnland.html"
     }
   },
   "GMB": {
@@ -2383,7 +2439,8 @@
       "fi": "GM",
       "kr": "5",
       "no": "gambia/2414679",
-      "at": "gambia"
+      "at": "gambia",
+      "ch": "gambia/reisehinweise-fuergambia.html"
     }
   },
   "SLV": {
@@ -2417,7 +2474,8 @@
       "fi": "SV",
       "kr": "157",
       "no": "elsalvador/2428564",
-      "at": "el-salvador"
+      "at": "el-salvador",
+      "ch": "el-salvador/reisehinweise-fuerelsalvador.html"
     }
   },
   "ISR": {
@@ -2484,7 +2542,8 @@
       "it": "MRT",
       "kr": "62",
       "no": "mauritania/2429137",
-      "at": "mauretanien"
+      "at": "mauretanien",
+      "ch": "mauretanien/reisehinweise-fuermauretanien.html"
     }
   },
   "LIE": {
@@ -2518,7 +2577,8 @@
       "fi": "LI",
       "kr": "48",
       "no": "liechtenstein/2415978",
-      "at": "liechtenstein"
+      "at": "liechtenstein",
+      "ch": "liechtenstein/reisehinweise-fuerliechtenstein.html"
     }
   },
   "RWA": {
@@ -2552,7 +2612,8 @@
       "fi": "RW",
       "kr": "45",
       "no": "rwanda/2415941",
-      "at": "ruanda"
+      "at": "ruanda",
+      "ch": "ruanda/reisehinweise-fuerruanda.html"
     }
   },
   "ZMB": {
@@ -2586,7 +2647,8 @@
       "fi": "ZM",
       "kr": "186",
       "no": "zambia/2429142",
-      "at": "sambia"
+      "at": "sambia",
+      "ch": "sambia/reisehinweise-fuersambia.html"
     }
   },
   "MKD": {
@@ -2654,7 +2716,8 @@
       "fi": "AU",
       "kr": "255",
       "no": "australia/2415524",
-      "at": "australien"
+      "at": "australien",
+      "ch": "australien/reisehinweise-fueraustralien.html"
     }
   },
   "GUF": {
@@ -2717,7 +2780,8 @@
       "fi": "GB",
       "kr": "159",
       "no": "uk/2417495",
-      "at": "vereinigtes-koenigreich"
+      "at": "vereinigtes-koenigreich",
+      "ch": "grossbritannien/reisehinweise-fuergrossbritannien.html"
     }
   },
   "KOR": {
@@ -2750,7 +2814,8 @@
       "it": "KOR",
       "fi": "KR",
       "no": "sorkorea/2416503",
-      "at": "korea-rep"
+      "at": "korea-rep",
+      "ch": "republik-korea/reisehinweise-fuerdierepublikkorea.html"
     }
   },
   "BTN": {
@@ -2784,7 +2849,8 @@
       "fi": "BT",
       "kr": "329",
       "no": "bhutan/2414742",
-      "at": "bhutan"
+      "at": "bhutan",
+      "ch": "bhutan/reisehinweise-fuerbhutan.html"
     }
   },
   "GRC": {
@@ -2818,7 +2884,8 @@
       "fi": "GR",
       "kr": "11",
       "no": "hellas/2414955",
-      "at": "griechenland"
+      "at": "griechenland",
+      "ch": "griechenland/reisehinweise-fuergriechenland.html"
     }
   },
   "CHN": {
@@ -2852,7 +2919,8 @@
       "fi": "CN",
       "kr": "189",
       "no": "kina/2414833",
-      "at": "china"
+      "at": "china",
+      "ch": "china/reisehinweise-fuer-china.html"
     }
   },
   "PAK": {
@@ -2886,7 +2954,8 @@
       "fi": "PK",
       "kr": "239",
       "no": "pakistan/2428616",
-      "at": "pakistan"
+      "at": "pakistan",
+      "ch": "pakistan/reisehinweise-fuerpakistan.html"
     }
   },
   "PSE": {
@@ -2948,7 +3017,8 @@
       "fi": "BA",
       "kr": "298",
       "no": "bosnia/2416500",
-      "at": "bosnien-und-herzegowina"
+      "at": "bosnien-und-herzegowina",
+      "ch": "bosnien-und-herzegowina/reisehinweise-fuerbosnienundherzegowina.html"
     }
   },
   "SMR": {
@@ -2981,7 +3051,8 @@
       "it": "SMR",
       "kr": "299",
       "no": "sanmarino/2429005",
-      "at": "san-marino"
+      "at": "san-marino",
+      "ch": "san-marino/reisehinweise-fuersanmarino.html"
     }
   },
   "RUS": {
@@ -3015,7 +3086,8 @@
       "fi": "RU",
       "kr": "39",
       "no": "russland/2416298",
-      "at": "russische-foederation"
+      "at": "russische-foederation",
+      "ch": "russland/reisehinweise-fuerrussland.html"
     }
   },
   "GNB": {
@@ -3048,7 +3120,8 @@
       "it": "GNB",
       "kr": "14",
       "no": "guineabissau/2414888",
-      "at": "guinea-bissau"
+      "at": "guinea-bissau",
+      "ch": "guinea-bissau/reisehinweise-fuerguinea-bissau.html"
     }
   },
   "GNQ": {
@@ -3081,7 +3154,8 @@
       "it": "GNQ",
       "kr": "187",
       "no": "ekvatorialguinea/2416217",
-      "at": "aequatorialguinea"
+      "at": "aequatorialguinea",
+      "ch": "aequatorialguinea/reisehinweise-fueraequatorialguinea.html"
     }
   },
   "VIR": {
@@ -3143,7 +3217,8 @@
       "it": "BHS",
       "kr": "339",
       "no": "bahamas/2428963",
-      "at": "bahamas"
+      "at": "bahamas",
+      "ch": "bahamas/reisehinweise-fuerdiebahamas.html"
     }
   },
   "MAC": {
@@ -3243,7 +3318,8 @@
       "fi": "UG",
       "kr": "166",
       "no": "uganda/2415945",
-      "at": "uganda"
+      "at": "uganda",
+      "ch": "uganda/reisehinweise-fueruganda.html"
     }
   },
   "DZA": {
@@ -3277,7 +3353,8 @@
       "fi": "DZ",
       "kr": "150",
       "no": "algerie/2414745",
-      "at": "algerien"
+      "at": "algerien",
+      "ch": "algerien/reisehinweise-fueralgerien.html"
     }
   },
   "AGO": {
@@ -3311,7 +3388,8 @@
       "fi": "AO",
       "kr": "151",
       "no": "angola/2415995",
-      "at": "angola"
+      "at": "angola",
+      "ch": "angola/reisehinweise-fuerangola.html"
     }
   },
   "ARG": {
@@ -3345,7 +3423,8 @@
       "fi": "AR",
       "kr": "138",
       "no": "argentina/2415477",
-      "at": "argentinien"
+      "at": "argentinien",
+      "ch": "argentinien/reisehinweise-fuerargentinien.html"
     }
   },
   "BRB": {
@@ -3377,7 +3456,8 @@
       "jp": "287",
       "it": "BRB",
       "kr": "318",
-      "at": "barbados"
+      "at": "barbados",
+      "ch": "barbados/reisehinweise-fuerbarbados.html"
     }
   },
   "BRA": {
@@ -3411,7 +3491,8 @@
       "fi": "BR",
       "kr": "104",
       "no": "brasil/2415169",
-      "at": "brasilien"
+      "at": "brasilien",
+      "ch": "brasilien/reisehinweise-fuerbrasilien.html"
     }
   },
   "KHM": {
@@ -3445,7 +3526,8 @@
       "fi": "KH",
       "kr": "259",
       "no": "kambodsja/2415096",
-      "at": "kambodscha"
+      "at": "kambodscha",
+      "ch": "kambodscha/reisehinweise-fuerkambodscha.html"
     }
   },
   "CAN": {
@@ -3475,7 +3557,8 @@
       "fi": "CA",
       "kr": "204",
       "no": "canada/2414944",
-      "at": "kanada"
+      "at": "kanada",
+      "ch": "kanada/reisehinweise-fuerkanada.html"
     }
   },
   "CAF": {
@@ -3507,7 +3590,8 @@
       "jp": "112",
       "it": "CAF",
       "kr": "190",
-      "at": "zentralafrikanische-republik"
+      "at": "zentralafrikanische-republik",
+      "ch": "zentralafrikanischerepublik/reisehinweise-fuerdiezentralafrikanischerepublik.html"
     }
   },
   "CYP": {
@@ -3541,7 +3625,8 @@
       "fi": "CY",
       "kr": "258",
       "no": "kypros/2414993",
-      "at": "zypern"
+      "at": "zypern",
+      "ch": "zypern/reisehinweise-fuerzypern.html"
     }
   },
   "GTM": {
@@ -3575,7 +3660,8 @@
       "fi": "GT",
       "kr": "7",
       "no": "guatemala/2428566",
-      "at": "guatemala"
+      "at": "guatemala",
+      "ch": "guatemala/reisehinweise-fuerguatemala.html"
     }
   },
   "GIN": {
@@ -3608,7 +3694,8 @@
       "it": "GIN",
       "kr": "13",
       "no": "guinea/2414683",
-      "at": "guinea"
+      "at": "guinea",
+      "ch": "guinea/reisehinweise-fuerguinea.html"
     }
   },
   "HTI": {
@@ -3641,7 +3728,8 @@
       "it": "HTI",
       "kr": "324",
       "no": "haiti/2415686",
-      "at": "haiti"
+      "at": "haiti",
+      "ch": "haiti/reisehinweise-fuerhaiti.html"
     }
   },
   "CIV": {
@@ -3675,7 +3763,8 @@
       "fi": "CI",
       "kr": "212",
       "no": "elfernbenskysten/2414708",
-      "at": "cote-divoire"
+      "at": "cote-divoire",
+      "ch": "cote-d-ivoire/reisehinweise-fuercotedivoire.html"
     }
   },
   "JPN": {
@@ -3708,7 +3797,8 @@
       "fi": "JP",
       "kr": "183",
       "no": "japan/2415973",
-      "at": "japan"
+      "at": "japan",
+      "ch": "japan/reisehinweise-fuerjapan.html"
     }
   },
   "KGZ": {
@@ -3742,7 +3832,8 @@
       "fi": "KG",
       "kr": "301",
       "no": "kirgisistan/2428584",
-      "at": "kirgisistan"
+      "at": "kirgisistan",
+      "ch": "kirgisistan/reisehinweise-fuerkirgisistan.html"
     }
   },
   "BLZ": {
@@ -3775,7 +3866,8 @@
       "it": "BLZ",
       "fi": "BZ",
       "kr": "319",
-      "at": "belize"
+      "at": "belize",
+      "ch": "belize/reisehinweise-fuerbelize.html"
     }
   },
   "MLI": {
@@ -3808,7 +3900,8 @@
       "it": "MLI",
       "kr": "57",
       "no": "mali/2424320",
-      "at": "mali"
+      "at": "mali",
+      "ch": "mali/reisehinweise-fuermali.html"
     }
   },
   "MAR": {
@@ -3842,7 +3935,8 @@
       "fi": "MA",
       "kr": "60",
       "no": "marokko/2424344",
-      "at": "marokko"
+      "at": "marokko",
+      "ch": "marokko/reisehinweise-fuermarokko.html"
     }
   },
   "MDA": {
@@ -3876,7 +3970,8 @@
       "fi": "MD",
       "kr": "65",
       "no": "moldova/2414862",
-      "at": "moldau"
+      "at": "moldau",
+      "ch": "moldova/reisehinweise-fuermoldova.html"
     }
   },
   "MNG": {
@@ -3910,7 +4005,8 @@
       "fi": "MN",
       "kr": "68",
       "no": "mongolia/2414841",
-      "at": "mongolei"
+      "at": "mongolei",
+      "ch": "mongolei/reisehinweise-fuerdiemongolei.html"
     }
   },
   "TKL": {
@@ -3971,7 +4067,8 @@
       "it": "TUV",
       "kr": "313",
       "no": "tuvalu/2415551",
-      "at": "tuvalu"
+      "at": "tuvalu",
+      "ch": "tuvalu/reisehinweise-fuertuvalu.html"
     }
   },
   "NZL": {
@@ -4005,7 +4102,8 @@
       "fi": "NZ",
       "kr": "25",
       "no": "newzealand/2415533",
-      "at": "neuseeland"
+      "at": "neuseeland",
+      "ch": "neuseeland/reisehinweise-fuerneuseeland.html"
     }
   },
   "UKR": {
@@ -4039,7 +4137,8 @@
       "fi": "UA",
       "kr": "169",
       "no": "ukraina/2429141",
-      "at": "ukraine"
+      "at": "ukraine",
+      "ch": "ukraine/reisehinweise-fuerdieukraine.html"
     }
   },
   "UZB": {
@@ -4073,7 +4172,8 @@
       "fi": "UZ",
       "kr": "168",
       "no": "usbekistan/2416307",
-      "at": "usbekistan"
+      "at": "usbekistan",
+      "ch": "usbekistan/reisehinweise-fuerusbekistan.html"
     }
   },
   "PRY": {
@@ -4107,7 +4207,8 @@
       "fi": "PY",
       "kr": "237",
       "no": "paraguay/2415478",
-      "at": "paraguay"
+      "at": "paraguay",
+      "ch": "paraguay/reisehinweise-fuerparaguay.html"
     }
   },
   "SLE": {
@@ -4140,7 +4241,8 @@
       "it": "SLE",
       "kr": "292",
       "no": "sierraleone/2414706",
-      "at": "sierra-leone"
+      "at": "sierra-leone",
+      "ch": "sierra-leone/reisehinweise-fuersierraleone.html"
     }
   },
   "SOM": {
@@ -4174,7 +4276,8 @@
       "fi": "SO",
       "kr": "120",
       "no": "somalia/2429007",
-      "at": "somalia"
+      "at": "somalia",
+      "ch": "somalia/reisehinweise-fuersomalia.html"
     }
   },
   "SDN": {
@@ -4208,7 +4311,8 @@
       "fi": "SD",
       "kr": "122",
       "no": "sudan/2429022",
-      "at": "sudan"
+      "at": "sudan",
+      "ch": "sudan/reisehinweise-fuerdensudan.html"
     }
   },
   "TJK": {
@@ -4242,7 +4346,8 @@
       "fi": "TJ",
       "kr": "302",
       "no": "tadsjikistan/2428585",
-      "at": "tadschikistan"
+      "at": "tadschikistan",
+      "ch": "tadschikistan/reisehinweise-fuertadschikistan.html"
     }
   },
   "TCD": {
@@ -4275,7 +4380,8 @@
       "it": "TCD",
       "kr": "295",
       "no": "tsjad/2429023",
-      "at": "tschad"
+      "at": "tschad",
+      "ch": "tschad/reisehinweise-fuerdentschad.html"
     }
   },
   "TUN": {
@@ -4309,7 +4415,8 @@
       "fi": "TN",
       "kr": "233",
       "no": "tunisia/2414832",
-      "at": "tunesien"
+      "at": "tunesien",
+      "ch": "tunesien/reisehinweise-fuertunesien.html"
     }
   },
   "URY": {
@@ -4343,7 +4450,8 @@
       "fi": "UY",
       "kr": "167",
       "no": "uruguay/2415333",
-      "at": "uruguay"
+      "at": "uruguay",
+      "ch": "uruguay/reisehinweise-fueruruguay.html"
     }
   },
   "NIC": {
@@ -4377,7 +4485,8 @@
       "fi": "NI",
       "kr": "28",
       "no": "nicaragua/2428567",
-      "at": "nicaragua"
+      "at": "nicaragua",
+      "ch": "nicaragua/reisehinweise-fuernicaragua.html"
     }
   },
   "ABW": {
@@ -4464,7 +4573,8 @@
       "it": "LBR",
       "kr": "37",
       "no": "liberia/2414685",
-      "at": "liberia"
+      "at": "liberia",
+      "ch": "liberia/reisehinweise-fuerliberia.html"
     }
   },
   "CUW": {
@@ -4525,7 +4635,8 @@
       "jp": "102",
       "it": "COG",
       "kr": "214",
-      "no": "repkongo/2416225"
+      "no": "repkongo/2416225",
+      "ch": "republik-kongo/reisehinweise-fuerdierepublikkongo.html"
     }
   },
   "SUR": {
@@ -4558,7 +4669,8 @@
       "it": "SUR",
       "kr": "323",
       "no": "surinam/2415324",
-      "at": "suriname"
+      "at": "suriname",
+      "ch": "suriname/reisehinweise-fuersuriname.html"
     }
   },
   "TGO": {
@@ -4591,7 +4703,8 @@
       "it": "TGO",
       "kr": "296",
       "no": "togo/2424313",
-      "at": "togo"
+      "at": "togo",
+      "ch": "togo/reisehinweise-fuertogo.html"
     }
   },
   "GLP": {
@@ -4653,7 +4766,8 @@
       "it": "MUS",
       "fi": "MU",
       "kr": "61",
-      "at": "mauritius"
+      "at": "mauritius",
+      "ch": "mauritius/reisehinweise-fuermauritius.html"
     }
   },
   "PYF": {
@@ -4717,7 +4831,8 @@
       "fi": "LU",
       "kr": "337",
       "no": "luxembourg/2415570",
-      "at": "luxemburg"
+      "at": "luxemburg",
+      "ch": "luxemburg/reisehinweise-fuerluxemburg.html"
     }
   },
   "KNA": {
@@ -4750,7 +4865,8 @@
       "it": "KNA",
       "kr": "320",
       "no": "saintkitts/2428982",
-      "at": "st-kitts-und-nevis"
+      "at": "st-kitts-und-nevis",
+      "ch": "st-kitts-und-nevis/reisehinweise-fuerstkittsundnevis.html"
     }
   },
   "SYC": {
@@ -4784,7 +4900,8 @@
       "fi": "SC",
       "kr": "291",
       "no": "seychellene/2414928",
-      "at": "seychellen"
+      "at": "seychellen",
+      "ch": "seychellen/reisehinweise-fuerdieseychellen.html"
     }
   },
   "GHA": {
@@ -4816,7 +4933,8 @@
       "jp": "096",
       "it": "GHA",
       "kr": "390",
-      "at": "ghana"
+      "at": "ghana",
+      "ch": "ghana/reisehinweise-fuerghana.html"
     }
   },
   "CUB": {
@@ -4850,7 +4968,8 @@
       "fi": "CU",
       "kr": "327",
       "no": "cuba/2415595",
-      "at": "kuba"
+      "at": "kuba",
+      "ch": "kuba/reisehinweise-fuerkuba.html"
     }
   },
   "COL": {
@@ -4884,7 +5003,8 @@
       "fi": "CO",
       "kr": "213",
       "no": "colombia/2414850",
-      "at": "kolumbien"
+      "at": "kolumbien",
+      "ch": "kolumbien/reisehinweise-fuerkolumbien.html"
     }
   },
   "GEO": {
@@ -4918,7 +5038,8 @@
       "fi": "GE",
       "kr": "332",
       "no": "georgia/2428525",
-      "at": "georgien"
+      "at": "georgien",
+      "ch": "georgien/reisehinweise-fuergeorgien.html"
     }
   },
   "IRQ": {
@@ -4952,7 +5073,8 @@
       "fi": "IQ",
       "kr": "174",
       "no": "irak/2428572",
-      "at": "irak"
+      "at": "irak",
+      "ch": "irak/reisehinweise-fuerdenirak.html"
     }
   },
   "ARE": {
@@ -4986,7 +5108,8 @@
       "fi": "AE",
       "kr": "135",
       "no": "emiratene/2428549",
-      "at": "vereinigte-arabische-emirate"
+      "at": "vereinigte-arabische-emirate",
+      "ch": "vereinigte-arabischeemirate/reisehinweise-fuerdievereinigtenarabischeemirate.html"
     }
   },
   "SAU": {
@@ -5020,7 +5143,8 @@
       "fi": "SA",
       "kr": "107",
       "no": "saudiarabia/2416470",
-      "at": "saudi-arabien"
+      "at": "saudi-arabien",
+      "ch": "saudi-arabien/reisehinweise-fuersaudiarabien.html"
     }
   },
   "KWT": {
@@ -5054,7 +5178,8 @@
       "fi": "KW",
       "kr": "216",
       "no": "kuwait/2428547",
-      "at": "kuwait"
+      "at": "kuwait",
+      "ch": "kuwait/reisehinweise-fuerkuwait.html"
     }
   },
   "QAT": {
@@ -5087,7 +5212,8 @@
       "it": "QAT",
       "fi": "QA",
       "kr": "202",
-      "at": "katar"
+      "at": "katar",
+      "ch": "katar/reisehinweise-fuerkatar.html"
     }
   },
   "BHR": {
@@ -5120,7 +5246,8 @@
       "it": "BHR",
       "fi": "BH",
       "kr": "288",
-      "at": "bahrain"
+      "at": "bahrain",
+      "ch": "bahrain/reisehinweise-fuerbahrain.html"
     }
   },
   "OMN": {
@@ -5154,7 +5281,8 @@
       "fi": "OM",
       "kr": "162",
       "no": "oman/2424415",
-      "at": "oman"
+      "at": "oman",
+      "ch": "oman/reisehinweise-fuer-oman.html"
     }
   },
   "COD": {
@@ -5188,7 +5316,8 @@
       "fi": "CD",
       "kr": "215",
       "no": "drkongo/2416057",
-      "at": "kongo-dem-rep"
+      "at": "kongo-dem-rep",
+      "ch": "demokratische-republik-kongo/reisehinweise-fuer-diedemokratischerepublikkongo.html"
     }
   },
   "SYR": {
@@ -5221,7 +5350,8 @@
       "it": "SYR",
       "fi": "SY",
       "kr": "131",
-      "at": "syrien"
+      "at": "syrien",
+      "ch": "syrien/reisehinweise-fuersyrien.html"
     }
   },
   "TLS": {
@@ -5255,7 +5385,8 @@
       "fi": "TL",
       "kr": "304",
       "no": "osttimor/2415704",
-      "at": "timor-leste"
+      "at": "timor-leste",
+      "ch": "timor-leste/reisehinweise-fuertimor-leste.html"
     }
   },
   "BGD": {
@@ -5289,7 +5420,8 @@
       "fi": "BD",
       "kr": "82",
       "no": "bangladesh/2415564",
-      "at": "bangladesch"
+      "at": "bangladesch",
+      "ch": "bangladesch/reisehinweise-fuerbangladesch.html"
     }
   },
   "LBN": {
@@ -5323,7 +5455,8 @@
       "fi": "LB",
       "kr": "40",
       "no": "libanon/2415116",
-      "at": "libanon"
+      "at": "libanon",
+      "ch": "libanon/reisehinweise-fuerlibanon.html"
     }
   },
   "LAO": {
@@ -5357,7 +5490,8 @@
       "fi": "LA",
       "kr": "36",
       "no": "laos/2424428",
-      "at": "laos"
+      "at": "laos",
+      "ch": "laos/reisehinweise-fuerlaos.html"
     }
   },
   "JOR": {
@@ -5391,7 +5525,8 @@
       "fi": "JO",
       "kr": "165",
       "no": "jordan/2428573",
-      "at": "jordanien"
+      "at": "jordanien",
+      "ch": "jordanien/reisehinweise-fuerjordanien.html"
     }
   },
   "TCA": {
@@ -5454,7 +5589,8 @@
       "fi": "DO",
       "kr": "33",
       "no": "dominikanske/2415685",
-      "at": "dominikanische-republik"
+      "at": "dominikanische-republik",
+      "ch": "dominikanische-republik/reisehinweise-fuerdiedo-minikanischerepublik.html"
     }
   },
   "TTO": {
@@ -5487,7 +5623,8 @@
       "it": "TTO",
       "kr": "328",
       "no": "triogto/2428985",
-      "at": "trinidad-und-tobago"
+      "at": "trinidad-und-tobago",
+      "ch": "trinidad-und-tobago/reisehinweise-fuertrinidadundtobago.html"
     }
   },
   "PAN": {
@@ -5521,7 +5658,8 @@
       "fi": "PA",
       "kr": "235",
       "no": "panama/2428568",
-      "at": "panama"
+      "at": "panama",
+      "ch": "panama/reisehinweise-fuerpanama.html"
     }
   },
   "CRI": {
@@ -5555,7 +5693,8 @@
       "fi": "CR",
       "kr": "209",
       "no": "costarica/2428563",
-      "at": "costa-rica"
+      "at": "costa-rica",
+      "ch": "costa-rica/reisehinweise-fuercostarica.html"
     }
   },
   "MEX": {
@@ -5589,7 +5728,8 @@
       "fi": "MX",
       "kr": "58",
       "no": "mexico/2416296",
-      "at": "mexiko"
+      "at": "mexiko",
+      "ch": "mexiko/reisehinweise-fuermexiko.html"
     }
   },
   "NIU": {
@@ -5653,7 +5793,8 @@
       "it": "WSM",
       "kr": "112",
       "no": "samoa/2428993",
-      "at": "samoa"
+      "at": "samoa",
+      "ch": "samoa/reisehinweise-fuersamoa.html"
     }
   },
   "FSM": {
@@ -5686,7 +5827,8 @@
       "it": "FSM",
       "kr": "308",
       "no": "mikronesia/2428986",
-      "at": "mikronesien"
+      "at": "mikronesien",
+      "ch": "mikronesien/reisehinweise-fuermikronesien.html"
     }
   },
   "SLB": {
@@ -5719,7 +5861,8 @@
       "it": "SLB",
       "kr": "311",
       "no": "salomonoyene/2428990",
-      "at": "salomonen"
+      "at": "salomonen",
+      "ch": "salomoninseln/reisehinweise-fuerdiesalomoninseln.html"
     }
   },
   "FJI": {
@@ -5753,7 +5896,8 @@
       "fi": "FJ",
       "kr": "249",
       "no": "fiji/2415529",
-      "at": "fidschi"
+      "at": "fidschi",
+      "ch": "republik-fidschi/reisehinweise-fuerdiefidschi.html"
     }
   },
   "PLW": {
@@ -5786,7 +5930,8 @@
       "it": "PLW",
       "kr": "314",
       "no": "palau/2428989",
-      "at": "palau"
+      "at": "palau",
+      "ch": "palau/reisehinweise-fuerpalau.html"
     }
   },
   "PNG": {
@@ -5819,7 +5964,8 @@
       "it": "PNG",
       "fi": "PG",
       "kr": "240",
-      "at": "papua-neuguinea"
+      "at": "papua-neuguinea",
+      "ch": "papua-neuguinea/reisehinweise-fuerpapua-neuguinea.html"
     }
   },
   "MLT": {
@@ -5853,7 +5999,8 @@
       "fi": "MT",
       "kr": "297",
       "no": "malta/2416492",
-      "at": "malta"
+      "at": "malta",
+      "ch": "malta/reisehinweise-fuermalta.html"
     }
   },
   "ALB": {
@@ -5887,7 +6034,8 @@
       "fi": "AL",
       "kr": "300",
       "no": "albania/2428601",
-      "at": "albanien"
+      "at": "albanien",
+      "ch": "albanien/reisehinweise-fueralbanien.html"
     }
   },
   "TZA": {
@@ -5921,7 +6069,8 @@
       "fi": "TZ",
       "kr": "225",
       "no": "tanzania/2415554",
-      "at": "tansania"
+      "at": "tansania",
+      "ch": "tansania/reisehinweise-fuertansania.html"
     }
   },
   "PER": {
@@ -5955,7 +6104,8 @@
       "fi": "PE",
       "kr": "243",
       "no": "peru/2414760",
-      "at": "peru"
+      "at": "peru",
+      "ch": "peru/reisehinweise-fuerperu.html"
     }
   },
   "MHL": {
@@ -5988,7 +6138,8 @@
       "it": "MHL",
       "kr": "307",
       "no": "marshallislands/2429128",
-      "at": "marshallinseln"
+      "at": "marshallinseln",
+      "ch": "marschallinseln/reisehinweise-fuerdiemarschallinseln.html"
     }
   },
   "MDV": {
@@ -6022,7 +6173,8 @@
       "fi": "MV",
       "kr": "309",
       "no": "maldivene/2428949",
-      "at": "malediven"
+      "at": "malediven",
+      "ch": "malediven/reisehinweise-fuerdiemalediven.html"
     }
   },
   "PHL": {
@@ -6056,7 +6208,8 @@
       "fi": "PH",
       "kr": "252",
       "no": "filippinene/2416248",
-      "at": "philippinen"
+      "at": "philippinen",
+      "ch": "philippinen/reisehinweise-fuerdiephilippinen.html"
     }
   },
   "XKX": {
@@ -6081,7 +6234,8 @@
       "jp": "180",
       "kr": "367",
       "no": "kosovo/2428615",
-      "at": "kosovo"
+      "at": "kosovo",
+      "ch": "kosovo/reisehinweise-fuerkosovo.html"
     }
   },
   "DJI": {
@@ -6115,7 +6269,8 @@
       "fi": "DJ",
       "kr": "191",
       "no": "djibouti/2414710",
-      "at": "dschibuti"
+      "at": "dschibuti",
+      "ch": "dschibuti/reisehinweise-fuerdschibuti.html"
     }
   },
   "EGY": {
@@ -6149,7 +6304,8 @@
       "fi": "EG",
       "kr": "178",
       "no": "egypt/2415880",
-      "at": "aegypten"
+      "at": "aegypten",
+      "ch": "aegypten/reisehinweise-fueraegypten.html"
     }
   },
   "MNE": {
@@ -6183,7 +6339,8 @@
       "fi": "ME",
       "kr": "290",
       "no": "montenegro/2416376",
-      "at": "montenegro"
+      "at": "montenegro",
+      "ch": "montenegro/reisehinweise-fuermontenegro.html"
     }
   },
   "CHL": {
@@ -6217,7 +6374,8 @@
       "fi": "CL",
       "kr": "197",
       "no": "chile/2414751",
-      "at": "chile"
+      "at": "chile",
+      "ch": "chile/reisehinweise-fuerchile.html"
     }
   },
   "IRN": {
@@ -6251,7 +6409,8 @@
       "fi": "IR",
       "kr": "176",
       "no": "iran/2414831",
-      "at": "iran"
+      "at": "iran",
+      "ch": "iran/reisehinweise-fuerdeniran.html"
     }
   },
   "ECU": {
@@ -6285,7 +6444,8 @@
       "fi": "EC",
       "kr": "155",
       "no": "ecuador/2414757",
-      "at": "ecuador"
+      "at": "ecuador",
+      "ch": "ecuador/reisehinweise-fuerecuador.html"
     }
   },
   "STP": {
@@ -6318,7 +6478,8 @@
       "it": "STP",
       "kr": "371",
       "no": "saotome/2416237",
-      "at": "sao-tome-und-principe"
+      "at": "sao-tome-und-principe",
+      "ch": "sao-tome-und-principe/reisehinweise-fuersaotomeundprincipe.html"
     }
   },
   "LVA": {
@@ -6352,7 +6513,8 @@
       "fi": "LV",
       "kr": "344",
       "no": "latvia/2414940",
-      "at": "lettland"
+      "at": "lettland",
+      "ch": "lettland/reisehinweise-fuerlettland.html"
     }
   },
   "KEN": {
@@ -6386,7 +6548,8 @@
       "fi": "KE",
       "kr": "206",
       "no": "kenya/2414927",
-      "at": "kenia"
+      "at": "kenia",
+      "ch": "kenia/reisehinweise-fuerkenia.html"
     }
   },
   "LBY": {
@@ -6420,7 +6583,8 @@
       "fi": "LY",
       "kr": "375",
       "no": "libya/2415885",
-      "at": "libyen"
+      "at": "libyen",
+      "ch": "libyen/reisehinweise-fuerlibyen.html"
     }
   },
   "SGP": {
@@ -6454,7 +6618,8 @@
       "fi": "SG",
       "kr": "134",
       "no": "singapore/2416992",
-      "at": "singapur"
+      "at": "singapur",
+      "ch": "singapur/reisehinweise-fuersingapur.html"
     }
   },
   "ZWE": {
@@ -6488,7 +6653,8 @@
       "fi": "ZW",
       "kr": "193",
       "no": "zimbabwe/2415585",
-      "at": "simbabwe"
+      "at": "simbabwe",
+      "ch": "simbabwe/reisehinweise-fuersimbabwe.html"
     }
   },
   "BWA": {
@@ -6522,7 +6688,8 @@
       "fi": "BW",
       "kr": "91",
       "no": "botswana/2416413",
-      "at": "botsuana"
+      "at": "botsuana",
+      "ch": "botsuana/reisehinweise-fuerbotsuana.html"
     }
   },
   "ETH": {
@@ -6556,7 +6723,8 @@
       "fi": "ET",
       "kr": "156",
       "no": "etiopia/2414712",
-      "at": "aethiopien"
+      "at": "aethiopien",
+      "ch": "aethiopien/reisehinweise-fueraethiopien.html"
     }
   },
   "MCO": {
@@ -6589,7 +6757,8 @@
       "it": "MCO",
       "fi": "MC",
       "kr": "341",
-      "at": "monaco"
+      "at": "monaco",
+      "ch": "monaco/reisehinweise-fuermonaco.html"
     }
   },
   "FRO": {
@@ -6646,7 +6815,8 @@
       "it": "NOR",
       "fi": "NO",
       "kr": "23",
-      "at": "norwegen"
+      "at": "norwegen",
+      "ch": "norwegen/reisehinweise-fuernorwegen.html"
     }
   },
   "TUR": {
@@ -6680,7 +6850,8 @@
       "fi": "TR",
       "kr": "228",
       "no": "tyrkia/2414945",
-      "at": "tuerkei"
+      "at": "tuerkei",
+      "ch": "tuerkei/reisehinweise-fuerdietuerkei.html"
     }
   },
   "ATA": {
@@ -6739,7 +6910,8 @@
       "fi": "VN",
       "kr": "86",
       "no": "vietnam/2415578",
-      "at": "vietnam"
+      "at": "vietnam",
+      "ch": "vietnam/reisehinweise-fuervietnam.html"
     }
   },
   "VEN": {
@@ -6773,7 +6945,8 @@
       "fi": "VE",
       "kr": "85",
       "no": "venezuela/2414861",
-      "at": "venezuela"
+      "at": "venezuela",
+      "ch": "venezuela/reisehinweise-fuervenezuela.html"
     }
   },
   "AZE": {
@@ -6807,7 +6980,8 @@
       "fi": "AZ",
       "kr": "335",
       "no": "aserbajdsjan/2428524",
-      "at": "aserbaidschan"
+      "at": "aserbaidschan",
+      "ch": "aserbaidschan/reisehinweise-fueraserbaidschan.html"
     }
   },
   "NGA": {
@@ -6841,7 +7015,8 @@
       "fi": "NG",
       "kr": "18",
       "no": "nigeria/2414670",
-      "at": "nigeria"
+      "at": "nigeria",
+      "ch": "nigeria/reisehinweise-fuernigeria.html"
     }
   },
   "CPV": {
@@ -6875,7 +7050,8 @@
       "fi": "CV",
       "kr": "200",
       "no": "kappverde/2414891",
-      "at": "cabo-verde"
+      "at": "cabo-verde",
+      "ch": "kap-verde/reisehinweise-fuerkapverde.html"
     }
   },
   "LKA": {
@@ -6909,7 +7085,8 @@
       "fi": "LK",
       "kr": "124",
       "no": "srilanka/2424492",
-      "at": "sri-lanka"
+      "at": "sri-lanka",
+      "ch": "sri-lanka/reisehinweise-fuersrilanka.html"
     }
   },
   "TKM": {
@@ -6943,7 +7120,8 @@
       "fi": "TM",
       "kr": "366",
       "no": "turkmenistan/2428588",
-      "at": "turkmenistan"
+      "at": "turkmenistan",
+      "ch": "turkmenistan/reisehinweise-fuerturkmenistan.html"
     }
   },
   "BEN": {
@@ -6975,7 +7153,8 @@
       "jp": "118",
       "it": "BEN",
       "kr": "289",
-      "at": "benin"
+      "at": "benin",
+      "ch": "benin/reisehinweise-fuerbenin.html"
     }
   },
   "ZAF": {
@@ -7009,7 +7188,8 @@
       "fi": "ZA",
       "kr": "20",
       "no": "sorafrika/2424513",
-      "at": "suedafrika"
+      "at": "suedafrika",
+      "ch": "suedafrika/reisehinweise-fuersuedafrika.html"
     }
   },
   "AND": {
@@ -7042,7 +7222,8 @@
       "it": "AND",
       "fi": "AD",
       "kr": "340",
-      "at": "andorra"
+      "at": "andorra",
+      "ch": "andorra/reisehinweise-fuerandorra.html"
     }
   },
   "SWZ": {
@@ -7076,7 +7257,8 @@
       "fi": "SZ",
       "kr": "125",
       "no": "ewatini/2414925",
-      "at": "eswatini"
+      "at": "eswatini",
+      "ch": "swasiland/reisehinweise-fuerswasiland.html"
     }
   },
   "LSO": {
@@ -7110,7 +7292,8 @@
       "fi": "LS",
       "kr": "370",
       "no": "lesotho/2424507",
-      "at": "lesotho"
+      "at": "lesotho",
+      "ch": "lesotho/reisehinweise-fuerlesotho.html"
     }
   },
   "USA": {
@@ -7144,7 +7327,8 @@
       "fi": "US",
       "kr": "69",
       "no": "usa/2417194",
-      "at": "vereinigte-staaten-1"
+      "at": "vereinigte-staaten-1",
+      "ch": "vereinigte-staaten/reisehinweise-fuerdievereinigtenstaaten.html"
     }
   },
   "THA": {
@@ -7178,7 +7362,8 @@
       "fi": "TH",
       "kr": "260",
       "no": "thailand/2415097",
-      "at": "thailand"
+      "at": "thailand",
+      "ch": "thailand/reisehinweise-fuerthailand.html"
     }
   },
   "NER": {
@@ -7211,7 +7396,8 @@
       "it": "NER",
       "kr": "27",
       "no": "niger/2424308",
-      "at": "niger"
+      "at": "niger",
+      "ch": "niger/reisehinweise-fuerniger.html"
     }
   },
   "FRA": {
@@ -7245,7 +7431,8 @@
       "fi": "FR",
       "kr": "248",
       "no": "frankrike/2429004",
-      "at": "frankreich"
+      "at": "frankreich",
+      "ch": "frankreich/reisehinweise-fuerfrankreich.html"
     }
   },
   "ESP": {
@@ -7279,7 +7466,8 @@
       "fi": "ES",
       "kr": "128",
       "no": "spania/2416245",
-      "at": "spanien"
+      "at": "spanien",
+      "ch": "spanien/reisehinweise-fuerspanien.html"
     }
   },
   "BRN": {
@@ -7313,7 +7501,8 @@
       "fi": "BN",
       "kr": "105",
       "no": "brunei/2415974",
-      "at": "brunei-darussalam"
+      "at": "brunei-darussalam",
+      "ch": "brunei-darussalam/reisehinweise-fuerbruneidarussalam.html"
     }
   },
   "BOL": {
@@ -7347,7 +7536,8 @@
       "fi": "BO",
       "kr": "92",
       "no": "bolivia/2415332",
-      "at": "bolivien"
+      "at": "bolivien",
+      "ch": "bolivien/reisehinweise-fuerbolivien.html"
     }
   },
   "IDN": {
@@ -7381,7 +7571,8 @@
       "fi": "ID",
       "kr": "181",
       "no": "indonesia/2415692",
-      "at": "indonesien"
+      "at": "indonesien",
+      "ch": "indonesien/reisehinweise-fuerindonesien.html"
     }
   },
   "ARM": {
@@ -7415,7 +7606,8 @@
       "fi": "AM",
       "kr": "334",
       "no": "armenia/2416297",
-      "at": "armenien"
+      "at": "armenien",
+      "ch": "armenien/reisehinweise-fuerarmenien.html"
     }
   }
 }

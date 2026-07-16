@@ -64,6 +64,11 @@ const PATTERNS = {
   ],
   de: [
     P(/wird gewarnt|reisewarnung/i, 4),
+    // Zwitserse EDA-vormen ("Von Reisen nach X … wird abgeraten" = tegen
+    // álle reizen, hun zwaarste vorm; Duitsland zelf zegt "Vor Reisen …
+    // wird gewarnt", dus deze patronen raken Duitse teksten niet).
+    P(/von reisen (nach|in) .{0,80}wird abgeraten/i, 4),
+    P(/von touristischen reisen .{0,80}wird abgeraten|von nicht dringend(en)? reisen .{0,80}wird abgeraten/i, 3),
     P(/wird (dringend )?abgeraten/i, 3),
     P(/erh[öo]hte vorsicht|besondere vorsicht/i, 2),
   ],

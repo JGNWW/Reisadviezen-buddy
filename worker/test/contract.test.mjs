@@ -33,11 +33,12 @@ const ADAPTERS = [
   ['kr', (await import('../src/adapters/southkorea.js')), '284'],
   ['no', (await import('../src/adapters/norway.js')), 'afghanistan/2415875'],
   ['at', (await import('../src/adapters/austria.js')), 'afghanistan'],
+  ['ch', (await import('../src/adapters/switzerland.js')), 'afghanistan/reisehinweise-fuerafghanistan.html'],
 ];
 
-// Minimaal aantal thema's per adapter. Oorlogslanden hebben bij BMEIA een
-// ingeklapte sectieset (alleen Sicherheitsstufe + Sicherheit & Kriminalität).
-const MIN_THEMES = { at: 2 };
+// Minimaal aantal thema's per adapter. Oorlogslanden hebben bij BMEIA/EDA
+// een ingeklapte sectieset (alleen het beoordelings-/veiligheidsblok).
+const MIN_THEMES = { at: 2, ch: 1 };
 
 const CODE_HEADING = /querySelector|shadowRoot|innerHTML|function\s*\(|=>|[{};$]|document\.|window\./;
 

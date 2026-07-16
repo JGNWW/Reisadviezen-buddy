@@ -37,5 +37,8 @@ window.REISADVIEZEN_CONFIG = {
     // Oostenrijk: Sicherheitsstufe-box (4-puntsschaal, met (regional)-
     // kwalificatie); direct met reader-fallback.
     { id: 'at', label: 'Oostenrijk (BMEIA)', flag: '🇦🇹', lang: 'de', default: true },
+    // Zwitserland: klassieke Duitstalige EDA-URL's (server-gerenderd, in
+    // tegenstelling tot de nieuwe SPA); tekstueel niveau ("wird abgeraten").
+    { id: 'ch', label: 'Zwitserland (EDA)', flag: '🇨🇭', lang: 'de', default: true },
   ],
 };
