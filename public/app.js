@@ -259,7 +259,9 @@ async function loadLocalNews(iso3, slot) {
       box.append(wrap);
     }
     box.append(el('p', { class: 'news-foot' },
-      'Automatisch ingedeeld op reisadvies-categorieën; 🔁 markeert nieuws dat meerdere van de drie bronnen brengen. NL-vertaling is automatisch; koppen linken naar het bronartikel.'));
+      d.mixed
+        ? 'Voor dit land is (nog) geen gecureerde top-3 van lokale bronnen; getoond wordt reisadvies-relevant nieuws over het land uit alle door Google News geïndexeerde media. 🔁 markeert nieuws dat meerdere media brengen. NL-vertaling is automatisch; koppen linken naar het bronartikel.'
+        : 'Automatisch ingedeeld op reisadvies-categorieën; 🔁 markeert nieuws dat meerdere van de drie bronnen brengen. NL-vertaling is automatisch; koppen linken naar het bronartikel.'));
     slot.append(box);
   } catch { /* stil: nieuws is optioneel */ }
 }
