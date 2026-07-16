@@ -63,6 +63,12 @@ jobs:
           JINA_KEY: ${{ secrets.JINA_KEY }}
           CORS_PROXY_URL: ${{ secrets.CORS_PROXY_URL }}
 
+      # Lokaal nieuws per land (top-3 lokale bronnen): Google News geeft
+      # Cloudflare Workers een 503, vanaf GitHub-runners werkt het wél —
+      # de Worker serveert de hier gecommitte data/news/-bestanden.
+      - name: Lokaal nieuws verzamelen
+        run: node scripts/collect-news.mjs
+
       - name: Wijzigingen committen
         run: |
           git config user.name "github-actions[bot]"
