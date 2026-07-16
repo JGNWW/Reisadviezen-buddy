@@ -123,6 +123,74 @@ export function interpretStructured(structured) {
     return ok({ level: 1, regionalMaxLevel: null, label: 'Geen reiswaarschuwing of veiligheidsaanwijzing.', explanation: 'Geen reiswaarschuwing of veiligheidsaanwijzing.' });
   }
 
+  if (kind === 'no_advarsel') {
+    // regjeringen.no toont alleen een "Reiseadvarsel"-blok als er een
+    // waarschuwing IS; geen blok = geen advarsel = laagste niveau.
+    const text = String(value || '').trim();
+    if (!text) {
+      return ok({ level: 1, regionalMaxLevel: null, label: 'Ingen reiseadvarsel (geen waarschuwing)', explanation: 'Utenriksdepartementet (Noorwegen): geen reiseadvarsel voor dit land.' });
+    }
+    const sev = findSeverity(text, 'no');
+    if (!sev) return uncertain('Reiseadvarsel-blok aanwezig maar geen herkenbare formulering (fraråder …).');
+    return ok({ level: sev.level, label: sev.phrase.trim(), explanation: `Utenriksdepartementet (Noorwegen): ${sev.phrase.trim()}.` });
+  }
+
+  if (kind === 'kr_alert_zones') {
+    // 0404.go.kr toont per land één of meer (waarschuwing, gebied)-paren:
+    //   여행금지 | 전 지역                          → landelijk niveau 4
+    //   출국권고 | X를 제외한 전지역                → landelijke basislijn 3
+    //   여행자제 | 북부 국경지역                    → regionale vermelding 2
+    // De adapter levert de RUWE paren; de betekenis staat hier.
+    const zones = Array.isArray(value) ? value : [];
+    const KR_LEVEL = [
+      [/여행금지/, 4], [/출국권고|철수권고/, 3], [/특별여행주의보|특별/, 3],
+      [/여행자제|자제/, 2], [/여행유의|유의/, 1],
+    ];
+    const toLevel = (word) => (KR_LEVEL.find(([re]) => re.test(String(word || ''))) || [null, null])[1];
+    if (!zones.length) {
+      return ok({ level: 1, regionalMaxLevel: null, label: '여행경보 없음 (geen waarschuwing)', explanation: 'MOFA (Zuid-Korea): geen 여행경보 (reiswaarschuwing) voor dit land.' });
+    }
+    let national = null;
+    let nationalLabel = null;
+    const structuredRegional = [];
+    for (const z of zones) {
+      const level = toLevel(z.alert);
+      if (!level) continue;
+      const area = String(z.area || '').trim();
+      // "…을 제외한 (전) 지역" = "alle gebieden behalve …" — dat is de
+      // landelijke basislijn (elders-regel), geen regionale vermelding.
+      const isNationwide = /전 ?지역|전역|전 ?국토/.test(area) || /제외한 ?(전 ?)?지역/.test(area) || !area;
+      if (isNationwide) {
+        // Plain 전지역 wint van een "X를 제외한 전지역"-basislijn.
+        const plain = !/제외/.test(area);
+        if (national == null || plain) { national = level; nationalLabel = `${z.alert}${area ? ` (${area})` : ''}`; }
+      } else {
+        structuredRegional.push({ region: area, level });
+      }
+    }
+    if (national == null) {
+      if (structuredRegional.length) {
+        const maxR = Math.max(...structuredRegional.map((r) => r.level));
+        return ok({
+          level: 1, regionalMaxLevel: maxR, hasRegionalWarnings: true,
+          label: 'Alleen regionale 여행경보 (reiswaarschuwing).',
+          explanation: 'MOFA (Zuid-Korea): waarschuwingen gelden voor delen van het land, niet landelijk.',
+          structuredRegional,
+        });
+      }
+      return uncertain('Geen herkenbaar 여행경보-niveau gevonden op de 0404.go.kr-pagina.');
+    }
+    const maxR = structuredRegional.length ? Math.max(...structuredRegional.map((r) => r.level)) : null;
+    return ok({
+      level: national,
+      regionalMaxLevel: maxR != null ? Math.max(maxR, national) : national,
+      hasRegionalWarnings: structuredRegional.length > 0,
+      label: nationalLabel,
+      explanation: `MOFA (Zuid-Korea): ${nationalLabel}.`,
+      structuredRegional: structuredRegional.length ? structuredRegional : undefined,
+    });
+  }
+
   if (kind === 'fi_security_level') {
     // um.fi toont het landelijke niveau als vast "Turvallisuustaso"-veld met
     // één van vier vaste formuleringen — de ernst-detector (fi) vertaalt die.

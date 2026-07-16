@@ -29,5 +29,10 @@ window.REISADVIEZEN_CONFIG = {
     { id: 'it', label: 'Italië (Viaggiare Sicuri)', flag: '🇮🇹', lang: 'it', default: true },
     // Finland: server-gerenderd op ISO2, vast "Turvallisuustaso"-niveauveld.
     { id: 'fi', label: 'Finland (Ulkoministeriö)', flag: '🇫🇮', lang: 'fi', default: true },
+    // Zuid-Korea: eigen land-ID's (kr-map.json), vaste 여행경보-stappen per gebied.
+    { id: 'kr', label: 'Zuid-Korea (MOFA)', flag: '🇰🇷', lang: 'ko', default: true },
+    // Noorwegen: via de reader-proxy (site blokkeert datacenter-IP's);
+    // slug/id-mapping uit de Wayback-CDX (no-map.json).
+    { id: 'no', label: 'Noorwegen (Utenriksdept.)', flag: '🇳🇴', lang: 'no', default: true },
   ],
 };

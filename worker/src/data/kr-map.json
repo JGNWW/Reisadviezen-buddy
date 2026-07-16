@@ -1,0 +1,992 @@
+{
+ "GHA": {
+  "id": "390",
+  "nameKo": "251223 국가명 p.name 감싸기 + 텍스트 보이는 유형",
+  "nameEn": "Ghana"
+ },
+ "GAB": {
+  "id": "2",
+  "nameKo": "가봉",
+  "nameEn": "Gabon"
+ },
+ "GUY": {
+  "id": "315",
+  "nameKo": "",
+  "nameEn": "Guyana"
+ },
+ "GMB": {
+  "id": "5",
+  "nameKo": "",
+  "nameEn": "Gambia"
+ },
+ "GTM": {
+  "id": "7",
+  "nameKo": "과테말라",
+  "nameEn": "Guatemala"
+ },
+ "GRD": {
+  "id": "316",
+  "nameKo": "그레나다",
+  "nameEn": "Grenada"
+ },
+ "GRC": {
+  "id": "11",
+  "nameKo": "그리스",
+  "nameEn": "Greece"
+ },
+ "GIN": {
+  "id": "13",
+  "nameKo": "기니",
+  "nameEn": "Guinea"
+ },
+ "GNB": {
+  "id": "14",
+  "nameKo": "기니비사우",
+  "nameEn": "Guinea-Bissau"
+ },
+ "NAM": {
+  "id": "15",
+  "nameKo": "나미비아",
+  "nameEn": "Namibia"
+ },
+ "NRU": {
+  "id": "306",
+  "nameKo": "나우루",
+  "nameEn": "Nauru"
+ },
+ "NGA": {
+  "id": "18",
+  "nameKo": "나이지리아",
+  "nameEn": "Nigeria"
+ },
+ "SSD": {
+  "id": "373",
+  "nameKo": "남수단",
+  "nameEn": "Republic of South Sudan"
+ },
+ "ZAF": {
+  "id": "20",
+  "nameKo": "남아프리카공화국",
+  "nameEn": "Republic of South Africa"
+ },
+ "NLD": {
+  "id": "21",
+  "nameKo": "네덜란드",
+  "nameEn": "Netherlands"
+ },
+ "NPL": {
+  "id": "22",
+  "nameKo": "네팔",
+  "nameEn": "Nepal"
+ },
+ "NOR": {
+  "id": "23",
+  "nameKo": "노르웨이",
+  "nameEn": "Norway"
+ },
+ "NZL": {
+  "id": "25",
+  "nameKo": "뉴질랜드",
+  "nameEn": "New Zealand"
+ },
+ "NIU": {
+  "id": "380",
+  "nameKo": "니우에",
+  "nameEn": "Niue"
+ },
+ "NER": {
+  "id": "27",
+  "nameKo": "니제르",
+  "nameEn": "Niger"
+ },
+ "NIC": {
+  "id": "28",
+  "nameKo": "니카라과",
+  "nameEn": "Nicaragua"
+ },
+ "TWN": {
+  "id": "372",
+  "nameKo": "대만",
+  "nameEn": "Taiwan"
+ },
+ "DNK": {
+  "id": "31",
+  "nameKo": "덴마크",
+  "nameEn": "Denmark"
+ },
+ "DOM": {
+  "id": "33",
+  "nameKo": "도미니카공화국",
+  "nameEn": "Dominican Republic"
+ },
+ "DMA": {
+  "id": "369",
+  "nameKo": "도미니카연방",
+  "nameEn": "Dominica"
+ },
+ "DEU": {
+  "id": "34",
+  "nameKo": "독일",
+  "nameEn": "Germany"
+ },
+ "TLS": {
+  "id": "304",
+  "nameKo": "동티모르",
+  "nameEn": "East Timor"
+ },
+ "LAO": {
+  "id": "36",
+  "nameKo": "라오스",
+  "nameEn": "Laos"
+ },
+ "LBR": {
+  "id": "37",
+  "nameKo": "라이베리아",
+  "nameEn": "Liberia"
+ },
+ "LVA": {
+  "id": "344",
+  "nameKo": "라트비아",
+  "nameEn": "Latvia"
+ },
+ "RUS": {
+  "id": "39",
+  "nameKo": "러시아",
+  "nameEn": "Russia"
+ },
+ "LBN": {
+  "id": "40",
+  "nameKo": "레바논",
+  "nameEn": "Lebanon"
+ },
+ "LSO": {
+  "id": "370",
+  "nameKo": "레소토",
+  "nameEn": "Lesotho"
+ },
+ "ROU": {
+  "id": "43",
+  "nameKo": "루마니아",
+  "nameEn": "Romania"
+ },
+ "LUX": {
+  "id": "337",
+  "nameKo": "룩셈부르크",
+  "nameEn": "Luxembourg"
+ },
+ "RWA": {
+  "id": "45",
+  "nameKo": "르완다",
+  "nameEn": "Rwanda"
+ },
+ "LBY": {
+  "id": "375",
+  "nameKo": "리비아",
+  "nameEn": "Libya"
+ },
+ "LTU": {
+  "id": "345",
+  "nameKo": "리투아니아",
+  "nameEn": "Lithuania"
+ },
+ "LIE": {
+  "id": "48",
+  "nameKo": "리히텐슈타인",
+  "nameEn": "Liechtenstein"
+ },
+ "MDG": {
+  "id": "49",
+  "nameKo": "마다가스카르",
+  "nameEn": "Madagascar"
+ },
+ "MHL": {
+  "id": "307",
+  "nameKo": "마셜제도",
+  "nameEn": "Marshall Islands"
+ },
+ "FSM": {
+  "id": "308",
+  "nameKo": "마이크로네시아",
+  "nameEn": "Micronesia"
+ },
+ "MAC": {
+  "id": "378",
+  "nameKo": "마카오",
+  "nameEn": "Macau"
+ },
+ "MWI": {
+  "id": "55",
+  "nameKo": "말라위",
+  "nameEn": "Malawi"
+ },
+ "MYS": {
+  "id": "56",
+  "nameKo": "말레이시아",
+  "nameEn": "Malaysia"
+ },
+ "MLI": {
+  "id": "57",
+  "nameKo": "말리",
+  "nameEn": "Mali"
+ },
+ "MEX": {
+  "id": "58",
+  "nameKo": "멕시코",
+  "nameEn": "Mexico"
+ },
+ "MCO": {
+  "id": "341",
+  "nameKo": "모나코",
+  "nameEn": "Monaco"
+ },
+ "MAR": {
+  "id": "60",
+  "nameKo": "모로코",
+  "nameEn": "Morocco"
+ },
+ "MUS": {
+  "id": "61",
+  "nameKo": "모리셔스",
+  "nameEn": "Mauritius"
+ },
+ "MRT": {
+  "id": "62",
+  "nameKo": "모리타니아",
+  "nameEn": "Mauritania"
+ },
+ "MOZ": {
+  "id": "63",
+  "nameKo": "모잠비크",
+  "nameEn": "Mozambique"
+ },
+ "MNE": {
+  "id": "290",
+  "nameKo": "몬테네그로",
+  "nameEn": "Montenegro"
+ },
+ "MDA": {
+  "id": "65",
+  "nameKo": "몰도바",
+  "nameEn": "Moldova"
+ },
+ "MDV": {
+  "id": "309",
+  "nameKo": "몰디브",
+  "nameEn": "Maldives"
+ },
+ "MLT": {
+  "id": "297",
+  "nameKo": "몰타",
+  "nameEn": "Malta"
+ },
+ "MNG": {
+  "id": "68",
+  "nameKo": "몽골",
+  "nameEn": "Mongolia"
+ },
+ "USA": {
+  "id": "69",
+  "nameKo": "미국",
+  "nameEn": "United States of America"
+ },
+ "MMR": {
+  "id": "75",
+  "nameKo": "미얀마",
+  "nameEn": "Myanmar"
+ },
+ "VUT": {
+  "id": "310",
+  "nameKo": "바누아투",
+  "nameEn": "Vanuatu"
+ },
+ "BHR": {
+  "id": "288",
+  "nameKo": "바레인",
+  "nameEn": "Bahrain"
+ },
+ "BRB": {
+  "id": "318",
+  "nameKo": "바베이도스",
+  "nameEn": "Barbados"
+ },
+ "BHS": {
+  "id": "339",
+  "nameKo": "바하마",
+  "nameEn": "Bahamas"
+ },
+ "BGD": {
+  "id": "82",
+  "nameKo": "방글라데시",
+  "nameEn": "Bangladesh"
+ },
+ "BEN": {
+  "id": "289",
+  "nameKo": "베냉",
+  "nameEn": "Benin"
+ },
+ "VEN": {
+  "id": "85",
+  "nameKo": "베네수엘라",
+  "nameEn": "Venezuela"
+ },
+ "VNM": {
+  "id": "86",
+  "nameKo": "베트남",
+  "nameEn": "Vietnam"
+ },
+ "BEL": {
+  "id": "87",
+  "nameKo": "벨기에",
+  "nameEn": "Belgium"
+ },
+ "BLR": {
+  "id": "333",
+  "nameKo": "벨라루스",
+  "nameEn": "Belarus"
+ },
+ "BLZ": {
+  "id": "319",
+  "nameKo": "벨리즈",
+  "nameEn": "Belize"
+ },
+ "BIH": {
+  "id": "298",
+  "nameKo": "보스니아헤르체고비나",
+  "nameEn": "Bosnia and Herzegovina"
+ },
+ "BWA": {
+  "id": "91",
+  "nameKo": "보츠와나",
+  "nameEn": "Botswana"
+ },
+ "BOL": {
+  "id": "92",
+  "nameKo": "볼리비아",
+  "nameEn": "Bolivia"
+ },
+ "BDI": {
+  "id": "93",
+  "nameKo": "부룬디",
+  "nameEn": "Burundi"
+ },
+ "BFA": {
+  "id": "94",
+  "nameKo": "부르키나파소",
+  "nameEn": "Burkina Faso"
+ },
+ "BTN": {
+  "id": "329",
+  "nameKo": "부탄",
+  "nameEn": "Bhutan"
+ },
+ "MKD": {
+  "id": "368",
+  "nameKo": "북마케도니아",
+  "nameEn": "North Macedonia"
+ },
+ "BGR": {
+  "id": "98",
+  "nameKo": "불가리아",
+  "nameEn": "Bulgaria"
+ },
+ "BRA": {
+  "id": "104",
+  "nameKo": "브라질",
+  "nameEn": "Brazil"
+ },
+ "BRN": {
+  "id": "105",
+  "nameKo": "브루나이",
+  "nameEn": "Brunei"
+ },
+ "WSM": {
+  "id": "112",
+  "nameKo": "사모아",
+  "nameEn": "Samoa"
+ },
+ "SAU": {
+  "id": "107",
+  "nameKo": "사우디아라비아",
+  "nameEn": "Saudi Arabia"
+ },
+ "CYP": {
+  "id": "258",
+  "nameKo": "사이프러스",
+  "nameEn": "Cyprus"
+ },
+ "SMR": {
+  "id": "299",
+  "nameKo": "산마리노",
+  "nameEn": "San Marino"
+ },
+ "STP": {
+  "id": "371",
+  "nameKo": "상투메프린시페",
+  "nameEn": "Sao Tome and Principe"
+ },
+ "SEN": {
+  "id": "114",
+  "nameKo": "세네갈",
+  "nameEn": "Senegal"
+ },
+ "SRB": {
+  "id": "287",
+  "nameKo": "세르비아",
+  "nameEn": "Serbia"
+ },
+ "SYC": {
+  "id": "291",
+  "nameKo": "세이셸",
+  "nameEn": "Seychelles"
+ },
+ "LCA": {
+  "id": "321",
+  "nameKo": "세인트루시아",
+  "nameEn": "Saint Lucia"
+ },
+ "VCT": {
+  "id": "322",
+  "nameKo": "세인트빈센트그레나딘",
+  "nameEn": "St. Vincent and the Grenadines"
+ },
+ "KNA": {
+  "id": "320",
+  "nameKo": "세인트키츠네비스",
+  "nameEn": "Saint Kitts and Nevis"
+ },
+ "SOM": {
+  "id": "120",
+  "nameKo": "소말리아",
+  "nameEn": "Somalia"
+ },
+ "SLB": {
+  "id": "311",
+  "nameKo": "솔로몬제도",
+  "nameEn": "Solomon lslands"
+ },
+ "SDN": {
+  "id": "122",
+  "nameKo": "수단",
+  "nameEn": "Sudan"
+ },
+ "SUR": {
+  "id": "323",
+  "nameKo": "수리남",
+  "nameEn": "Suriname"
+ },
+ "LKA": {
+  "id": "124",
+  "nameKo": "스리랑카",
+  "nameEn": "Sri Lanka"
+ },
+ "SWE": {
+  "id": "126",
+  "nameKo": "스웨덴",
+  "nameEn": "Sweden"
+ },
+ "CHE": {
+  "id": "127",
+  "nameKo": "스위스",
+  "nameEn": "Switzerland"
+ },
+ "ESP": {
+  "id": "128",
+  "nameKo": "스페인",
+  "nameEn": "Spain"
+ },
+ "SVK": {
+  "id": "129",
+  "nameKo": "슬로바키아",
+  "nameEn": "Slovakia"
+ },
+ "SVN": {
+  "id": "130",
+  "nameKo": "슬로베니아",
+  "nameEn": "Slovenia"
+ },
+ "SYR": {
+  "id": "131",
+  "nameKo": "시리아",
+  "nameEn": "Syria"
+ },
+ "SLE": {
+  "id": "292",
+  "nameKo": "시에라리온",
+  "nameEn": "Sierra Leone"
+ },
+ "SGP": {
+  "id": "134",
+  "nameKo": "싱가포르",
+  "nameEn": "Singapore"
+ },
+ "ARE": {
+  "id": "135",
+  "nameKo": "아랍에미리트",
+  "nameEn": "United Arab Emirates"
+ },
+ "ARM": {
+  "id": "334",
+  "nameKo": "아르메니아",
+  "nameEn": "Armenia"
+ },
+ "ARG": {
+  "id": "138",
+  "nameKo": "아르헨티나",
+  "nameEn": "Argentina"
+ },
+ "ISL": {
+  "id": "139",
+  "nameKo": "아이슬란드",
+  "nameEn": "Iceland"
+ },
+ "HTI": {
+  "id": "324",
+  "nameKo": "아이티",
+  "nameEn": "Haiti"
+ },
+ "IRL": {
+  "id": "141",
+  "nameKo": "아일랜드",
+  "nameEn": "Ireland"
+ },
+ "AZE": {
+  "id": "335",
+  "nameKo": "아제르바이잔",
+  "nameEn": "Azerbaijan"
+ },
+ "AFG": {
+  "id": "284",
+  "nameKo": "아프가니스탄",
+  "nameEn": "Afghanistan"
+ },
+ "AND": {
+  "id": "340",
+  "nameKo": "안도라",
+  "nameEn": "Andorra"
+ },
+ "ALB": {
+  "id": "300",
+  "nameKo": "알바니아",
+  "nameEn": "Albania"
+ },
+ "DZA": {
+  "id": "150",
+  "nameKo": "알제리",
+  "nameEn": "Algeria"
+ },
+ "AGO": {
+  "id": "151",
+  "nameKo": "앙골라",
+  "nameEn": "Angola"
+ },
+ "ATG": {
+  "id": "325",
+  "nameKo": "앤티가바부다",
+  "nameEn": "Antigua and Barbuda"
+ },
+ "ERI": {
+  "id": "338",
+  "nameKo": "에리트레아",
+  "nameEn": "Eritrea"
+ },
+ "SWZ": {
+  "id": "125",
+  "nameKo": "에스와티니",
+  "nameEn": "Kingdom of Eswatini"
+ },
+ "EST": {
+  "id": "154",
+  "nameKo": "에스토니아",
+  "nameEn": "Estonia"
+ },
+ "ECU": {
+  "id": "155",
+  "nameKo": "에콰도르",
+  "nameEn": "Ecuador"
+ },
+ "ETH": {
+  "id": "156",
+  "nameKo": "에티오피아",
+  "nameEn": "Ethiopia"
+ },
+ "SLV": {
+  "id": "157",
+  "nameKo": "엘살바도르",
+  "nameEn": "El Salvador"
+ },
+ "GBR": {
+  "id": "159",
+  "nameKo": "영국",
+  "nameEn": "United Kingdom"
+ },
+ "YEM": {
+  "id": "294",
+  "nameKo": "예멘",
+  "nameEn": "Yemen"
+ },
+ "OMN": {
+  "id": "162",
+  "nameKo": "오만",
+  "nameEn": "Oman"
+ },
+ "AUT": {
+  "id": "163",
+  "nameKo": "오스트리아",
+  "nameEn": "Austria"
+ },
+ "HND": {
+  "id": "164",
+  "nameKo": "온두라스",
+  "nameEn": "Honduras"
+ },
+ "JOR": {
+  "id": "165",
+  "nameKo": "요르단",
+  "nameEn": "Jordan"
+ },
+ "UGA": {
+  "id": "166",
+  "nameKo": "우간다",
+  "nameEn": "Uganda"
+ },
+ "URY": {
+  "id": "167",
+  "nameKo": "우루과이",
+  "nameEn": "Uruguay"
+ },
+ "UZB": {
+  "id": "168",
+  "nameKo": "우즈베키스탄",
+  "nameEn": "Uzbekistan"
+ },
+ "UKR": {
+  "id": "169",
+  "nameKo": "우크라이나",
+  "nameEn": "Ukraine"
+ },
+ "IRQ": {
+  "id": "174",
+  "nameKo": "이라크",
+  "nameEn": "Iraq"
+ },
+ "IRN": {
+  "id": "176",
+  "nameKo": "이란",
+  "nameEn": "Iran"
+ },
+ "ISR": {
+  "id": "177",
+  "nameKo": "이스라엘",
+  "nameEn": "Israel"
+ },
+ "EGY": {
+  "id": "178",
+  "nameKo": "이집트",
+  "nameEn": "Egypt"
+ },
+ "ITA": {
+  "id": "179",
+  "nameKo": "이탈리아",
+  "nameEn": "Italy"
+ },
+ "IND": {
+  "id": "285",
+  "nameKo": "인도",
+  "nameEn": "India"
+ },
+ "IDN": {
+  "id": "181",
+  "nameKo": "인도네시아",
+  "nameEn": "Indonesia"
+ },
+ "JPN": {
+  "id": "183",
+  "nameKo": "일본",
+  "nameEn": "Japan"
+ },
+ "JAM": {
+  "id": "326",
+  "nameKo": "자메이카",
+  "nameEn": "Jamaica"
+ },
+ "ZMB": {
+  "id": "186",
+  "nameKo": "잠비아",
+  "nameEn": "Zambia"
+ },
+ "GNQ": {
+  "id": "187",
+  "nameKo": "적도기니",
+  "nameEn": "Equatorial Guinea"
+ },
+ "GEO": {
+  "id": "332",
+  "nameKo": "조지아",
+  "nameEn": "Georgia"
+ },
+ "CHN": {
+  "id": "189",
+  "nameKo": "중국",
+  "nameEn": "China"
+ },
+ "CAF": {
+  "id": "190",
+  "nameKo": "중앙아프리카공화국",
+  "nameEn": "Central African Republic"
+ },
+ "DJI": {
+  "id": "191",
+  "nameKo": "지부티",
+  "nameEn": "Djibouti"
+ },
+ "ZWE": {
+  "id": "193",
+  "nameKo": "짐바브웨",
+  "nameEn": "Zimbabwe"
+ },
+ "TCD": {
+  "id": "295",
+  "nameKo": "차드",
+  "nameEn": "Chad"
+ },
+ "CZE": {
+  "id": "195",
+  "nameKo": "체코",
+  "nameEn": "Czech Republic"
+ },
+ "CHL": {
+  "id": "197",
+  "nameKo": "칠레",
+  "nameEn": "Chile"
+ },
+ "CMR": {
+  "id": "199",
+  "nameKo": "카메룬",
+  "nameEn": "Cameroon"
+ },
+ "CPV": {
+  "id": "200",
+  "nameKo": "카보베르데",
+  "nameEn": "CapeVerde"
+ },
+ "KAZ": {
+  "id": "201",
+  "nameKo": "카자흐스탄",
+  "nameEn": "Kazakhstan"
+ },
+ "QAT": {
+  "id": "202",
+  "nameKo": "카타르",
+  "nameEn": "Qatar"
+ },
+ "KHM": {
+  "id": "259",
+  "nameKo": "캄보디아",
+  "nameEn": "Cambodia"
+ },
+ "CAN": {
+  "id": "204",
+  "nameKo": "캐나다",
+  "nameEn": "Canada"
+ },
+ "KEN": {
+  "id": "206",
+  "nameKo": "케냐",
+  "nameEn": "Kenya"
+ },
+ "COM": {
+  "id": "331",
+  "nameKo": "코모로",
+  "nameEn": "Comoros"
+ },
+ "XKX": {
+  "id": "367",
+  "nameKo": "코소보",
+  "nameEn": "Kosovo"
+ },
+ "CRI": {
+  "id": "209",
+  "nameKo": "코스타리카",
+  "nameEn": "CostaRica"
+ },
+ "CIV": {
+  "id": "212",
+  "nameKo": "코트디부아르",
+  "nameEn": "Cote d Ivoire"
+ },
+ "COL": {
+  "id": "213",
+  "nameKo": "콜롬비아",
+  "nameEn": "Colombia"
+ },
+ "COG": {
+  "id": "214",
+  "nameKo": "콩고",
+  "nameEn": "Republic of Congo"
+ },
+ "COD": {
+  "id": "215",
+  "nameKo": "콩고민주공화국",
+  "nameEn": "Democratic Republic of the Congo"
+ },
+ "CUB": {
+  "id": "327",
+  "nameKo": "쿠바",
+  "nameEn": "Cuba"
+ },
+ "KWT": {
+  "id": "216",
+  "nameKo": "쿠웨이트",
+  "nameEn": "Kuwait"
+ },
+ "COK": {
+  "id": "330",
+  "nameKo": "쿡제도",
+  "nameEn": "Cook Island"
+ },
+ "HRV": {
+  "id": "218",
+  "nameKo": "크로아티아",
+  "nameEn": "Croatia"
+ },
+ "KGZ": {
+  "id": "301",
+  "nameKo": "키르기즈공화국",
+  "nameEn": "Kyrgyzstan"
+ },
+ "KIR": {
+  "id": "312",
+  "nameKo": "키리바시",
+  "nameEn": "Kiribati"
+ },
+ "TJK": {
+  "id": "302",
+  "nameKo": "타지키스탄",
+  "nameEn": "Tajikistan"
+ },
+ "TZA": {
+  "id": "225",
+  "nameKo": "탄자니아",
+  "nameEn": "Tanzania"
+ },
+ "THA": {
+  "id": "260",
+  "nameKo": "태국",
+  "nameEn": "Thailand"
+ },
+ "TGO": {
+  "id": "296",
+  "nameKo": "토고",
+  "nameEn": "Togo"
+ },
+ "TON": {
+  "id": "230",
+  "nameKo": "통가",
+  "nameEn": "Tonga"
+ },
+ "TKM": {
+  "id": "366",
+  "nameKo": "투르크메니스탄",
+  "nameEn": "Turkmenistan"
+ },
+ "TUV": {
+  "id": "313",
+  "nameKo": "투발루",
+  "nameEn": "tuvalu"
+ },
+ "TUN": {
+  "id": "233",
+  "nameKo": "튀니지",
+  "nameEn": "Tunisia"
+ },
+ "TUR": {
+  "id": "228",
+  "nameKo": "튀르키예",
+  "nameEn": "Türkiye"
+ },
+ "TTO": {
+  "id": "328",
+  "nameKo": "트리니다드토바고",
+  "nameEn": "Trinidad and Tobago"
+ },
+ "PAN": {
+  "id": "235",
+  "nameKo": "파나마",
+  "nameEn": "Panama"
+ },
+ "PRY": {
+  "id": "237",
+  "nameKo": "파라과이",
+  "nameEn": "Paraguay"
+ },
+ "PAK": {
+  "id": "239",
+  "nameKo": "파키스탄",
+  "nameEn": "Pakistan"
+ },
+ "PNG": {
+  "id": "240",
+  "nameKo": "파푸아뉴기니",
+  "nameEn": "Papua New Guinea"
+ },
+ "PLW": {
+  "id": "314",
+  "nameKo": "팔라우",
+  "nameEn": "Palau"
+ },
+ "PSE": {
+  "id": "398",
+  "nameKo": "팔레스타인-자치지역",
+  "nameEn": "Palestine"
+ },
+ "PER": {
+  "id": "243",
+  "nameKo": "페루",
+  "nameEn": "Peru"
+ },
+ "PRT": {
+  "id": "244",
+  "nameKo": "포르투갈",
+  "nameEn": "Portugal"
+ },
+ "POL": {
+  "id": "246",
+  "nameKo": "폴란드",
+  "nameEn": "Poland"
+ },
+ "FRA": {
+  "id": "248",
+  "nameKo": "프랑스",
+  "nameEn": "France"
+ },
+ "FJI": {
+  "id": "249",
+  "nameKo": "피지",
+  "nameEn": "Fiji"
+ },
+ "FIN": {
+  "id": "251",
+  "nameKo": "핀란드",
+  "nameEn": "Finland"
+ },
+ "PHL": {
+  "id": "252",
+  "nameKo": "필리핀",
+  "nameEn": "Philippines"
+ },
+ "HUN": {
+  "id": "254",
+  "nameKo": "헝가리",
+  "nameEn": "Hungary"
+ },
+ "AUS": {
+  "id": "255",
+  "nameKo": "호주",
+  "nameEn": "Australia"
+ },
+ "HKG": {
+  "id": "377",
+  "nameKo": "홍콩",
+  "nameEn": "hongkong"
+ }
+}

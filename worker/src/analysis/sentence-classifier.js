@@ -30,6 +30,8 @@ const RISK_WORDS = {
   ja: /テロ|誘拐|強盗|殺人|武装|地雷|治安|襲撃|爆発/,
   it: /terrorismo|terroristic|sequestr|criminalit|rapimen|mine antiuomo|conflitto armato/i,
   fi: /terroris|kidnappau|sieppau|rikollisuu|aseellis|miinoja/i,
+  ko: /테러|납치|피랍|무장|치안|범죄|지뢰|폭탄/,
+  no: /terror|kidnapping|v[æa]pnede?|kriminalitet|miner|bortf[øo]ring/i,
 };
 
 export function classifySentence(sentence, lang = 'en', opts = {}) {
