@@ -220,6 +220,50 @@ function activeSeasons(iso3) {
   return (SEASONS || []).filter((s) => s.iso3?.includes(iso3) && s.months?.includes(m));
 }
 
+/**
+ * Lokaal nieuws (top-3 meest gelezen lokale bronnen, laatste 30 dagen),
+ * ingedeeld op de reisadvies-categorieën. Alleen voor landen met een
+ * gecureerde bronnenlijst; anders blijft het slot leeg.
+ */
+async function loadLocalNews(iso3, slot) {
+  const proxy = getProxy();
+  if (!proxy) return;
+  try {
+    const r = await fetch(`${proxy}/news/${iso3}?translate=nl`);
+    const d = await r.json();
+    const cats = d.available ? Object.entries(d.categories || {}) : [];
+    if (!cats.length) return;
+    const total = cats.reduce((n, [, c]) => n + c.items.length, 0);
+    const box = el('details', { class: 'news-box' });
+    box.append(el('summary', {},
+      `📰 Lokaal nieuws (${d.days || 30} dagen) — ${total} bericht${total === 1 ? '' : 'en'} `,
+      el('span', { class: 'news-srcs' }, `· ${(d.sources || []).join(' · ')}`)));
+    for (const [, c] of cats) {
+      const wrap = el('div', { class: 'news-cat' });
+      wrap.append(el('h4', {}, `${c.icon || ''} ${c.label}`,
+        el('span', { class: 'news-count' }, ` ${c.items.length}`)));
+      for (const it of c.items) {
+        const row = el('div', { class: 'news-row' },
+          el('span', { class: 'news-date' }, it.date ? new Date(it.date).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' }) : '—'),
+          el('div', { class: 'news-main' },
+            el('a', { href: it.link || '#', target: '_blank', rel: 'noopener' }, it.title),
+            it.titleNl ? el('div', { class: 'news-nl' }, it.titleNl) : null,
+            el('div', { class: 'news-meta' },
+              el('span', { class: 'news-outlet' }, it.outlet),
+              it.multi ? el('span', {
+                class: 'news-multi',
+                title: it.alsoAt?.length ? `Ook gebracht door: ${it.alsoAt.join(', ')}` : 'Door meerdere van de drie bronnen gebracht',
+              }, '🔁 meerdere bronnen') : null)));
+        wrap.append(row);
+      }
+      box.append(wrap);
+    }
+    box.append(el('p', { class: 'news-foot' },
+      'Automatisch ingedeeld op reisadvies-categorieën; 🔁 markeert nieuws dat meerdere van de drie bronnen brengen. NL-vertaling is automatisch; koppen linken naar het bronartikel.'));
+    slot.append(box);
+  } catch { /* stil: nieuws is optioneel */ }
+}
+
 /** Haalt (indien de proxy het levert) humanitaire context op en vult het slot. */
 async function loadContext(iso3, slot) {
   const proxy = getProxy();
@@ -1473,6 +1517,11 @@ function renderComparison(staticData, foreign, root) {
   const contextSlot = el('div');
   frag.append(contextSlot);
   loadContext(staticData.country.iso3, contextSlot);
+
+  // ---- Lokaal nieuws uit de top-3 lokale bronnen (30 dagen) ----
+  const newsSlot = el('div');
+  frag.append(newsSlot);
+  loadLocalNews(staticData.country.iso3, newsSlot);
 
   // ---- Samenvattingstabel (kleurcode + niveau + datum + link per bron) ----
   const copyBtn = el('button', { class: 'btn', type: 'button', title: 'Kopieert de kleurcode-tabel als opgemaakte tabel — plakt netjes in Word/Outlook.' }, '📋 Kopieer als tabel');
