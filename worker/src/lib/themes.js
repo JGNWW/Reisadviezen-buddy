@@ -41,6 +41,7 @@ export const THEMES = [
       // ko (0404.go.kr)
       '여행경보', '안전공지', '치안', '기본정보', '유의사항',
       'reiseadvarsel', 'sikkerhet',
+      'grundsatzliche einschatzung', 'einschatzung', 'spezifische regionale risiken',
     ],
   },
   {

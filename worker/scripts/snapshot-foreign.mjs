@@ -51,14 +51,15 @@ import * as finland from '../src/adapters/finland.js';
 import * as southkorea from '../src/adapters/southkorea.js';
 import * as norway from '../src/adapters/norway.js';
 import * as austria from '../src/adapters/austria.js';
+import * as switzerland from '../src/adapters/switzerland.js';
 import { setReaderKey, setCorsProxy } from '../src/lib/fetch.js';
 import { translate } from '../src/lib/translate.js';
 
 setReaderKey(process.env.JINA_KEY);
 setCorsProxy(process.env.CORS_PROXY_URL);
 
-const ADAPTERS = { uk, us, ca: canada, ie: ireland, fr: france, au: australia, es: spain, de: germany, nz: newzealand, dk: denmark, jp: japan, it: italy, fi: finland, kr: southkorea, no: norway, at: austria };
-const SOURCE_LANG = { uk: 'en', us: 'en', ca: 'en', ie: 'en', au: 'en', fr: 'fr', es: 'es', de: 'de', nz: 'en', dk: 'da', jp: 'ja', it: 'it', fi: 'fi', kr: 'ko', no: 'no', at: 'de' };
+const ADAPTERS = { uk, us, ca: canada, ie: ireland, fr: france, au: australia, es: spain, de: germany, nz: newzealand, dk: denmark, jp: japan, it: italy, fi: finland, kr: southkorea, no: norway, at: austria, ch: switzerland };
+const SOURCE_LANG = { uk: 'en', us: 'en', ca: 'en', ie: 'en', au: 'en', fr: 'fr', es: 'es', de: 'de', nz: 'en', dk: 'da', jp: 'ja', it: 'it', fi: 'fi', kr: 'ko', no: 'no', at: 'de', ch: 'de' };
 const LEVEL_COLOR = ['', 'groen', 'geel', 'oranje', 'rood'];
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
