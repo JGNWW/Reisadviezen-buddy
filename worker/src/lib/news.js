@@ -42,11 +42,20 @@ export function parseNewsRss(xml) {
     const t = seg.match(/<title>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/title>/);
     const l = seg.match(/<link\s*\/?>([^<]+)/) || seg.match(/<link>([\s\S]*?)<\/link>/);
     const d = seg.match(/<pubDate>([\s\S]*?)<\/pubDate>/);
+    const src = seg.match(/<source[^>]*>([\s\S]*?)<\/source>/);
     if (!t) continue;
     // Google News plakt " - Outlet" achter de kop; die voeren we zelf al als veld.
     const title = t[1].replace(/\s*-\s*[^-]+$/, '').replace(/&amp;/g, '&').replace(/&#39;|&apos;/g, '’').replace(/&quot;/g, '"').trim();
     const ts = d ? Date.parse(d[1]) : NaN;
-    items.push({ title, link: l ? l[1].trim() : null, date: Number.isFinite(ts) ? new Date(ts).toISOString().slice(0, 10) : null, ts: Number.isFinite(ts) ? ts : 0 });
+    items.push({
+      title,
+      link: l ? l[1].trim() : null,
+      date: Number.isFinite(ts) ? new Date(ts).toISOString().slice(0, 10) : null,
+      ts: Number.isFinite(ts) ? ts : 0,
+      // Outlet-naam uit de <source>-tag — nodig voor de landenquery-terugval
+      // (gemengde bronnen), waar de outlet per item verschilt.
+      sourceName: src ? src[1].replace(/&amp;/g, '&').trim() : null,
+    });
   }
   return items;
 }

@@ -14,7 +14,6 @@
  *   GET /health                               → status
  */
 import countries from './data/countries.json' with { type: 'json' };
-import newsSources from './data/news-sources.json' with { type: 'json' };
 import * as uk from './adapters/uk.js';
 import * as us from './adapters/us.js';
 import * as canada from './adapters/canada.js';
@@ -159,18 +158,16 @@ export default {
         );
       }
 
-      // /news/:iso — reisadvies-relevant lokaal nieuws (laatste 30 dagen) uit
-      // de top-3 meest gelezen lokale bronnen (src/data/news-sources.json).
-      // Google News geeft Cloudflare Workers een harde 503 (empirisch: alle
-      // feeds 503, nul bytes), dus het verzamelen gebeurt in de 6-uurlijkse
-      // snapshot-CI (scripts/collect-news.mjs — classificatie, kruis-
-      // bevestiging en NL-vertaling incluis) en de Worker serveert hier de
-      // gecommitte bestanden — zelfde patroon als het latest/-vangnet.
+      // /news/:iso — reisadvies-relevant lokaal nieuws (laatste 30 dagen):
+      // gecureerde top-3 lokale bronnen waar beschikbaar, anders een
+      // landenquery over alle door Google geïndexeerde media. Google News
+      // geeft Cloudflare Workers een harde 503 (empirisch: alle feeds 503,
+      // nul bytes), dus het verzamelen gebeurt in de 6-uurlijkse snapshot-CI
+      // (scripts/collect-news.mjs — classificatie, kruisbevestiging en
+      // NL-vertaling incluis) en de Worker serveert hier de gecommitte
+      // bestanden — zelfde patroon als het latest/-vangnet.
       if (parts[0] === 'news' && parts[1]) {
         const iso = parts[1].toUpperCase();
-        if (!Array.isArray(newsSources[iso])) {
-          return json({ available: false }, 200, { 'Cache-Control': 'public, max-age=86400' });
-        }
         try {
           const r = await fetch(`https://raw.githubusercontent.com/JGNWW/Reisadviezen-buddy/main/worker/data/news/${iso}.json`, {
             headers: { 'User-Agent': 'ReisadviezenBuddy/1.0' },
