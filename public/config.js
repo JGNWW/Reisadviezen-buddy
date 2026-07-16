@@ -34,5 +34,8 @@ window.REISADVIEZEN_CONFIG = {
     // Noorwegen: via de reader-proxy (site blokkeert datacenter-IP's);
     // slug/id-mapping uit de Wayback-CDX (no-map.json).
     { id: 'no', label: 'Noorwegen (Utenriksdept.)', flag: '🇳🇴', lang: 'no', default: true },
+    // Oostenrijk: Sicherheitsstufe-box (4-puntsschaal, met (regional)-
+    // kwalificatie); direct met reader-fallback.
+    { id: 'at', label: 'Oostenrijk (BMEIA)', flag: '🇦🇹', lang: 'de', default: true },
   ],
 };

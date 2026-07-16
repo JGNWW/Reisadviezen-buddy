@@ -23,6 +23,7 @@ export const ROUTES = [
   ['matkustustiedote/-/c/NP', 'fi-nepal.html'],
   ['ntnSafetyInfo/284/detail', 'kr-afghanistan.html'],
   ['reiseinfo_afghanistan/id2415875', 'no-afghanistan.html'],
+  ['reiseinformation/land/afghanistan', 'at-afghanistan.html'],
 ];
 
 export function installFixtureFetch() {
