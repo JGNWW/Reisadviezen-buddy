@@ -123,6 +123,28 @@ export function interpretStructured(structured) {
     return ok({ level: 1, regionalMaxLevel: null, label: 'Geen reiswaarschuwing of veiligheidsaanwijzing.', explanation: 'Geen reiswaarschuwing of veiligheidsaanwijzing.' });
   }
 
+  if (kind === 'at_security_box') {
+    // bmeia.gv.at toont per land een "Sicherheitsstufe"-box op de eigen
+    // 4-puntsschaal ("Sicherheitsstufe 4 (von 4)"), met een expliciete
+    // "(regional)"-kwalificatie wanneer die stufe alleen voor delen van het
+    // land geldt. Empirisch geverifieerd: FR "2" (landelijk), UA "4 …
+    // gesamte Ukraine", AF "4 … ganze Land", IN "4 (regional)", MX "3
+    // (regional)".
+    const text = String(value || '');
+    const m = text.match(/Sicherheitsstufe(?:&nbsp;|\s)*([1-4])/i);
+    if (!m) return uncertain('Geen Sicherheitsstufe gevonden in de landenbox van bmeia.gv.at.');
+    const level = Number(m[1]);
+    const regional = /\(\s*regional\s*\)/i.test(text);
+    if (regional) {
+      return ok({
+        level: 1, regionalMaxLevel: level, hasRegionalWarnings: true, confidence: 'medium',
+        label: `Sicherheitsstufe ${level} (regional)`,
+        explanation: `BMEIA (Oostenrijk): Sicherheitsstufe ${level} geldt voor delen van het land, niet landelijk.`,
+      });
+    }
+    return ok({ level, label: `Sicherheitsstufe ${level}`, explanation: `BMEIA (Oostenrijk): Sicherheitsstufe ${level} (van 4).` });
+  }
+
   if (kind === 'no_advarsel') {
     // regjeringen.no toont alleen een "Reiseadvarsel"-blok als er een
     // waarschuwing IS; geen blok = geen advarsel = laagste niveau.

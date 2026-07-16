@@ -29,10 +29,15 @@ const ADAPTERS = [
   ['jp', (await import('../src/adapters/japan.js')), '010'],
   ['it', (await import('../src/adapters/italy.js')), 'NPL'],
   ['fi', (await import('../src/adapters/finland.js')), 'NP'],
-  // KR/NO-fixtures zijn Afghanistan — Nepal vergde daar een extra mapping-fetch.
+  // KR/NO/AT-fixtures zijn Afghanistan — Nepal vergde daar een extra mapping-fetch.
   ['kr', (await import('../src/adapters/southkorea.js')), '284'],
   ['no', (await import('../src/adapters/norway.js')), 'afghanistan/2415875'],
+  ['at', (await import('../src/adapters/austria.js')), 'afghanistan'],
 ];
+
+// Minimaal aantal thema's per adapter. Oorlogslanden hebben bij BMEIA een
+// ingeklapte sectieset (alleen Sicherheitsstufe + Sicherheit & Kriminalität).
+const MIN_THEMES = { at: 2 };
 
 const CODE_HEADING = /querySelector|shadowRoot|innerHTML|function\s*\(|=>|[{};$]|document\.|window\./;
 
@@ -51,7 +56,7 @@ for (const [id, adapter, arg] of ADAPTERS) {
     }
 
     // Inhoud: voldoende secties, met schone koppen (geen gelekte scripts).
-    assert.ok(adv.themes.length >= 3, `${id}: maar ${adv.themes.length} thema's`);
+    assert.ok(adv.themes.length >= (MIN_THEMES[id] ?? 3), `${id}: maar ${adv.themes.length} thema's`);
     for (const t of adv.themes) {
       assert.ok(t.heading.length <= 140, `${id}: verdacht lange kop: ${t.heading.slice(0, 60)}…`);
       assert.ok(!CODE_HEADING.test(t.heading), `${id}: code in kop: ${t.heading.slice(0, 60)}…`);
