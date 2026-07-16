@@ -75,11 +75,16 @@ const PATTERNS = {
   // Italië (Viaggiare Sicuri) — tekstueel, geen vaste niveaus. "sconsigliati
   // a qualsiasi titolo" (4) bevat "sconsigliati" (3): de ontdubbeling
   // (langste match op dezelfde positie wint) lost die overlap op.
+  // "sconsigliat…" alleen in reis-context: Italiaanse schede ontraden ook
+  // activiteiten ("sconsigliato le salite in vetta") — dat is geen
+  // reisadvies. Beide woordvolgordes ("i viaggi … sono sconsigliati" én
+  // "si sconsigliano i viaggi") gedekt; de 4-variant begint op dezelfde
+  // positie en is langer, zodat de langste-match-ontdubbeling hem laat winnen.
   it: [
-    P(/sconsigliat\w+ a qualsiasi titolo|si sconsigliano (tutti )?i viaggi a qualsiasi titolo|evacuare il paese/i, 4),
-    P(/sconsigliat\w+|si sconsigliano?\b/i, 3),
+    P(/(?:viaggi|spostamenti)[^.]{0,80}sconsigli\w+ a qualsiasi titolo|sconsigli\w+ a qualsiasi titolo|evacuare il paese/i, 4),
+    P(/(?:viaggi|spostamenti)[^.]{0,80}sconsigli\w+|sconsigli\w+[^.]{0,40}(?:viaggi|spostamenti|recarsi)|si sconsiglia(?:no)? di (?:recarsi|viaggiare)/i, 3),
     P(/particolare cautela|elevata cautela|massima prudenza|particolare prudenza|particolare attenzione/i, 2),
-    P(/normali misure di prudenza/i, 1),
+    P(/normali misure di prudenza|normali precauzioni/i, 1),
   ],
   // Finland (um.fi) — vier vaste niveaus (Turvallisuustaso), met zowel de
   // korte formulering als het "kehotetaan välttämään"-proza.

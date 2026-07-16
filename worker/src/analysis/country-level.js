@@ -123,6 +123,26 @@ export function interpretStructured(structured) {
     return ok({ level: 1, regionalMaxLevel: null, label: 'Geen reiswaarschuwing of veiligheidsaanwijzing.', explanation: 'Geen reiswaarschuwing of veiligheidsaanwijzing.' });
   }
 
+  if (kind === 'it_caution_areas') {
+    // Viaggiare Sicuri kent geen niveauveld, maar een LEEG "Aree di
+    // particolare cautela"-veld is affirmatief bewijs van "geen
+    // waarschuwingsgebieden". Alleen een échte ontradings-formulering
+    // (niveau ≥ 3, "sconsigliati …") elders in de scheda blokkeert dat
+    // signaal — generieke voorzichtigheids-proza ("prestare particolare
+    // attenzione" in een gezondheidsparagraaf) niet.
+    const { cautionText, fullText } = value || {};
+    const maxSev = Math.max(0, ...allSeverityMatches(String(fullText || ''), 'it').map((m) => m.level));
+    if (maxSev >= 3) return null; // tekstpad beslist
+    if (!String(cautionText || '').trim()) {
+      return ok({
+        level: 1, regionalMaxLevel: null, confidence: 'medium',
+        label: 'Nessuna area di particolare cautela (geen waarschuwingsgebieden)',
+        explanation: 'Viaggiare Sicuri (Italië): geen "aree di particolare cautela" en geen adviesformulering — normale voorzorg.',
+      });
+    }
+    return null; // gebied-tekst aanwezig maar geen formulering: tekstpad/onzeker
+  }
+
   if (kind === 'at_security_box') {
     // bmeia.gv.at toont per land een "Sicherheitsstufe"-box op de eigen
     // 4-puntsschaal ("Sicherheitsstufe 4 (von 4)"), met een expliciete

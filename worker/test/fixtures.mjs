@@ -11,6 +11,11 @@ export const ROUTES = [
   ['index-alpha-eng.json', 'ca-index.json'],
   ['travel.gc.ca/destinations/nepal', 'ca-nepal.html'],
   ['a-z-list-of-countries/nepal', 'ie-nepal.html'],
+  // Nieuwe France Diplomatie-structuur: subpagina's per onderwerp.
+  ['information-par-pays/nepal/conseils-aux-voyageurs-securite', 'fr-nepal-securite.html'],
+  ['information-par-pays/nepal/conseils-aux-voyageurs-entree-sejour', 'fr-nepal-entree-sejour.html'],
+  ['information-par-pays/nepal/conseils-aux-voyageurs-sante', 'fr-nepal-sante.html'],
+  // Oude structuur (terugvalpad van de fr-adapter).
   ['conseils-par-pays-destination/nepal', 'fr-nepal.html'],
   ['trc=Nepal', 'es-nepal.html'],
   ['opendata/travelwarning/221216', 'de-nepal.json'],

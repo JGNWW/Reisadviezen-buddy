@@ -64,9 +64,18 @@ export async function getAdvisory(iso3) {
     : '';
   const note = (cron.match(/\d{2}\/\d{2}\/\d{4}\s*[-–]\s*([^\d]{3,120}?)(?=\d{2}\/\d{2}\/\d{4}|$)/) || [])[1];
 
+  // Leeg "Aree di particolare cautela"-veld = affirmatief "geen
+  // waarschuwingsgebieden" (alleen doorslaggevend als er nergens een
+  // adviesformulering staat — die afweging maakt de engine).
+  const cautionText = themes
+    .filter((t) => /aree di particolare cautela/i.test(t.heading || ''))
+    .map((t) => t.text).join('\n');
+  const fullText = themes.map((t) => t.text).join('\n');
+
   const assessment = analyzeAdvisory({
     sections: themes,
     lang: 'it',
+    structured: { kind: 'it_caution_areas', value: { cautionText, fullText } },
     anchorHeadingRe: ANCHOR_HEADING,
     countryName: null,
   });
