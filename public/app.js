@@ -181,11 +181,23 @@ async function loadJSON(path) {
 async function fetchForeign(iso, sources, translate = 'nl') {
   const proxy = getProxy();
   if (!proxy || !sources.length) return null;
-  let url = `${proxy}/advisory/${iso}?sources=${sources.join(',')}`;
-  if (translate) url += `&translate=${translate}`;
-  const r = await fetch(url);
-  if (!r.ok) throw new Error(`Proxy gaf ${r.status}`);
-  return r.json();
+  // Eén Worker-aanroep met álle (17) bronnen overschrijdt bij inhoudsrijke
+  // landen het subrequest-/CPU-budget van Cloudflare (503). Splits daarom in
+  // batches van maximaal 8 bronnen en voeg de resultaten samen — de volgorde
+  // van `sources` blijft leidend voor de weergave.
+  const BATCH = 8;
+  const batches = [];
+  for (let i = 0; i < sources.length; i += BATCH) batches.push(sources.slice(i, i + BATCH));
+  const results = await Promise.all(batches.map(async (batch) => {
+    let url = `${proxy}/advisory/${iso}?sources=${batch.join(',')}`;
+    if (translate) url += `&translate=${translate}`;
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(`Proxy gaf ${r.status}`);
+    return r.json();
+  }));
+  const bySource = new Map();
+  for (const res of results) for (const s of res.sources || []) bySource.set(s.source, s);
+  return { ...results[0], sources: sources.map((id) => bySource.get(id)).filter(Boolean) };
 }
 async function translateText(q, to, from = 'auto') {
   const proxy = getProxy();
