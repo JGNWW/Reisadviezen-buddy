@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup — Lokaal nieuws per land · Reisadviezen-buddy</title>
+<style>
+  :root {
+    --nl-blue: #154273; --nl-blue-dark: #001f4d; --muted: #535353;
+    --bg: #ffffff; --line: #e1e4e8; --soft: #f6f8fa; --link: #01689b;
+    --rood: #cd1719; --oranje: #e17000; --geel: #f9e11e; --groen: #39870c;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body { font-family: "Source Sans 3", "Segoe UI", system-ui, -apple-system, Arial, sans-serif; color: #1a1a1a; background: var(--soft); }
+  header { background: var(--nl-blue); color: #fff; padding: 14px 24px; }
+  header h1 { font-size: 18px; font-weight: 600; }
+  header .sub { font-size: 13px; opacity: .85; margin-top: 2px; }
+  .mock-banner { background: #fdf6ec; border-bottom: 1px solid #ecd9b0; color: #9a6200; font-size: 13px; padding: 8px 24px; }
+  main { max-width: 980px; margin: 0 auto; padding: 20px 16px 60px; }
+
+  .country-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+  .country-tab { padding: 8px 18px; border: 1px solid var(--line); background: #fff; cursor: pointer; font-size: 15px; font-weight: 600; color: var(--muted); }
+  .country-tab.active { background: var(--nl-blue); color: #fff; border-color: var(--nl-blue); }
+
+  .panel { background: #fff; border: 1px solid var(--line); padding: 20px; }
+  .panel-head { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 8px; border-bottom: 2px solid var(--nl-blue); padding-bottom: 12px; margin-bottom: 6px; }
+  .panel-head h2 { font-size: 20px; color: var(--nl-blue); }
+  .period { font-size: 13px; color: var(--muted); }
+  .sources-line { font-size: 13px; color: var(--muted); margin: 8px 0 18px; }
+  .src-badge { display: inline-block; background: var(--soft); border: 1px solid var(--line); padding: 1px 8px; font-size: 12px; margin: 0 3px; white-space: nowrap; }
+
+  .cat { margin-bottom: 22px; }
+  .cat > h3 { font-size: 15px; color: var(--nl-blue); border-left: 4px solid var(--nl-blue); padding-left: 10px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .cat.c-conflict > h3 { border-left-color: var(--rood); }
+  .cat.c-politiek > h3 { border-left-color: var(--oranje); }
+  .cat.c-natuur > h3 { border-left-color: #7a5c00; }
+  .cat.c-reizen > h3 { border-left-color: var(--link); }
+  .cat.c-gezondheid > h3 { border-left-color: var(--groen); }
+  .cat.c-crimi > h3 { border-left-color: #6f42c1; }
+  .cat-count { font-size: 12px; font-weight: 400; color: var(--muted); }
+
+  .news-item { display: flex; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--line); }
+  .news-item:last-child { border-bottom: none; }
+  .news-date { flex: 0 0 58px; font-size: 12px; color: var(--muted); padding-top: 2px; }
+  .news-body { flex: 1; min-width: 0; }
+  .news-title { font-size: 14.5px; line-height: 1.35; }
+  .news-title a { color: #1a1a1a; text-decoration: none; }
+  .news-title a:hover { color: var(--link); text-decoration: underline; }
+  .news-meta { font-size: 12px; color: var(--muted); margin-top: 3px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .outlet { color: var(--link); font-weight: 600; }
+  .multi { background: #fdf6ec; border: 1px solid #ecd9b0; color: #9a6200; font-size: 11px; padding: 0 6px; }
+  .nl-vertaling { font-size: 13px; color: var(--muted); font-style: italic; margin-top: 2px; }
+
+  .empty-cat { font-size: 13px; color: var(--muted); font-style: italic; padding: 4px 0 4px 14px; }
+  .footnote { font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--line); margin-top: 24px; padding-top: 12px; line-height: 1.5; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<header>
+  <h1>📰 Lokaal nieuws — laatste 30 dagen</h1>
+  <div class="sub">Reisadviezen-buddy · reisadvies-relevant nieuws uit de drie meest gelezen lokale bronnen</div>
+</header>
+<div class="mock-banner">⚠️ MOCKUP — grotendeels échte koppen (opgehaald 16 juli 2026 via de beoogde nieuwsindex), aangevuld met enkele representatieve voorbeelden; vormgeving en NL-vertalingen tonen hoe de feature eruit zou zien. Nog niet gebouwd.</div>
+<main>
+  <div class="country-tabs">
+    <button class="country-tab active" data-c="eth">🇪🇹 Ethiopië</button>
+    <button class="country-tab" data-c="uga">🇺🇬 Oeganda</button>
+  </div>
+
+  <!-- ================= ETHIOPIË ================= -->
+  <section class="panel" id="panel-eth">
+    <div class="panel-head">
+      <h2>🇪🇹 Ethiopië — nieuwsoverzicht</h2>
+      <span class="period">16 juni – 16 juli 2026</span>
+    </div>
+    <p class="sources-line">Bronnen (top 3 meest gelezen, Engelstalig):
+      <span class="src-badge">Addis Standard</span>
+      <span class="src-badge">The Reporter Ethiopia</span>
+      <span class="src-badge">Borkena</span>
+    </p>
+
+    <div class="cat c-conflict">
+      <h3>⚔️ Conflict &amp; terrorisme <span class="cat-count">4 berichten</span></h3>
+      <div class="news-item">
+        <div class="news-date">15 jul</div>
+        <div class="news-body">
+          <div class="news-title"><a href="https://borkena.com" target="_blank" rel="noopener">Three Orthodox Christians Killed in Separate Targeted Attacks in East Arsi</a></div>
+          <div class="nl-vertaling">Drie orthodoxe christenen gedood bij afzonderlijke gerichte aanvallen in Oost-Arsi</div>
+          <div class="news-meta"><span class="outlet">Borkena</span></div>
+        </div>
+      </div>
+      <div class="news-item">
+        <div class="news-date">15 jul</div>
+        <div class="news-body">
+          <div class="news-title"><a href="https://thereporterethiopia.com" target="_blank" rel="noopener">US Ambassador Visits Tigray In Bid To Revive “Dead” Peace Deal</a></div>
+          <div class="nl-vertaling">Amerikaanse ambassadeur bezoekt Tigray om "dood" vredesakkoord nieuw leven in te blazen</div>
+          <div class="news-meta"><span class="outlet">The Reporter Ethiopia</span> <span class="multi">🔁 ook bij Addis Standard</span></div>
+        </div>
+      </div>
+      <div class="news-item">
+        <div class="news-date">12 jul</div>
+        <div class="news-body">
+          <div class="news-title"><a href="https://addisstandard.com" target="_blank" rel="noopener">News: Fano factions announce unified command structure in Amhara region</a></div>
+          <div class="nl-vertaling">Fano-facties kondigen gezamenlijke commandostructuur aan in de regio Amhara</div>
+          <div class="news-meta"><span class="outlet">Addis Standard</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cat c-politiek">
+      <h3>🏛️ Politiek &amp; onrust <span class="cat-count">3 berichten</span></h3>
+      <div class="news-item">
+        <div class="news-date">15 jul</div>
+        <div class="news-body">
+          <div class="news-title"><a href="https://addisstandard.com" target="_blank" rel="noopener">News: Ethiopia’s loss of Red Sea access stemmed from ‘internal weakness’, not external pressure — PM Abiy</a></div>
+          <div class="nl-vertaling">Verlies van toegang tot de Rode Zee kwam door "interne zwakte", niet door externe druk — premier Abiy</div>
+          <div class="news-meta"><span class="outlet">Addis Standard</span></div>
+        </div>
+      </div>
+      <div class="news-item">
+        <div class="news-date">11 jul</div>
+        <div class="news-body">
+          <div class="news-title"><a href="https://borkena.com" target="_blank" rel="noopener">Ethiopian Political Parties Joint Council calls for national dialogue reform</a></div>
+          <div class="nl-vertaling">Gezamenlijke raad van politieke partijen roept op tot hervorming van de nationale dialoog</div>
+          <div class="news-meta"><span class="outlet">Borkena</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cat c-natuur">
+      <h3>🌋 Natuurgeweld &amp; klimaat <span class="cat-count">0 berichten</span></h3>
+      <div class="empty-cat">Geen reisadvies-relevante berichten in deze categorie de afgelopen 30 dagen.</div>
+    </div>
+
+    <div class="cat c-reizen">
+      <h3>✈️ Reizen &amp; inreis <span class="cat-count">3 berichten</span></h3>
+      <div class="news-item">
+        <div class="news-date">10 jul</div>
+        <div class="news-body">
+          <div class="news-title"><a href="https://borkena.com" target="_blank" rel="noopener">Committee Discuss Ethio-Djibouti Railway Corridor Development Project Expansion</a></div>
+          <div class="nl-vertaling">Commissie bespreekt uitbreiding van de spoorcorridor Ethiopië–Djibouti</div>
+          <div class="news-meta"><span class="outlet">Borkena</span></div>
+        </div>
+      </div>
+      <div class="news-item">
+        <div class="news-date">9 jul</div>
+        <div class="news-body">
+          <div class="news-title"><a href="https://addisstandard.com" target="_blank" rel="noopener">Policy Without Evidence: EU budget support resumption, Schengen visa restoration remain unresolved</a></div>
+          <div class="nl-vertaling">Hervatting EU-begrotingssteun en herstel van Schengenvisum-afgifte blijven onopgelost</div>
+          <div class="news-meta"><span class="outlet">Addis Standard</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cat c-gezondheid">
+      <h3>🩺 Gezondheid <span class="cat-count">0 berichten</span></h3>
+      <div class="empty-cat">Geen reisadvies-relevante berichten in deze categorie de afgelopen 30 dagen.</div>
+    </div>
+
+    <div class="cat c-crimi">
+      <h3>🚨 Criminaliteit <span class="cat-count">0 berichten</span></h3>
+      <div class="empty-cat">Geen reisadvies-relevante berichten in deze categorie de afgelopen 30 dagen.</div>
+    </div>
+  </section>
+
+  <!-- ================= OEGANDA ================= -->
+  <section class="panel hidden" id="panel-uga">
+    <div class="panel-head">
+      <h2>🇺🇬 Oeganda — nieuwsoverzicht</h2>
+      <span class="period">16 juni – 16 juli 2026</span>
+    </div>
+    <p class="sources-line">Bronnen (top 3 meest gelezen, Engelstalig):
+      <span class="src-badge">Daily Monitor</span>
+      <span class="src-badge">New Vision</span>
+      <span class="src-badge">Nile Post</span>
+    </p>
+
+    <div class="cat c-politiek">
+      <h3>🏛️ Politiek &amp; onrust <span class="cat-count">4 berichten</span></h3>
+      <div class="news-item">
+        <div class="news-date">15 jul</div>
+        <div class="news-body">
+          <div class="news-title"><a href="https://www.newvision.co.ug" target="_blank" rel="noopener">Museveni returns Income Tax and Excise Duty amendment bills to Parliament</a></div>
+          <div class="nl-vertaling">Museveni stuurt belastingwetten terug naar het parlement</div>
+          <div class="news-meta"><span class="outlet">New Vision</span></div>
+        </div>
+      </div>
+      <div class="news-item">
+        <div class="news-date">30 jun</div>
+        <div class="news-body">
+          <div class="news-title"><a href="https://www.monitor.co.ug" target="_blank" rel="noopener">World’s press condemns media shutdowns in Uganda</a></div>
+          <div class="nl-vertaling">Internationale pers veroordeelt het sluiten van media in Oeganda</div>
+          <div class="news-meta"><span class="outlet">Daily Monitor</span> <span class="multi">🔁 ook bij Nile Post</span></div>
+        </div>
+      </div>
+      <div class="news-item">
+        <div class="news-date">22 jun</div>
+        <div class="news-body">
+          <div class="news-title"><a href="https://www.monitor.co.ug" target="_blank" rel="noopener">Here is why State wants Lukwago denied bail</a></div>
+          <div class="nl-vertaling">Waarom de staat borgtocht voor (oppositiepoliticus) Lukwago wil weigeren</div>
+          <div class="news-meta"><span class="outlet">Daily Monitor</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cat c-conflict">
+      <h3>⚔️ Conflict &amp; terrorisme <span class="cat-count">1 bericht</span></h3>
+      <div class="news-item">
+        <div class="news-date">8 jul</div>
+        <div class="news-body">
+          <div class="news-title"><a href="https://nilepost.co.ug" target="_blank" rel="noopener">UPDF confirms joint operation against ADF remnants near DRC border</a></div>
+          <div class="nl-vertaling">Leger bevestigt gezamenlijke operatie tegen ADF-restanten nabij de Congolese grens</div>
+          <div class="news-meta"><span class="outlet">Nile Post</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cat c-natuur">
+      <h3>🌋 Natuurgeweld &amp; klimaat <span class="cat-count">2 berichten</span></h3>
+      <div class="news-item">
+        <div class="news-date">11 jul</div>
+        <div class="news-body">
+          <div class="news-title"><a href="https://www.newvision.co.ug" target="_blank" rel="noopener">El Niño to hit Uganda — Experts</a></div>
+          <div class="nl-vertaling">El Niño gaat Oeganda treffen, waarschuwen experts</div>
+          <div class="news-meta"><span class="outlet">New Vision</span></div>
+        </div>
+      </div>
+      <div class="news-item">
+        <div class="news-date">3 jul</div>
+        <div class="news-body">
+          <div class="news-title"><a href="https://www.monitor.co.ug" target="_blank" rel="noopener">Karamoja drought deepens as food prices soar</a></div>
+          <div class="nl-vertaling">Droogte in Karamoja verergert terwijl voedselprijzen stijgen</div>
+          <div class="news-meta"><span class="outlet">Daily Monitor</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cat c-reizen">
+      <h3>✈️ Reizen &amp; inreis <span class="cat-count">3 berichten</span></h3>
+      <div class="news-item">
+        <div class="news-date">14 jul</div>
+        <div class="news-body">
+          <div class="news-title"><a href="https://nilepost.co.ug" target="_blank" rel="noopener">One Dead, 15 Injured as School Bus Rams Stationary Trailer on Mbale–Iganga Highway</a></div>
+          <div class="nl-vertaling">Dode en 15 gewonden bij busongeluk op de snelweg Mbale–Iganga</div>
+          <div class="news-meta"><span class="outlet">Nile Post</span></div>
+        </div>
+      </div>
+      <div class="news-item">
+        <div class="news-date">10 jul</div>
+        <div class="news-body">
+          <div class="news-title"><a href="https://nilepost.co.ug" target="_blank" rel="noopener">Uganda’s Railway Crossings Are Death Traps Waiting for the Next Tragedy</a></div>
+          <div class="nl-vertaling">Oegandese spoorwegovergangen zijn dodelijke vallen in afwachting van de volgende tragedie</div>
+          <div class="news-meta"><span class="outlet">Nile Post</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cat c-gezondheid">
+      <h3>🩺 Gezondheid <span class="cat-count">4 berichten</span></h3>
+      <div class="news-item">
+        <div class="news-date">15 jul</div>
+        <div class="news-body">
+          <div class="news-title"><a href="https://nilepost.co.ug" target="_blank" rel="noopener">UNDP Equips Transport Sector for Ebola Preparedness</a></div>
+          <div class="nl-vertaling">UNDP rust transportsector uit voor ebola-paraatheid</div>
+          <div class="news-meta"><span class="outlet">Nile Post</span></div>
+        </div>
+      </div>
+      <div class="news-item">
+        <div class="news-date">10 jul</div>
+        <div class="news-body">
+          <div class="news-title"><a href="https://www.newvision.co.ug" target="_blank" rel="noopener">Health: Attacks leave 45 Ebola response and aid workers wounded</a></div>
+          <div class="nl-vertaling">45 ebola-hulpverleners gewond geraakt bij aanvallen</div>
+          <div class="news-meta"><span class="outlet">New Vision</span> <span class="multi">🔁 ook bij Daily Monitor</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cat c-crimi">
+      <h3>🚨 Criminaliteit <span class="cat-count">1 bericht</span></h3>
+      <div class="news-item">
+        <div class="news-date">12 jul</div>
+        <div class="news-body">
+          <div class="news-title"><a href="https://www.newvision.co.ug" target="_blank" rel="noopener">Police warn of rising phone-snatching gangs on boda boda routes in Kampala</a></div>
+          <div class="nl-vertaling">Politie waarschuwt voor toenemende telefoonroof door bendes op boda-boda-routes in Kampala</div>
+          <div class="news-meta"><span class="outlet">New Vision</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <p class="footnote">
+    <strong>Hoe dit overzicht tot stand komt (beoogde werking):</strong> per land zijn de drie meest gelezen lokale
+    nieuwsbronnen vastgelegd. Hun berichten van de afgelopen 30 dagen worden via één uniforme
+    nieuwsindex opgehaald, automatisch ingedeeld op de categorieën uit de Nederlandse reisadviezen,
+    en gefilterd op reisadvies-relevantie (sport, entertainment en buitenland-nieuws vallen weg).
+    🔁 markeert nieuws dat door meerdere van de drie bronnen wordt gebracht — een signaal dat het
+    lokaal als belangrijk geldt. NL-vertalingen zijn automatisch. Een lege categorie betekent:
+    geen relevante berichten deze maand — dat is óók informatie. Koppen linken naar het
+    oorspronkelijke artikel bij de bron.
+  </p>
+</main>
+<script>
+  document.querySelectorAll('.country-tab').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.country-tab').forEach((b) => b.classList.toggle('active', b === btn));
+      document.getElementById('panel-eth').classList.toggle('hidden', btn.dataset.c !== 'eth');
+      document.getElementById('panel-uga').classList.toggle('hidden', btn.dataset.c !== 'uga');
+    });
+  });
+</script>
+</body>
+</html>
