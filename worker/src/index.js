@@ -172,13 +172,26 @@ export default {
           return json({ available: false }, 200, { 'Cache-Control': 'public, max-age=86400' });
         }
         const translateTo = url.searchParams.get('translate');
+        const debug = url.searchParams.get('debug') ? [] : null;
         const perOutlet = await Promise.all(outlets.map(async (o) => {
           try {
             const feed = `https://news.google.com/rss/search?q=${encodeURIComponent(`site:${o.site} when:30d`)}&hl=en-US&gl=US&ceid=US:en`;
-            const r = await fetch(feed, { headers: { 'User-Agent': 'Mozilla/5.0' } });
-            if (!r.ok) return [];
-            return parseNewsRss(await r.text()).map((it) => ({ ...it, outlet: o.name }));
-          } catch { return []; }
+            // Google stuurt datacenter-verkeer zonder consent-cookie naar een
+            // consent-pagina i.p.v. de RSS; de cookie voorkomt dat.
+            const r = await fetch(feed, {
+              headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
+                Cookie: 'CONSENT=YES+cb.20220301-11-p0.en+FX+700; SOCS=CAI',
+              },
+            });
+            const body = r.ok ? await r.text() : '';
+            const items = parseNewsRss(body).map((it) => ({ ...it, outlet: o.name }));
+            if (debug) debug.push({ outlet: o.name, status: r.status, bytes: body.length, items: items.length, finalUrl: r.url });
+            return items;
+          } catch (e) {
+            if (debug) debug.push({ outlet: o.name, error: String(e.message || e) });
+            return [];
+          }
         }));
         const categories = buildNewsOverview(perOutlet.flat(), 5);
         if (translateTo) {
@@ -194,9 +207,9 @@ export default {
           }
         }
         return json(
-          { available: true, sources: outlets.map((o) => o.name), days: 30, categories },
+          { available: true, sources: outlets.map((o) => o.name), days: 30, categories, ...(debug ? { debug } : {}) },
           200,
-          { 'Cache-Control': 'public, max-age=3600' }
+          { 'Cache-Control': debug ? 'no-store' : 'public, max-age=3600' }
         );
       }
 
