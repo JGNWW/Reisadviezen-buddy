@@ -14,6 +14,8 @@
  *   GET /health                               → status
  */
 import countries from './data/countries.json' with { type: 'json' };
+import newsSources from './data/news-sources.json' with { type: 'json' };
+import { parseNewsRss, buildNewsOverview } from './lib/news.js';
 import * as uk from './adapters/uk.js';
 import * as us from './adapters/us.js';
 import * as canada from './adapters/canada.js';
@@ -155,6 +157,46 @@ export default {
           { country: { iso3: iso, nl: rec.nl, en: rec.en }, sources: results },
           200,
           { 'Cache-Control': 'public, max-age=1800' }
+        );
+      }
+
+      // /news/:iso — reisadvies-relevant lokaal nieuws (laatste 30 dagen) uit
+      // de top-3 meest gelezen lokale bronnen (src/data/news-sources.json).
+      // Per outlet via Google News RSS met site:-filter (de kranten blokkeren
+      // hun eigen feeds voor datacenter-IP's); classificatie/kruisbevestiging
+      // in lib/news.js. ?translate=nl vertaalt de gekozen koppen gebatcht.
+      if (parts[0] === 'news' && parts[1]) {
+        const iso = parts[1].toUpperCase();
+        const outlets = newsSources[iso];
+        if (!Array.isArray(outlets)) {
+          return json({ available: false }, 200, { 'Cache-Control': 'public, max-age=86400' });
+        }
+        const translateTo = url.searchParams.get('translate');
+        const perOutlet = await Promise.all(outlets.map(async (o) => {
+          try {
+            const feed = `https://news.google.com/rss/search?q=${encodeURIComponent(`site:${o.site} when:30d`)}&hl=en-US&gl=US&ceid=US:en`;
+            const r = await fetch(feed, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+            if (!r.ok) return [];
+            return parseNewsRss(await r.text()).map((it) => ({ ...it, outlet: o.name }));
+          } catch { return []; }
+        }));
+        const categories = buildNewsOverview(perOutlet.flat(), 5);
+        if (translateTo) {
+          const items = Object.values(categories).flatMap((c) => c.items);
+          if (items.length) {
+            try {
+              const blocks = await translateBlocks(items.map((it) => ({ heading: it.title })), translateTo, 'auto');
+              items.forEach((it, i) => {
+                const nl = blocks[i]?.headingNl;
+                if (nl && nl !== it.title) it.titleNl = nl;
+              });
+            } catch { /* koppen blijven onvertaald bij fout */ }
+          }
+        }
+        return json(
+          { available: true, sources: outlets.map((o) => o.name), days: 30, categories },
+          200,
+          { 'Cache-Control': 'public, max-age=3600' }
         );
       }
 

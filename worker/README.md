@@ -4,10 +4,10 @@ Deze Worker haalt op verzoek **buitenlandse reisadviezen en kaarten** live op,
 normaliseert ze naar dezelfde vorm als de Nederlandse data en geeft ze met
 CORS-headers terug, zodat de statische frontend (GitHub Pages) ze kan gebruiken.
 
-Ondersteunde bronnen: 🇬🇧 VK (FCDO), 🇺🇸 VS (State Dept), 🇨🇦 Canada (Global
-Affairs), 🇮🇪 Ierland (DFA), 🇫🇷 Frankrijk (France Diplomatie), 🇦🇺 Australië
-(Smartraveller), 🇪🇸 Spanje (Exteriores). Japan is nog open (de anzen.mofa-SPA
-rendert niet landspecifiek via de reader).
+Ondersteunde bronnen (17): 🇬🇧 VK, 🇺🇸 VS, 🇨🇦 Canada, 🇮🇪 Ierland, 🇫🇷 Frankrijk,
+🇦🇺 Australië, 🇪🇸 Spanje, 🇩🇪 Duitsland, 🇳🇿 Nieuw-Zeeland, 🇩🇰 Denemarken,
+🇯🇵 Japan, 🇮🇹 Italië, 🇫🇮 Finland, 🇰🇷 Zuid-Korea, 🇳🇴 Noorwegen, 🇦🇹 Oostenrijk,
+🇨🇭 Zwitserland.
 
 Australië blokkeert datacenter-IP's en wordt daarom via de publieke
 reader-proxy `r.jina.ai` opgehaald. Zet een (gratis) jina.ai-key voor
@@ -63,6 +63,7 @@ op `{ available: true, items: [] }` i.p.v. te falen.
 | `GET /advisory/:iso?sources=uk,us,ca,ie,fr` | Genormaliseerde adviezen (niveau/kleur + thema's) van de gevraagde bronnen |
 | `GET /advisory/:iso?...&translate=nl` | Vertaalt niet-Engelse bronnen naar Nederlands (voegt `headingNl`/`textNl` toe en herclassificeert de thema's) |
 | `GET /context/:iso` | Humanitaire context (ReliefWeb, VN-OCHA). Alleen actief met de optionele secret `RELIEFWEB_APP` (goedgekeurde appname, aan te vragen bij apidoc.reliefweb.int); anders `{ available:false }` |
+| `GET /news/:iso` | Reisadvies-relevant lokaal nieuws (30 dagen) uit de top-3 lokale bronnen van dat land (gecureerd in `src/data/news-sources.json`); `?translate=nl` vertaalt de koppen. Landen zonder bronnenlijst → `{ available:false }` |
 | `GET /map/:source/:iso` | De kaartafbeelding van die bron (live opgehaald/gescrapet, geproxyd) |
 | `GET /translate?to=nl&from=auto&q=...` | Losse vertaling (o.a. voor het vertalen van zoektermen) |
 | `GET /health` | Status + ondersteunde bronnen |
