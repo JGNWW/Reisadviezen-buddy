@@ -40,6 +40,13 @@ export async function getAdvisory(pathRel) {
   }
   if (!html) return null;
 
+  // Guard tegen de generieke landingspagina: eda.admin.ch serveert de
+  // klassieke URL soms zónder landspecifieke inhoud (alleen "Reisehinweise
+  // kurz erklärt", FAQ's en fokusthema's). Generieke site-tips als
+  // landthema's tonen zou misleidend zijn — dan liever eerlijk "geen
+  // advies" (en het snapshot-vangnet serveert de laatste goede versie).
+  if (!/Diese Reisehinweise sind [üu]berpr[üu]ft|Grunds[äa]tzliche Einsch[äa]tzung/i.test(html)) return null;
+
   const sections = splitByHeadings(absolutiseLinks(html, SITE));
   // De kern-advieszin ("Diese Reisehinweise sind überprüft … Von Reisen
   // nach X wird abgeraten.") staat aan het EINDE van het blok vóór de
