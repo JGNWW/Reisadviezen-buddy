@@ -15,7 +15,6 @@
  */
 import countries from './data/countries.json' with { type: 'json' };
 import newsSources from './data/news-sources.json' with { type: 'json' };
-import { parseNewsRss, buildNewsOverview } from './lib/news.js';
 import * as uk from './adapters/uk.js';
 import * as us from './adapters/us.js';
 import * as canada from './adapters/canada.js';
@@ -162,55 +161,27 @@ export default {
 
       // /news/:iso — reisadvies-relevant lokaal nieuws (laatste 30 dagen) uit
       // de top-3 meest gelezen lokale bronnen (src/data/news-sources.json).
-      // Per outlet via Google News RSS met site:-filter (de kranten blokkeren
-      // hun eigen feeds voor datacenter-IP's); classificatie/kruisbevestiging
-      // in lib/news.js. ?translate=nl vertaalt de gekozen koppen gebatcht.
+      // Google News geeft Cloudflare Workers een harde 503 (empirisch: alle
+      // feeds 503, nul bytes), dus het verzamelen gebeurt in de 6-uurlijkse
+      // snapshot-CI (scripts/collect-news.mjs — classificatie, kruis-
+      // bevestiging en NL-vertaling incluis) en de Worker serveert hier de
+      // gecommitte bestanden — zelfde patroon als het latest/-vangnet.
       if (parts[0] === 'news' && parts[1]) {
         const iso = parts[1].toUpperCase();
-        const outlets = newsSources[iso];
-        if (!Array.isArray(outlets)) {
+        if (!Array.isArray(newsSources[iso])) {
           return json({ available: false }, 200, { 'Cache-Control': 'public, max-age=86400' });
         }
-        const translateTo = url.searchParams.get('translate');
-        const debug = url.searchParams.get('debug') ? [] : null;
-        const perOutlet = await Promise.all(outlets.map(async (o) => {
-          try {
-            const feed = `https://news.google.com/rss/search?q=${encodeURIComponent(`site:${o.site} when:30d`)}&hl=en-US&gl=US&ceid=US:en`;
-            // Google stuurt datacenter-verkeer zonder consent-cookie naar een
-            // consent-pagina i.p.v. de RSS; de cookie voorkomt dat.
-            const r = await fetch(feed, {
-              headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
-                Cookie: 'CONSENT=YES+cb.20220301-11-p0.en+FX+700; SOCS=CAI',
-              },
-            });
-            const body = r.ok ? await r.text() : '';
-            const items = parseNewsRss(body).map((it) => ({ ...it, outlet: o.name }));
-            if (debug) debug.push({ outlet: o.name, status: r.status, bytes: body.length, items: items.length, finalUrl: r.url });
-            return items;
-          } catch (e) {
-            if (debug) debug.push({ outlet: o.name, error: String(e.message || e) });
-            return [];
-          }
-        }));
-        const categories = buildNewsOverview(perOutlet.flat(), 5);
-        if (translateTo) {
-          const items = Object.values(categories).flatMap((c) => c.items);
-          if (items.length) {
-            try {
-              const blocks = await translateBlocks(items.map((it) => ({ heading: it.title })), translateTo, 'auto');
-              items.forEach((it, i) => {
-                const nl = blocks[i]?.headingNl;
-                if (nl && nl !== it.title) it.titleNl = nl;
-              });
-            } catch { /* koppen blijven onvertaald bij fout */ }
-          }
+        try {
+          const r = await fetch(`https://raw.githubusercontent.com/JGNWW/Reisadviezen-buddy/main/worker/data/news/${iso}.json`, {
+            headers: { 'User-Agent': 'ReisadviezenBuddy/1.0' },
+            cf: { cacheTtl: 1800, cacheEverything: true },
+          });
+          if (!r.ok) return json({ available: false, note: 'nog niet verzameld' }, 200, { 'Cache-Control': 'public, max-age=1800' });
+          const d = await r.json();
+          return json({ available: true, ...d }, 200, { 'Cache-Control': 'public, max-age=3600' });
+        } catch (e) {
+          return json({ available: false, note: String(e.message || e) }, 200);
         }
-        return json(
-          { available: true, sources: outlets.map((o) => o.name), days: 30, categories, ...(debug ? { debug } : {}) },
-          200,
-          { 'Cache-Control': debug ? 'no-store' : 'public, max-age=3600' }
-        );
       }
 
       // /context/:iso — humanitaire context (ReliefWeb, VN-OCHA). Alleen actief
