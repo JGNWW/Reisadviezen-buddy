@@ -39,8 +39,17 @@ test('classifyNews: sport met oorlogstaal is geen conflict', () => {
   // WK-2026-koppen die zonder sportfilter in "conflict" belandden.
   assert.equal(classifyNews('France ready for war at World Cup after winning in Philadelphia'), null);
   assert.equal(classifyNews('Spain vs Austria: how to watch the last-32 clash'), null);
-  assert.equal(classifyNews('Tom Pidcock survives late attack to win as peloton splits'), null);
+  assert.equal(classifyNews('Results Andorra MoraBanc Classica 2026 - Tom Pidcock survives Sepp Kuss attack'), null);
   assert.equal(classifyNews('Carlos Verona impressed fighting for the podium at his home race'), null);
+  assert.equal(classifyNews("How Spain's collective brilliance made France's star-studded attack look ordinary"), null);
+  assert.equal(classifyNews('France must be even more efficient in attack against Morocco, says Deschamps'), null);
+  // "in attack" in échte conflictkoppen blijft wél staan.
+  assert.equal(classifyNews('Three aid workers killed in attack claimed by militants'), 'conflict');
+  // Spam-video-ID's weg; officiële rapportcodes (DREF) blijven.
+  assert.equal(classifyNews('US Deports Alleged Gang Members To El Salvador Jair Cunha (kdBAxlakl4)'), null);
+  assert.equal(classifyNews('Bolivia: Wildfires - DREF Final Report (MDRBO019)'), 'natuurgeweld');
+  // Verkiezingsuitslagen horen bij politiek, niet bij natuurgeweld.
+  assert.equal(classifyNews('BN secures landslide win in Johor polls'), 'politiek');
   // Maar echt nieuws met terloopse sportwoorden blijft staan.
   assert.equal(classifyNews('Regional race against Ebola as Congo outbreak accelerates'), 'gezondheid');
   assert.equal(classifyNews('Cyclone leaves 60,000 homeless in Madagascar'), 'natuurgeweld');
