@@ -35,6 +35,17 @@ test('classifyNews: reisadvies-categorieën en ruis', () => {
   assert.equal(classifyNews('Central bank keeps interest rate unchanged'), null);
 });
 
+test('classifyNews: sport met oorlogstaal is geen conflict', () => {
+  // WK-2026-koppen die zonder sportfilter in "conflict" belandden.
+  assert.equal(classifyNews('France ready for war at World Cup after winning in Philadelphia'), null);
+  assert.equal(classifyNews('Spain vs Austria: how to watch the last-32 clash'), null);
+  assert.equal(classifyNews('Tom Pidcock survives late attack to win as peloton splits'), null);
+  assert.equal(classifyNews('Carlos Verona impressed fighting for the podium at his home race'), null);
+  // Maar echt nieuws met terloopse sportwoorden blijft staan.
+  assert.equal(classifyNews('Regional race against Ebola as Congo outbreak accelerates'), 'gezondheid');
+  assert.equal(classifyNews('Cyclone leaves 60,000 homeless in Madagascar'), 'natuurgeweld');
+});
+
 test('markCorroborated: zelfde nieuws bij twee outlets → multi, zelfde outlet niet', () => {
   const items = [
     { title: 'Ebola response workers attacked in western region', outlet: 'A', ts: 2 },
