@@ -561,3 +561,19 @@ input:focus, select:focus { outline: 2px solid var(--link); outline-offset: 0; b
 .watch-chip-x:hover { color: var(--rood); }
 .watch-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .watch-actions .btn { padding: 8px 12px; font-size: 13px; background: #fff; border: 1px solid var(--border); }
+
+/* ---- Vlag-afbeeldingen (flagify) ----------------------------------------
+   Emoji-vlaggen renderen op Windows als kale letters; de flagify-laag in
+   app.js vervangt ze door deze lokaal meegeleverde afbeeldingen. */
+.flag-img {
+  display: inline-block; width: 20px; height: 15px; object-fit: cover;
+  border: 1px solid rgba(0, 0, 0, .14); border-radius: 2px;
+  vertical-align: -2px; background: #fff;
+}
+h2 .flag-img { width: 30px; height: 22px; vertical-align: -3px; border-radius: 3px; }
+.colhead .flag-img { width: 24px; height: 18px; }
+.combo-input-flag {
+  position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+  pointer-events: none;
+}
+.combo input.has-flag { padding-left: 38px; }

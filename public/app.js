@@ -84,6 +84,61 @@ function countryFlag(iso2) {
   return String.fromCodePoint(...[...iso2.toUpperCase()].map((c) => 0x1f1e6 + c.charCodeAt(0) - 65));
 }
 
+// ---- Vlag-afbeeldingen (flagify) -------------------------------------------
+// Emoji-vlaggen renderen op Windows als kale letterparen. In de hele app staan
+// vlaggen (landen én bronnen) als emoji in de tekst; deze laag vervangt ze bij
+// het renderen automatisch door lokaal meegeleverde afbeeldingen
+// (flags/{iso2}.png). Laadt een afbeelding niet, dan komt de emoji terug —
+// nooit een kapot icoontje. title-attributen (tooltips) blijven emoji.
+const FLAG_SPLIT = /(\p{RI}\p{RI})/gu;
+
+function flagImgFor(emoji) {
+  const iso2 = [...emoji].map((ch) => String.fromCharCode(ch.codePointAt(0) - 0x1f1e6 + 97)).join('');
+  const img = el('img', { class: 'flag-img', src: `flags/${iso2}.png`, alt: '', loading: 'lazy' });
+  img.addEventListener('error', () => img.replaceWith(document.createTextNode(emoji)), { once: true });
+  return img;
+}
+
+function flagifyNode(node) {
+  if (node.nodeType === Node.TEXT_NODE) {
+    const parts = node.nodeValue.split(FLAG_SPLIT);
+    if (parts.length < 2) return;
+    const frag = document.createDocumentFragment();
+    parts.forEach((p, i) => { if (p) frag.append(i % 2 ? flagImgFor(p) : document.createTextNode(p)); });
+    node.replaceWith(frag);
+  } else if (node.nodeType === Node.ELEMENT_NODE
+    && !/^(SCRIPT|STYLE|TEXTAREA|INPUT|SELECT|IMG)$/.test(node.tagName)
+    && !node.closest('[data-no-flagify]')) {
+    for (const child of [...node.childNodes]) flagifyNode(child);
+  }
+}
+
+(function initFlagify() {
+  const start = () => {
+    flagifyNode(document.body);
+    new MutationObserver((muts) => {
+      for (const m of muts) for (const n of m.addedNodes) flagifyNode(n);
+    }).observe(document.body, { childList: true, subtree: true });
+  };
+  if (document.body) start(); else document.addEventListener('DOMContentLoaded', start);
+})();
+
+/** Vlaggetje ín het landinvoerveld zodra er een geldig land staat. */
+function setComboFlag(country) {
+  const input = $('#country-input');
+  const wrap = input?.closest('.combo');
+  if (!wrap) return;
+  let img = $('.combo-input-flag', wrap);
+  if (!country?.iso2) { img?.remove(); input.classList.remove('has-flag'); return; }
+  if (!img) {
+    img = el('img', { class: 'flag-img combo-input-flag', alt: '' });
+    img.addEventListener('error', () => { img.remove(); input.classList.remove('has-flag'); });
+    wrap.append(img);
+  }
+  img.src = `flags/${country.iso2.toLowerCase()}.png`;
+  input.classList.add('has-flag');
+}
+
 // ---- URL-state: deelbare links ---------------------------------------------
 // land/bronnen/taal/tab staan in de URL zodat een vergelijking te bookmarken
 // en door te sturen is. Bestaande parameters (zoals ?proxy=) blijven staan.
@@ -235,8 +290,9 @@ async function loadLocalNews(iso3, slot) {
     if (!cats.length) return;
     const total = cats.reduce((n, [, c]) => n + c.items.length, 0);
     const box = el('details', { class: 'news-box' });
+    const nflag = countryFlagByIso3(iso3);
     box.append(el('summary', {},
-      `📰 Lokaal nieuws (${d.days || 30} dagen) — ${total} bericht${total === 1 ? '' : 'en'} `,
+      `📰 ${nflag ? nflag + ' ' : ''}Lokaal nieuws (${d.days || 30} dagen) — ${total} bericht${total === 1 ? '' : 'en'} `,
       el('span', { class: 'news-srcs' }, `· ${(d.sources || []).join(' · ')}`)));
     for (const [, c] of cats) {
       const wrap = el('div', { class: 'news-cat' });
@@ -629,7 +685,11 @@ function setupCountryCombo() {
     $('#compare-form').requestSubmit();
   };
 
-  input.addEventListener('input', render);
+  input.addEventListener('input', () => {
+    const q = input.value.trim().toLowerCase();
+    setComboFlag(COUNTRIES.find((c) => c.nl.toLowerCase() === q));
+    render();
+  });
   input.addEventListener('focus', render);
   input.addEventListener('blur', () => setTimeout(close, 120));
   input.addEventListener('keydown', (e) => {
@@ -740,6 +800,7 @@ async function runComparison(country, sources, lang) {
   // Nieuwe (her)ophaling: een eventueel termfilter hoort bij het vorige land.
   if (!LAST_COMPARE || LAST_COMPARE.country?.iso3 !== country.iso3) MATRIX_FILTER = null;
   const status = $('#compare-status'), result = $('#compare-result');
+  setComboFlag(country);
   status.className = 'status';
   status.innerHTML = `<span class="spinner"></span>Reisadvies laden voor ${esc(country.nl)}…`;
   try {
