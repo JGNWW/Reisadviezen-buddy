@@ -34,6 +34,13 @@ export const NEWS_CATEGORIES = [
 // buitenland-/opinierubrieken, zoek- en servicepagina's.
 const NOISE = /today in history|on this day|^search results|^\s*(world|international|opinion|editorial|commentary|column|sport|sports|entertainment|celebrity|lifestyle|horoscope|obituar)\b\s*[:\-–]|horoscope|crossword|^photos?:|^in pictures/i;
 
+// Sportnieuws gebruikt oorlogstaal ("World Cup clash", "survives attack",
+// "ready for war") en vervuilt daarmee vooral de conflictcategorie —
+// tijdens het WK 2026 empirisch in tientallen landen tegelijk. Woorden die
+// óók in echt nieuws voorkomen (race, marathon, mundial) staan er bewust
+// niet in.
+const SPORT = /\b(world cup|fifa|uefa|concacaf|champions league|premier league|la liga|serie a|bundesliga|cricket|rugby|nba|nfl|kick-?off|matchday|line-?up confirmed|quarter-?finals?|semi-?finals?|last-16|last-32|round of 16|footballer|goalkeeper|midfielder|striker|peloton|vuelta|tour de france|giro d.italia|grand prix|motogp|formula (1|one)|grand slam|wimbledon|paralympics?|final lap|podium|friendly match|head-to-head|copa am[eé]rica)\b/i;
+
 /** Parseert Google News RSS naar [{title, link, date, ts}]. */
 export function parseNewsRss(xml) {
   const items = [];
@@ -63,7 +70,7 @@ export function parseNewsRss(xml) {
 /** Categorie-id voor een kop, of null (= niet reisadvies-relevant). */
 export function classifyNews(title) {
   const t = String(title || '');
-  if (!t || t.length < 15 || NOISE.test(t)) return null;
+  if (!t || t.length < 15 || NOISE.test(t) || SPORT.test(t)) return null;
   for (const c of NEWS_CATEGORIES) if (c.re.test(t)) return c.id;
   return null;
 }
