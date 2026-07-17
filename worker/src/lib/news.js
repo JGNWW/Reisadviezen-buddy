@@ -19,7 +19,7 @@ export const NEWS_CATEGORIES = [
   { id: 'conflict', label: 'Conflict & terrorisme', icon: '⚔️',
     re: /\b(war|armed (conflict|group|men)|militia|rebels?|insurgen|terror|attack(s|ed)?|airstrike|drone (strike|attack)|clash(es)?|fighting|offensive|troops|military operation|al.?shabaab|adf\b|fano\b|gunmen|massacre|ceasefire|peace (talks|deal|agreement)|hostilit|guerre|conflit arm[ée]|attaque|combats|rebelles|guerra|ataque|enfrentamiento|guerrilla)\b/i },
   { id: 'politiek', label: 'Politiek & onrust', icon: '🏛️',
-    re: /\b(elections?|protest(s|ers)?|demonstrat|opposition|parliament|coup\b|riots?|unrest|curfew|state of emergency|crackdown|detained|bail\b|impeach|media shutdown|press freedom|dissolv|électio|manifestation|émeute|couvre-feu|opposant|elecci[oó]n|protesta|disturbios|toque de queda|oposici[oó]n)\b/i },
+    re: /\b(elections?|polls?\b|no[- ]confidence|protest(s|ers)?|demonstrat|opposition|parliament|coup\b|riots?|unrest|curfew|state of emergency|crackdown|detained|bail\b|impeach|media shutdown|press freedom|dissolv|électio|manifestation|émeute|couvre-feu|opposant|elecci[oó]n|protesta|disturbios|toque de queda|oposici[oó]n)\b/i },
   { id: 'natuurgeweld', label: 'Natuurgeweld & klimaat', icon: '🌋',
     re: /\b(floods?|flooding|landslides?|earthquakes?|drought|storms?|cyclone|hurricane|typhoon|volcan|eruption|heavy rains?|el ni[nñ]o|famine|locusts?|wildfires?|heatwave|inondation|s[ée]isme|s[ée]cheresse|ouragan|inundaci[oó]n|terremoto|sequ[ií]a|hurac[aá]n|deslizamiento)\b/i },
   { id: 'reizen', label: 'Reizen & inreis', icon: '✈️',
@@ -32,14 +32,19 @@ export const NEWS_CATEGORIES = [
 
 // Ruis die geen actueel binnenlands reisadvies-nieuws is: jubileumstukken,
 // buitenland-/opinierubrieken, zoek- en servicepagina's.
-const NOISE = /today in history|on this day|^search results|^\s*(world|international|opinion|editorial|commentary|column|sport|sports|entertainment|celebrity|lifestyle|horoscope|obituar)\b\s*[:\-–]|horoscope|crossword|^photos?:|^in pictures/i;
+const NOISE = /today in history|on this day|^search results|^\s*(world|international|opinion|editorial|commentary|column|sport|sports|entertainment|celebrity|lifestyle|horoscope|obituar|spotlight)\b\s*[:\-–|]|horoscope|crossword|^photos?:|^in pictures|\bepisode \d+\b|\bwin (a book|free )?tickets?\b/i;
+
+// Spam-/videokoppen eindigen vaak op een ID tussen haakjes: "(kdBAxlakl4)".
+// Bewust hoofdlettergevoelig met beide kasten verplicht, zodat officiële
+// rapportcodes als "(MDRBO022)" (ReliefWeb/DREF) níét wegvallen.
+const JUNK_ID = /\((?=[A-Za-z0-9]{8,}\))(?=[^)]*[a-z])(?=[^)]*[A-Z])[A-Za-z0-9]+\)\s*$/;
 
 // Sportnieuws gebruikt oorlogstaal ("World Cup clash", "survives attack",
 // "ready for war") en vervuilt daarmee vooral de conflictcategorie —
 // tijdens het WK 2026 empirisch in tientallen landen tegelijk. Woorden die
 // óók in echt nieuws voorkomen (race, marathon, mundial) staan er bewust
 // niet in.
-const SPORT = /\b(world cup|fifa|uefa|concacaf|champions league|premier league|la liga|serie a|bundesliga|cricket|rugby|nba|nfl|kick-?off|matchday|line-?up confirmed|quarter-?finals?|semi-?finals?|last-16|last-32|round of 16|footballer|goalkeeper|midfielder|striker|peloton|vuelta|tour de france|giro d.italia|grand prix|motogp|formula (1|one)|grand slam|wimbledon|paralympics?|final lap|podium|friendly match|head-to-head|copa am[eé]rica)\b/i;
+const SPORT = /\b(world cups?|fifa|uefa|concacaf|w?afcon|champions league|premier league|la liga|serie a|bundesliga|football|cricket|rugby|nba|nfl|kick-?off|matchday|line-?up confirmed|quarter-?finals?|semi-?finals?|last-16|last-32|round of 16|group stage|play-?offs?|extra time|penalty shootout|footballer|goalkeeper|midfielder|striker|star-studded|national team|player ratings|goal drought|mbapp[eé]|ronaldo|messi|haaland|fans|cycling|cyclists?|peloton|vuelta|tour de france|giro d.italia|classica|grand prix|motogp|formula (1|one)|grand slam|wimbledon|paralympics?|final lap|podium|friendly (match|against)|head-to-head|copa am[eé]rica)\b|^results\b|\b(efficient|dangerous|creative) in attack\b|\battack look\w*\b/i;
 
 /** Parseert Google News RSS naar [{title, link, date, ts}]. */
 export function parseNewsRss(xml) {
@@ -70,7 +75,7 @@ export function parseNewsRss(xml) {
 /** Categorie-id voor een kop, of null (= niet reisadvies-relevant). */
 export function classifyNews(title) {
   const t = String(title || '');
-  if (!t || t.length < 15 || NOISE.test(t) || SPORT.test(t)) return null;
+  if (!t || t.length < 15 || NOISE.test(t) || SPORT.test(t) || JUNK_ID.test(t)) return null;
   for (const c of NEWS_CATEGORIES) if (c.re.test(t)) return c.id;
   return null;
 }
