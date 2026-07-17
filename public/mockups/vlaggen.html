@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup — Vlaggetjes bij alle landen · Reisadviezen-buddy</title>
+<style>
+  :root {
+    --nl-blue: #154273; --nl-blue-dark: #001f4d; --muted: #535353;
+    --bg: #ffffff; --line: #e1e4e8; --soft: #f6f8fa; --link: #01689b;
+    --rood: #cd1719; --oranje: #e17000; --geel: #f9e11e; --groen: #39870c;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body { font-family: "Source Sans 3", "Segoe UI", system-ui, -apple-system, Arial, sans-serif; color: #1a1a1a; background: var(--soft); }
+  header { background: var(--nl-blue); color: #fff; padding: 14px 24px; }
+  header h1 { font-size: 18px; font-weight: 600; }
+  header .sub { font-size: 13px; opacity: .85; margin-top: 2px; }
+  .mock-banner { background: #fdf6ec; border-bottom: 1px solid #ecd9b0; color: #9a6200; font-size: 13px; padding: 8px 24px; }
+  main { max-width: 980px; margin: 0 auto; padding: 20px 16px 60px; }
+
+  section { background: #fff; border: 1px solid var(--line); padding: 20px; margin-bottom: 20px; }
+  section > h2 { font-size: 17px; color: var(--nl-blue); border-bottom: 2px solid var(--nl-blue); padding-bottom: 8px; margin-bottom: 14px; }
+  .uitleg { font-size: 14px; color: var(--muted); margin-bottom: 14px; max-width: 70ch; }
+
+  /* SVG-vlaggetje: vaste verhouding 4:3, subtiel randje zodat witte vlaggen zichtbaar blijven */
+  .vlag { display: inline-block; width: 21px; height: 15px; object-fit: cover; border: 1px solid rgba(0,0,0,.15); border-radius: 2px; vertical-align: -2px; background: #fff; }
+  .vlag.groot { width: 34px; height: 25px; vertical-align: -4px; border-radius: 3px; }
+
+  /* Nu vs straks */
+  .vergelijk { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 700px) { .vergelijk { grid-template-columns: 1fr; } }
+  .kant { border: 1px solid var(--line); padding: 12px 14px; background: var(--soft); }
+  .kant h3 { font-size: 13px; font-weight: 600; margin-bottom: 10px; }
+  .kant.nu h3 { color: #9a3324; }
+  .kant.straks h3 { color: var(--groen); }
+  .kant .demo { background: #fff; border: 1px solid var(--line); padding: 10px 12px; font-size: 15px; }
+  .letterblok { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 1px; border: 1px dashed #bbb; color: #666; padding: 0 3px; border-radius: 2px; vertical-align: 0; }
+
+  /* Combobox */
+  .combo { position: relative; max-width: 420px; }
+  .combo input { width: 100%; padding: 9px 12px; font-size: 15px; border: 1px solid var(--line); }
+  .combo .lijst { border: 1px solid var(--line); border-top: none; background: #fff; box-shadow: 0 6px 14px rgba(0,0,0,.08); }
+  .combo .optie { display: flex; align-items: center; gap: 9px; padding: 8px 12px; font-size: 15px; cursor: pointer; }
+  .combo .optie:hover, .combo .optie.actief { background: #eaf2f8; }
+  .combo .optie .en { color: var(--muted); font-size: 12.5px; margin-left: auto; }
+  .invlag { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); }
+  .combo input.met-vlag { padding-left: 40px; }
+
+  /* Landenpagina-kop */
+  .landkop { display: flex; align-items: center; gap: 12px; }
+  .landkop h3 { font-size: 22px; color: var(--nl-blue); font-weight: 700; }
+  .landkop .chips { margin-left: auto; display: flex; gap: 6px; }
+  .chip { font-size: 12px; border: 1px solid var(--line); background: var(--soft); padding: 3px 10px; border-radius: 12px; color: var(--muted); }
+
+  /* Samenvattingstabel */
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th, td { border: 1px solid var(--line); padding: 7px 10px; text-align: left; }
+  th { background: var(--soft); font-size: 12.5px; }
+  .cel-bron { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+  .blok { display: inline-block; width: 13px; height: 13px; border-radius: 2px; vertical-align: -1px; }
+  .b-groen { background: var(--groen); } .b-geel { background: var(--geel); border: 1px solid #d8c00a; } .b-oranje { background: var(--oranje); } .b-rood { background: var(--rood); }
+
+  /* A vs B */
+  .avb { display: flex; align-items: center; gap: 14px; font-size: 20px; font-weight: 700; color: var(--nl-blue); }
+  .avb .vs { color: var(--muted); font-size: 15px; font-weight: 400; }
+
+  /* Volglijst & werklijst */
+  .watchrij { display: flex; gap: 8px; flex-wrap: wrap; }
+  .watch-chip { display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--line); background: #fff; padding: 5px 12px; border-radius: 15px; font-size: 14px; cursor: pointer; }
+  .watch-chip:hover { background: #eaf2f8; }
+  .werkrij { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-bottom: 1px solid var(--line); font-size: 14.5px; }
+  .werkrij:last-child { border-bottom: none; }
+  .werkrij .delta { margin-left: auto; font-size: 12.5px; color: #9a3324; background: #fdf0ee; border: 1px solid #f0cfc9; padding: 2px 8px; border-radius: 10px; white-space: nowrap; }
+  .werkrij .nieuw { font-size: 11px; font-weight: 700; color: #fff; background: var(--oranje); padding: 1px 6px; border-radius: 8px; }
+
+  .voet { font-size: 13px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 12px; margin-top: 6px; }
+  .voet ul { margin: 6px 0 0 18px; }
+  .voet li { margin-bottom: 4px; }
+  code { background: var(--soft); border: 1px solid var(--line); padding: 0 4px; font-size: 12.5px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Reisadviezen-buddy</h1>
+  <div class="sub">Mockup · vlaggetjes bij alle landen &amp; bronnen</div>
+</header>
+<div class="mock-banner">⚠️ Dit is een mockup — nog niet gebouwd. Vlagafbeeldingen komen in de mockup van flagcdn.com; in de echte app worden ze lokaal meegeleverd (geen externe afhankelijkheid).</div>
+<main>
+
+<section>
+  <h2>Waarom afbeeldingen in plaats van emoji?</h2>
+  <p class="uitleg">De app gebruikt nu op een paar plekken emoji-vlaggen (🇪🇹). Die renderen prima op telefoons en Macs, maar <strong>op Windows toont Chrome/Edge geen vlag-emoji</strong> — je ziet dan twee kale letters. Met kleine SVG-afbeeldingen ziet iedereen hetzelfde vlaggetje, voor alle 223 landen én de 17 buitenlandse bronnen, op elke plek waar een land- of bronnaam staat.</p>
+  <div class="vergelijk">
+    <div class="kant nu">
+      <h3>Nu (emoji) — zoals een Windows-collega het ziet</h3>
+      <div class="demo"><span class="letterblok">ET</span> Ethiopië &nbsp;·&nbsp; <span class="letterblok">UG</span> Oeganda &nbsp;·&nbsp; <span class="letterblok">GB</span> Verenigd Koninkrijk</div>
+    </div>
+    <div class="kant straks">
+      <h3>Straks (SVG) — op élk apparaat hetzelfde</h3>
+      <div class="demo"><img class="vlag" src="https://flagcdn.com/w40/et.png" alt=""> Ethiopië &nbsp;·&nbsp; <img class="vlag" src="https://flagcdn.com/w40/ug.png" alt=""> Oeganda &nbsp;·&nbsp; <img class="vlag" src="https://flagcdn.com/w40/gb.png" alt=""> Verenigd Koninkrijk</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>1 · Land zoeken (combobox)</h2>
+  <p class="uitleg">Elke suggestie krijgt een vlaggetje; het gekozen land toont zijn vlag ín het invoerveld. Werkt voor alle landen, ook de kleine (San Marino, Palau, Kiribati …).</p>
+  <div class="combo">
+    <img class="vlag invlag" src="https://flagcdn.com/w40/et.png" alt="">
+    <input class="met-vlag" value="Ethiopië" readonly>
+    <div class="lijst">
+      <div class="optie actief"><img class="vlag" src="https://flagcdn.com/w40/et.png" alt=""> Ethiopië <span class="en">Ethiopia</span></div>
+      <div class="optie"><img class="vlag" src="https://flagcdn.com/w40/ee.png" alt=""> Estland <span class="en">Estonia</span></div>
+      <div class="optie"><img class="vlag" src="https://flagcdn.com/w40/eg.png" alt=""> Egypte <span class="en">Egypt</span></div>
+      <div class="optie"><img class="vlag" src="https://flagcdn.com/w40/er.png" alt=""> Eritrea <span class="en">Eritrea</span></div>
+      <div class="optie"><img class="vlag" src="https://flagcdn.com/w40/ec.png" alt=""> Ecuador <span class="en">Ecuador</span></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>2 · Kop van de landenpagina</h2>
+  <p class="uitleg">Een groter vlaggetje naast de landnaam; regio-chips blijven zoals ze zijn.</p>
+  <div class="landkop">
+    <img class="vlag groot" src="https://flagcdn.com/w80/et.png" alt="">
+    <h3>Ethiopië</h3>
+    <div class="chips"><span class="chip">Afrika</span><span class="chip">Sub-Saharaans Afrika</span></div>
+  </div>
+</section>
+
+<section>
+  <h2>3 · Kleurcodes op een rij (bronnen)</h2>
+  <p class="uitleg">Ook de <strong>bronvlaggen</strong> (nu emoji) gaan mee naar SVG — dan is de tabel op Windows niet langer een rij letterparen.</p>
+  <table>
+    <tr><th>Bron</th><th>Kleurcode</th><th>Niveau</th><th>Bijgewerkt</th></tr>
+    <tr><td><span class="cel-bron"><img class="vlag" src="https://flagcdn.com/w40/nl.png" alt=""> Nederland (NWW)</span></td><td><span class="blok b-oranje"></span> Oranje (deels rood)</td><td>—</td><td>2 jul 2026</td></tr>
+    <tr><td><span class="cel-bron"><img class="vlag" src="https://flagcdn.com/w40/gb.png" alt=""> Verenigd Koninkrijk</span></td><td><span class="blok b-oranje"></span> Advies tegen deel land</td><td>—</td><td>28 jun 2026</td></tr>
+    <tr><td><span class="cel-bron"><img class="vlag" src="https://flagcdn.com/w40/us.png" alt=""> Verenigde Staten</span></td><td><span class="blok b-oranje"></span> Level 3 — Reconsider</td><td>3</td><td>1 jul 2026</td></tr>
+    <tr><td><span class="cel-bron"><img class="vlag" src="https://flagcdn.com/w40/de.png" alt=""> Duitsland</span></td><td><span class="blok b-oranje"></span> Teilreisewarnung</td><td>3</td><td>30 jun 2026</td></tr>
+    <tr><td><span class="cel-bron"><img class="vlag" src="https://flagcdn.com/w40/jp.png" alt=""> Japan</span></td><td><span class="blok b-oranje"></span> レベル3（渡航中止勧告）</td><td>3</td><td>25 jun 2026</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>4 · Twee landen vergelijken (A vs B)</h2>
+  <div class="avb">
+    <span><img class="vlag groot" src="https://flagcdn.com/w80/et.png" alt=""> Ethiopië</span>
+    <span class="vs">↔</span>
+    <span><img class="vlag groot" src="https://flagcdn.com/w80/ug.png" alt=""> Oeganda</span>
+  </div>
+</section>
+
+<section>
+  <h2>5 · Volglijst &amp; werklijst</h2>
+  <p class="uitleg">Volglijst-chips en werklijstrijen (divergentie / recente wijzigingen) krijgen hetzelfde vlaggetje. Sneller scannen op land.</p>
+  <div class="watchrij" style="margin-bottom:16px">
+    <span class="watch-chip"><img class="vlag" src="https://flagcdn.com/w40/et.png" alt=""> Ethiopië</span>
+    <span class="watch-chip"><img class="vlag" src="https://flagcdn.com/w40/ua.png" alt=""> Oekraïne</span>
+    <span class="watch-chip"><img class="vlag" src="https://flagcdn.com/w40/ke.png" alt=""> Kenia</span>
+    <span class="watch-chip"><img class="vlag" src="https://flagcdn.com/w40/mx.png" alt=""> Mexico</span>
+    <span class="watch-chip">+ land toevoegen</span>
+  </div>
+  <div style="border:1px solid var(--line)">
+    <div class="werkrij"><img class="vlag" src="https://flagcdn.com/w40/ml.png" alt=""> Mali <span class="nieuw">NIEUW</span> <span class="delta">NL geel · 4 bronnen rood</span></div>
+    <div class="werkrij"><img class="vlag" src="https://flagcdn.com/w40/ge.png" alt=""> Georgië <span class="delta">NL oranje · VK groen</span></div>
+    <div class="werkrij"><img class="vlag" src="https://flagcdn.com/w40/pk.png" alt=""> Pakistan <span class="delta">VS strenger sinds 14 jun</span></div>
+  </div>
+</section>
+
+<section>
+  <h2>6 · Lokaal nieuws</h2>
+  <p class="uitleg">Het nieuwsblok krijgt het vlaggetje van het land in de samenvattingsregel.</p>
+  <div style="border:1px solid var(--line);padding:10px 14px;font-size:15px;background:#fff">
+    ▸ 📰 <img class="vlag" src="https://flagcdn.com/w40/et.png" alt=""> Lokaal nieuws Ethiopië (30 dagen) — 14 berichten <span style="color:var(--muted);font-size:13px">· Addis Standard · The Reporter · Borkena</span>
+  </div>
+</section>
+
+<section>
+  <h2>Implementatie (als je akkoord bent)</h2>
+  <div class="voet" style="border-top:none;padding-top:0">
+    <ul>
+      <li><strong>Lokaal gebundelde SVG's</strong> (map <code>public/flags/</code>, ±250 kB voor alle 223 landen + bronlanden) — geen externe CDN, werkt dus ook achter strenge overheidsproxy's en offline.</li>
+      <li>Eén helper vervangt de huidige emoji-functie; <strong>alle bestaande plekken</strong> (combobox, landkop, A-vs-B, volglijst, werklijst, brontabellen, matrixkolommen) gaan in één keer om.</li>
+      <li>Vlaggen zijn decoratief: lege <code>alt</code>, de landnaam blijft altijd als tekst ernaast (toegankelijk, kopieerbaar, doorzoekbaar).</li>
+      <li>Ontbreekt een vlag (bijv. nieuw gebied), dan valt de app terug op de huidige emoji — nooit een kapot afbeeldings-icoontje.</li>
+    </ul>
+  </div>
+</section>
+
+</main>
+</body>
+</html>
