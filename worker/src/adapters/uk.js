@@ -53,7 +53,10 @@ export async function getAdvisory(slug) {
   const assessment = analyzeAdvisory({
     sections: themes,
     lang: 'en',
-    structured: { kind: 'uk_alert_status', value: det.alert_status },
+    // text/country geven de alert_status-interpretatie de FCDO-restcategorie
+    // ("all other regions of X") als landelijke ondergrens mee — zie
+    // ukElsewhereBaseline in country-level.js.
+    structured: { kind: 'uk_alert_status', value: det.alert_status, text: fullText, country: det.country?.name || d.title },
     countryName: det.country?.name || d.title,
   });
   return {

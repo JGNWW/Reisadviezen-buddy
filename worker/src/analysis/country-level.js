@@ -50,6 +50,28 @@ const NZ_LABEL = {
   3: 'Avoid non-essential travel', 4: 'Do not travel',
 };
 
+const RE_ESC = /[.*+?^${}()|[\]\\]/g;
+
+/**
+ * FCDO gebruikt bij niet-uniforme adviezen soms een landelijke restcategorie:
+ * "advises against (all but essential) travel to all other regions/the rest of/
+ * the whole of {land}". Die "elders"-regel is de landelijke ondergrens, geen
+ * losse regio. Geeft 4 (alle reizen), 3 (niet-noodzakelijke reizen) of null.
+ *
+ * Cruciaal: het land (of "the country") moet DIRECT op de verbindingswoorden
+ * volgen. Zo blijft "the rest of Beirut and Mount Lebanon" (een deelgebied)
+ * buiten schot, terwijl "the rest of Somalia" wél telt.
+ */
+function ukElsewhereBaseline(text, country) {
+  const t = String(text || '');
+  if (!t) return null;
+  const C = country ? String(country).replace(RE_ESC, '\\$&') : '';
+  const tail = `(?:all other (?:regions|areas|parts)|the rest|the whole) of (?:the )?(?:country${C ? `|${C}` : ''})\\b`;
+  if (new RegExp(`advises? against all travel to ${tail}`, 'i').test(t)) return 4;
+  if (new RegExp(`advises? against all but essential travel to ${tail}`, 'i').test(t)) return 3;
+  return null;
+}
+
 /**
  * Interpreteert het gestructureerde bewijs van een bron.
  * @param structured {kind, value} of null
@@ -69,7 +91,26 @@ export function interpretStructured(structured) {
     const partsMax = partsAll ? 4 : partsEssential ? 3 : null;
     if (wholeAll) return ok({ level: 4, regionalMaxLevel: 4, hasRegionalWarnings: hasParts, explanation: 'VK adviseert tegen alle reizen naar het hele land.' });
     if (wholeEssential) return ok({ level: 3, regionalMaxLevel: partsAll ? 4 : 3, hasRegionalWarnings: hasParts, explanation: 'VK adviseert alleen noodzakelijke reizen naar het hele land.' });
-    if (hasParts) return ok({ level: 1, regionalMaxLevel: partsMax, hasRegionalWarnings: true, explanation: 'VK-waarschuwing geldt voor delen van het land, niet landelijk — zie regionale risico’s.' });
+    if (hasParts) {
+      // FCDO's alert_status-taxonomie zet 'whole_country' alleen als het advies
+      // volledig uniform is. Landen als Oekraïne en Somalië — waar FCDO tegen
+      // alle reizen naar "all other regions of X" / "the rest of X" adviseert
+      // (het hele land op enkele uitzonderingen na) — blijven zo 'to_parts'.
+      // Dat mag landelijk niet groen worden: de restcategorie ("elders") ís de
+      // landelijke ondergrens. Detecteer die catch-all in de tekst.
+      const baseline = ukElsewhereBaseline(structured.text || '', structured.country || '');
+      if (baseline) {
+        return ok({
+          level: baseline,
+          regionalMaxLevel: Math.max(baseline, partsMax || 0),
+          hasRegionalWarnings: true,
+          explanation: baseline >= 4
+            ? 'VK adviseert tegen alle reizen naar vrijwel het hele land (restgebieden), met lokale uitzonderingen.'
+            : 'VK adviseert tegen niet-noodzakelijke reizen naar vrijwel het hele land (restgebieden), met lokale uitzonderingen.',
+        });
+      }
+      return ok({ level: 1, regionalMaxLevel: partsMax, hasRegionalWarnings: true, explanation: 'VK-waarschuwing geldt voor delen van het land, niet landelijk — zie regionale risico’s.' });
+    }
     return ok({ level: 1, regionalMaxLevel: null, explanation: 'Geen VK-vermijdingswaarschuwing gevonden voor dit land.' });
   }
 
