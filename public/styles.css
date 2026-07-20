@@ -577,3 +577,38 @@ h2 .flag-img { width: 30px; height: 22px; vertical-align: -3px; border-radius: 3
   pointer-events: none;
 }
 .combo input.has-flag { padding-left: 38px; }
+
+/* ---- Uitdraai (Excel/PDF) — printopmaak meerdere landen ---- */
+#export-print { display: none; }
+.chip-list:empty { display: none; }
+@media screen {
+  #export-print { display: none !important; }
+}
+@media print {
+  /* Als er een meerlanden-uitdraai wordt geprint: verberg de héle app en
+     toon alleen het rapport (voorblad-matrix + pagina per land). */
+  body.exp-printing > *:not(#export-print) { display: none !important; }
+  body.exp-printing #export-print { display: block !important; }
+  .exp-page { break-after: page; page-break-after: always; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .exp-page:last-child { break-after: auto; page-break-after: auto; }
+}
+#export-print { color: #1a1a1a; font-size: 11px; }
+.exp-title { color: var(--nl-blue); font-size: 20px; margin: 0 0 2px; }
+.exp-h2 { color: var(--nl-blue); font-size: 17px; margin: 0 0 2px; display: flex; align-items: center; gap: 8px; }
+.exp-meta { color: #555; font-size: 10.5px; border-bottom: 1px solid #ccc; padding-bottom: 8px; margin: 0 0 12px; }
+.exp-matrix { border-collapse: collapse; width: 100%; font-size: 10.5px; margin-bottom: 10px; }
+.exp-matrix th, .exp-matrix td { border: 1px solid #ccc; padding: 4px 7px; text-align: left; vertical-align: top; }
+.exp-matrix th { background: #eff3f7; }
+.exp-country { font-weight: 600; white-space: nowrap; }
+.exp-cc { display: inline-block; padding: 1px 7px; border-radius: 3px; font-weight: 700; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.exp-diff { font-size: 9.5px; color: #7a3e00; }
+.exp-legend { font-size: 9.5px; color: #666; margin-top: 8px; }
+.exp-band { background: var(--nl-blue); color: #fff; font-weight: 700; font-size: 11px; padding: 3px 8px; margin: 12px 0 6px; -webkit-print-color-adjust: exact; print-color-adjust: exact; break-after: avoid; }
+.exp-qa { margin: 0 0 7px; break-inside: avoid; }
+.exp-qa b { display: block; color: #154273; font-size: 10.5px; }
+
+/* Compacte kleurmatrix op het PDF-voorblad (past liggend met alle 17 bronnen) */
+.exp-matrix.compact th, .exp-matrix.compact td { padding: 3px 5px; text-align: center; }
+.exp-matrix.compact th:first-child, .exp-matrix.compact td:first-child { text-align: left; }
+.exp-matrix.compact th.wide { min-width: 150px; }
+.exp-ccbox { font-weight: 700; text-align: center; -webkit-print-color-adjust: exact; print-color-adjust: exact; }

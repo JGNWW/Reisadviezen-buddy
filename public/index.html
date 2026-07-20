@@ -29,6 +29,7 @@
       <button class="tab" data-view="search" role="tab">Zoeken op thema/woord</button>
       <button class="tab" data-view="datescan" role="tab">Datumscanner</button>
       <button class="tab" data-view="changes" role="tab">Recente wijzigingen</button>
+      <button class="tab" data-view="export" role="tab">Uitdraai</button>
     </nav>
   </header>
 
@@ -215,6 +216,60 @@
       <div id="changes-result"></div>
     </section>
 
+    <!-- ================= UITDRAAI ================= -->
+    <section id="view-export" class="view">
+      <div class="panel controls" style="display:block">
+        <p style="margin:0 0 12px">Maak in één keer een nette uitdraai van <strong>meerdere landen</strong> — als redacteur handig om door te sturen. De Excel bevat een kleurcodes-overzicht én per land wat elke bron over elk thema zegt; de PDF is een printklaar rapport. Werkt vlot tot ±15 landen.</p>
+        <form id="export-form">
+          <div class="field grow">
+            <label for="export-country-input">Landen toevoegen</label>
+            <input id="export-country-input" list="country-list" autocomplete="off" placeholder="Typ een land en klik Toevoegen…" />
+          </div>
+          <button id="export-add" type="button" class="btn">+ Toevoegen</button>
+        </form>
+        <div id="export-chips" class="chip-list" style="margin:10px 0"></div>
+
+        <div class="bar-row" style="gap:10px;flex-wrap:wrap;align-items:end">
+          <div class="field">
+            <label for="export-group-select">Opgeslagen groep</label>
+            <select id="export-group-select"><option value="">— kies een groep —</option></select>
+          </div>
+          <button id="export-group-load" type="button" class="btn">Laden</button>
+          <button id="export-group-save" type="button" class="btn">💾 Bewaren als groep…</button>
+          <button id="export-group-delete" type="button" class="btn" title="Verwijder de geselecteerde groep">🗑</button>
+          <button id="export-from-watch" type="button" class="btn" title="Neem je volglijst over als selectie">Volglijst overnemen</button>
+        </div>
+
+        <div class="optrow" style="display:flex;flex-wrap:wrap;gap:22px;margin-top:14px;padding-top:12px;border-top:1px dashed var(--border)">
+          <div class="field">
+            <label>Bronnen</label>
+            <span style="font-size:13px">Gebruikt de bij <strong>Vergelijken</strong> aangevinkte bronnen (<span id="export-src-count">–</span>).</span>
+          </div>
+          <div class="field">
+            <label for="export-lang">Taal bronteksten</label>
+            <select id="export-lang">
+              <option value="nl" selected>Nederlands (vertaald)</option>
+              <option value="orig">Origineel</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="export-content">Inhoud</label>
+            <select id="export-content">
+              <option value="full" selected>Kleuren + wat bronnen zeggen</option>
+              <option value="colors">Alleen kleurcodes-overzicht</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="bar-row" style="gap:12px;margin-top:16px">
+          <button id="export-xlsx" type="button" class="btn primary">⬇ Excel (.xlsx)</button>
+          <button id="export-pdf" type="button" class="btn">⬇ PDF (print)</button>
+        </div>
+      </div>
+      <div id="export-status" class="status"></div>
+      <div id="export-preview"></div>
+    </section>
+
     <!-- ================= ZOEKEN ================= -->
     <section id="view-search" class="view">
       <form id="search-form" class="panel controls">
@@ -253,6 +308,7 @@
   </footer>
 
   <script src="config.js"></script>
+  <script src="xlsx.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
