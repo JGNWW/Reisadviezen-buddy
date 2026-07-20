@@ -222,6 +222,69 @@ function setProxy(url) {
   else localStorage.removeItem('proxyBase');
 }
 
+// ---- Robuuste proxy-fetch met retry + publieke fallback -------------------
+// "Failed to fetch" op de Worker is meestal een tijdelijke hapering of een
+// trage zware-landenrequest, geen echte storing. Daarom: eerst de directe
+// route (met retry + backoff), en pas als díé volhardend faalt een publieke
+// CORS-proxy die dezelfde Worker-URL doorgeeft — dat helpt wanneer juist het
+// netwerk/PoP van de bezoeker de workers.dev-host even niet bereikt. De
+// publieke proxies zijn traag en onbetrouwbaar voor grote payloads, dus
+// uitsluitend laatste redmiddel met een strak tijdslimiet.
+const PUBLIC_PROXIES = [
+  (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+  (u) => `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(u)}`,
+];
+let workingPublic = 0; // welke publieke fallback het laatst lukte (volgorde-tiebreak)
+const _sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+function fetchWithTimeout(url, ms) {
+  const ac = new AbortController();
+  const t = setTimeout(() => ac.abort(), ms);
+  return fetch(url, { signal: ac.signal }).finally(() => clearTimeout(t));
+}
+
+/**
+ * Haalt een pad op via de proxy en geeft de geparste JSON terug. Probeert
+ * routes op volgorde (laatst-werkende eerst); per route retries met backoff.
+ * Gooit pas als álle routes falen.
+ */
+async function proxyJson(path, { directTimeout = 25000, publicTimeout = 10000 } = {}) {
+  const proxy = getProxy();
+  if (!proxy) throw new Error('geen proxy ingesteld');
+  const target = `${proxy}${path}`;
+  // Direct staat áltijd voorop — de publieke fallback is puur noodhulp en mag
+  // ons niet vastpinnen zodra de Worker weer bereikbaar is. Onder de publieke
+  // proxies staat de laatst-gelukte vooraan.
+  const publicOrder = PUBLIC_PROXIES.map((_, i) => i)
+    .sort((a, b) => (a === workingPublic ? -1 : b === workingPublic ? 1 : 0));
+  const routes = [-1, ...publicOrder];
+  let lastErr;
+  for (const route of routes) {
+    const url = route === -1 ? target : PUBLIC_PROXIES[route](target);
+    const timeout = route === -1 ? directTimeout : publicTimeout;
+    const maxAttempts = route === -1 ? 3 : 1; // direct 3x, publiek 1x
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      if (attempt) await _sleep(600 * 2 ** (attempt - 1)); // 0,6s · 1,2s
+      try {
+        const r = await fetchWithTimeout(url, timeout);
+        if (!r.ok) {
+          lastErr = new Error(`Proxy gaf ${r.status}`);
+          // 5xx/408/429 = tijdelijk → opnieuw/volgende route; anders stoppen.
+          if (r.status >= 500 || r.status === 408 || r.status === 429) continue;
+          throw lastErr;
+        }
+        const data = await r.json();
+        if (route >= 0) workingPublic = route; // welke fallback werkte
+        return data;
+      } catch (e) {
+        lastErr = e;
+        if (e.name === 'SyntaxError') break; // ongeldige JSON van deze route → volgende
+      }
+    }
+  }
+  throw lastErr || new Error('proxy onbereikbaar');
+}
+
 // ---- Datalaag -------------------------------------------------------------
 const _cache = new Map();
 async function loadJSON(path) {
@@ -243,23 +306,27 @@ async function fetchForeign(iso, sources, translate = 'nl') {
   const BATCH = 8;
   const batches = [];
   for (let i = 0; i < sources.length; i += BATCH) batches.push(sources.slice(i, i + BATCH));
-  const results = await Promise.all(batches.map(async (batch) => {
-    let url = `${proxy}/advisory/${iso}?sources=${batch.join(',')}`;
-    if (translate) url += `&translate=${translate}`;
-    const r = await fetch(url);
-    if (!r.ok) throw new Error(`Proxy gaf ${r.status}`);
-    return r.json();
+  // allSettled i.p.v. all: een enkele hapering mag niet de héle vergelijking
+  // wegvagen — de bronnen die wél lukten tonen we, de rest melden we zacht.
+  const settled = await Promise.allSettled(batches.map((batch) => {
+    const q = translate ? `&translate=${translate}` : '';
+    return proxyJson(`/advisory/${iso}?sources=${batch.join(',')}${q}`);
   }));
+  const ok = settled.filter((s) => s.status === 'fulfilled').map((s) => s.value);
+  if (!ok.length) throw settled[0].reason || new Error('proxy onbereikbaar');
   const bySource = new Map();
-  for (const res of results) for (const s of res.sources || []) bySource.set(s.source, s);
-  return { ...results[0], sources: sources.map((id) => bySource.get(id)).filter(Boolean) };
+  for (const res of ok) for (const s of res.sources || []) bySource.set(s.source, s);
+  const got = sources.map((id) => bySource.get(id)).filter(Boolean);
+  const merged = { ...ok[0], sources: got };
+  // Melding als een deel van de bronnen deze keer niet binnenkwam.
+  const missing = sources.filter((id) => !bySource.has(id));
+  if (missing.length) merged.partialNotice = missing;
+  return merged;
 }
 async function translateText(q, to, from = 'auto') {
-  const proxy = getProxy();
-  if (!proxy) return q;
+  if (!getProxy()) return q;
   try {
-    const r = await fetch(`${proxy}/translate?to=${to}&from=${from}&q=${encodeURIComponent(q)}`);
-    const d = await r.json();
+    const d = await proxyJson(`/translate?to=${to}&from=${from}&q=${encodeURIComponent(q)}`);
     return d.text || q;
   } catch { return q; }
 }
@@ -281,11 +348,9 @@ function activeSeasons(iso3) {
  * gecureerde bronnenlijst; anders blijft het slot leeg.
  */
 async function loadLocalNews(iso3, slot) {
-  const proxy = getProxy();
-  if (!proxy) return;
+  if (!getProxy()) return;
   try {
-    const r = await fetch(`${proxy}/news/${iso3}?translate=nl`);
-    const d = await r.json();
+    const d = await proxyJson(`/news/${iso3}?translate=nl`);
     const cats = d.available ? Object.entries(d.categories || {}) : [];
     if (!cats.length) return;
     const total = cats.reduce((n, [, c]) => n + c.items.length, 0);
@@ -324,11 +389,9 @@ async function loadLocalNews(iso3, slot) {
 
 /** Haalt (indien de proxy het levert) humanitaire context op en vult het slot. */
 async function loadContext(iso3, slot) {
-  const proxy = getProxy();
-  if (!proxy) return;
+  if (!getProxy()) return;
   try {
-    const r = await fetch(`${proxy}/context/${iso3}`);
-    const d = await r.json();
+    const d = await proxyJson(`/context/${iso3}`);
     if (!d.available || !d.items?.length) return;
     const box = el('details', { class: 'context-box' });
     box.append(el('summary', {}, `🕊️ Humanitaire context (ReliefWeb) — ${d.items.length} recente melding${d.items.length === 1 ? '' : 'en'}`));
@@ -789,7 +852,15 @@ async function fetchCountry(country, sources, lang) {
     try {
       const res = await fetchForeign(country.iso3, sources, lang === 'en' ? 'en' : 'nl');
       foreign.sources = res?.sources || [];
-    } catch (err) { foreign.notice = 'Kon de proxy niet bereiken: ' + err.message; }
+      // Deel van de bronnen kwam deze keer niet binnen (tijdelijke hapering)?
+      // Toon de rest gewoon en meld welke ontbreken — geen lege tabel meer.
+      if (res?.partialNotice?.length) {
+        const namen = res.partialNotice.map((id) => sourceMeta(id)?.label || id).join(', ');
+        foreign.notice = `Een deel van de bronnen was tijdelijk niet bereikbaar (${namen}). De overige staan hieronder — probeer het zo nog eens voor de rest.`;
+      }
+    } catch (err) {
+      foreign.notice = 'De buitenlandse bronnen waren even niet bereikbaar (' + err.message + '). Dit is meestal tijdelijk — probeer het over een paar seconden opnieuw.';
+    }
   } else if (sources.length) {
     foreign.notice = 'Stel de proxy in (⚙ rechtsboven) om buitenlandse reisadviezen te vergelijken.';
   }
