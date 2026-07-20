@@ -1,109 +1,105 @@
 /**
  * Verenigde Staten — State Department (travel.state.gov).
- * Niveau uit de titelkop; inhoud uit het advies-tekstblok. VS-adviezen zijn
- * weinig thematisch onderverdeeld; we tonen het samenvattende blok.
+ *
+ * De per-land HTML-pagina's zitten achter Akamai en geven datacenter-IP's
+ * (Cloudflare Workers én GitHub-runners) een harde 403 — waardoor de VS in de
+ * vergelijking structureel ontbrak, ook in het snapshot-vangnet. De officiële
+ * RSS-feed met álle reisadviezen is daarentegen NIET geblokkeerd en bevat per
+ * land het niveau (in de titel), de adviestekst (in de description) en de
+ * canonieke URL. We halen die feed één keer op (±760 kB, gecachet per isolate)
+ * en zoeken het land op via de ISO3- of slug-verwijzing in de item-link.
  */
-import { parse } from 'node-html-parser';
-import { getTextResolved } from '../lib/fetch.js';
-import { htmlToText, splitByHeadings, absolutiseLinks } from '../lib/html.js';
+import { htmlToText, splitByHeadings } from '../lib/html.js';
+import { getText } from '../lib/fetch.js';
 import { classifyTheme } from '../lib/themes.js';
 import { analyzeAdvisory } from '../analysis/analysis-engine.js';
-import { parseHumanDate } from '../lib/dates.js';
 
-const SITE = 'https://travel.state.gov';
-const BASE = `${SITE}/content/travel/en/traveladvisories/traveladvisories`;
+const RSS = 'https://travel.state.gov/_res/rss/TAsTWs.xml';
 
 export const meta = { id: 'us', label: 'Verenigde Staten (State Dept)', flag: '🇺🇸', lang: 'en' };
 
-export async function getAdvisory(slug) {
-  if (!slug) return null;
-  // travel.state.gov migreert geleidelijk naar een nieuwe URL-structuur:
-  // sommige landen 301-redirecten al naar /en/international-travel/...
-  // De Text-Fragment-deeplinks in de matrix vereisen de UITEINDELIJKE URL
-  // (waar de tekst daadwerkelijk staat), dus gebruik de na-redirect URL i.p.v.
-  // de aangevraagde.
-  const requestUrl = `${BASE}/${slug}-travel-advisory.html`;
-  const resolved = await getTextResolved(requestUrl);
-  if (!resolved) return null;
-  const { text: html, url } = resolved;
+const decodeEntities = (s) => String(s || '')
+  .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1')
+  .replace(/&amp;/g, '&').replace(/&#0?39;|&apos;/g, '’').replace(/&quot;/g, '"')
+  .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ').trim();
 
-  // Uitgiftedatum van het advies zelf ("Date issued: June 12, 2026") —
-  // betrouwbaarder dan de paginavoettekst-datum, die bij elke site-aanpassing
-  // kan verschuiven.
-  const issued = html.match(/Date issued:?\s*<[^>]*>?\s*([A-Za-z]+\s+\d{1,2},?\s+\d{4})/i) || html.match(/Date issued:?\s*([A-Za-z]+\s+\d{1,2},?\s+\d{4})/i);
-  const lastModified = issued ? parseHumanDate(issued[1]) : null;
+// De feed bevat alle 220 landen; één ophaling per isolate-leven volstaat en
+// scheelt bij een uitdraai van 15 landen 14 identieke downloads. Korte TTL
+// zodat een niveauwijziging binnen het kwartier doorkomt.
+let _cache = { at: 0, items: null };
+async function rssItems() {
+  if (_cache.items && Date.now() - _cache.at < 15 * 60 * 1000) return _cache.items;
+  let xml;
+  try { xml = await getText(RSS); } catch { xml = null; }
+  if (!xml) return _cache.items; // hik: hou de vorige cache (mogelijk null)
+  const items = [];
+  for (const m of xml.matchAll(/<item>([\s\S]*?)<\/item>/g)) {
+    const seg = m[1];
+    const g = (re) => { const x = seg.match(re); return x ? x[1] : ''; };
+    items.push({
+      title: decodeEntities(g(/<title>([\s\S]*?)<\/title>/)),
+      link: g(/<link>([\s\S]*?)<\/link>/).trim(),
+      descHtml: decodeEntities(g(/<description>([\s\S]*?)<\/description>/)),
+      pub: g(/<pubDate>([\s\S]*?)<\/pubDate>/).trim(),
+    });
+  }
+  _cache = { at: Date.now(), items };
+  return items;
+}
 
-  const root = parse(html);
+/**
+ * @param slug  de VS-mapping uit countries.json (bijv. "oman", "qatar")
+ * @param ctx   {iso, en} — ISO3 en Engelse landnaam, voor het matchen
+ */
+export async function getAdvisory(slug, ctx = {}) {
+  const items = await rssItems();
+  if (!items || !items.length) return null;
+  const iso = String(ctx.iso || '').toLowerCase();
+  const en = String(ctx.en || '').toLowerCase();
+  const sl = String(slug || '').toLowerCase();
+
+  // Match op de item-link: sommige landen gebruiken destination.{iso3}.html,
+  // andere {slug}-travel-advisory.html. De titelnaam is de laatste terugval.
+  const hit = items.find((it) => {
+    const link = it.link.toLowerCase();
+    return (iso && link.includes(`destination.${iso}.html`)) ||
+      (sl && link.includes(`/${sl}-travel-advisory.html`)) ||
+      (en && it.title.toLowerCase().startsWith(`${en} - level`));
+  });
+  if (!hit) return null;
+
+  const url = hit.link;
+  const lastModified = hit.pub && !isNaN(Date.parse(hit.pub)) ? new Date(hit.pub).toISOString() : null;
+
+  // De description is samenvattende HTML; splits op eventuele koppen, anders
+  // één blok. De engine haalt regionale "Some areas / Do not travel to"-details
+  // uit deze tekst.
   const themes = [];
-
-  // Nieuwe, tab-gebaseerde layout (travel.state.gov migreert hiernaartoe): elk
-  // onderwerp zit in een eigen tab-panel dat via CSS verborgen is tot de bij-
-  // behorende tab actief is. Een deeplink moet daarom het tab-anker bevatten
-  // (bijv. #weather) zodat de site-JS de juiste tab opent — anders staat de
-  // tekst op een verborgen paneel en landt de gebruiker op de verkeerde tab.
-  const proseNodes = root.querySelectorAll('.usa-prose');
-  if (proseNodes.length) {
-    // Tab <li id="weather" aria-controls="…-tabpanel"> → paneel-id → anker.
-    const panelToAnchor = {};
-    for (const tab of root.querySelectorAll('li[role="tab"][aria-controls]')) {
-      const anchor = tab.getAttribute('id');
-      const ctrl = tab.getAttribute('aria-controls');
-      if (anchor && ctrl) panelToAnchor[ctrl.replace(/-tabpanel$/, '')] = anchor;
-    }
-    for (const node of proseNodes) {
-      const panel = node.closest('.cmp-tabs__tabpanel');
-      const anchor = panel ? panelToAnchor[panel.getAttribute('id') || ''] : null;
-      const secUrl = anchor ? `${url}#${anchor}` : url;
-      const secs = splitByHeadings(absolutiseLinks(node.innerHTML, SITE)).filter((s) => s.text && s.text.length > 40);
-      for (const s of secs) {
-        themes.push({
-          category: 'Travel advisory',
-          heading: s.heading || 'Country summary',
-          themeId: classifyTheme(s.heading || 'safety security', s.text),
-          html: s.html, text: s.text, url: secUrl,
-        });
-      }
-    }
+  const secs = splitByHeadings(hit.descHtml).filter((s) => s.text && s.text.length > 30);
+  if (secs.length) {
+    for (const s of secs) themes.push({
+      category: 'Travel advisory', heading: s.heading || 'Country summary',
+      themeId: classifyTheme(s.heading || 'safety security', s.text), html: s.html, text: s.text, url,
+    });
+  } else {
+    const text = htmlToText(hit.descHtml);
+    if (text) themes.push({ category: 'Travel advisory', heading: 'Country summary', themeId: classifyTheme('safety security', text), html: hit.descHtml, text, url });
   }
 
-  // Oude layout (landen die nog niet gemigreerd zijn): één content-wrapper,
-  // geen tabs/ankers.
-  if (!themes.length) {
-    const main =
-      root.querySelector('.tsg-rwd-content-page-parsysxxx') ||
-      root.querySelector('#inner-content') ||
-      root.querySelector('#content');
-    const mainHtml = main ? main.innerHTML : html;
-    let sections = splitByHeadings(absolutiseLinks(mainHtml, SITE)).filter((s) => s.text && s.text.length > 40);
-    if (sections.length === 0) {
-      const text = htmlToText(mainHtml);
-      sections = text ? [{ heading: null, html: mainHtml, text }] : [];
-    }
-    for (const s of sections) {
-      themes.push({
-        category: 'Travel advisory',
-        heading: s.heading || 'Country summary',
-        themeId: classifyTheme(s.heading || 'safety security', s.text),
-        html: s.html, text: s.text, url,
-      });
-    }
-  }
-
-  // Landelijk niveau uit de officiële "Level N"-kop (gestructureerd bewijs);
-  // regionale "Do not travel to:"-lijsten worden door de engine per gebied
-  // uit de samenvattingstekst gehaald.
+  // Landelijk niveau uit de titel ("<Land> - Level N: <label>"): die bevat de
+  // "Level N"-formulering die de engine als gestructureerd bewijs herkent.
   const assessment = analyzeAdvisory({
     sections: themes,
     lang: 'en',
-    structured: { kind: 'us_level_heading', value: html },
-    countryName: slug.replace(/-/g, ' '),
+    structured: { kind: 'us_level_heading', value: hit.title },
+    countryName: ctx.en || sl.replace(/-/g, ' '),
   });
 
   return {
     source: meta.id,
     sourceLabel: meta.label,
     flag: meta.flag,
-    name: null,
+    name: hit.title.split(' - ')[0] || null,
     url,
     lastModified,
     updateNote: null,
