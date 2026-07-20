@@ -199,18 +199,36 @@ export function interpretStructured(structured) {
     // gesamte Ukraine", AF "4 … ganze Land", IN "4 (regional)", MX "3
     // (regional)".
     const text = String(value || '');
-    const m = text.match(/Sicherheitsstufe(?:&nbsp;|\s)*([1-4])/i);
-    if (!m) return uncertain('Geen Sicherheitsstufe gevonden in de landenbox van bmeia.gv.at.');
-    const level = Number(m[1]);
-    const regional = /\(\s*regional\s*\)/i.test(text);
-    if (regional) {
+    // Alle Sicherheitsstufe-vermeldingen met hun context (BMEIA noemt er soms
+    // meerdere: één voor een regio/exklave en één "im Rest des Landes").
+    const all = [...text.matchAll(/Sicherheitsstufe(?:&nbsp;|\s)*([1-4])(?:\s*\(von 4\))?([\s\S]{0,80})/gi)]
+      .map((m) => ({ level: Number(m[1]), ctx: m[2] }));
+    if (!all.length) return uncertain('Geen Sicherheitsstufe gevonden in de landenbox van bmeia.gv.at.');
+    const regionalMax = Math.max(...all.map((x) => x.level));
+    // Landelijke ondergrens = de stufe die expliciet "im Rest des Landes",
+    // "im übrigen Land", "landesweit" of "im ganzen/gesamten Land" geldt.
+    const restfrase = /rest des landes|übrigen?\s+land|im ganzen land|gesamt\w*\s+land|ganze[ns]?\s+land|landesweit|gesamte[ns]?\s+\w+|ganz(?:e|es)\s+\w+/i;
+    const rest = all.find((x) => restfrase.test(x.ctx));
+    if (rest) {
       return ok({
-        level: 1, regionalMaxLevel: level, hasRegionalWarnings: true, confidence: 'medium',
-        label: `Sicherheitsstufe ${level} (regional)`,
-        explanation: `BMEIA (Oostenrijk): Sicherheitsstufe ${level} geldt voor delen van het land, niet landelijk.`,
+        level: rest.level, regionalMaxLevel: regionalMax > rest.level ? regionalMax : (rest.level >= 2 ? rest.level : null),
+        hasRegionalWarnings: regionalMax > rest.level,
+        label: `Sicherheitsstufe ${rest.level}`,
+        explanation: `BMEIA (Oostenrijk): Sicherheitsstufe ${rest.level} landelijk${regionalMax > rest.level ? `, tot ${regionalMax} regionaal` : ''}.`,
       });
     }
-    return ok({ level, label: `Sicherheitsstufe ${level}`, explanation: `BMEIA (Oostenrijk): Sicherheitsstufe ${level} (van 4).` });
+    // Alleen een "(regional)"-stufe zonder landelijke ondergrens → landelijk 1.
+    const onlyRegional = all.every((x) => /\(\s*regional\s*\)|gilt (in|für|entlang|im gebiet)|exklave|provinz|region|grenz/i.test(x.ctx));
+    if (onlyRegional && /\(\s*regional\s*\)/i.test(text)) {
+      return ok({
+        level: 1, regionalMaxLevel: regionalMax, hasRegionalWarnings: true, confidence: 'medium',
+        label: `Sicherheitsstufe ${regionalMax} (regional)`,
+        explanation: `BMEIA (Oostenrijk): Sicherheitsstufe ${regionalMax} geldt voor delen van het land, niet landelijk.`,
+      });
+    }
+    // Eén landelijke stufe zonder regio-kwalificatie.
+    const level = all[0].level;
+    return ok({ level, regionalMaxLevel: regionalMax > level ? regionalMax : null, label: `Sicherheitsstufe ${level}`, explanation: `BMEIA (Oostenrijk): Sicherheitsstufe ${level} (van 4).` });
   }
 
   if (kind === 'no_advarsel') {
