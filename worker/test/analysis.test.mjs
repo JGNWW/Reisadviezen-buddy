@@ -162,6 +162,41 @@ test('Nigeria (UK): parts-vlag + regionale staten uit de tekst', () => {
   assert.equal(byKey(a, 'bauchi')?.level, 3);
 });
 
+test('Oekraïne (UK): "all other regions"-restcategorie is landelijk rood, niet groen', () => {
+  const a = analyzeAdvisory({
+    lang: 'en',
+    countryName: 'Ukraine',
+    structured: {
+      kind: 'uk_alert_status',
+      value: ['avoid_all_travel_to_parts', 'avoid_all_but_essential_travel_to_parts'],
+      country: 'Ukraine',
+      text: 'Crimea FCDO advises against all travel to Crimea. All other regions of Ukraine ' +
+        'FCDO advises against all travel to all other regions of Ukraine (with the exception of ' +
+        'some Western regions; see below). FCDO advises against all but essential travel to the ' +
+        'following regions in western Ukraine: Lviv Ternopil.',
+    },
+    sections: [{ heading: 'Warnings and insurance', text: 'FCDO advises against all travel to Crimea.' }],
+  });
+  assert.equal(a.level, 4, 'restcategorie "all other regions" is de landelijke ondergrens');
+  assert.equal(a.color, 'rood');
+});
+
+test('Libanon (UK): "the rest of Beirut and Mount Lebanon" is regionaal, niet landelijk', () => {
+  const a = analyzeAdvisory({
+    lang: 'en',
+    countryName: 'Lebanon',
+    structured: {
+      kind: 'uk_alert_status',
+      value: ['avoid_all_travel_to_parts', 'avoid_all_but_essential_travel_to_parts'],
+      country: 'Lebanon',
+      text: 'FCDO advises against all but essential travel to the rest of Beirut and Mount Lebanon governorate.',
+    },
+    sections: [{ heading: 'Warnings and insurance', text: 'See regional risks.' }],
+  });
+  assert.equal(a.level, 1, '"the rest of <deelgebied>" mag de landelijke ondergrens niet optillen');
+  assert.equal(a.color, 'groen');
+});
+
 test('India (UK): kilometer-grenszone met uitzondering (Wagah-Attari)', () => {
   const a = analyzeAdvisory({
     lang: 'en',
