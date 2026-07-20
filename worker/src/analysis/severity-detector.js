@@ -50,6 +50,9 @@ const PATTERNS = {
     P(/se recomienda (valorar )?no viajar\b(?!.*salvo)/i, 4),
     P(/evitar (todo|cualquier) desplazamiento/i, 4),
     P(/no viajar salvo|salvo (por )?razones (ineludibles|de fuerza mayor)/i, 3),
+    // "aplazar/posponer el viaje … salvo que sea necesario/imprescindible" —
+    // niet-noodzakelijke reizen ontraden (Exteriores' formulering voor 3).
+    P(/(aplazar|posponer)( el| su| todo)? (viaje|desplazamiento)s?[^.]{0,80}salvo que sea (necesario|imprescindible)/i, 3),
     P(/desaconseja(n)? (los|el) (viajes?|desplazamientos?)/i, 3),
     P(/viajar con (mucha |extrema |extremada )?precauci[oó]n|extrem(ar|e|a) (las )?precauci|adoptar precauciones|alto grado de precauci/i, 2),
     P(/viaje sin restricciones|sin restricciones|no hay restricciones/i, 1),

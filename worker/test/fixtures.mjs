@@ -7,7 +7,7 @@ import { readFileSync } from 'node:fs';
 
 export const ROUTES = [
   ['gov.uk/api/content/foreign-travel-advice/nepal', 'uk-nepal.json'],
-  ['nepal-travel-advisory.html', 'us-nepal.html'],
+  ['_res/rss/TAsTWs.xml', 'us-rss.xml'],
   ['index-alpha-eng.json', 'ca-index.json'],
   ['travel.gc.ca/destinations/nepal', 'ca-nepal.html'],
   ['a-z-list-of-countries/nepal', 'ie-nepal.html'],

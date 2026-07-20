@@ -18,7 +18,8 @@ installFixtureFetch();
 // Adapters pas ná de mock importeren.
 const ADAPTERS = [
   ['uk', (await import('../src/adapters/uk.js')), 'nepal'],
-  ['us', (await import('../src/adapters/us.js')), 'nepal'],
+  // VS: RSS-feed met álle landen; adapter matcht op ISO3/slug + naam uit ctx.
+  ['us', (await import('../src/adapters/us.js')), 'nepal', { iso: 'NPL', en: 'Nepal' }],
   ['ca', (await import('../src/adapters/canada.js')), { iso2: 'NP', id: 205000, slug: 'nepal' }],
   ['ie', (await import('../src/adapters/ireland.js')), 'nepal'],
   ['fr', (await import('../src/adapters/france.js')), 'nepal'],
@@ -38,13 +39,14 @@ const ADAPTERS = [
 
 // Minimaal aantal thema's per adapter. Oorlogslanden hebben bij BMEIA/EDA
 // een ingeklapte sectieset (alleen het beoordelings-/veiligheidsblok).
-const MIN_THEMES = { at: 2, ch: 1 };
+// VS: de RSS-feed levert een samenvattend blok, geen per-thema-onderverdeling.
+const MIN_THEMES = { us: 1, at: 2, ch: 1 };
 
 const CODE_HEADING = /querySelector|shadowRoot|innerHTML|function\s*\(|=>|[{};$]|document\.|window\./;
 
-for (const [id, adapter, arg] of ADAPTERS) {
+for (const [id, adapter, arg, ctx] of ADAPTERS) {
   test(`adapter ${id}: levert een geldig advies uit de fixture`, async () => {
-    const adv = await adapter.getAdvisory(arg);
+    const adv = await adapter.getAdvisory(arg, ctx);
     assert.ok(adv, `${id}: getAdvisory gaf null`);
     assert.equal(typeof adv.url, 'string');
 

@@ -129,7 +129,9 @@ export default {
             const id = sourceId(iso, s);
             if (!id) return { source: s, unavailable: true, label: ADAPTERS[s].meta.label };
             try {
-              const adv = await ADAPTERS[s].getAdvisory(id);
+              // Context (ISO3 + Engelse naam) voor adapters die geen per-land
+              // URL scrapen maar in een gedeelde feed zoeken (VS-RSS).
+              const adv = await ADAPTERS[s].getAdvisory(id, { iso, en: rec.en, nl: rec.nl });
               if (!adv) return { source: s, unavailable: true, label: ADAPTERS[s].meta.label };
               adv.mapProxy = adv.hasMap ? `/map/${s}/${iso}` : null;
               adv.lang = ADAPTERS[s].meta.lang || 'en';
