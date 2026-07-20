@@ -69,6 +69,13 @@ function ukElsewhereBaseline(text, country) {
   const tail = `(?:all other (?:regions|areas|parts)|the rest|the whole) of (?:the )?(?:country${C ? `|${C}` : ''})\\b`;
   if (new RegExp(`advises? against all travel to ${tail}`, 'i').test(t)) return 4;
   if (new RegExp(`advises? against all but essential travel to ${tail}`, 'i').test(t)) return 3;
+  // Sommige landen (Irak) sommen géén catch-all op maar noemen elk gebied
+  // apart: "the remainder of X province" voor provincie na provincie, zodat
+  // het hele land onder minstens een 'all but essential'-advies valt. Drie of
+  // meer "the remainder of" ⇒ landelijke ondergrens 3 (niet-noodzakelijke
+  // reizen overal); specifieke grenszones (Jordanië/Saoedi-Arabië) noemen dit
+  // niet en blijven landelijk groen.
+  if ((t.match(/the remainder of/gi) || []).length >= 3) return 3;
   return null;
 }
 
