@@ -3129,6 +3129,16 @@ function setupExport() {
   $('#export-xlsx').addEventListener('click', () => runExport('xlsx'));
   $('#export-pdf').addEventListener('click', () => runExport('pdf'));
 
+  // Themadropdown vullen (gegroepeerd zoals themes.json).
+  const themeSel = $('#export-theme');
+  const groups = new Map();
+  THEMES_META.forEach((t) => { if (!groups.has(t.group)) groups.set(t.group, []); groups.get(t.group).push(t); });
+  for (const [group, items] of groups) {
+    const og = el('optgroup', { label: group });
+    items.forEach((t) => og.append(el('option', { value: t.id }, t.label)));
+    themeSel.append(og);
+  }
+
   refreshExportGroupSelect();
   renderExportChips();
   const n = orderedSelected().length;
@@ -3171,20 +3181,58 @@ async function runExport(kind) {
   if (EXPORT_COUNTRIES.length > 20) return setExportStatus('Maximaal 20 landen per uitdraai — splits grote lijsten op.', 'error');
   const sources = orderedSelected();
   const lang = $('#export-lang').value;
-  const withText = $('#export-content').value === 'full';
+  const content = $('#export-content').value; // full | text | colors
+  const opts = {
+    content,
+    withText: content !== 'colors',
+    withColors: content !== 'text',
+    themeId: $('#export-theme').value || null,
+    word: $('#export-word').value.trim(),
+  };
   $('#export-xlsx').disabled = $('#export-pdf').disabled = true;
   try {
     const { rows, failed } = await gatherExportData(sources, lang);
     if (!rows.length) return setExportStatus('Geen data opgehaald — probeer het opnieuw.', 'error');
-    if (kind === 'xlsx') buildExportXlsx(rows, sources, lang, withText);
-    else buildExportPdf(rows, sources, lang, withText);
+    const built = kind === 'xlsx'
+      ? buildExportXlsx(rows, sources, lang, opts)
+      : buildExportPdf(rows, sources, lang, opts);
     const warn = failed.length ? ` (niet gelukt: ${failed.join(', ')})` : '';
-    setExportStatus(`Klaar — ${rows.length} land${rows.length === 1 ? '' : 'en'} in de uitdraai${warn}.`, failed.length ? '' : 'ok');
+    if (built === 'empty') setExportStatus(`Geen bronteksten gevonden voor dit filter${opts.word ? ` (“${opts.word}”)` : ''}${warn}.`, 'error');
+    else setExportStatus(`Klaar — ${rows.length} land${rows.length === 1 ? '' : 'en'} in de uitdraai${warn}.`, failed.length ? '' : 'ok');
   } catch (e) {
     setExportStatus('Uitdraai mislukt: ' + e.message, 'error');
   } finally {
     $('#export-xlsx').disabled = $('#export-pdf').disabled = false;
   }
+}
+
+// ---- Thema-/woordfilter voor de inhoud ------------------------------------
+/** Levert per land de gefilterde thema-inhoud: [{theme, entries:[{label,color,level,text}]}]. */
+function filteredThemeContent(nl, foreign, { themeId, word }) {
+  const comp = buildComparison(nl, foreign.filter((s) => s.themes));
+  const nlColor = nl.colors?.overall;
+  const wq = word ? norm(word) : null;
+  const pick = (fullText) => {
+    if (!fullText) return null;
+    if (wq && !norm(fullText).includes(wq)) return null;
+    return wq ? snippetAround(fullText, word, 200) : fullText;
+  };
+  const out = [];
+  for (const t of comp.themes) {
+    if (t.theme.id === '_other') continue;
+    if (themeId && t.theme.id !== themeId) continue;
+    const entries = [];
+    const nlText = pick(cleanText((t.nl || []).map((b) => b.text).join(' ')));
+    if (nlText) entries.push({ label: 'NL (NWW)', color: nlColor, level: null, text: nlText, isNl: true });
+    for (const [sid, f] of Object.entries(t.foreign)) {
+      const txt = pick(cleanText((f.blocks || []).map((b) => b.text).join(' ')));
+      if (!txt) continue;
+      const s = foreign.find((x) => x.source === sid);
+      entries.push({ label: f.label, color: s?.color, level: s?.level, text: txt });
+    }
+    if (entries.length) out.push({ theme: t.theme, entries });
+  }
+  return out;
 }
 
 /** NL-datum kort (dd-mm-jjjj) uit modificationDate of lastModified. */
@@ -3215,58 +3263,60 @@ function overviewMatrix(rows, sources) {
   return { header, body };
 }
 
-/** Bouwt en downloadt het Excel-bestand. */
-function buildExportXlsx(rows, sources, lang, withText) {
+/** Bouwt en downloadt het Excel-bestand. Geeft 'empty' als het filter niets oplevert. */
+function buildExportXlsx(rows, sources, lang, opts) {
   const stamp = new Date().toISOString().slice(0, 10);
-  const { header, body } = overviewMatrix(rows, sources);
+  const themeLabel = opts.themeId ? (THEME_BY_ID.get(opts.themeId)?.label || opts.themeId) : null;
+  const sheets = [];
 
-  // ---- Blad 1: kleurcodes-overzicht ----
-  const s1 = { name: 'Kleurcodes-overzicht', freeze: 2, cols: [26, 14, ...sources.map(() => 15), 34, 14],
-    merges: [`A1:${String.fromCharCode(65 + header.length - 1)}1`], rows: [] };
-  s1.rows.push([{ v: `Reisadviezen — uitdraai ${stamp}`, t: 'title' }]);
-  s1.rows.push(header.map((h) => ({ v: h, t: 'header' })));
-  for (const r of body) {
-    const nlCell = r.nlColor ? { v: COLOR_LABELS[r.nlColor], t: CC_STYLE[r.nlColor] } : { v: '—', t: 'plain' };
-    const srcCells = r.srcCells.map((c) => c.color ? { v: c.v, t: CC_STYLE[c.color] } : { v: c.v, t: 'plain' });
-    s1.rows.push([{ v: r.country.nl, t: 'country' }, nlCell, ...srcCells, { v: r.diffLabel, t: 'text' }, { v: r.date, t: 'num' }]);
+  // ---- Blad 1: kleurcodes-overzicht (tenzij focus-modus) ----
+  if (opts.withColors) {
+    const { header, body } = overviewMatrix(rows, sources);
+    const s1 = { name: 'Kleurcodes-overzicht', freeze: 2, cols: [26, 14, ...sources.map(() => 15), 34, 14],
+      merges: [`A1:${String.fromCharCode(65 + header.length - 1)}1`], rows: [] };
+    s1.rows.push([{ v: `Reisadviezen — uitdraai ${stamp}`, t: 'title' }]);
+    s1.rows.push(header.map((h) => ({ v: h, t: 'header' })));
+    for (const r of body) {
+      const nlCell = r.nlColor ? { v: COLOR_LABELS[r.nlColor], t: CC_STYLE[r.nlColor] } : { v: '—', t: 'plain' };
+      const srcCells = r.srcCells.map((c) => c.color ? { v: c.v, t: CC_STYLE[c.color] } : { v: c.v, t: 'plain' });
+      s1.rows.push([{ v: r.country.nl, t: 'country' }, nlCell, ...srcCells, { v: r.diffLabel, t: 'text' }, { v: r.date, t: 'num' }]);
+    }
+    sheets.push(s1);
   }
 
-  const sheets = [s1];
-
-  // ---- Blad 2: per land → thema + bron ----
-  if (withText) {
-    const s2 = { name: 'Per land — inhoud', freeze: 1, cols: [22, 20, 12, 78], rows: [] };
+  // ---- Blad 2: per land → thema + bron (met thema-/woordfilter) ----
+  let contentRows = 0;
+  if (opts.withText) {
+    const s2title = themeLabel ? `Inhoud — ${themeLabel}`.slice(0, 31) : 'Per land — inhoud';
+    const s2 = { name: s2title, freeze: 2, cols: [22, 22, 12, 84], merges: [], rows: [] };
+    const filterBits = [themeLabel && `thema: ${themeLabel}`, opts.word && `zoekwoord: “${opts.word}”`].filter(Boolean).join(' · ');
+    s2.rows.push([{ v: filterBits ? `Wat bronnen zeggen (${filterBits})` : 'Wat de bronnen per thema zeggen', t: 'title' }]);
+    s2.merges.push(`A1:D1`);
     s2.rows.push([{ v: 'Land', t: 'header' }, { v: 'Bron', t: 'header' }, { v: 'Niveau', t: 'header' }, { v: 'Wat de bron zegt', t: 'header' }]);
     for (const { country, nl, foreign } of rows) {
-      const comp = buildComparison(nl, foreign.filter((s) => s.themes));
-      // Bandrij per land.
-      s2.rows.push([{ v: `${country.nl}`, t: 'band' }, { v: '', t: 'band' }, { v: '', t: 'band' }, { v: '', t: 'band' }]);
-      s2.merges = s2.merges || [];
+      const content = filteredThemeContent(nl, foreign, opts);
+      if (!content.length) continue;
+      s2.rows.push([{ v: country.nl, t: 'band' }, { v: '', t: 'band' }, { v: '', t: 'band' }, { v: '', t: 'band' }]);
       s2.merges.push(`A${s2.rows.length}:D${s2.rows.length}`);
-      for (const t of comp.themes) {
-        if (t.theme.id === '_other') continue;
-        const nlText = cleanText((t.nl || []).map((b) => b.text).join(' '));
-        const srcTexts = Object.entries(t.foreign)
-          .map(([sid, f]) => ({ sid, label: f.label, text: cleanText((f.blocks || []).map((b) => b.text).join(' ')) }))
-          .filter((x) => x.text);
-        if (!nlText && !srcTexts.length) continue;
-        // Themakop-rij (subtieler dan de landband: gewone vet-cel).
-        s2.rows.push([{ v: `▸ ${t.theme.label}`, t: 'country' }, { v: '', t: 'plain' }, { v: '', t: 'plain' }, { v: '', t: 'plain' }]);
-        if (nlText) s2.rows.push([{ v: '', t: 'plain' }, { v: 'NL (NWW)', t: 'text' }, { v: COLOR_LABELS[nl.colors?.overall] || '', t: 'num' }, { v: nlText, t: 'text' }]);
-        for (const x of srcTexts) {
-          const s = foreign.find((f) => f.source === x.sid);
-          const lvl = s?.color ? `${COLOR_LABELS[s.color]}${s.level ? ` (${s.level})` : ''}` : '';
-          s2.rows.push([{ v: '', t: 'plain' }, { v: x.label, t: 'text' }, { v: lvl, t: 'num' }, { v: x.text, t: 'text' }]);
+      for (const { theme, entries } of content) {
+        s2.rows.push([{ v: `▸ ${theme.label}`, t: 'country' }, { v: '', t: 'plain' }, { v: '', t: 'plain' }, { v: '', t: 'plain' }]);
+        for (const e of entries) {
+          const lvl = e.color ? `${COLOR_LABELS[e.color]}${e.level ? ` (${e.level})` : ''}` : '';
+          s2.rows.push([{ v: '', t: 'plain' }, { v: e.label, t: 'text' }, { v: lvl, t: 'num' }, { v: e.text, t: 'text' }]);
+          contentRows++;
         }
       }
     }
-    sheets.push(s2);
+    if (!contentRows && !opts.withColors) return 'empty';
+    if (contentRows) sheets.push(s2);
   }
 
   // ---- Blad 3: toelichting & bronnen ----
   const s3 = { name: 'Toelichting & bronnen', cols: [26, 90], rows: [] };
   s3.rows.push([{ v: 'Over deze uitdraai', t: 'title' }]);
   s3.rows.push([{ v: 'Gemaakt op', t: 'country' }, { v: new Date().toLocaleString('nl-NL'), t: 'text' }]);
+  if (themeLabel) s3.rows.push([{ v: 'Thema-filter', t: 'country' }, { v: themeLabel, t: 'text' }]);
+  if (opts.word) s3.rows.push([{ v: 'Zoekwoord', t: 'country' }, { v: opts.word + ' (alleen passages met dit woord)', t: 'text' }]);
   s3.rows.push([{ v: 'Taal bronteksten', t: 'country' }, { v: lang === 'orig' ? 'Origineel' : 'Nederlands (automatisch vertaald)', t: 'text' }]);
   s3.rows.push([{ v: 'Kleurcodes', t: 'country' }, { v: 'Groen = normale risico’s · Geel = let op · Oranje = niet-noodzakelijke reizen ontraden · Rood = niet reizen. Niveaus (1–4) komen van de bron zelf.', t: 'text' }]);
   s3.rows.push([{ v: '', t: 'plain' }, { v: '', t: 'plain' }]);
@@ -3277,8 +3327,9 @@ function buildExportXlsx(rows, sources, lang, withText) {
   }
   sheets.push(s3);
 
-  const blob = buildXlsx(sheets);
-  downloadBlob(blob, `Reisadviezen_uitdraai_${stamp}.xlsx`);
+  const suffix = themeLabel ? '_' + themeLabel.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') : '';
+  downloadBlob(buildXlsx(sheets), `Reisadviezen_uitdraai${suffix}_${stamp}.xlsx`);
+  return 'ok';
 }
 
 function downloadBlob(blob, name) {
@@ -3288,73 +3339,73 @@ function downloadBlob(blob, name) {
 }
 
 /** Bouwt een printbaar rapport in een verborgen container en opent de printdialoog. */
-function buildExportPdf(rows, sources, lang, withText) {
+function buildExportPdf(rows, sources, lang, opts) {
   const stamp = new Date().toLocaleDateString('nl-NL');
-  const { header, body } = overviewMatrix(rows, sources);
+  const themeLabel = opts.themeId ? (THEME_BY_ID.get(opts.themeId)?.label || opts.themeId) : null;
+  const filterBits = [themeLabel && `thema: ${themeLabel}`, opts.word && `zoekwoord “${opts.word}”`].filter(Boolean).join(' · ');
   const root = $('#export-print') || el('div', { id: 'export-print' });
   root.innerHTML = '';
   if (!root.parentNode) document.body.append(root);
 
-  // ---- Voorblad: compacte kleurmatrix (past liggend met alle bronnen) ----
+  // ---- Voorblad: compacte kleurmatrix (tenzij focus-modus) ----
   const cover = el('section', { class: 'exp-page' });
   cover.append(el('h1', { class: 'exp-title' }, 'Reisadviezen — uitdraai meerdere landen'));
-  cover.append(el('p', { class: 'exp-meta' }, `Vergelijking NederlandWereldwijd ↔ buitenlandse bronnen · ${rows.length} landen · ${stamp}`));
-  const tbl = el('table', { class: 'exp-matrix compact' });
-  const codeHead = el('tr', {}, el('th', {}, 'Land'), el('th', {}, 'NL'));
-  sources.forEach((id) => codeHead.append(el('th', { title: sourceMeta(id)?.label || id }, SRC_SHORT[id] || id.toUpperCase())));
-  codeHead.append(el('th', { class: 'wide' }, 'Grootste afwijking t.o.v. NL'));
-  tbl.append(codeHead);
-  body.forEach((r) => {
-    const tr = el('tr', {}, el('td', { class: 'exp-country' }, r.country.nl));
-    const nlLbl = r.nlColor ? String(COLOR_LEVEL[r.nlColor]) : '';
-    tr.append(el('td', { class: 'exp-ccbox', style: r.nlColor ? `background:${CC_HEX[r.nlColor]}` : '', title: r.nlColor ? COLOR_LABELS[r.nlColor] : '' }, nlLbl || '–'));
-    r.srcCells.forEach((c) => {
-      const lvl = c.color ? String(COLOR_LEVEL[c.color]) : '';
-      tr.append(el('td', { class: 'exp-ccbox', style: c.color ? `background:${CC_HEX[c.color]}` : '', title: c.color ? COLOR_LABELS[c.color] : (c.v === 'n.b.' ? 'niet beschikbaar' : '') }, lvl || (c.v === 'n.b.' ? '·' : '–')));
+  cover.append(el('p', { class: 'exp-meta' },
+    `Vergelijking NederlandWereldwijd ↔ buitenlandse bronnen · ${rows.length} landen · ${stamp}` + (filterBits ? ` · ${filterBits}` : '')));
+  if (opts.withColors) {
+    const { body } = overviewMatrix(rows, sources);
+    const tbl = el('table', { class: 'exp-matrix compact' });
+    const codeHead = el('tr', {}, el('th', {}, 'Land'), el('th', {}, 'NL'));
+    sources.forEach((id) => codeHead.append(el('th', { title: sourceMeta(id)?.label || id }, SRC_SHORT[id] || id.toUpperCase())));
+    codeHead.append(el('th', { class: 'wide' }, 'Grootste afwijking t.o.v. NL'));
+    tbl.append(codeHead);
+    body.forEach((r) => {
+      const tr = el('tr', {}, el('td', { class: 'exp-country' }, r.country.nl));
+      const nlLbl = r.nlColor ? String(COLOR_LEVEL[r.nlColor]) : '';
+      tr.append(el('td', { class: 'exp-ccbox', style: r.nlColor ? `background:${CC_HEX[r.nlColor]}` : '', title: r.nlColor ? COLOR_LABELS[r.nlColor] : '' }, nlLbl || '–'));
+      r.srcCells.forEach((c) => {
+        const lvl = c.color ? String(COLOR_LEVEL[c.color]) : '';
+        tr.append(el('td', { class: 'exp-ccbox', style: c.color ? `background:${CC_HEX[c.color]}` : '', title: c.color ? COLOR_LABELS[c.color] : (c.v === 'n.b.' ? 'niet beschikbaar' : '') }, lvl || (c.v === 'n.b.' ? '·' : '–')));
+      });
+      tr.append(el('td', { class: 'exp-diff' }, r.diffLabel));
+      tbl.append(tr);
     });
-    tr.append(el('td', { class: 'exp-diff' }, r.diffLabel));
-    tbl.append(tr);
-  });
-  cover.append(tbl);
-  cover.append(el('p', { class: 'exp-legend' },
-    'Cel = niveau 1–4 · ',
-    el('span', { class: 'exp-cc', style: `background:${CC_HEX.groen}` }, '1 groen'), ' ',
-    el('span', { class: 'exp-cc', style: `background:${CC_HEX.geel}` }, '2 geel'), ' ',
-    el('span', { class: 'exp-cc', style: `background:${CC_HEX.oranje}` }, '3 oranje'), ' ',
-    el('span', { class: 'exp-cc', style: `background:${CC_HEX.rood}` }, '4 rood'),
-    ' · – = niets gemeld · · = bron niet beschikbaar. Broncodes bovenaan (beweeg erover voor de volledige naam).'));
+    cover.append(tbl);
+    cover.append(el('p', { class: 'exp-legend' },
+      'Cel = niveau 1–4 · ',
+      el('span', { class: 'exp-cc', style: `background:${CC_HEX.groen}` }, '1 groen'), ' ',
+      el('span', { class: 'exp-cc', style: `background:${CC_HEX.geel}` }, '2 geel'), ' ',
+      el('span', { class: 'exp-cc', style: `background:${CC_HEX.oranje}` }, '3 oranje'), ' ',
+      el('span', { class: 'exp-cc', style: `background:${CC_HEX.rood}` }, '4 rood'),
+      ' · – = niets gemeld · · = bron niet beschikbaar. Broncodes bovenaan (beweeg erover voor de volledige naam).'));
+  } else {
+    cover.append(el('p', { class: 'exp-legend' }, 'Focus-uitdraai: alleen wat de bronnen inhoudelijk zeggen. Kleurniveaus staan per bron tussen haakjes.'));
+  }
   root.append(cover);
 
-  // ---- Per land een pagina ----
-  // Themateksten in de PDF inkorten (Excel houdt de volledige tekst): anders
-  // beslaat één land al vele pagina's. ~340 tekens is genoeg om te scannen.
-  const clip = (t, n = 340) => (t.length > n ? t.slice(0, n).replace(/\s+\S*$/, '') + '…' : t);
-  if (withText) {
+  // ---- Per land een pagina (met thema-/woordfilter) ----
+  // Teksten inkorten (Excel houdt de volledige tekst): anders wordt de PDF eindeloos.
+  const clip = (t, n = 380) => (t.length > n ? t.slice(0, n).replace(/\s+\S*$/, '') + '…' : t);
+  let anyContent = false;
+  if (opts.withText) {
     for (const { country, nl, foreign } of rows) {
-      const comp = buildComparison(nl, foreign.filter((s) => s.themes));
+      const content = filteredThemeContent(nl, foreign, opts);
+      if (!content.length) continue;
+      anyContent = true;
       const page = el('section', { class: 'exp-page exp-country-page' });
-      page.append(el('h2', { class: 'exp-h2' }, `${countryFlag(country.iso2)} ${country.nl}`));
+      page.append(el('h2', { class: 'exp-h2' }, `${countryFlag(country.iso2)} ${country.nl}` + (themeLabel ? ` — ${themeLabel}` : '')));
       const nlColor = nl.colors?.overall;
       page.append(el('p', { class: 'exp-meta' },
         `NL: ${COLOR_LABELS[nlColor] || '—'} · ` + foreign.filter((s) => s.color).map((s) => `${s.sourceLabel.split(' (')[0]}: ${COLOR_LABELS[s.color]}`).join(' · ') +
         ` — NL bijgewerkt ${nlDateShort(nl)}`));
-      let any = false;
-      for (const t of comp.themes) {
-        if (t.theme.id === '_other') continue;
-        const nlText = cleanText((t.nl || []).map((b) => b.text).join(' '));
-        const srcTexts = Object.entries(t.foreign)
-          .map(([sid, f]) => ({ label: f.label, text: cleanText((f.blocks || []).map((b) => b.text).join(' ')),
-            color: foreign.find((s) => s.source === sid)?.color }))
-          .filter((x) => x.text);
-        if (!nlText && !srcTexts.length) continue;
-        any = true;
-        page.append(el('div', { class: 'exp-band' }, t.theme.label));
-        if (nlText) page.append(el('div', { class: 'exp-qa' }, el('b', {}, `NL (NWW)${nlColor ? ` — ${COLOR_LABELS[nlColor]}` : ''}`), clip(nlText)));
-        for (const x of srcTexts) page.append(el('div', { class: 'exp-qa' }, el('b', {}, `${x.label}${x.color ? ` — ${COLOR_LABELS[x.color]}` : ''}`), clip(x.text)));
+      for (const { theme, entries } of content) {
+        page.append(el('div', { class: 'exp-band' }, theme.label));
+        for (const e of entries) page.append(el('div', { class: 'exp-qa' },
+          el('b', {}, `${e.label}${e.color ? ` — ${COLOR_LABELS[e.color]}${e.level ? ` (${e.level})` : ''}` : ''}`), clip(e.text)));
       }
-      if (!any) page.append(el('p', { class: 'exp-meta' }, 'Geen thema-inhoud beschikbaar voor de gekozen bronnen.'));
       root.append(page);
     }
+    if (!anyContent && !opts.withColors) return 'empty';
   }
 
   // Liggend printen: de kleurmatrix met alle bronnen past zo op de pagina.

@@ -241,9 +241,21 @@
         </div>
 
         <div class="optrow" style="display:flex;flex-wrap:wrap;gap:22px;margin-top:14px;padding-top:12px;border-top:1px dashed var(--border)">
+          <div class="field" style="min-width:220px">
+            <label for="export-theme">Thema</label>
+            <select id="export-theme"><option value="">Alle thema’s</option></select>
+          </div>
+          <div class="field grow" style="min-width:200px">
+            <label for="export-word">Zoekwoord (optioneel)</label>
+            <input id="export-word" autocomplete="off" placeholder="Bijv. verkiezingen, aardbeving, grens…" />
+          </div>
           <div class="field">
-            <label>Bronnen</label>
-            <span style="font-size:13px">Gebruikt de bij <strong>Vergelijken</strong> aangevinkte bronnen (<span id="export-src-count">–</span>).</span>
+            <label for="export-content">Inhoud</label>
+            <select id="export-content">
+              <option value="full" selected>Kleuren + wat bronnen zeggen</option>
+              <option value="text">Focus: alleen wat bronnen zeggen</option>
+              <option value="colors">Alleen kleurcodes-overzicht</option>
+            </select>
           </div>
           <div class="field">
             <label for="export-lang">Taal bronteksten</label>
@@ -253,11 +265,8 @@
             </select>
           </div>
           <div class="field">
-            <label for="export-content">Inhoud</label>
-            <select id="export-content">
-              <option value="full" selected>Kleuren + wat bronnen zeggen</option>
-              <option value="colors">Alleen kleurcodes-overzicht</option>
-            </select>
+            <label>Bronnen</label>
+            <span style="font-size:13px">Volgt <strong>Vergelijken</strong> (<span id="export-src-count">–</span>).</span>
           </div>
         </div>
 
