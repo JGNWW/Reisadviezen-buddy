@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup — Uitdraai meerdere landen (Excel + PDF) · Reisadviezen-buddy</title>
+<style>
+  :root {
+    --nl-blue: #154273; --nl-blue-dark: #001f4d; --muted: #535353;
+    --bg: #fff; --line: #e1e4e8; --soft: #f6f8fa; --link: #01689b;
+    --rood: #cd1719; --oranje: #e17000; --geel: #f9e11e; --groen: #39870c;
+    --excel: #217346;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body { font-family: "Source Sans 3", "Segoe UI", system-ui, -apple-system, Arial, sans-serif; color: #1a1a1a; background: var(--soft); }
+  header { background: var(--nl-blue); color: #fff; padding: 14px 24px; }
+  header h1 { font-size: 18px; font-weight: 600; }
+  header .sub { font-size: 13px; opacity: .85; margin-top: 2px; }
+  .mock-banner { background: #fdf6ec; border-bottom: 1px solid #ecd9b0; color: #9a6200; font-size: 13px; padding: 8px 24px; }
+  main { max-width: 1080px; margin: 0 auto; padding: 20px 16px 60px; }
+
+  section { background: #fff; border: 1px solid var(--line); padding: 22px; margin-bottom: 22px; }
+  section > h2 { font-size: 17px; color: var(--nl-blue); border-bottom: 2px solid var(--nl-blue); padding-bottom: 8px; margin-bottom: 6px; display: flex; align-items: center; gap: 9px; }
+  .step { font-size: 12px; font-weight: 700; background: var(--nl-blue); color: #fff; border-radius: 50%; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; flex: none; }
+  .uitleg { font-size: 14px; color: var(--muted); margin: 12px 0 16px; max-width: 78ch; }
+  .vlag { display: inline-block; width: 20px; height: 15px; object-fit: cover; border: 1px solid rgba(0,0,0,.15); border-radius: 2px; vertical-align: -2px; }
+
+  /* ---- Selectie-UI ---- */
+  .picker { border: 1px solid var(--line); background: var(--soft); padding: 14px; }
+  .picker label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; color: var(--muted); display: block; margin-bottom: 6px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 6px; }
+  .chip { display: inline-flex; align-items: center; gap: 6px; background: #fff; border: 1px solid var(--line); border-radius: 15px; padding: 4px 10px; font-size: 14px; }
+  .chip .x { color: var(--muted); cursor: pointer; }
+  .chip.add { border-style: dashed; color: var(--link); cursor: pointer; }
+  .grouprow { display: flex; align-items: center; gap: 10px; margin: 10px 0; font-size: 13px; }
+  .grouprow select, .grouprow input { padding: 5px 8px; border: 1px solid var(--line); font-size: 13px; }
+  .savedgroup { font-size: 12px; background: #eaf2f8; border: 1px solid #c7dcec; border-radius: 12px; padding: 3px 10px; }
+  .optrow { display: flex; flex-wrap: wrap; gap: 20px; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--line); font-size: 13px; }
+  .optrow .opt { }
+  .optrow .opt b { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: .03em; color: var(--muted); margin-bottom: 4px; }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+  .seg span { padding: 4px 10px; font-size: 13px; background: #fff; border-right: 1px solid var(--line); }
+  .seg span:last-child { border-right: none; }
+  .seg span.on { background: var(--nl-blue); color: #fff; }
+  .exportbtns { display: flex; gap: 12px; margin-top: 18px; }
+  .btn-xl { display: inline-flex; align-items: center; gap: 9px; padding: 12px 20px; border-radius: 5px; font-size: 15px; font-weight: 600; color: #fff; border: none; cursor: pointer; }
+  .btn-xl.excel { background: var(--excel); }
+  .btn-xl.pdf { background: #b3261e; }
+  .btn-xl small { font-weight: 400; opacity: .85; font-size: 12px; }
+
+  /* ---- Excel-preview ---- */
+  .xlsx-frame { border: 1px solid #cfd4d9; border-radius: 4px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+  .xlsx-bar { background: var(--excel); color: #fff; font-size: 12.5px; padding: 6px 12px; display: flex; align-items: center; gap: 8px; }
+  .xlsx-tabs { display: flex; gap: 2px; background: #f1f3f4; border-bottom: 1px solid #cfd4d9; padding: 0 8px; }
+  .xlsx-tab { font-size: 12px; padding: 6px 14px; background: #e3e6e8; border: 1px solid #cfd4d9; border-bottom: none; color: #444; margin-top: 4px; }
+  .xlsx-tab.on { background: #fff; font-weight: 600; color: var(--excel); }
+  .xlsx-scroll { overflow-x: auto; background: #fff; }
+  table.grid { border-collapse: collapse; font-size: 12.5px; min-width: 100%; }
+  table.grid th, table.grid td { border: 1px solid #d5d9dd; padding: 5px 9px; text-align: left; vertical-align: top; }
+  table.grid thead th { background: #f1f5f9; color: #1a1a1a; font-weight: 700; position: sticky; top: 0; white-space: nowrap; }
+  table.grid td.country { font-weight: 600; white-space: nowrap; background: #fafbfc; }
+  .cc { font-weight: 700; text-align: center; white-space: nowrap; }
+  .cc.groen  { background: #d7ecc6; color: #1d4d06; }
+  .cc.geel   { background: #fbf3ba; color: #6b5a00; }
+  .cc.oranje { background: #f8ddb8; color: #7a3e00; }
+  .cc.rood   { background: #f3c0c0; color: #7a0c0d; }
+  .lvlwrap { display: flex; align-items: center; gap: 6px; }
+  .sq { width: 12px; height: 12px; border-radius: 2px; flex: none; display: inline-block; }
+  .sq.groen { background: var(--groen);} .sq.geel { background: var(--geel);} .sq.oranje { background: var(--oranje);} .sq.rood { background: var(--rood);}
+  .theme-band td { background: var(--nl-blue); color: #fff; font-weight: 700; font-size: 12.5px; }
+  .src-cell { white-space: nowrap; font-weight: 600; }
+  .txt { max-width: 460px; white-space: normal; color: #222; }
+  .muted-cell { color: #999; font-style: italic; }
+
+  /* ---- PDF-preview ---- */
+  .pdfwrap { display: flex; gap: 16px; flex-wrap: wrap; }
+  .page { width: 300px; min-height: 400px; background: #fff; border: 1px solid var(--line); box-shadow: 0 2px 10px rgba(0,0,0,.08); padding: 20px; font-size: 10px; }
+  .page h3 { color: var(--nl-blue); font-size: 14px; margin-bottom: 2px; }
+  .page .meta { color: var(--muted); font-size: 9px; border-bottom: 1px solid var(--line); padding-bottom: 8px; margin-bottom: 10px; }
+  .page table { border-collapse: collapse; width: 100%; font-size: 9px; }
+  .page th, .page td { border: 1px solid var(--line); padding: 3px 5px; text-align: left; }
+  .page th { background: var(--soft); }
+  .minicc { display: inline-block; width: 9px; height: 9px; border-radius: 2px; vertical-align: -1px; }
+  .page .pagenum { text-align: right; color: #aaa; font-size: 8px; margin-top: 10px; }
+  .page .band { background: var(--nl-blue); color: #fff; font-size: 10px; font-weight: 700; padding: 3px 6px; margin: 10px 0 6px; }
+  .page .qa { margin-bottom: 7px; }
+  .page .qa b { display: block; }
+  .pagelabel { text-align: center; font-size: 11px; color: var(--muted); margin-top: 6px; }
+
+  .voet ul { margin: 8px 0 0 18px; font-size: 13.5px; color: #333; }
+  .voet li { margin-bottom: 6px; }
+  code { background: var(--soft); border: 1px solid var(--line); padding: 0 4px; font-size: 12px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Reisadviezen-buddy</h1>
+  <div class="sub">Mockup · uitdraai van meerdere landen naar Excel &amp; PDF</div>
+</header>
+<div class="mock-banner">⚠️ Mockup — nog niet gebouwd. Doel: als redacteur in één keer een nette uitdraai van een zelfgekozen landengroep (bijv. de GOF-landen) maken en doorsturen. Voorbeelddata hieronder is echt opgehaald (Ethiopië, Kenia, Oeganda · VK/Duitsland/Frankrijk).</div>
+<main>
+
+<section>
+  <h2><span class="step">1</span> Landen &amp; velden kiezen</h2>
+  <p class="uitleg">Een nieuw tabblad <b>“Uitdraai”</b>. Je zoekt landen bij elkaar (of laadt een opgeslagen groep), kiest welke bronnen en thema’s mee moeten, en klikt op Excel of PDF. Een groep kun je bewaren en hergebruiken — zo staat “GOF-landen” er de volgende keer meteen.</p>
+  <div class="picker">
+    <label>Landen in deze uitdraai</label>
+    <div class="chips">
+      <span class="chip"><img class="vlag" src="https://flagcdn.com/w40/et.png" alt=""> Ethiopië <span class="x">✕</span></span>
+      <span class="chip"><img class="vlag" src="https://flagcdn.com/w40/ke.png" alt=""> Kenia <span class="x">✕</span></span>
+      <span class="chip"><img class="vlag" src="https://flagcdn.com/w40/ug.png" alt=""> Oeganda <span class="x">✕</span></span>
+      <span class="chip"><img class="vlag" src="https://flagcdn.com/w40/so.png" alt=""> Somalië <span class="x">✕</span></span>
+      <span class="chip"><img class="vlag" src="https://flagcdn.com/w40/ss.png" alt=""> Zuid-Soedan <span class="x">✕</span></span>
+      <span class="chip add">+ land toevoegen</span>
+    </div>
+    <div class="grouprow">
+      <span class="savedgroup">📁 Groep: <b>GOF-landen</b></span>
+      <select><option>Opgeslagen groep laden…</option><option>GOF-landen</option><option>Sahel</option><option>Volglijst overnemen</option></select>
+      <button class="chip add" style="border-radius:4px">💾 Deze selectie bewaren als groep</button>
+    </div>
+    <div class="optrow">
+      <div class="opt"><b>Bronnen</b>
+        <div class="seg"><span class="on">Alle 17</span><span>Kies zelf…</span></div>
+      </div>
+      <div class="opt"><b>Thema’s</b>
+        <div class="seg"><span class="on">Alle thema’s</span><span>Kies zelf…</span></div>
+      </div>
+      <div class="opt"><b>Taal van bronteksten</b>
+        <div class="seg"><span class="on">Nederlands</span><span>Origineel</span><span>Beide</span></div>
+      </div>
+      <div class="opt"><b>Inhoud</b>
+        <div class="seg"><span class="on">Kleuren + thematekst</span><span>Alleen kleuren</span></div>
+      </div>
+    </div>
+    <div class="exportbtns">
+      <button class="btn-xl excel">⬇ Excel (.xlsx) <small>· opmaak + kleuren</small></button>
+      <button class="btn-xl pdf">⬇ PDF <small>· printklaar rapport</small></button>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="step">2</span> Excel-uitdraai (.xlsx)</h2>
+  <p class="uitleg">Een echt Excel-bestand met opgemaakte kleurcellen, bevroren kopregel en meerdere bladen. Blad 1 is het overzicht om snel te scannen; blad 2 heeft per thema wat elke bron precies zegt — het inhoudelijke werk waar je als redacteur op vergelijkt.</p>
+  <div class="xlsx-frame">
+    <div class="xlsx-bar">📊 Reisadviezen_GOF-landen_2026-07-20.xlsx</div>
+    <div class="xlsx-tabs">
+      <div class="xlsx-tab on">Kleurcodes-overzicht</div>
+      <div class="xlsx-tab">Per thema — inhoud</div>
+      <div class="xlsx-tab">Toelichting &amp; bronnen</div>
+    </div>
+    <div class="xlsx-scroll">
+      <table class="grid">
+        <thead>
+          <tr>
+            <th>Land</th><th>🇳🇱 NL (NWW)</th><th>🇬🇧 VK</th><th>🇩🇪 Duitsland</th><th>🇫🇷 Frankrijk</th>
+            <th>Hoogste afwijking</th><th>NL bijgewerkt</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="country"><img class="vlag" src="https://flagcdn.com/w40/et.png" alt=""> Ethiopië</td>
+            <td class="cc geel">Geel</td><td class="cc groen">Groen</td><td class="cc groen">Groen</td><td class="cc rood">Rood (4)</td>
+            <td>FR strenger (rood vs NL geel)</td><td>10-02-2026</td></tr>
+          <tr><td class="country"><img class="vlag" src="https://flagcdn.com/w40/ke.png" alt=""> Kenia</td>
+            <td class="cc geel">Geel</td><td class="cc groen">Groen</td><td class="cc groen">Groen</td><td class="cc geel">Geel (2)</td>
+            <td>—</td><td>18-03-2026</td></tr>
+          <tr><td class="country"><img class="vlag" src="https://flagcdn.com/w40/ug.png" alt=""> Oeganda</td>
+            <td class="cc groen">Groen</td><td class="cc groen">Groen</td><td class="cc groen">Groen</td><td class="cc geel">Geel (2)</td>
+            <td>FR iets strenger</td><td>02-06-2026</td></tr>
+          <tr><td class="country"><img class="vlag" src="https://flagcdn.com/w40/so.png" alt=""> Somalië</td>
+            <td class="cc oranje">Oranje</td><td class="cc rood">Rood (4)</td><td class="cc rood">Rood (4)</td><td class="cc rood">Rood (4)</td>
+            <td>Allen strenger dan NL</td><td>21-01-2026</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <p class="pagelabel">▲ Blad 1 — kleuren als échte celopmaak (sorteer/filter werkt gewoon in Excel)</p>
+
+  <div class="xlsx-frame" style="margin-top:20px">
+    <div class="xlsx-bar">📊 Reisadviezen_GOF-landen_2026-07-20.xlsx</div>
+    <div class="xlsx-tabs">
+      <div class="xlsx-tab">Kleurcodes-overzicht</div>
+      <div class="xlsx-tab on">Per thema — inhoud</div>
+      <div class="xlsx-tab">Toelichting &amp; bronnen</div>
+    </div>
+    <div class="xlsx-scroll">
+      <table class="grid">
+        <thead><tr><th>Land</th><th>Bron</th><th>Niveau</th><th>Wat de bron zegt</th></tr></thead>
+        <tbody>
+          <tr class="theme-band"><td colspan="4">Thema: Veiligheid &amp; conflict</td></tr>
+          <tr><td class="country">Ethiopië</td><td class="src-cell">🇩🇪 Duitsland</td>
+            <td><span class="lvlwrap"><span class="sq groen"></span>Groen (1)</span></td>
+            <td class="txt">Er wordt gewaarschuwd voor reizen naar de regio’s Amhara, Benishangul-Gumuz, Gambela en Oromia wegens gewapende conflicten en ontvoeringsrisico.</td></tr>
+          <tr><td class="country">Ethiopië</td><td class="src-cell">🇫🇷 Frankrijk</td>
+            <td><span class="lvlwrap"><span class="sq rood"></span>Rood (4)</span></td>
+            <td class="txt">Formeel afgeraden (rouge): reizen naar grote delen van het land worden ontraden wegens de veiligheidssituatie en spanningen in Amhara en Oromia.</td></tr>
+          <tr><td class="country">Kenia</td><td class="src-cell">🇩🇪 Duitsland</td>
+            <td><span class="lvlwrap"><span class="sq groen"></span>Groen (1)</span></td>
+            <td class="txt">Rond 7 juli (Saba-Saba-dag) moet in Nairobi en andere steden rekening worden gehouden met demonstraties; vermijd mensenmenigten.</td></tr>
+          <tr><td class="country">Kenia</td><td class="src-cell">🇬🇧 VK</td>
+            <td><span class="lvlwrap"><span class="sq groen"></span>Groen (1)</span></td>
+            <td class="muted-cell">Alleen regionale waarschuwingen (grensgebied Somalië); landelijk geen afrader.</td></tr>
+          <tr><td class="country">Oeganda</td><td class="src-cell">🇩🇪 Duitsland</td>
+            <td><span class="lvlwrap"><span class="sq groen"></span>Groen (1)</span></td>
+            <td class="txt">Van niet-noodzakelijke reizen naar het Semliki-Nationalpark wordt dringend afgeraden wegens gewapende groepen in het grensgebied.</td></tr>
+          <tr class="theme-band"><td colspan="4">Thema: Inreis &amp; grenzen</td></tr>
+          <tr><td class="country">Kenia</td><td class="src-cell">🇬🇧 VK</td>
+            <td><span class="lvlwrap"><span class="sq groen"></span>Groen (1)</span></td>
+            <td class="txt">eTA (electronic travel authorisation) verplicht vóór vertrek; paspoort minimaal 6 maanden geldig.</td></tr>
+          <tr><td class="country">Ethiopië</td><td class="src-cell">🇫🇷 Frankrijk</td>
+            <td><span class="lvlwrap"><span class="sq rood"></span>Rood (4)</span></td>
+            <td class="txt">Visum verplicht (e-visa); let op gewijzigde regels voor doorreis via Addis Abeba.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <p class="pagelabel">▲ Blad 2 — per thema gegroepeerd; lege/niet-genoemde combinaties vallen weg. Tekst in de gekozen taal (hier NL-vertaling).</p>
+</section>
+
+<section>
+  <h2><span class="step">3</span> PDF-uitdraai</h2>
+  <p class="uitleg">Een printklaar rapport in NederlandWereldwijd-stijl: voorblad met de kleurcodematrix van alle landen, daarna per land een pagina met de thema-inhoud. Handig om te mailen of als bijlage bij een nota te voegen.</p>
+  <div class="pdfwrap">
+    <div>
+      <div class="page">
+        <h3>Reisadviezen — GOF-landen</h3>
+        <div class="meta">Vergelijking NL ↔ 16 buitenlandse bronnen · uitdraai 20-07-2026 · Reisadviezen-buddy</div>
+        <table>
+          <tr><th>Land</th><th>NL</th><th>VK</th><th>DE</th><th>FR</th></tr>
+          <tr><td>Ethiopië</td><td><span class="minicc" style="background:#f9e11e"></span></td><td><span class="minicc" style="background:#39870c"></span></td><td><span class="minicc" style="background:#39870c"></span></td><td><span class="minicc" style="background:#cd1719"></span></td></tr>
+          <tr><td>Kenia</td><td><span class="minicc" style="background:#f9e11e"></span></td><td><span class="minicc" style="background:#39870c"></span></td><td><span class="minicc" style="background:#39870c"></span></td><td><span class="minicc" style="background:#f9e11e"></span></td></tr>
+          <tr><td>Oeganda</td><td><span class="minicc" style="background:#39870c"></span></td><td><span class="minicc" style="background:#39870c"></span></td><td><span class="minicc" style="background:#39870c"></span></td><td><span class="minicc" style="background:#f9e11e"></span></td></tr>
+          <tr><td>Somalië</td><td><span class="minicc" style="background:#e17000"></span></td><td><span class="minicc" style="background:#cd1719"></span></td><td><span class="minicc" style="background:#cd1719"></span></td><td><span class="minicc" style="background:#cd1719"></span></td></tr>
+        </table>
+        <div class="band">Legenda &amp; afwijkingen</div>
+        <div class="qa" style="font-size:9px">🟩 groen · 🟨 geel · 🟧 oranje · 🟥 rood. Afwijkingen t.o.v. NL worden per land uitgelicht.</div>
+        <div class="pagenum">1 / 5</div>
+      </div>
+      <div class="pagelabel">Voorblad — matrix</div>
+    </div>
+    <div>
+      <div class="page">
+        <h3><img class="vlag" src="https://flagcdn.com/w40/et.png" alt=""> Ethiopië</h3>
+        <div class="meta">NL: Geel · VK: Groen · DE: Groen · FR: Rood — NL laatst bijgewerkt 10-02-2026</div>
+        <div class="band">Veiligheid &amp; conflict</div>
+        <div class="qa"><b>🇩🇪 Duitsland (groen)</b>Waarschuwing voor Amhara, Benishangul-Gumuz, Gambela en Oromia wegens gewapend conflict.</div>
+        <div class="qa"><b>🇫🇷 Frankrijk (rood)</b>Reizen naar grote delen van het land formeel afgeraden.</div>
+        <div class="band">Inreis &amp; grenzen</div>
+        <div class="qa"><b>🇫🇷 Frankrijk</b>Visum verplicht (e-visa); let op doorreisregels via Addis Abeba.</div>
+        <div class="pagenum">2 / 5</div>
+      </div>
+      <div class="pagelabel">Per land — één pagina</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Zo bouw ik het (na jouw akkoord)</h2>
+  <div class="voet">
+    <ul>
+      <li><b>Nieuw tabblad “Uitdraai”</b> met multi-landselectie (hergebruikt de bestaande combobox + volglijst), plus opslaan/laden van benoemde groepen in <code>localStorage</code> — “GOF-landen” staat er dan permanent.</li>
+      <li><b>Excel = een écht .xlsx-bestand</b>, in de browser gegenereerd zonder externe bibliotheek: gekleurde cellen, bevroren kopregel, kolombreedtes, tekstterugloop en drie bladen. Sorteren/filteren werkt gewoon in Excel.</li>
+      <li><b>PDF</b> via een eigen printopmaak (voorblad-matrix + pagina per land) en “opslaan als PDF” — pixelperfect in NWW-huisstijl, geen externe dienst.</li>
+      <li>Beide gebruiken exact de data die de tool al ophaalt (kleurniveaus + themateksten), in de door jou gekozen taal, met een voettekst die bron-URL’s en de ophaaldatum vermeldt.</li>
+      <li>Ophalen van veel landen gebeurt met de nieuwe veerkrachtige proxy-laag (retry + gedeeltelijke resultaten), met een voortgangsbalkje “land 3 / 12”.</li>
+    </ul>
+  </div>
+</section>
+
+</main>
+</body>
+</html>
