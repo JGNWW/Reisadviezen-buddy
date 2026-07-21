@@ -1192,6 +1192,12 @@ function renderSummaryTable(nl, okSources, naSources = []) {
       class: 'stale-tag',
       title: `Live ophalen lukte niet; dit is de laatst opgeslagen versie (snapshot van ${fmtDateShort(s.snapshotDate) || 'onbekende datum'}).`,
     }, `📸 snapshot ${fmtDateShort(s.snapshotDate)}`));
+    // Kleur afgeleid uit de officiële zonekaart van de bron (preciezer dan
+    // tekst-parsing) — zichtbaar gemarkeerd zodat de redacteur de herkomst kent.
+    if (s.colorSource === 'kaart') cell.append(' ', el('span', {
+      class: 'map-tag',
+      title: `Kleurcode afgeleid uit de officiële zonekaart van de bron${s.mapColorDate ? ` (bemonsterd ${fmtDateShort(s.mapColorDate)})` : ''}.`,
+    }, '🗺️ kaart'));
     return cell;
   };
 

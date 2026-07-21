@@ -81,6 +81,57 @@ async function snapshotFallback(iso, sid) {
   }
 }
 
+// Kaart-kleuren: de wekelijkse map-colors CI leidt per land de kleurcode af uit
+// de officiële zonekaart van bronnen die er een publiceren (France Diplomatie,
+// FCDO) en commit dat naar worker/data/mapcolors/. Dat is preciezer dan
+// tekst-parsing, dus gebruiken we het als kleur-override op het live/snapshot-
+// resultaat (inhoud/thema's blijven van de live-bron).
+const MAPCOLOR_BASE = 'https://raw.githubusercontent.com/JGNWW/Reisadviezen-buddy/main/worker/data/mapcolors';
+
+async function mapColorsFor(iso) {
+  try {
+    const r = await fetch(`${MAPCOLOR_BASE}/${iso}.json`, {
+      headers: { 'User-Agent': 'ReisadviezenBuddy/1.0' },
+      cf: { cacheTtl: 900, cacheEverything: true },
+    });
+    if (!r.ok) return {};
+    const d = await r.json();
+    return d?.sources || {};
+  } catch {
+    return {};
+  }
+}
+
+/**
+ * Verfijnt een advies met de uit de zonekaart afgeleide waardering. Op een
+ * volwaardig advies (met thema's); inhoud/thema's blijven ongemoeid.
+ *
+ *   - Het regionale maximum wordt altijd meegenomen (nooit verlaagd): de
+ *     verzadigde zones op een kaart zijn betrouwbaar te lezen.
+ *   - De landelijke basislijn/kleur wordt alleen overschreven als de kaart
+ *     daarvoor betrouwbaar is (mc.trustBaseline) — d.w.z. strak op het land
+ *     gecropt (France). Voor bronnen met veel witte marge/legenda (FCDO) blijft
+ *     de landelijke kleur die van de bron zelf; de kaart verhoogt daar enkel
+ *     het regionale maximum.
+ */
+function applyMapColor(out, mc) {
+  if (!out || !mc || mc.baselineLevel == null || !out.themes?.length) return out;
+
+  const reg = Math.max(out.regionalMaxLevel || 0, mc.regionalMaxLevel || 0);
+  if (reg) out.regionalMaxLevel = reg;
+  if (reg > (out.level || 0)) out.hasRegionalWarnings = true;
+
+  if (mc.trustBaseline) {
+    out.level = mc.baselineLevel;
+    out.color = mc.color;
+    out.levelLabel = mc.levelLabel || out.levelLabel;
+    out.assessmentStatus = 'ok';
+    out.colorSource = 'kaart';
+    out.mapColorDate = mc.capturedAt || null;
+  }
+  return out;
+}
+
 /** Vertaalt (indien gevraagd) de thema's van een advies naar de doeltaal. */
 async function applyTranslation(adv, translateTo) {
   if (!translateTo || adv.lang === translateTo || !adv.themes?.length) return adv;
@@ -124,8 +175,13 @@ export default {
           .filter((s) => ADAPTERS[s]);
         const translateTo = url.searchParams.get('translate'); // bijv. 'nl'
 
+        // Kaart-afgeleide kleuren voor dit land (één gecachete fetch, toegepast
+        // als override op elke bron die een zonekaart heeft).
+        const mcAll = await mapColorsFor(iso);
         const results = await Promise.all(
           requested.map(async (s) => {
+            const mc = mcAll?.[s];
+            const out = await (async () => {
             const id = sourceId(iso, s);
             // Klikbare bron-URL, ook als de fetch straks faalt of geen mapping
             // bestaat — zo kan de redacteur die ene bron altijd zelf nakijken.
@@ -174,6 +230,9 @@ export default {
               }
               return { source: s, error: String(e.message || e), label: ADAPTERS[s].meta.label, url: srcUrl };
             }
+            })();
+            // Kleur preciezer maken met de kaart-afgeleide waardering.
+            return applyMapColor(out, mc);
           })
         );
 

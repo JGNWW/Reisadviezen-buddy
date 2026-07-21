@@ -1,0 +1,80 @@
+name: Kaart-kleuren (map-colors)
+
+# Leidt per land de kleurcode af uit de officiële zonekaart van bronnen die
+# er een publiceren (France Diplomatie, FCDO) en commit worker/data/mapcolors/.
+# De Worker past dit toe als kleur-override zodat de waardering strookt met de
+# kaart. Decoderen vereist een echte browser (Workers kunnen dat niet), dus dit
+# draait hier met Playwright-Chromium: wekelijks + handmatig, plus een
+# proefrun bij wijziging van script/workflow.
+on:
+  schedule:
+    - cron: '35 3 * * 1' # maandag 03:35 UTC — volledige set (na de snapshots)
+  workflow_dispatch:
+    inputs:
+      countries:
+        description: 'Alleen deze ISO3-codes (komma-gescheiden), leeg = alle'
+        required: false
+        default: ''
+      sources:
+        description: 'Alleen deze bronnen (fr,uk), leeg = alle'
+        required: false
+        default: ''
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/map-colors.yml'
+      - 'worker/scripts/map-colors.mjs'
+      - 'worker/scripts/lib/sample-map.mjs'
+      - 'worker/src/analysis/map-palette.js'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: map-colors
+  cancel-in-progress: false
+
+jobs:
+  sample:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    defaults:
+      run:
+        working-directory: worker
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: worker/package-lock.json
+
+      - name: Dependencies installeren
+        run: npm ci
+
+      - name: Playwright Chromium installeren
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+
+      - name: Kaart-kleuren bemonsteren
+        run: node scripts/map-colors.mjs
+        env:
+          # dispatch: gekozen lijst · push (merge naar main) + cron: alle landen
+          COUNTRIES: ${{ inputs.countries }}
+          SOURCES: ${{ inputs.sources }}
+
+      - name: Wijzigingen committen
+        if: github.ref == 'refs/heads/main'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/mapcolors
+          if ! git diff --cached --quiet; then
+            git commit -m "Kaart-kleuren $(date -u +%Y-%m-%dT%H:%M)"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi

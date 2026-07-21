@@ -18,6 +18,7 @@
  * Niveau-interpretatie gebeurt — zoals bij alle bronnen — in de gedeelde
  * engine (worker/src/analysis/).
  */
+import { parse } from 'node-html-parser';
 import { getText } from '../lib/fetch.js';
 import { splitByHeadings, absolutiseLinks, htmlToText } from '../lib/html.js';
 import { classifyTheme } from '../lib/themes.js';
@@ -33,6 +34,28 @@ export const meta = { id: 'fr', label: 'Frankrijk (France Diplomatie)', flag: '�
 /** Per-land pagina-URL zonder ophalen — voor een klikbare link ook als de fetch faalt. */
 export function sourceUrl(slug) {
   return slug ? `${BASE}/${slug}/conseils-aux-voyageurs-securite` : `${SITE}/fr/conseils-aux-voyageurs/`;
+}
+
+/**
+ * URL van de "carte des zones de vigilance" (een statische JPG onder
+ * /files/files/cav/{slug}/..._fcv...jpg). Staat in de securite-HTML in de
+ * sectie "Zones de vigilance"; de kaart-kleurbemonstering (map-colors CI)
+ * leidt hier de kleurcode uit af. Geeft null als er geen zonekaart is.
+ */
+export async function resolveMapUrl(slug) {
+  if (!slug) return null;
+  const html = await getText(`${BASE}/${slug}/conseils-aux-voyageurs-securite`);
+  if (!html) return null;
+  const root = parse(html);
+  // De zonekaart staat in de map /files/files/cav/{slug}/ als JPG/PNG. Meestal
+  // met "fcv" in de naam ("fiche conseils voyageurs"), maar niet altijd — dus
+  // accepteer elke afbeelding in die landmap en geef voorrang aan een fcv-naam.
+  const cands = root.querySelectorAll('img')
+    .map((im) => im.getAttribute('src') || '')
+    .filter((s) => /\/cav\//i.test(s) && /\.(jpe?g|png)(\?|$)/i.test(s));
+  let src = cands.find((s) => /fcv/i.test(s)) || cands[0] || null;
+  if (src && src.startsWith('/')) src = SITE + src;
+  return src;
 }
 
 // Ankerkop voor de oude paginastructuur (terugvalpad).
@@ -134,7 +157,7 @@ export async function getAdvisory(slug) {
     regions: assessment.regions,
     confidence: assessment.confidence,
     assessmentStatus: assessment.assessmentStatus,
-    hasMap: false,
+    hasMap: true,
     themes,
     fullText: themes.map((t) => t.text).join('\n'),
   };
