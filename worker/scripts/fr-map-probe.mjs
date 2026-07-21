@@ -110,27 +110,67 @@ async function main() {
       await page.waitForTimeout(2500);
 
       const info = await inspect(page);
-      report[iso] = { url: u, ...info };
 
-      // Volledige pagina-screenshot voor handmatige controle.
-      await page.screenshot({ path: path.join(OUT, `${iso}.png`), fullPage: true }).catch(() => {});
+      // KERN: de zonekaart (fcv-JPG) pixel-samplen. Het beeld staat op
+      // dezelfde origin als de pagina → canvas.getImageData tainted niet.
+      // We classificeren elke pixel op tint (HSV) i.p.v. exacte hex, want
+      // JPEG-compressie verschuift kleuren licht.
+      const mapImg = (info.vigilance?.imgs || []).find((i) => /\/cav\//i.test(i.src)) || info.allImgs[0];
+      let pixels = null;
+      if (mapImg) {
+        pixels = await page.evaluate((src) => {
+          const el = [...document.querySelectorAll('img')].find((i) => (i.currentSrc || i.src) === src);
+          if (!el || !el.naturalWidth) return { error: 'img niet vindbaar/geladen' };
+          const w = el.naturalWidth, h = el.naturalHeight;
+          const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+          const cx = cv.getContext('2d'); cx.drawImage(el, 0, 0);
+          let data; try { data = cx.getImageData(0, 0, w, h).data; } catch (e) { return { error: 'taint: ' + e.message }; }
+          const cls = { rood: 0, oranje: 0, geel: 0, groen: 0, wit: 0, blauw: 0, grijs: 0, overig: 0 };
+          let total = 0;
+          for (let y = 0; y < h; y += 2) for (let x = 0; x < w; x += 2) {
+            const i = (y * w + x) * 4, r = data[i], g = data[i + 1], b = data[i + 2], a = data[i + 3];
+            if (a < 128) continue; total++;
+            const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn;
+            const v = mx / 255, s = mx === 0 ? 0 : d / mx;
+            let hh = 0; if (d !== 0) { if (mx === r) hh = 60 * (((g - b) / d) % 6); else if (mx === g) hh = 60 * ((b - r) / d + 2); else hh = 60 * ((r - g) / d + 4); } if (hh < 0) hh += 360;
+            if (s < 0.18) { if (v > 0.82) cls.wit++; else cls.grijs++; continue; }
+            if (hh >= 185 && hh <= 255) { cls.blauw++; continue; }
+            if (hh < 20 || hh >= 345) cls.rood++;
+            else if (hh < 45) cls.oranje++;
+            else if (hh < 70) cls.geel++;
+            else if (hh < 170) cls.groen++;
+            else cls.overig++;
+          }
+          return { w, h, total, cls };
+        }, mapImg.src);
+      }
+      report[iso] = { url: u, mapSrc: mapImg?.src || null, pixels, vigilance: info.vigilance?.heading || null };
+
+      // De geanalyseerde kaart als los bestand in het artifact (exacte input).
+      try {
+        const resp = await fetch(mapImg.src);
+        if (resp.ok) writeFileSync(path.join(OUT, `${iso}-fcv.jpg`), Buffer.from(await resp.arrayBuffer()));
+      } catch { /* download optioneel */ }
+      await page.screenshot({ path: path.join(OUT, `${iso}-page.png`), fullPage: true }).catch(() => {});
 
       console.log(`\n=== ${iso} (${slug}) ===`);
       console.log(`  titel: ${info.title}`);
-      console.log(`  SVG's met fills: ${info.svgs.length}  canvas: ${info.canvases.length}  iframes: ${info.iframes.length}`);
-      for (const s of info.svgs) {
-        const top = Object.entries(s.fills).sort((a, b) => b[1] - a[1]).slice(0, 12);
-        console.log(`    svg ${s.rect.w}x${s.rect.h} fills: ${top.map(([k, v]) => `${k}×${v}`).join('  ')}`);
-      }
-      console.log(`  afbeeldingen ≥120px: ${info.allImgs.length}`);
-      for (const i of info.allImgs) console.log(`    img ${i.rect.w}x${i.rect.h} alt="${i.alt.slice(0, 40)}" src=${i.src.slice(0, 100)}`);
-      console.log(`  background-image divs: ${info.bgs.length}`);
-      for (const b of info.bgs) console.log(`    bg ${b.rect.w}x${b.rect.h} class="${b.cls.slice(0, 40)}" ${b.bg}`);
-      if (info.vigilance) {
-        console.log(`  "vigilance"-kop: "${info.vigilance.heading}" — ${info.vigilance.imgs.length} img(s) in sectie`);
-        for (const i of info.vigilance.imgs) console.log(`    zone-img ${i.rect.w}x${i.rect.h} alt="${i.alt}" src=${i.src}`);
-      } else {
-        console.log('  geen "vigilance"/"zone"-kop gevonden');
+      console.log(`  zonekaart: ${mapImg ? mapImg.src : 'NIET GEVONDEN'}`);
+      if (pixels?.error) console.log(`  pixel-analyse FOUT: ${pixels.error}`);
+      else if (pixels) {
+        const c = pixels.cls, t = pixels.total || 1;
+        const pct = (n) => `${(100 * n / t).toFixed(1)}%`;
+        // "land" = alles behalve zee (blauw) en kader/tekst (grijs/wit-buiten).
+        const land = c.rood + c.oranje + c.geel + c.groen + c.wit;
+        const lp = (n) => `${(100 * n / (land || 1)).toFixed(1)}%`;
+        console.log(`  totaal ${pixels.w}x${pixels.h} · rood ${pct(c.rood)}  oranje ${pct(c.oranje)}  geel ${pct(c.geel)}  wit ${pct(c.wit)}  blauw(zee) ${pct(c.blauw)}  grijs ${pct(c.grijs)}`);
+        console.log(`  land-relatief: rood ${lp(c.rood)}  oranje ${lp(c.oranje)}  geel ${lp(c.geel)}  wit ${lp(c.wit)}`);
+        // Afgeleide kleur: ergste zone boven drempel = regionaal maximum;
+        // grootste land-klasse = landelijke basislijn.
+        const T = 0.015 * land;
+        const regMax = c.rood > T ? 'ROOD' : c.oranje > T ? 'ORANJE' : c.geel > T ? 'GEEL' : 'GROEN/normaal';
+        const base = Object.entries({ wit: c.wit, geel: c.geel, oranje: c.oranje, rood: c.rood }).sort((a, b) => b[1] - a[1])[0][0];
+        console.log(`  → regionaal max: ${regMax}   landelijke basislijn (dominante land-klasse): ${base}`);
       }
     } catch (e) {
       report[iso] = { url: u, error: String(e.message).slice(0, 120) };
