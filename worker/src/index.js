@@ -133,10 +133,11 @@ export default {
               // URL scrapen maar in een gedeelde feed zoeken (VS-RSS).
               const adv = await ADAPTERS[s].getAdvisory(id, { iso, en: rec.en, nl: rec.nl });
               if (!adv) {
-                // Bron gaf niets (bijv. geblokkeerd zonder exceptie) → snapshot
-                // serveren; browser-snapshots (DK/NO/CH) komen zo alsnog binnen.
+                // Bron gaf niets (bijv. geblokkeerd zonder exceptie) → een
+                // snapshot mét bruikbaar niveau serveren; een niveauloze
+                // (onzekere) snapshot voegt niets toe en zou alleen ruis geven.
                 const snap = await snapshotFallback(iso, s);
-                if (snap) {
+                if (snap && snap.level != null) {
                   snap.lang = snap.lang || ADAPTERS[s].meta.lang || 'en';
                   return await applyTranslation(snap, translateTo);
                 }
