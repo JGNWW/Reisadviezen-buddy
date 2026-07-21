@@ -47,10 +47,13 @@ export async function resolveMapUrl(slug) {
   const html = await getText(`${BASE}/${slug}/conseils-aux-voyageurs-securite`);
   if (!html) return null;
   const root = parse(html);
+  // De zonekaart staat in de map /files/files/cav/{slug}/ als JPG/PNG. Meestal
+  // met "fcv" in de naam ("fiche conseils voyageurs"), maar niet altijd — dus
+  // accepteer elke afbeelding in die landmap en geef voorrang aan een fcv-naam.
   const cands = root.querySelectorAll('img')
     .map((im) => im.getAttribute('src') || '')
-    .filter((s) => /\/cav\//i.test(s) && /fcv/i.test(s) && /\.(jpe?g|png)(\?|$)/i.test(s));
-  let src = cands[0] || null;
+    .filter((s) => /\/cav\//i.test(s) && /\.(jpe?g|png)(\?|$)/i.test(s));
+  let src = cands.find((s) => /fcv/i.test(s)) || cands[0] || null;
   if (src && src.startsWith('/')) src = SITE + src;
   return src;
 }

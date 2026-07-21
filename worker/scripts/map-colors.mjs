@@ -87,6 +87,12 @@ async function main() {
         changed = true;
         stats.saved++;
         console.log(`  ${iso}/${sid}: ${a.color}${a.hasRegionalWarnings ? ` (regio ${a.regionalColor})` : ''} · basis niveau ${a.baselineLevel}`);
+        if (process.env.DIAG) {
+          const sh = a.shares;
+          console.log(`    ↳ ${mapUrl}`);
+          console.log(`    ↳ aandeel: rood ${(sh.rood * 100).toFixed(1)}% oranje ${(sh.oranje * 100).toFixed(1)}% geel ${(sh.geel * 100).toFixed(1)}% wit ${(sh.wit * 100).toFixed(1)}%`);
+          console.log(`    ↳ top-kleuren: ${(sample.top || []).map((t) => `rgb(${t.rgb.join(',')})×${t.n}`).join('  ')}`);
+        }
       } catch (e) {
         stats.behouden++;
         console.log(`  ${iso}/${sid}: fout (${String(e.message).slice(0, 60)}) — vorige blijft`);
