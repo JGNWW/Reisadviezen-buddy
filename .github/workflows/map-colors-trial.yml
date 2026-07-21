@@ -1,0 +1,50 @@
+name: Kaart-kleuren PROEF (wegwerp)
+
+# Tijdelijke validatie van de map-colors-bemonstering op de feature-branch,
+# ZONDER naar main te committen: draait de echte map-colors.mjs op een
+# representatieve set (fr altijd + uk-kaartlanden) en uploadt het resultaat als
+# artifact. Wordt vóór de merge verwijderd.
+on:
+  push:
+    branches: [claude/travel-advisory-comparison-3oipdz]
+    paths:
+      - '.github/workflows/map-colors-trial.yml'
+      - 'worker/scripts/map-colors.mjs'
+      - 'worker/scripts/lib/sample-map.mjs'
+      - 'worker/src/analysis/map-palette.js'
+      - 'worker/src/adapters/france.js'
+
+permissions:
+  contents: read
+
+jobs:
+  trial:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: worker
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: worker/package-lock.json
+      - name: Dependencies installeren
+        run: npm ci
+      - name: Playwright Chromium installeren
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Proef-bemonstering (fr + uk-kaartlanden)
+        run: node scripts/map-colors.mjs
+        env:
+          COUNTRIES: IRQ,UKR,MLI,THA,JPN,RUS,ISR,LBN,COL,EGY,AFG,DEU,NLD
+      - name: Resultaat uploaden
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: map-colors-trial
+          path: worker/data/mapcolors/
+          if-no-files-found: warn
