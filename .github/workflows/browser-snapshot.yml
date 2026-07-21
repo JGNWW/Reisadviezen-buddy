@@ -10,13 +10,20 @@ name: Browser-snapshots (DK/NO/CH)
 # optionele landenlijst voor gerichte verversing.
 on:
   schedule:
-    - cron: '15 3 * * 1' # elke maandag 03:15 UTC
+    - cron: '15 3 * * 1' # elke maandag 03:15 UTC — volledige set
   workflow_dispatch:
     inputs:
       countries:
         description: 'Alleen deze ISO3-codes (komma-gescheiden), leeg = alle'
         required: false
         default: ''
+  # Bij wijziging van script/workflow zelf: een beperkte proefrun (Golfstaten)
+  # zodat elke aanpassing meteen end-to-end gevalideerd is.
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/browser-snapshot.yml'
+      - 'worker/scripts/browser-snapshot.mjs'
 
 permissions:
   contents: write
@@ -56,7 +63,8 @@ jobs:
       - name: Browser-snapshots maken
         run: node scripts/browser-snapshot.mjs
         env:
-          COUNTRIES: ${{ inputs.countries }}
+          # dispatch: gekozen lijst · push (proefrun): Golfstaten · cron: alles
+          COUNTRIES: ${{ github.event_name == 'push' && 'BHR,IRQ,JOR,KWT,OMN,QAT,SAU,ARE' || inputs.countries }}
 
       - name: Wijzigingen committen
         run: |
