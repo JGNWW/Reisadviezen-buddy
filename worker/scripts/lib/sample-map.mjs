@@ -52,7 +52,13 @@ export async function sampleMapImage(page, imageUrl) {
       if (hh >= 185 && hh <= 255) { cls.blauw++; continue; }
       if (hh < 20 || hh >= 345) cls.rood++;
       else if (hh < 45) cls.oranje++;
-      else if (hh < 70) cls.geel++;
+      // Geel-bereik: France's oudere kaartsjabloon kleurt "geen bijzondere
+      // waakzaamheid"-land in een dof olijf (rgb≈208,208,112, waarde≈0.81),
+      // terwijl échte "vigilance renforcée" fel/helder geel is (waarde≈0.94).
+      // Alleen helder geel telt als advies-geel; dof olijf is kaart-basis =
+      // normaal (als wit geteld) — anders zou een veilig land onterecht geel
+      // worden.
+      else if (hh < 70) { if (v >= 0.88) cls.geel++; else cls.wit++; }
       else if (hh < 170) cls.groen++;
     }
     // Top-kleuren (gemiddelde RGB per bucket) voor diagnose/kalibratie.

@@ -103,22 +103,32 @@ async function mapColorsFor(iso) {
 }
 
 /**
- * Overschrijft de kleur/niveau van een advies met de uit de zonekaart
- * afgeleide waarde. Alleen op een volwaardig advies (met thema's); de
- * inhoud/thema's blijven ongemoeid, alleen de waardering wordt preciezer.
- * Het regionale maximum wordt nooit verlaagd.
+ * Verfijnt een advies met de uit de zonekaart afgeleide waardering. Op een
+ * volwaardig advies (met thema's); inhoud/thema's blijven ongemoeid.
+ *
+ *   - Het regionale maximum wordt altijd meegenomen (nooit verlaagd): de
+ *     verzadigde zones op een kaart zijn betrouwbaar te lezen.
+ *   - De landelijke basislijn/kleur wordt alleen overschreven als de kaart
+ *     daarvoor betrouwbaar is (mc.trustBaseline) — d.w.z. strak op het land
+ *     gecropt (France). Voor bronnen met veel witte marge/legenda (FCDO) blijft
+ *     de landelijke kleur die van de bron zelf; de kaart verhoogt daar enkel
+ *     het regionale maximum.
  */
 function applyMapColor(out, mc) {
   if (!out || !mc || mc.baselineLevel == null || !out.themes?.length) return out;
-  out.level = mc.baselineLevel;
-  out.color = mc.color;
-  out.levelLabel = mc.levelLabel || out.levelLabel;
+
   const reg = Math.max(out.regionalMaxLevel || 0, mc.regionalMaxLevel || 0);
   if (reg) out.regionalMaxLevel = reg;
-  if (mc.hasRegionalWarnings) out.hasRegionalWarnings = true;
-  out.assessmentStatus = 'ok';
-  out.colorSource = 'kaart';
-  out.mapColorDate = mc.capturedAt || null;
+  if (reg > (out.level || 0)) out.hasRegionalWarnings = true;
+
+  if (mc.trustBaseline) {
+    out.level = mc.baselineLevel;
+    out.color = mc.color;
+    out.levelLabel = mc.levelLabel || out.levelLabel;
+    out.assessmentStatus = 'ok';
+    out.colorSource = 'kaart';
+    out.mapColorDate = mc.capturedAt || null;
+  }
   return out;
 }
 

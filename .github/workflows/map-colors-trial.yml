@@ -37,11 +37,10 @@ jobs:
         run: |
           npm install --no-save playwright
           npx playwright install --with-deps chromium
-      - name: Proef-bemonstering (FR veilige landen — safety-check) met diagnose
+      - name: Proef-bemonstering (validatie olijf-fix + UK regionaal) met diagnose
         run: node scripts/map-colors.mjs
         env:
-          COUNTRIES: DEU,NLD,BEL,ESP,USA,GBR,ITA,AUT,CHE,POL,PRT,SWE
-          SOURCES: fr
+          COUNTRIES: DEU,ESP,ITA,NLD,IRQ,UKR,AFG,THA,JPN,LBN
           DIAG: '1'
       - name: Resultaat uploaden
         if: always()

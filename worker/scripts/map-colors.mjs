@@ -32,9 +32,19 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const OUT_DIR = path.join(__dirname, '..', 'data', 'mapcolors');
 
 // Bronnen die een zonekaart publiceren. resolveMapUrl(slug) → kaart-URL|null.
+//
+// trustBaseline: mag de uit de kaart afgeleide landelijke basislijn de
+// bronkleur overschrijven?
+//   fr — ja: de France-kaart is strak op het land gecropt, dus de
+//        kleurverdeling geeft de landelijke basislijn betrouwbaar weer.
+//   uk — nee: de FCDO-kaart is een losse "sheet" met veel witte marge +
+//        legenda, waardoor de basislijn structureel te laag uitvalt. De
+//        (verzadigde) zones zijn wél betrouwbaar, dus de kaart verhoogt bij UK
+//        alleen het regionale maximum; de landelijke kleur blijft die van het
+//        gestructureerde alert_status-veld.
 const MAP_SOURCES = {
-  fr: { adapter: france, label: 'France Diplomatie' },
-  uk: { adapter: uk, label: 'FCDO' },
+  fr: { adapter: france, label: 'France Diplomatie', trustBaseline: true },
+  uk: { adapter: uk, label: 'FCDO', trustBaseline: false },
 };
 
 const round = (n) => Math.round(n * 1000) / 1000;
@@ -78,6 +88,7 @@ async function main() {
           regionalColor: a.regionalColor,
           levelLabel: a.levelLabel,
           hasRegionalWarnings: a.hasRegionalWarnings,
+          trustBaseline: !!MAP_SOURCES[sid].trustBaseline,
           shares: { rood: round(a.shares.rood), oranje: round(a.shares.oranje), geel: round(a.shares.geel), wit: round(a.shares.wit) },
           landPixels: a.landPixels,
           mapUrl,
