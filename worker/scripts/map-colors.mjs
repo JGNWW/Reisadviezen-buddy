@@ -75,7 +75,7 @@ async function main() {
         const mapUrl = await MAP_SOURCES[sid].adapter.resolveMapUrl(slug);
         if (!mapUrl) { stats.geen_kaart++; console.log(`  ${iso}/${sid}: geen kaart`); continue; }
 
-        const sample = await sampleMapImage(page, mapUrl);
+        const sample = await sampleMapImage(page, mapUrl, process.env.DIAG_GRID ? { grid: 32 } : {});
         if (sample.error) { stats.mislukt++; console.log(`  ${iso}/${sid}: bemonstering faalde (${sample.error}) — vorige blijft`); continue; }
 
         const a = deriveMapAssessment(sample.cls);
@@ -103,6 +103,7 @@ async function main() {
           console.log(`    ↳ ${mapUrl}`);
           console.log(`    ↳ aandeel: rood ${(sh.rood * 100).toFixed(1)}% oranje ${(sh.oranje * 100).toFixed(1)}% geel ${(sh.geel * 100).toFixed(1)}% wit ${(sh.wit * 100).toFixed(1)}%`);
           console.log(`    ↳ top-kleuren: ${(sample.top || []).map((t) => `rgb(${t.rgb.join(',')})×${t.n}`).join('  ')}`);
+          if (sample.gridStr) console.log(`    ↳ plattegrond (R=rood O=oranje G=geel g=groen .=wit ~=zee/blauw #=grijs):\n${sample.gridStr.split('\n').map((l) => '      ' + l).join('\n')}`);
         }
       } catch (e) {
         stats.behouden++;
