@@ -127,7 +127,10 @@ export default {
         const results = await Promise.all(
           requested.map(async (s) => {
             const id = sourceId(iso, s);
-            if (!id) return { source: s, unavailable: true, label: ADAPTERS[s].meta.label };
+            // Klikbare bron-URL, ook als de fetch straks faalt of geen mapping
+            // bestaat — zo kan de redacteur die ene bron altijd zelf nakijken.
+            const srcUrl = (() => { try { return ADAPTERS[s].sourceUrl?.(id, { iso, en: rec.en }) || null; } catch { return null; } })();
+            if (!id) return { source: s, unavailable: true, label: ADAPTERS[s].meta.label, url: srcUrl };
             try {
               // Context (ISO3 + Engelse naam) voor adapters die geen per-land
               // URL scrapen maar in een gedeelde feed zoeken (VS-RSS).
@@ -141,7 +144,7 @@ export default {
                   snap.lang = snap.lang || ADAPTERS[s].meta.lang || 'en';
                   return await applyTranslation(snap, translateTo);
                 }
-                return { source: s, unavailable: true, label: ADAPTERS[s].meta.label };
+                return { source: s, unavailable: true, label: ADAPTERS[s].meta.label, url: srcUrl };
               }
               // Live gelukt maar zónder bruikbaar niveau, terwijl de snapshot
               // er wél een heeft (bijv. een SPA-schil die live nauwelijks tekst
@@ -169,7 +172,7 @@ export default {
                 snap.lang = snap.lang || ADAPTERS[s].meta.lang || 'en';
                 return await applyTranslation(snap, translateTo);
               }
-              return { source: s, error: String(e.message || e), label: ADAPTERS[s].meta.label };
+              return { source: s, error: String(e.message || e), label: ADAPTERS[s].meta.label, url: srcUrl };
             }
           })
         );

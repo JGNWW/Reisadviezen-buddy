@@ -612,3 +612,7 @@ h2 .flag-img { width: 30px; height: 22px; vertical-align: -3px; border-radius: 3
 .exp-matrix.compact th:first-child, .exp-matrix.compact td:first-child { text-align: left; }
 .exp-matrix.compact th.wide { min-width: 150px; }
 .exp-ccbox { font-weight: 700; text-align: center; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+/* Bronnen zonder automatisch advies: eerlijke 'n.b.'-rij met bronlink */
+.summary-table tr.na-row td { color: var(--muted); font-style: italic; background: #fafbfc; }
+.summary-table tr.na-row a { font-style: normal; }

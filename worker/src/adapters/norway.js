@@ -21,6 +21,13 @@ const SITE = 'https://www.regjeringen.no';
 
 export const meta = { id: 'no', label: 'Noorwegen (Utenriksdept.)', flag: '🇳🇴', lang: 'no' };
 
+/** Per-land pagina-URL zonder ophalen — voor een klikbare link ook als de fetch faalt. */
+export function sourceUrl(slugId) {
+  const [slug, id] = String(slugId || '').split('/');
+  if (!slug || !id) return `${SITE}/no/tema/utenrikssaker/reiseinformasjon/velg-land/id2414365/`;
+  return `${SITE}/no/tema/utenrikssaker/reiseinformasjon/velg-land/reiseinfo_${slug}/id${id}/`;
+}
+
 // Paginakoppen die geen adviesinhoud zijn.
 const SKIP_HEADING = /du er her|tema\b|kontakt oss|om regjeringen|hovednavigasjon|s[øo]k\b|relatert/i;
 
