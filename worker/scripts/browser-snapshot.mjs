@@ -45,9 +45,17 @@ const SOURCES = {
   },
   ch: {
     label: 'Zwitserland (EDA)', flag: '🇨🇭', lang: 'de',
-    // mapping = "land/reisehinweise-fuer{land}.html" (zie switzerland.js)
-    url: (m) => `https://www.eda.admin.ch/eda/de/home/vertretungen-und-reisehinweise/${m}`,
-    readyText: /reisehinweise|einschätzung|sicherheit/i,
+    // mapping = "land/reisehinweise-fuer{land}.html". EDA verhuisde de
+    // reisehinweise van /vertretungen-und-reisehinweise/ naar
+    // /laender-reise-information/ — de oude URL viel terug op de generieke
+    // overzichtspagina. Bij een generieke landing volgt hieronder een
+    // zelfherstel-stap (link op naam zoeken).
+    url: (m) => `https://www.eda.admin.ch/eda/de/home/laender-reise-information/${m}`,
+    readyText: /reisehinweise|einschätzung|sicherheitslage|grundsätzliche/i,
+    // Herken de generieke overzichtspagina zodat we die niet als advies opslaan.
+    genericText: /allgemeine reiseinformationen|reisehinweise kurz erklärt/i,
+    // Zelfherstel: op de index de link vinden die het land noemt.
+    indexUrl: 'https://www.eda.admin.ch/eda/de/home/laender-reise-information.html',
   },
 };
 
@@ -77,8 +85,28 @@ async function extractSections(page) {
 
 async function captureOne(page, sid, iso, mapping) {
   const cfg = SOURCES[sid];
-  const url = cfg.url(mapping);
+  let url = cfg.url(mapping);
   await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 });
+
+  // Zelfherstel bij URL-drift (EDA): landde de directe URL op de generieke
+  // overzichtspagina, zoek dan op de index de link die dit land noemt en
+  // navigeer daarheen. De landnaam (Duits) staat in de mapping-slug.
+  if (cfg.genericText && cfg.indexUrl) {
+    const bodyNow = await page.evaluate(() => document.body.innerText).catch(() => '');
+    if (cfg.genericText.test(bodyNow)) {
+      const slug = String(mapping).split('/')[0]; // bijv. "irak"
+      try {
+        await page.goto(cfg.indexUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
+        await page.waitForTimeout(1500);
+        const href = await page.evaluate((s) => {
+          const a = [...document.querySelectorAll('a[href]')].find((x) =>
+            /reisehinweise/i.test(x.getAttribute('href') || '') && new RegExp(s.replace(/[^a-z]/gi, ''), 'i').test((x.getAttribute('href') || '').replace(/[^a-z]/gi, '')));
+          return a ? a.href : null;
+        }, slug);
+        if (href) { url = href; await page.goto(href, { waitUntil: 'domcontentloaded', timeout: 45000 }); }
+      } catch { /* index-zoektocht faalde — checks hieronder vangen het op */ }
+    }
+  }
   // SPA's en botchecks hebben even nodig; wacht tot het "klaar"-signaal in de
   // paginatekst staat (max ~20s), anders geven we op.
   try {
@@ -90,9 +118,11 @@ async function captureOne(page, sid, iso, mapping) {
   await page.waitForTimeout(1500);
 
   const { sections, fullText } = await extractSections(page);
-  if (BLOCKED.test(fullText) || fullText.length < MIN_TEXT) {
-    return { ok: false, reason: BLOCKED.test(fullText) ? 'botcheck' : `te weinig tekst (${fullText.length})` };
+  if (BLOCKED.test(fullText)) return { ok: false, reason: 'botcheck' };
+  if (cfg.genericText && cfg.genericText.test(fullText) && !cfg.readyText.test(fullText.replace(cfg.genericText, ''))) {
+    return { ok: false, reason: 'generieke pagina (geen landadvies)' };
   }
+  if (fullText.length < MIN_TEXT) return { ok: false, reason: `te weinig tekst (${fullText.length})` };
 
   const themes = sections.map((s) => ({
     category: s.heading, heading: s.heading,
