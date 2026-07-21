@@ -16,6 +16,11 @@ import { parseHumanDate } from '../lib/dates.js';
 const SITE = 'https://um.dk';
 const BASE = `${SITE}/rejse-og-ophold/rejse-til-udlandet/rejsevejledninger`;
 
+/** Per-land pagina-URL zonder ophalen — voor een klikbare link ook als de fetch faalt. */
+export function sourceUrl(slug) {
+  return slug ? `${SITE}/rejse-og-ophold/rejse-til-udlandet/rejsevejledninger/${slug}` : `${SITE}/rejse-og-ophold/rejse-til-udlandet/rejsevejledninger`;
+}
+
 export const meta = { id: 'dk', label: 'Denemarken (Udenrigsministeriet)', flag: '🇩🇰', lang: 'da' };
 
 /** Maandnamen NB: Deense datums zijn dd.mm.yyyy — direct te normaliseren. */

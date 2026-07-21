@@ -30,6 +30,11 @@ const LEGACY = `${SITE}/fr/conseils-aux-voyageurs/conseils-par-pays-destination`
 
 export const meta = { id: 'fr', label: 'Frankrijk (France Diplomatie)', flag: '🇫🇷', lang: 'fr' };
 
+/** Per-land pagina-URL zonder ophalen — voor een klikbare link ook als de fetch faalt. */
+export function sourceUrl(slug) {
+  return slug ? `${BASE}/${slug}/conseils-aux-voyageurs-securite` : `${SITE}/fr/conseils-aux-voyageurs/`;
+}
+
 // Ankerkop voor de oude paginastructuur (terugvalpad).
 const ANCHOR_HEADING = /^(situation s[ée]curitaire|s[ée]curit[ée]|s[ûu]ret[ée]|recommandations? g[ée]n[ée]rales?)/i;
 

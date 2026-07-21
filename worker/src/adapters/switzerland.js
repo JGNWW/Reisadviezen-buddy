@@ -26,6 +26,11 @@ const BASE = `${SITE}/eda/de/home/vertretungen-und-reisehinweise`;
 
 export const meta = { id: 'ch', label: 'Zwitserland (EDA)', flag: '🇨🇭', lang: 'de' };
 
+/** Per-land pagina-URL zonder ophalen — voor een klikbare link ook als de fetch faalt. */
+export function sourceUrl(pathRel) {
+  return pathRel ? `${BASE}/${pathRel}` : `${SITE}/eda/de/home/laender-reise-information.html`;
+}
+
 // Navigatie-/voetkoppen zonder adviesinhoud.
 const SKIP_HEADING = /l[äa]nderunabh[äa]ngige|fokusthemen|n[üu]tzliche adressen|kontakt\b|footer|navigation|suche\b/i;
 

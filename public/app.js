@@ -1169,7 +1169,7 @@ function renderRegionalDetail(s) {
 }
 
 /** Compacte, scanbare tabel: één rij per bron (i.p.v. een kaartengrid). */
-function renderSummaryTable(nl, okSources) {
+function renderSummaryTable(nl, okSources, naSources = []) {
   const table = el('table', { class: 'summary-table' });
   const COLS = 6;
   const thead = el('thead', {}, el('tr', {},
@@ -1238,9 +1238,24 @@ function renderSummaryTable(nl, okSources) {
         el('td', {}, el('a', { href: s.url, target: '_blank', rel: 'noopener' }, 'origineel →'))));
     }
   });
+
+  // Bronnen die deze keer geen (automatisch leesbaar) advies gaven: niet
+  // verbergen, maar eerlijk tonen met een klik-link zodat de redacteur die
+  // ene bron zelf kan nakijken. Voorkomt dat een blokkade als "geen risico"
+  // (of stilte) wordt gelezen.
+  naSources.forEach((s) => {
+    tbody.append(el('tr', { class: 'na-row' },
+      el('td', {}, `${s.flag || SOURCE_FLAG[s.source] || ''} ${s.label || s.sourceLabel || s.source}`),
+      el('td', { class: 'muted', colspan: 4 }, 'niet automatisch beschikbaar — controleer bij de bron zelf'),
+      el('td', {}, s.url
+        ? el('a', { href: s.url, target: '_blank', rel: 'noopener' }, 'bron →')
+        : el('span', { class: 'muted' }, '—'))));
+  });
+
   table.append(tbody);
   return table;
 }
+const SOURCE_FLAG = { uk: '🇬🇧', us: '🇺🇸', ca: '🇨🇦', ie: '🇮🇪', fr: '🇫🇷', au: '🇦🇺', es: '🇪🇸', de: '🇩🇪', nz: '🇳🇿', dk: '🇩🇰', jp: '🇯🇵', it: '🇮🇹', fi: '🇫🇮', kr: '🇰🇷', no: '🇳🇴', at: '🇦🇹', ch: '🇨🇭' };
 
 /**
  * Onderwerp-zoeker binnen één vergelijking: typ een term (bijv. "ebola") en
@@ -1670,7 +1685,7 @@ function renderComparison(staticData, foreign, root) {
     copyBtn, printBtn));
   frag.append(el('p', { class: 'print-note' },
     `Reisadviezen-buddy · afgedrukt op ${new Date().toLocaleString('nl-NL')} · ${location.href}`));
-  frag.append(renderSummaryTable(nl, okSources));
+  frag.append(renderSummaryTable(nl, okSources, problems));
   if (nl.colors?.colors?.length > 1) {
     const ul = el('ul', { class: 'color-contexts' });
     nl.colors.colors.forEach((c) => ul.append(el('li', {}, el('strong', {}, `${COLOR_LABELS[c.color]}: `), c.context)));
@@ -1681,8 +1696,8 @@ function renderComparison(staticData, foreign, root) {
   // ---- Notices ----
   if (foreign.notice) frag.append(el('div', { class: 'callout', style: 'background:#eef4fb;border-left-color:var(--nl-blue)' },
     el('p', { style: 'margin:0' }, foreign.notice)));
-  if (problems.length) frag.append(el('div', { class: 'callout', style: 'background:#f6f8fa;border-left-color:var(--muted)' },
-    el('p', { style: 'margin:0' }, 'Geen advies via: ' + problems.map((p) => p.label || p.source).join(', ') + '.')));
+  // (Bronnen zonder automatisch advies staan nu als eigen 'n.b.'-rij mét
+  // klik-link in de tabel hierboven — geen aparte tekstmelding meer nodig.)
 
   // Bronnen die live niet lukten maar via het snapshot-vangnet tonen: eerlijk
   // melden dat dit de laatst opgeslagen versie is, niet de live pagina.
