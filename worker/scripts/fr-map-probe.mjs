@@ -52,18 +52,37 @@ async function inspect(page) {
       return { shapes: shapes.length, fills, rect: rectOf(svg), cls: svg.getAttribute('class') || '', id: svg.id || '' };
     }).filter((s) => s.shapes > 0);
 
-    // 2) canvas & img die een kaart kunnen zijn.
     const canvases = [...document.querySelectorAll('canvas')].map((c) => ({ rect: rectOf(c), cls: c.getAttribute('class') || '' }));
-    const imgs = [...document.querySelectorAll('img')]
-      .filter((i) => /carte|map|zone|vigilance/i.test((i.src || '') + ' ' + (i.alt || '') + ' ' + (i.className || '')))
-      .map((i) => ({ src: i.src, alt: i.alt, rect: rectOf(i) }));
 
-    // 3) containers met kaart-achtige klassen (Leaflet/mapbox/eigen widget).
-    const mapish = [...document.querySelectorAll('[class*="carte" i],[class*="map" i],[id*="carte" i],[id*="map" i],[class*="leaflet" i]')]
-      .map((e) => ({ tag: e.tagName.toLowerCase(), cls: e.getAttribute('class') || '', id: e.id || '', rect: rectOf(e) }))
-      .filter((e) => e.rect.w > 80 && e.rect.h > 80).slice(0, 8);
+    // 2) ALLE afbeeldingen ≥120px (ongeacht src/alt) — de zonekaart kan een
+    // gewone <img> met generieke src zijn.
+    const allImgs = [...document.querySelectorAll('img')]
+      .map((i) => ({ src: i.currentSrc || i.src, alt: i.alt || '', cls: i.getAttribute('class') || '', loading: i.getAttribute('loading') || '', rect: rectOf(i) }))
+      .filter((i) => i.rect.w >= 120 && i.rect.h >= 120);
 
-    return { svgs, canvases, imgs, mapish, title: document.title };
+    // 3) CSS background-image-divs die groot genoeg zijn voor een kaart.
+    const bgs = [...document.querySelectorAll('div,figure,section,article,span')]
+      .map((e) => ({ e, bg: getComputedStyle(e).backgroundImage }))
+      .filter((x) => x.bg && x.bg !== 'none' && /url\(/i.test(x.bg))
+      .map((x) => ({ bg: x.bg.slice(0, 120), cls: x.e.getAttribute('class') || '', rect: rectOf(x.e) }))
+      .filter((x) => x.rect.w >= 120 && x.rect.h >= 120).slice(0, 10);
+
+    // 4) iframes (ingesloten kaartwidget).
+    const iframes = [...document.querySelectorAll('iframe')].map((f) => ({ src: f.src, rect: rectOf(f) }));
+
+    // 5) De DOM rond een "vigilance"/"zone"-kop: wat staat daar aan beeld?
+    let vigilance = null;
+    const head = [...document.querySelectorAll('h1,h2,h3,h4')].find((h) => /vigilance|zones?\b/i.test(h.innerText || ''));
+    if (head) {
+      const scope = head.closest('section,article,div') || head.parentElement;
+      vigilance = {
+        heading: (head.innerText || '').slice(0, 80),
+        imgs: [...(scope?.querySelectorAll('img') || [])].map((i) => ({ src: (i.currentSrc || i.src || '').slice(0, 120), alt: (i.alt || '').slice(0, 60), rect: rectOf(i) })),
+        html: (scope?.innerHTML || '').replace(/\s+/g, ' ').slice(0, 400),
+      };
+    }
+
+    return { svgs, canvases, allImgs, bgs, iframes, vigilance, title: document.title };
   });
 }
 
@@ -85,36 +104,34 @@ async function main() {
       for (const sel of ['#tarteaucitronPersonalize2', 'button#tarteaucitronAllAllowed', 'button:has-text("Accepter")', 'button:has-text("Tout accepter")']) {
         try { const b = await page.$(sel); if (b) { await b.click({ timeout: 1500 }); break; } } catch { /* geen consent */ }
       }
-      // de kaart-widget mag laden
+      // de kaart-widget mag laden; scroll om lazy-load te triggeren
       try { await page.waitForLoadState('networkidle', { timeout: 15000 }); } catch { /* ok */ }
-      await page.waitForTimeout(3500);
+      await page.evaluate(async () => { for (let y = 0; y < document.body.scrollHeight; y += 600) { window.scrollTo(0, y); await new Promise((r) => setTimeout(r, 120)); } window.scrollTo(0, 0); });
+      await page.waitForTimeout(2500);
 
       const info = await inspect(page);
       report[iso] = { url: u, ...info };
 
-      // Screenshot: het grootste kaart-achtige element, anders de hele pagina.
-      const candidates = [...info.svgs, ...info.canvases, ...info.mapish]
-        .filter((c) => c.rect && c.rect.w > 120 && c.rect.h > 120)
-        .sort((a, b) => (b.rect.w * b.rect.h) - (a.rect.w * a.rect.h));
-      const shot = path.join(OUT, `${iso}.png`);
-      if (candidates.length) {
-        const c = candidates[0];
-        await page.screenshot({ path: shot, clip: { x: Math.max(0, c.rect.x), y: Math.max(0, c.rect.y), width: Math.min(1400, c.rect.w), height: Math.min(1200, c.rect.h) } }).catch(() => page.screenshot({ path: shot, fullPage: false }));
-      } else {
-        await page.screenshot({ path: shot, fullPage: false });
-      }
+      // Volledige pagina-screenshot voor handmatige controle.
+      await page.screenshot({ path: path.join(OUT, `${iso}.png`), fullPage: true }).catch(() => {});
 
-      const svgSummary = info.svgs.map((s) => `svg(${s.shapes} vormen, ${Object.keys(s.fills).length} kleuren) ${s.rect.w}x${s.rect.h}`).join('; ') || 'geen';
       console.log(`\n=== ${iso} (${slug}) ===`);
       console.log(`  titel: ${info.title}`);
-      console.log(`  SVG's: ${svgSummary}`);
+      console.log(`  SVG's met fills: ${info.svgs.length}  canvas: ${info.canvases.length}  iframes: ${info.iframes.length}`);
       for (const s of info.svgs) {
         const top = Object.entries(s.fills).sort((a, b) => b[1] - a[1]).slice(0, 12);
-        if (top.length) console.log(`    fills: ${top.map(([k, v]) => `${k}×${v}`).join('  ')}`);
+        console.log(`    svg ${s.rect.w}x${s.rect.h} fills: ${top.map(([k, v]) => `${k}×${v}`).join('  ')}`);
       }
-      console.log(`  canvas: ${info.canvases.length}  img(kaart): ${info.imgs.length}  map-containers: ${info.mapish.length}`);
-      for (const m of info.mapish) console.log(`    container <${m.tag} class="${m.cls.slice(0, 60)}"> ${m.rect.w}x${m.rect.h}`);
-      for (const i of info.imgs) console.log(`    img ${i.rect.w}x${i.rect.h} src=${i.src.slice(0, 90)}`);
+      console.log(`  afbeeldingen ≥120px: ${info.allImgs.length}`);
+      for (const i of info.allImgs) console.log(`    img ${i.rect.w}x${i.rect.h} alt="${i.alt.slice(0, 40)}" src=${i.src.slice(0, 100)}`);
+      console.log(`  background-image divs: ${info.bgs.length}`);
+      for (const b of info.bgs) console.log(`    bg ${b.rect.w}x${b.rect.h} class="${b.cls.slice(0, 40)}" ${b.bg}`);
+      if (info.vigilance) {
+        console.log(`  "vigilance"-kop: "${info.vigilance.heading}" — ${info.vigilance.imgs.length} img(s) in sectie`);
+        for (const i of info.vigilance.imgs) console.log(`    zone-img ${i.rect.w}x${i.rect.h} alt="${i.alt}" src=${i.src}`);
+      } else {
+        console.log('  geen "vigilance"/"zone"-kop gevonden');
+      }
     } catch (e) {
       report[iso] = { url: u, error: String(e.message).slice(0, 120) };
       console.log(`\n=== ${iso} (${slug}) === FOUT: ${String(e.message).slice(0, 120)}`);
