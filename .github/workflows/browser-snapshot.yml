@@ -1,0 +1,70 @@
+name: Browser-snapshots (DK/NO/CH)
+
+# Bronnen die serverside niet op te halen zijn (um.dk = React-SPA met
+# vergrendelde API; regjeringen.no = Cloudflare-botcheck; eda.admin.ch =
+# datacenter-blokkade) worden hier met een echte headless Chromium gerenderd
+# en als vangnet naar worker/data/latest/ geschreven — de Worker serveert die
+# snapshots wanneer live ophalen faalt of niets oplevert.
+#
+# Wekelijks (adviezen van deze bronnen wijzigen traag) + handmatig met een
+# optionele landenlijst voor gerichte verversing.
+on:
+  schedule:
+    - cron: '15 3 * * 1' # elke maandag 03:15 UTC
+  workflow_dispatch:
+    inputs:
+      countries:
+        description: 'Alleen deze ISO3-codes (komma-gescheiden), leeg = alle'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+concurrency:
+  group: browser-snapshot
+  cancel-in-progress: false
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    defaults:
+      run:
+        working-directory: worker
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: worker/package-lock.json
+
+      - name: Dependencies installeren
+        run: npm ci
+
+      # --no-save: playwright alleen in déze job — de andere workflows
+      # (tests, 6-uurs-snapshot) blijven licht en ongewijzigd.
+      - name: Playwright Chromium installeren
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+
+      - name: Browser-snapshots maken
+        run: node scripts/browser-snapshot.mjs
+        env:
+          COUNTRIES: ${{ inputs.countries }}
+
+      - name: Wijzigingen committen
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/latest
+          if ! git diff --cached --quiet; then
+            git commit -m "Browser-snapshots DK/NO/CH $(date -u +%Y-%m-%dT%H:%M)"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi

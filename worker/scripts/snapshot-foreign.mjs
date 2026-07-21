@@ -496,13 +496,22 @@ async function main() {
       const newFp = fingerprint(adv);
       const oldFp = fps.sources[sid] || null;
 
+      // Browser-snapshots (DK/NO/CH, scripts/browser-snapshot.mjs) hebben een
+      // niveau waar de kale server-fetch er geen heeft (SPA-schil, blokkade).
+      // Zo'n niveauloos resultaat mag de browser-versie in het vangnet nooit
+      // vervangen — anders wist elke 6-uursrun de wekelijkse browser-capture.
+      const wouldDowngrade = latest.sources[sid]
+        && latest.sources[sid].level != null && (adv.level == null);
+
       if (!before) {
         // Eerste keer voor deze bron: niets om mee te vergelijken, wel het
         // vangnet vullen.
         fps.sources[sid] = newFp;
-        latest.sources[sid] = compactFull(adv, SOURCE_LANG[sid] || 'en');
-        latest.fetchedAt[sid] = today;
-        latestChanged = true;
+        if (!wouldDowngrade) {
+          latest.sources[sid] = compactFull(adv, SOURCE_LANG[sid] || 'en');
+          latest.fetchedAt[sid] = today;
+          latestChanged = true;
+        }
         continue;
       }
 
@@ -516,7 +525,7 @@ async function main() {
       fps.sources[sid] = degraded ? oldFp : newFp;
       // Vangnet alleen verversen met een volwaardige ophaling — een
       // uitgeklede pagina mag de laatste goede versie niet overschrijven.
-      if (!degraded) {
+      if (!degraded && !wouldDowngrade) {
         latest.sources[sid] = compactFull(adv, SOURCE_LANG[sid] || 'en');
         latest.fetchedAt[sid] = today;
         latestChanged = true;

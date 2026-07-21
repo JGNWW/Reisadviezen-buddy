@@ -132,7 +132,27 @@ export default {
               // Context (ISO3 + Engelse naam) voor adapters die geen per-land
               // URL scrapen maar in een gedeelde feed zoeken (VS-RSS).
               const adv = await ADAPTERS[s].getAdvisory(id, { iso, en: rec.en, nl: rec.nl });
-              if (!adv) return { source: s, unavailable: true, label: ADAPTERS[s].meta.label };
+              if (!adv) {
+                // Bron gaf niets (bijv. geblokkeerd zonder exceptie) → snapshot
+                // serveren; browser-snapshots (DK/NO/CH) komen zo alsnog binnen.
+                const snap = await snapshotFallback(iso, s);
+                if (snap) {
+                  snap.lang = snap.lang || ADAPTERS[s].meta.lang || 'en';
+                  return await applyTranslation(snap, translateTo);
+                }
+                return { source: s, unavailable: true, label: ADAPTERS[s].meta.label };
+              }
+              // Live gelukt maar zónder bruikbaar niveau, terwijl de snapshot
+              // er wél een heeft (bijv. een SPA-schil die live nauwelijks tekst
+              // geeft, maar in de browser-snapshot volledig gerenderd is) →
+              // de zekere-maar-oudere snapshot is dan informatiever.
+              if ((adv.level == null || adv.assessmentStatus === 'uncertain')) {
+                const snap = await snapshotFallback(iso, s);
+                if (snap && snap.level != null && snap.assessmentStatus === 'ok') {
+                  snap.lang = snap.lang || ADAPTERS[s].meta.lang || 'en';
+                  return await applyTranslation(snap, translateTo);
+                }
+              }
               adv.mapProxy = adv.hasMap ? `/map/${s}/${iso}` : null;
               adv.lang = ADAPTERS[s].meta.lang || 'en';
               // Vertaal op verzoek naar de doeltaal. Alleen bronnen die al in
