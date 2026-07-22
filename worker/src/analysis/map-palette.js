@@ -30,6 +30,14 @@ import { SEVERITY_LABELS } from './severity-detector.js';
 export const ZONE_THRESHOLD = 0.015;   // min. land-aandeel om een zone mee te tellen
 export const BASELINE_MAJORITY = 0.5;  // cumulatief (zwaar→licht) ≥ dit → basislijn
 export const MIN_LAND_PIXELS = 4000;   // minder land-pixels → te onbetrouwbaar
+// "Uniform ingekleurd land": bij kleine/insulaire landen is de witte marge
+// vooral zee/buurland (op France-kaarten is de zee wít, niet blauw), niet
+// "normale waakzaamheid" van het land zelf. Als de gekleurde zones (a) een
+// noemenswaardig deel van het land beslaan én (b) vrijwel volledig één kleur
+// zijn, is dat de landelijke kleur — anders zou het witte-zee-aandeel het
+// niveau ten onrechte naar groen trekken (bv. Bahrein: 45% oranje, 54% wit-zee).
+export const COLORED_LAND_MIN = 0.40;  // gekleurd aandeel van het land ≥ dit …
+export const COLOR_UNIFORMITY = 0.85;  // … én dominante kleur ≥ dit deel van het gekleurde
 
 /**
  * @param {{rood:number,oranje:number,geel:number,groen?:number,wit:number,blauw?:number,grijs?:number}} counts
@@ -64,6 +72,17 @@ export function deriveMapAssessment(counts, opts = {}) {
   if (cum4 >= maj) baselineLevel = 4;
   else if (cum3 >= maj) baselineLevel = 3;
   else if (cum2 >= maj) baselineLevel = 2;
+
+  // Uniform-ingekleurd-land-regel: als de witte meerderheid het niveau naar 1
+  // (groen) trok, maar de gekleurde zones fors én vrijwel één kleur zijn, is
+  // die kleur de landelijke basislijn (de witte marge is zee/buurland). Zo
+  // klopt de kaartkleur weer met het advies bij kleine/insulaire landen
+  // (bv. Bahrein: 45% oranje, 54% wit-zee → oranje i.p.v. groen).
+  const colored = sh.rood + sh.oranje + sh.geel;
+  if (baselineLevel === 1 && colored >= (opts.coloredLandMin ?? COLORED_LAND_MIN)) {
+    const dom = [[4, sh.rood], [3, sh.oranje], [2, sh.geel]].sort((a, b) => b[1] - a[1])[0];
+    if (dom[1] / colored >= (opts.colorUniformity ?? COLOR_UNIFORMITY)) baselineLevel = dom[0];
+  }
 
   const regional = Math.max(regionalMaxLevel, baselineLevel);
   return {

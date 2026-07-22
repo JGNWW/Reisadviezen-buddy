@@ -19,7 +19,7 @@
 import { getText, getViaReader } from '../lib/fetch.js';
 import { splitByHeadings, absolutiseLinks } from '../lib/html.js';
 import { classifyTheme } from '../lib/themes.js';
-import { analyzeAdvisory } from '../analysis/analysis-engine.js';
+import { assessChAdvisory } from '../analysis/ch-classify.js';
 
 const SITE = 'https://www.eda.admin.ch';
 const BASE = `${SITE}/eda/de/home/vertretungen-und-reisehinweise`;
@@ -53,12 +53,6 @@ export async function getAdvisory(pathRel) {
   if (!/Diese Reisehinweise sind [üu]berpr[üu]ft|Grunds[äa]tzliche Einsch[äa]tzung/i.test(html)) return null;
 
   const sections = splitByHeadings(absolutiseLinks(html, SITE));
-  // De kern-advieszin ("Diese Reisehinweise sind überprüft … Von Reisen
-  // nach X wird abgeraten.") staat aan het EINDE van het blok vóór de
-  // eerste kop (daarvóór zit de complete site-navigatie) — neem de staart.
-  const intro = sections.find((s) => !s.heading && s.text && /reisehinweise/i.test(s.text));
-  const anchorText = intro ? intro.text.slice(-4000) : null;
-
   const themes = sections
     .filter((s) => s.heading && s.text && s.text.length > 60 && !SKIP_HEADING.test(s.heading))
     .map((s) => ({
@@ -69,14 +63,19 @@ export async function getAdvisory(pathRel) {
       text: s.text,
       url,
     }));
-  if (!themes.length && !anchorText) return null;
 
-  const assessment = analyzeAdvisory({
-    sections: themes,
-    lang: 'de',
-    anchorText: anchorText || undefined,
-    countryName: (pathRel.split('/')[0] || '').replace(/-/g, ' '),
-  });
+  // Het landelijke EDA-oordeel staat in de sectie "Grundsätzliche
+  // Einschätzung" (eerste zin daarvan); het regionale maximum in de volledige
+  // Reisehinweise-tekst. We lezen dus expliciet díe sectie (i.p.v. het
+  // navigatie-zware intro-blok) en interpreteren met dezelfde classifier als
+  // de crisis-snapshot (ch-classify.js) — één bron van waarheid voor CH.
+  const grundSection = sections.find((s) => s.heading && /grunds[äa]tzliche einsch[äa]tzung/i.test(s.heading));
+  const intro = sections.find((s) => !s.heading && s.text && /reisehinweise/i.test(s.text));
+  const grundText = grundSection?.text || (intro ? intro.text.slice(-4000) : '');
+  const fullText = themes.map((t) => t.text).join('\n') || grundText;
+  if (!themes.length && !grundText) return null;
+
+  const a = assessChAdvisory(grundText, fullText);
 
   // "Diese Reisehinweise … (Stand: 25.01.2026)" of vergelijkbare datering.
   const dm = html.match(/(?:Stand|aktualisiert am|publiziert am)[^0-9]{0,10}(\d{1,2})\.(\d{1,2})\.(\d{4})/i);
@@ -90,18 +89,18 @@ export async function getAdvisory(pathRel) {
     url,
     lastModified,
     updateNote: null,
-    level: assessment.level,
-    color: assessment.color,
-    levelLabel: assessment.levelLabel,
-    regionalMaxLevel: assessment.regionalMaxLevel,
-    hasRegionalWarnings: assessment.hasRegionalWarnings,
-    regionalBreakdown: assessment.regionalBreakdown,
-    regionalCoverage: assessment.regionalCoverage,
-    regions: assessment.regions,
-    confidence: assessment.confidence,
-    assessmentStatus: assessment.assessmentStatus,
+    level: a ? a.level : null,
+    color: a ? a.color : null,
+    levelLabel: a ? a.levelLabel : null,
+    regionalMaxLevel: a ? a.regionalMaxLevel : null,
+    hasRegionalWarnings: a ? a.hasRegionalWarnings : false,
+    regionalBreakdown: [],
+    regionalCoverage: null,
+    regions: null,
+    confidence: a ? 'high' : 'low',
+    assessmentStatus: a ? 'ok' : 'uncertain',
     hasMap: false,
     themes,
-    fullText: themes.map((t) => t.text).join('\n'),
+    fullText,
   };
 }

@@ -1209,9 +1209,38 @@ function renderSummaryTable(nl, okSources, naSources = []) {
     el('td', { class: 'muted' }, nl.modificationDate ? nl.modificationDate.split('|')[0].replace('Laatst gewijzigd op:', '').trim() : fmtDateShort(nl.lastModified)),
     el('td', {}, el('a', { href: nl.url, target: '_blank', rel: 'noopener' }, 'origineel →'))));
 
+  // Kaart-affordance: bronnen mét een zonekaart (bijv. VK/FCDO, Frankrijk)
+  // krijgen een "🗺️ kaart"-knop die de kaart inline toont. Laadt de kaart niet
+  // (ontbreekt/HTTP-fout), dan tonen we expliciet "Kaart ontbreekt" — de rest
+  // van de vergelijking (tekst, kleur) blijft gewoon staan.
+  const proxyBase = getProxy();
+  const mapAff = (s) => {
+    if (!s.hasMap || !s.mapProxy || !proxyBase) return null;
+    const cell = el('td', { colspan: COLS });
+    const detailRow = el('tr', { class: 'map-detail-row', hidden: true }, cell);
+    let loaded = false;
+    const btn = el('button', { type: 'button', class: 'btn-link map-toggle', title: 'Officiële zonekaart van de bron' }, '🗺️ kaart ▸');
+    btn.addEventListener('click', () => {
+      detailRow.hidden = !detailRow.hidden;
+      btn.textContent = `🗺️ kaart ${detailRow.hidden ? '▸' : '▾'}`;
+      if (!loaded) {
+        loaded = true;
+        const img = el('img', { class: 'source-map', alt: `Zonekaart ${s.sourceLabel}`, loading: 'lazy' });
+        img.addEventListener('error', () => img.replaceWith(el('span', { class: 'map-missing' }, '🗺️ Kaart ontbreekt')), { once: true });
+        img.src = `${proxyBase}${s.mapProxy}`;
+        cell.append(img);
+      }
+    });
+    return { btn, detailRow };
+  };
+  const actionsCell = (s, m) => el('td', {},
+    el('a', { href: s.url, target: '_blank', rel: 'noopener' }, 'origineel →'),
+    m ? [' · ', m.btn] : null);
+
   okSources.forEach((s) => {
     const rColor = ['', 'groen', 'geel', 'oranje', 'rood'][s.regionalMaxLevel] || null;
     const count = s.regionalBreakdown?.length || 0;
+    const m = mapAff(s);
 
     let regionalCell;
     if (s.hasRegionalWarnings) {
@@ -1231,8 +1260,9 @@ function renderSummaryTable(nl, okSources, naSources = []) {
         regionalCell,
         el('td', { class: 'muted' }, s.levelLabel || '—'),
         dateCell(s),
-        el('td', {}, el('a', { href: s.url, target: '_blank', rel: 'noopener' }, 'origineel →'))));
+        actionsCell(s, m)));
       tbody.append(detailRow);
+      if (m) tbody.append(m.detailRow);
     } else {
       tbody.append(el('tr', {},
         el('td', {}, `${s.flag || ''} ${s.sourceLabel}`),
@@ -1241,7 +1271,8 @@ function renderSummaryTable(nl, okSources, naSources = []) {
         el('td', { class: 'muted' }, '—'),
         el('td', { class: 'muted' }, s.levelLabel || '—'),
         dateCell(s),
-        el('td', {}, el('a', { href: s.url, target: '_blank', rel: 'noopener' }, 'origineel →'))));
+        actionsCell(s, m)));
+      if (m) tbody.append(m.detailRow);
     }
   });
 

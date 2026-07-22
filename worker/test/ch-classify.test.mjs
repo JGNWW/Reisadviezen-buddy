@@ -59,3 +59,16 @@ test('vangnet: eerste zin generiek, milde formule later → geel (2)', () => {
   const g = 'Meiden Sie Kundgebungen jeder Art. Der persönlichen Sicherheit ist erhöhte Aufmerksamkeit zu schenken.';
   assert.equal(classifyChNational(g), 2);
 });
+
+// De live-adapter (switzerland.js) leest de sectie "Grundsätzliche
+// Einschätzung" als landelijk oordeel (grund) en de volledige Reisehinweise-
+// tekst voor het regionale maximum — exact de invoer die assessChAdvisory
+// hier krijgt. Deze test borgt dat leespad.
+test('Reisehinweise-sectie: landelijk groen + regionale rode zone', () => {
+  const grund = 'Das Land kann grundsätzlich als sicher gelten.';
+  const full = `${grund} Reisehinweise für Beispielland. Von Reisen in die Grenzregion zum Nachbarland wird abgeraten.`;
+  const a = assessChAdvisory(grund, full);
+  assert.equal(a.color, 'groen');
+  assert.equal(a.regionalColor, 'rood');
+  assert.equal(a.hasRegionalWarnings, true);
+});

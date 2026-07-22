@@ -12,6 +12,28 @@ import { splitByHeadings, absolutiseLinks, htmlToText } from '../lib/html.js';
 import { classifyTheme } from '../lib/themes.js';
 import { analyzeAdvisory } from '../analysis/analysis-engine.js';
 import { parseHumanDate } from '../lib/dates.js';
+import { SEVERITY_LABELS } from '../analysis/severity-detector.js';
+
+// Deense standaardtekst voor "geen bijzonderheden": als er niets aan de hand
+// is, toont um.dk alleen de generieke veiligheidstips ("Brug din sunde
+// fornuft …", "vær opmærksom på mistænkelig adfærd …") zonder enige
+// rejsevejledning-waarschuwing. Dat is bewust een normaal/laag risico — geen
+// ontbrekende data en geen fout.
+const DK_STANDARD = /brug din sunde fornuft|v[æa]r opm[æa]rksom p[åa]|ingen s[æa]rlige (rejser[åa]d|forhold)|som udgangspunkt sikkert at rejse/i;
+// Echte waarschuwingsvormen (niet het onschuldige "fraråder ikke rejser").
+const DK_WARNING = /frar[åa]der (alle|rejser til|indrejse|mod|ophold)/i;
+
+/**
+ * Bevat de tekst uitsluitend de Deense standaard-veiligheidstekst (geen
+ * bijzonderheden) zónder enige echte reiswaarschuwing? Dan is dit een
+ * normaal/laag risico (niveau 1), geen ontbrekende data of fout.
+ * @param {string} text
+ * @returns {boolean}
+ */
+export function isDanishStandardOnly(text) {
+  const t = String(text || '');
+  return DK_STANDARD.test(t) && !DK_WARNING.test(t);
+}
 
 const SITE = 'https://um.dk';
 const BASE = `${SITE}/rejse-og-ophold/rejse-til-udlandet/rejsevejledninger`;
@@ -58,6 +80,26 @@ export async function getAdvisory(slug) {
     structured: { kind: 'dk_summary_bars', value: anchor },
   });
 
+  // Standaardtekst-herkenning: kon er geen niveau uit het ankerblok worden
+  // afgeleid (onzeker), maar staat de Deense standaardtekst wél op de pagina
+  // zónder enige echte waarschuwing? Dan is dit een normaal/laag risico
+  // (niveau 1), niet "geen data".
+  let level = assessment.level;
+  let color = assessment.color;
+  let levelLabel = assessment.levelLabel;
+  let assessmentStatus = assessment.assessmentStatus;
+  let confidence = assessment.confidence;
+  if (level == null || assessmentStatus === 'uncertain') {
+    const body = `${anchor}\n${themes.map((t) => t.text).join('\n')}`;
+    if (isDanishStandardOnly(body)) {
+      level = 1;
+      color = 'groen';
+      levelLabel = SEVERITY_LABELS[1];
+      assessmentStatus = 'ok';
+      confidence = 'medium';
+    }
+  }
+
   return {
     source: meta.id,
     sourceLabel: meta.label,
@@ -66,16 +108,16 @@ export async function getAdvisory(slug) {
     url,
     lastModified: danishDate(html),
     updateNote: null,
-    level: assessment.level,
-    color: assessment.color,
-    levelLabel: assessment.levelLabel,
+    level,
+    color,
+    levelLabel,
     regionalMaxLevel: assessment.regionalMaxLevel,
     hasRegionalWarnings: assessment.hasRegionalWarnings,
     regionalBreakdown: assessment.regionalBreakdown,
     regionalCoverage: assessment.regionalCoverage,
     regions: assessment.regions,
-    confidence: assessment.confidence,
-    assessmentStatus: assessment.assessmentStatus,
+    confidence,
+    assessmentStatus,
     hasMap: false,
     themes,
     fullText: themes.map((t) => t.text).join('\n'),

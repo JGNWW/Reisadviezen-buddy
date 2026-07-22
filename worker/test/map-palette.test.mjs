@@ -74,9 +74,36 @@ test('kleine losse zone onder de drempel telt niet als regionaal maximum', () =>
 });
 
 test('dunne gele marge blijft conservatief groen i.p.v. ten onrechte geel', () => {
-  // Geel < 50% van het land door witte marge → basislijn 1, maar wél als
-  // regionaal geel zichtbaar (nooit-escaleren-principe).
+  // Geel = 30% van het land door witte marge → onder COLORED_LAND_MIN (40%):
+  // basislijn 1, maar wél als regionaal geel zichtbaar (nooit-escaleren).
   const a = deriveMapAssessment({ geel: 15000, wit: 35000 });
   assert.equal(a.baselineLevel, 1);
   assert.equal(a.regionalMaxLevel, 2);
+});
+
+// ---- Uniform-ingekleurd-land-regel (kleine/insulaire landen) ---------------
+
+test('Bahrein: 45% oranje + 54% wit-zee → landelijk oranje (3), niet groen', () => {
+  // Echte France-kaartverdeling (bemonsterd): het hele eiland is oranje, het
+  // wit is de omringende Golf/buurlanden. Vroeger trok dat wit-zee het naar
+  // groen; nu is het correct oranje.
+  const a = deriveMapAssessment({ rood: 209, oranje: 11640, geel: 130, wit: 14120 });
+  assert.equal(a.baselineLevel, 3);
+  assert.equal(a.color, 'oranje');
+});
+
+test('uniform geel eiland (≥40% geel, vrijwel één kleur) → landelijk geel (2)', () => {
+  // Grenada/Gambia-achtig: ~42% geel, rest wit-zee, geen mengeling.
+  const a = deriveMapAssessment({ rood: 0, oranje: 100, geel: 21000, wit: 28900 });
+  assert.equal(a.baselineLevel, 2);
+  assert.equal(a.color, 'geel');
+});
+
+test('gemengde gekleurde zones (niet uniform) blijven groen ondanks ≥40% kleur', () => {
+  // 25% geel + 20% oranje = 45% gekleurd, maar geen enkele kleur ≥85% van het
+  // gekleurde → geen uniforme landkleur, dus conservatief groen (regionaal wél).
+  const a = deriveMapAssessment({ rood: 0, oranje: 10000, geel: 12500, wit: 27500 });
+  assert.equal(a.baselineLevel, 1);
+  assert.equal(a.color, 'groen');
+  assert.equal(a.regionalMaxLevel, 3);
 });

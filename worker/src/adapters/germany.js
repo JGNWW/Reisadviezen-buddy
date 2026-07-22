@@ -9,6 +9,9 @@ import { getJson } from '../lib/fetch.js';
 import { splitByHeadings, absolutiseLinks, htmlToText } from '../lib/html.js';
 import { classifyTheme } from '../lib/themes.js';
 import { analyzeAdvisory } from '../analysis/analysis-engine.js';
+import { classifyGermanNational } from '../analysis/de-classify.js';
+import { levelToColor } from '../lib/levels.js';
+import { SEVERITY_LABELS } from '../analysis/severity-detector.js';
 
 const SITE = 'https://www.auswaertiges-amt.de';
 const INDEX = `${SITE}/opendata/travelwarning`;
@@ -85,6 +88,23 @@ export async function getAdvisory(iso3) {
   // "Letzte Änderungen: ..." → nette wijzigingsnotitie.
   const note = e.lastChanges ? htmlToText(e.lastChanges).replace(/^Letzte Änderungen:\s*/i, '').trim() : null;
 
+  const fullText = themes.map((t) => t.text).join('\n');
+  // De opendata-vlaggen kennen geen oranje trap. Als de tekst een landelijke
+  // ontradingsformule bevat ("Von (nicht unbedingt erforderlichen) Reisen wird
+  // abgeraten") die zwaarder is dan de vlag-uitkomst, tilt die het niveau op de
+  // juiste oranje/rood-trap. Nooit verlagen: we nemen het hoogste van beide.
+  const textLevel = classifyGermanNational(fullText);
+  let level = assessment.level;
+  let color = assessment.color;
+  let levelLabel = assessment.levelLabel;
+  if (textLevel && (level == null || textLevel > level)) {
+    level = textLevel;
+    color = levelToColor(textLevel);
+    levelLabel = SEVERITY_LABELS[textLevel];
+  }
+  const regionalMaxLevel = Math.max(assessment.regionalMaxLevel ?? 0, level ?? 0) || assessment.regionalMaxLevel;
+  const hasRegionalWarnings = !!assessment.hasRegionalWarnings || (regionalMaxLevel != null && level != null && regionalMaxLevel > level);
+
   return {
     source: meta.id,
     sourceLabel: meta.label,
@@ -93,11 +113,11 @@ export async function getAdvisory(iso3) {
     url: publicUrl,
     lastModified: e.lastModified ? new Date(e.lastModified * 1000).toISOString() : null,
     updateNote: note || null,
-    level: assessment.level,
-    color: assessment.color,
-    levelLabel: assessment.levelLabel,
-    regionalMaxLevel: assessment.regionalMaxLevel,
-    hasRegionalWarnings: assessment.hasRegionalWarnings,
+    level,
+    color,
+    levelLabel,
+    regionalMaxLevel,
+    hasRegionalWarnings,
     regionalBreakdown: assessment.regionalBreakdown,
     regionalCoverage: assessment.regionalCoverage,
     regions: assessment.regions,

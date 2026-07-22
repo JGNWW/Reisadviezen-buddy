@@ -181,6 +181,10 @@ input:focus, select:focus { outline: 2px solid var(--link); outline-offset: 0; b
 .badge-stack { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .c-uncertain { background: #767676; }
 .regional-toggle { font-size: 12.5px; color: #8a5a00; white-space: nowrap; }
+/* Inline zonekaart per bron (VK/FCDO, Frankrijk, …) + nette fallback. */
+.map-toggle { font-size: 12.5px; color: #1f5b9a; white-space: nowrap; }
+.source-map { max-width: 100%; height: auto; border: 1px solid var(--border-soft); border-radius: 4px; display: block; margin: 4px 0; }
+.map-missing { display: inline-block; font-size: 13px; color: var(--muted); background: #f4f5f7; border: 1px dashed var(--border); border-radius: 4px; padding: 6px 10px; }
 .regional-toggle:hover { text-decoration: underline; }
 .regional-detail-row td { background: #fbf7ef; border-top: none; padding: 12px 18px; }
 .regional-detail { font-size: 13.5px; }
