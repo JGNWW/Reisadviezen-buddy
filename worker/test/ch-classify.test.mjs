@@ -54,3 +54,8 @@ test('landelijk rood → regionaal niet lager dan landelijk', () => {
   assert.equal(a.regionalMaxLevel, 4);
   assert.equal(a.hasRegionalWarnings, false);
 });
+
+test('vangnet: eerste zin generiek, milde formule later → geel (2)', () => {
+  const g = 'Meiden Sie Kundgebungen jeder Art. Der persönlichen Sicherheit ist erhöhte Aufmerksamkeit zu schenken.';
+  assert.equal(classifyChNational(g), 2);
+});

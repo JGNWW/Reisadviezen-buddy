@@ -39,6 +39,13 @@ export function classifyChNational(grundText) {
   if (/wird abgeraten/.test(first)) return 4;
   if (/aufmerksamkeit zu schenken|erh[öo]hte vorsicht|besondere vorsicht/.test(first)) return 2;
   if (/grunds[äa]tzlich als sicher/.test(first)) return 1;
+  // Vangnet: begint de Einschätzung met specifieke tips i.p.v. de kopformule
+  // (bijv. Egypte), zoek dan de MILDE formules in de hele tekst. Dit kan nooit
+  // over-escaleren (alleen groen/geel toevoegen), dus een zwaar "abgeraten"
+  // wordt hier bewust NIET aangevuld — dat zou een land ten onrechte kunnen
+  // verlagen.
+  if (/aufmerksamkeit zu schenken|erh[öo]hte vorsicht|besondere vorsicht/.test(t)) return 2;
+  if (/grunds[äa]tzlich als sicher/.test(t)) return 1;
   return null;
 }
 
