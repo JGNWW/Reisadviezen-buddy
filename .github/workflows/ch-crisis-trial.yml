@@ -1,21 +1,20 @@
-name: CH-crisis probe (wegwerp)
+name: CH crisis PROEF (wegwerp)
 
-# Diagnose: heeft het EDA crisis-portaal een fetchbare JSON-API met de per-land
-# Reisehinweise? En rendert het überhaupt vanaf een datacenter-IP? Schrijft
-# niets. Wordt na de analyse verwijderd.
+# Validatie van de CH-classifier op een set landen (met diagnose), ZONDER naar
+# main te committen. Wordt vóór de merge verwijderd.
 on:
-  workflow_dispatch:
   push:
     branches: [claude/travel-advisory-comparison-3oipdz]
     paths:
-      - '.github/workflows/ch-crisis-probe.yml'
-      - 'worker/scripts/ch-crisis-probe.mjs'
+      - '.github/workflows/ch-crisis-trial.yml'
+      - 'worker/scripts/ch-crisis-snapshot.mjs'
+      - 'worker/src/analysis/ch-classify.js'
 
 permissions:
   contents: read
 
 jobs:
-  probe:
+  trial:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     defaults:
@@ -34,5 +33,8 @@ jobs:
         run: |
           npm install --no-save playwright
           npx playwright install --with-deps chromium
-      - name: CH-crisis probe draaien
-        run: node scripts/ch-crisis-probe.mjs
+      - name: CH-classificatie valideren (diagnose)
+        run: node scripts/ch-crisis-snapshot.mjs
+        env:
+          COUNTRIES: AFG,UKR,IRQ,RUS,SYR,THA,EGY,COL,LBN,ISR,JPN,DEU,NLD,ESP,ITA,CHE,BRA
+          DIAG: '1'
