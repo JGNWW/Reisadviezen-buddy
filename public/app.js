@@ -868,6 +868,14 @@ async function fetchCountry(country, sources, lang) {
   return { staticData, foreign };
 }
 
+/** Zorgt dat de door-de-bron-gemelde updatedatums (source-dates.json) geladen
+ *  zijn — gebruikt als terugval voor de "Bijgewerkt"-kolom in de vergelijker. */
+async function ensureSourceDates() {
+  if (SOURCE_DATES) return;
+  try { SOURCE_DATES = (await loadJSON('source-dates.json')).dates || {}; }
+  catch { SOURCE_DATES = {}; }
+}
+
 async function runComparison(country, sources, lang) {
   // Nieuwe (her)ophaling: een eventueel termfilter hoort bij het vorige land.
   if (!LAST_COMPARE || LAST_COMPARE.country?.iso3 !== country.iso3) MATRIX_FILTER = null;
@@ -876,7 +884,7 @@ async function runComparison(country, sources, lang) {
   status.className = 'status';
   status.innerHTML = `<span class="spinner"></span>Reisadvies laden voor ${esc(country.nl)}…`;
   try {
-    const { staticData, foreign } = await fetchCountry(country, sources, lang);
+    const [{ staticData, foreign }] = await Promise.all([fetchCountry(country, sources, lang), ensureSourceDates()]);
     status.textContent = '';
     LAST_COMPARE = { country, sources, lang, staticData, foreign };
     pushRecentCountry(country.iso3);
@@ -1169,7 +1177,7 @@ function renderRegionalDetail(s) {
 }
 
 /** Compacte, scanbare tabel: één rij per bron (i.p.v. een kaartengrid). */
-function renderSummaryTable(nl, okSources, naSources = []) {
+function renderSummaryTable(nl, okSources, naSources = [], iso3 = null) {
   const table = el('table', { class: 'summary-table' });
   const COLS = 6;
   const thead = el('thead', {}, el('tr', {},
@@ -1184,10 +1192,15 @@ function renderSummaryTable(nl, okSources, naSources = []) {
     return isNaN(d) ? String(s).slice(0, 10) : d.toLocaleDateString('nl-NL');
   };
 
-  // "Bijgewerkt"-cel: bij een snapshot-bron (live ophalen mislukte; de proxy
-  // serveerde de laatste opgeslagen versie) komt er een 📸-markering bij.
+  // "Bijgewerkt"-cel: de datum waarop de bron dit advies voor het laatst heeft
+  // aangepast. Geeft de live/snapshot-ophaling die niet terug, dan vallen we
+  // terug op de door de bron zelf gemelde datum (source-dates.json), die per
+  // land per bron bewaard blijft — zo staat er veel vaker een echte datum.
   const dateCell = (s) => {
-    const cell = el('td', { class: 'muted' }, fmtDateShort(s.lastModified));
+    const reported = iso3 && SOURCE_DATES ? SOURCE_DATES[iso3]?.[s.source] : null;
+    const shown = s.lastModified || reported || null;
+    const cell = el('td', { class: 'muted' }, fmtDateShort(shown));
+    if (!s.lastModified && reported) cell.title = 'Laatst bijgewerkt volgens de bron zelf.';
     if (s.stale) cell.append(' ', el('span', {
       class: 'stale-tag',
       title: `Live ophalen lukte niet; dit is de laatst opgeslagen versie (snapshot van ${fmtDateShort(s.snapshotDate) || 'onbekende datum'}).`,
@@ -1722,7 +1735,7 @@ function renderComparison(staticData, foreign, root) {
     copyBtn, printBtn));
   frag.append(el('p', { class: 'print-note' },
     `Reisadviezen-buddy · afgedrukt op ${new Date().toLocaleString('nl-NL')} · ${location.href}`));
-  frag.append(renderSummaryTable(nl, okSources, problems));
+  frag.append(renderSummaryTable(nl, okSources, problems, staticData.country.iso3));
   if (nl.colors?.colors?.length > 1) {
     const ul = el('ul', { class: 'color-contexts' });
     nl.colors.colors.forEach((c) => ul.append(el('li', {}, el('strong', {}, `${COLOR_LABELS[c.color]}: `), c.context)));
@@ -2612,6 +2625,15 @@ async function buildChanges() {
   const filterSel = $('#changes-filter');
   (CFG.SOURCES || []).forEach((s) => filterSel.append(el('option', { value: s.id }, `${s.flag || ''} ${s.label}`)));
 
+  // Land-filter (waaróver het advies gaat): een datalist met alle landnamen
+  // voor autocomplete; de daadwerkelijke filtering (substring, diacriet-loos)
+  // gebeurt in renderChanges zodat ook los typen ("ethio") werkt.
+  const countryList = $('#changes-country-list');
+  if (countryList && !countryList.childElementCount) {
+    [...COUNTRIES].sort((a, b) => a.nl.localeCompare(b.nl, 'nl'))
+      .forEach((c) => countryList.append(el('option', { value: c.nl })));
+  }
+
   // Periode-kiezer: presets + eigen datums (kalender), max 92 dagen terug.
   const periodSel = $('#changes-period');
   const fromInput = $('#changes-from');
@@ -2630,6 +2652,7 @@ async function buildChanges() {
   toInput.addEventListener('change', rerender);
   filterSel.addEventListener('change', rerender);
   $('#changes-watch').addEventListener('change', rerender);
+  $('#changes-country').addEventListener('input', rerender);
 
   // CSV-export van de op dat moment getoonde selectie (puntkomma's + BOM
   // zodat Nederlandstalig Excel het bestand direct goed opent).
@@ -2656,8 +2679,21 @@ function renderChanges(sourceFilter, from, to) {
 
   const inPeriod = (d) => d && d >= from && d <= to;
   const onlyWatch = $('#changes-watch')?.checked;
+
+  // Land-filter: het land wáárover het advies gaat (niet de bron). Diacriet-
+  // loze substring, zodat "ethio"/"Ethiopië"/"Ethiopia"/"ETH" allemaal werken.
+  const cq = norm(($('#changes-country')?.value || '').trim());
+  const countryMatch = (iso3, countryNl) => {
+    if (!cq) return true;
+    if (!iso3) return false; // bron-brede (bulk) meldingen horen niet bij één land
+    if (norm(countryNl).includes(cq) || norm(iso3).includes(cq)) return true;
+    const c = COUNTRIES.find((x) => x.iso3 === iso3);
+    return !!c && (norm(c.nl).includes(cq) || norm(c.en).includes(cq));
+  };
+
   const items = (RECENT_CHANGES || []).filter(
-    (c) => (!sourceFilter || c.source === sourceFilter) && inPeriod(c.date) && (!onlyWatch || WATCHLIST.has(c.iso3))
+    (c) => (!sourceFilter || c.source === sourceFilter) && inPeriod(c.date)
+      && (!onlyWatch || WATCHLIST.has(c.iso3)) && countryMatch(c.iso3, c.countryNl)
   );
 
   // Door de bron zelf gemelde updatedatums in de periode — ook voor updates
@@ -2669,9 +2705,16 @@ function renderChanges(sourceFilter, from, to) {
   const reported = [];
   for (const [iso3, perSource] of Object.entries(SOURCE_DATES || {})) {
     if (onlyWatch && !WATCHLIST.has(iso3)) continue;
+    if (!countryMatch(iso3, null)) continue;
     for (const [sid, date] of Object.entries(perSource)) {
       if (sourceFilter && sid !== sourceFilter) continue;
-      if (!inPeriod(date) || covered.has(`${iso3}|${sid}`)) continue;
+      // Bij een land-zoekopdracht is de vraag "wanneer heeft bron X dit land
+      // vóór het laatst bijgewerkt?" — dan negeren we de ondergrens van de
+      // periode (de laatste update kan maanden geleden zijn) en tonen we de
+      // bewaarde datum ongeacht hoe oud. Zonder land-filter blijft de periode
+      // gewoon gelden.
+      const dateOk = cq ? (date && date <= to) : inPeriod(date);
+      if (!dateOk || covered.has(`${iso3}|${sid}`)) continue;
       const country = COUNTRIES.find((c) => c.iso3 === iso3);
       const meta = srcMeta.get(sid);
       if (!country || !meta) continue;
@@ -2683,8 +2726,18 @@ function renderChanges(sourceFilter, from, to) {
 
   if (!items.length && !reported.length) {
     root.append(el('p', { class: 'empty-col' },
-      `Geen wijzigingen of door de bron gemelde updates gevonden tussen ${new Date(from).toLocaleDateString('nl-NL')} en ${new Date(to).toLocaleDateString('nl-NL')}.`));
+      cq
+        ? `Geen updates gevonden voor een land dat matcht met “${$('#changes-country').value.trim()}”.`
+        : `Geen wijzigingen of door de bron gemelde updates gevonden tussen ${new Date(from).toLocaleDateString('nl-NL')} en ${new Date(to).toLocaleDateString('nl-NL')}.`));
     return;
+  }
+
+  // Bij een land-zoekopdracht: kop die duidelijk maakt dat je de laatste
+  // update-datum per bron ziet voor dít land (over de hele bewaarperiode).
+  if (cq) {
+    root.append(el('p', { class: 'hint', style: 'margin-top:0' },
+      'Je ziet per bron wanneer die het reisadvies voor dit land voor het laatst heeft bijgewerkt. ',
+      'De onderste lijst toont de laatst bekende datum per bron, ongeacht de gekozen periode.'));
   }
 
   if (items.length) {
