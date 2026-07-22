@@ -6,11 +6,15 @@ name: Browser-snapshots (DK/NO/CH)
 # en als vangnet naar worker/data/latest/ geschreven — de Worker serveert die
 # snapshots wanneer live ophalen faalt of niets oplevert.
 #
-# Wekelijks (adviezen van deze bronnen wijzigen traag) + handmatig met een
-# optionele landenlijst voor gerichte verversing.
+# Dagelijks om 02:00 Europe/Amsterdam + handmatig met een optionele landenlijst
+# voor gerichte verversing. GitHub-cron kent alleen UTC en geen zomertijd, dus
+# we plannen zowel 00:00 als 01:00 UTC en laten een guard-job (hieronder) enkel
+# de run doorgaan waarvan de lokale klok écht 02:00 in Amsterdam is — zo klopt
+# het tijdstip het hele jaar, ongeacht zomer-/wintertijd.
 on:
   schedule:
-    - cron: '15 3 * * 1' # elke maandag 03:15 UTC — volledige set
+    - cron: '0 0 * * *' # 02:00 Amsterdam tijdens zomertijd (CEST = UTC+2)
+    - cron: '0 1 * * *' # 02:00 Amsterdam tijdens wintertijd (CET  = UTC+1)
   workflow_dispatch:
     inputs:
       countries:
@@ -33,7 +37,28 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # DST-proof tijdvenster: alleen doorgaan als het in Amsterdam 02:00 is
+  # (of bij een handmatige/push-run). Zo vuurt de geplande run precies
+  # één keer per dag om 02:00 lokale tijd, ondanks de twee UTC-cronregels.
+  guard:
+    runs-on: ubuntu-latest
+    outputs:
+      run: ${{ steps.check.outputs.run }}
+    steps:
+      - id: check
+        run: |
+          if [ "${{ github.event_name }}" != "schedule" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          elif [ "$(TZ='Europe/Amsterdam' date +%H)" = "02" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "Lokale tijd is $(TZ='Europe/Amsterdam' date '+%H:%M %Z') — niet 02:00, run overslaan."
+          fi
+
   capture:
+    needs: guard
+    if: needs.guard.outputs.run == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 120
     defaults:
