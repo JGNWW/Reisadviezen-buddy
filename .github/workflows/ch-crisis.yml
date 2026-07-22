@@ -1,0 +1,70 @@
+name: CH crisis-snapshot (EDA)
+
+# Herstelt Zwitserland: het crisis-portaal serveert alle landen in één pagina
+# (per-land EDA-pagina's blokkeren datacenter-IP's, dit portaal niet). Een
+# echte Chromium rendert de pagina, parst de standaardformules per land en
+# schrijft het als vangnet naar worker/data/latest/{ISO3}.json onder 'ch' —
+# dezelfde snapshot die de Worker al serveert.
+#
+# Wekelijks + handmatig; bij wijziging van script/classifier een proefrun op
+# een beperkte set (met diagnose) zodat elke aanpassing end-to-end klopt.
+on:
+  schedule:
+    - cron: '25 3 * * 1' # maandag 03:25 UTC
+  workflow_dispatch:
+    inputs:
+      countries:
+        description: 'Alleen deze ISO3-codes (komma-gescheiden), leeg = alle'
+        required: false
+        default: ''
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/ch-crisis.yml'
+      - 'worker/scripts/ch-crisis-snapshot.mjs'
+      - 'worker/src/analysis/ch-classify.js'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ch-crisis
+  cancel-in-progress: false
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: worker
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: worker/package-lock.json
+      - name: Dependencies installeren
+        run: npm ci
+      - name: Playwright Chromium installeren
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: CH crisis-snapshot maken
+        run: node scripts/ch-crisis-snapshot.mjs
+        env:
+          COUNTRIES: ${{ inputs.countries }}
+      - name: Wijzigingen committen
+        if: github.ref == 'refs/heads/main'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/latest
+          if ! git diff --cached --quiet; then
+            git commit -m "CH crisis-snapshot $(date -u +%Y-%m-%dT%H:%M)"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
