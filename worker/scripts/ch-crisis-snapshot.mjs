@@ -37,10 +37,10 @@ for (const [iso3, rec] of Object.entries(countries)) {
   if (rec && rec.iso2) ISO2_TO_ISO3[String(rec.iso2).toUpperCase()] = iso3;
 }
 
-/** "1/22/2026 10:15:00 AM" → "2026-01-22". */
+/** "1/22/2026 10:15:00 AM" (US-notatie M/D/Y) → "2026-01-22". */
 function parseEditedDate(s) {
   const m = (s || '').match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-  return m ? `${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}` : null;
+  return m ? `${m[3]}-${m[1].padStart(2, '0')}-${m[2].padStart(2, '0')}` : null;
 }
 
 async function main() {
