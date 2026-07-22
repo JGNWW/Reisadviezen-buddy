@@ -25,26 +25,39 @@ import path from 'node:path';
 import countries from '../src/data/countries.json' with { type: 'json' };
 import * as france from '../src/adapters/france.js';
 import * as uk from '../src/adapters/uk.js';
+import * as canada from '../src/adapters/canada.js';
+import * as austria from '../src/adapters/austria.js';
 import { deriveMapAssessment } from '../src/analysis/map-palette.js';
 import { sampleMapImage } from './lib/sample-map.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const OUT_DIR = path.join(__dirname, '..', 'data', 'mapcolors');
 
-// Bronnen die een zonekaart publiceren. resolveMapUrl(slug) → kaart-URL|null.
+// Bronnen die per land een gekleurde zonekaart publiceren. resolveMapUrl(slug)
+// → kaart-URL|null.
 //
 // trustBaseline: mag de uit de kaart afgeleide landelijke basislijn de
 // bronkleur overschrijven?
 //   fr — ja: de France-kaart is strak op het land gecropt, dus de
 //        kleurverdeling geeft de landelijke basislijn betrouwbaar weer.
-//   uk — nee: de FCDO-kaart is een losse "sheet" met veel witte marge +
-//        legenda, waardoor de basislijn structureel te laag uitvalt. De
-//        (verzadigde) zones zijn wél betrouwbaar, dus de kaart verhoogt bij UK
-//        alleen het regionale maximum; de landelijke kleur blijft die van het
-//        gestructureerde alert_status-veld.
+//   uk/ca/at — nee: deze kaarten zijn een losse "sheet"/regionale uitsnede met
+//        veel witte marge (het land beslaat maar een deel van het beeld),
+//        waardoor de basislijn structureel te laag uitvalt. De (verzadigde)
+//        zones zijn wél betrouwbaar, dus de kaart verhoogt bij deze bronnen
+//        alleen het regionale maximum; de landelijke kleur blijft die van de
+//        bron zelf (UK alert_status, Canada advisory-state, AT Sicherheitsstufe).
+//
+// Onderzocht maar NIET bruikbaar (geen per-land gekleurde statische kaart):
+//   es — één vaste wereldkaart (identiek voor elk land);
+//   de/fi/nz — alleen decoratieve foto's/logo's;
+//   it — interactieve Leaflet met OSM-tegels (zones zijn vector-overlays);
+//   us/ie/jp/dk — geen statische kaartafbeelding (JS-gerenderd/SPA);
+//   kr — bron blokkeert datacenter-IP's (niet te bemonsteren in CI).
 const MAP_SOURCES = {
   fr: { adapter: france, label: 'France Diplomatie', trustBaseline: true },
   uk: { adapter: uk, label: 'FCDO', trustBaseline: false },
+  ca: { adapter: canada, label: 'Canada (GAC)', trustBaseline: false },
+  at: { adapter: austria, label: 'Oostenrijk (BMEIA)', trustBaseline: false },
 };
 
 const round = (n) => Math.round(n * 1000) / 1000;

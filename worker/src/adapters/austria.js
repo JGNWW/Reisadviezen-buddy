@@ -26,6 +26,28 @@ export const meta = { id: 'at', label: 'Oostenrijk (BMEIA)', flag: '🇦🇹', l
 // Accordeonsecties zonder adviesinhoud (vertegenwoordigingen/adressen).
 const SKIP_HEADING = /vertretungen|vertrauensan|vertrauensarzt|auslandsservice/i;
 
+/**
+ * URL van de per-land Reisewarnstufen-kaart (een statische PNG onder
+ * /fileadmin/_processed_/…csm_Reisewarnstufen_{Land}… of …csm_Einzelansicht_
+ * {Land}…). De map-colors CI leidt hier het regionale maximum uit af (de kaart
+ * is los gecropt, dus alleen de zones zijn betrouwbaar, niet de basislijn).
+ * Geeft null als er geen kaart is (bijv. een veilig land zonder waarschuwing)
+ * — dan blijft de tekst-afgeleide kleur staan.
+ */
+export async function resolveMapUrl(slug) {
+  if (!slug) return null;
+  const url = `${SITE}/reise-services/reiseinformation/land/${slug}`;
+  let html = null;
+  try { html = await getText(url); } catch { html = await getViaReader(url, 'html'); }
+  if (!html) return null;
+  const root = parse(html);
+  let src = root.querySelectorAll('img')
+    .map((im) => im.getAttribute('src') || '')
+    .find((s) => /csm_(reisewarnstufen|einzelansicht)/i.test(s) && /\.(png|jpe?g)(\?|$)/i.test(s)) || null;
+  if (src && src.startsWith('/')) src = SITE + src;
+  return src;
+}
+
 export async function getAdvisory(slug) {
   if (!slug) return null;
   const url = `${SITE}/reise-services/reiseinformation/land/${slug}`;
