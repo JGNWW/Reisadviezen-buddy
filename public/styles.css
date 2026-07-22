@@ -15,6 +15,13 @@
   --geel: #f9c710;
   --oranje: #e17000;
   --rood: #d52b1e;
+  /* "Laatste wijziging" / recent gedetecteerde tekstwijziging — bewust een
+     kleur BUITEN het rood-geel-groen risicospectrum en buiten het NL-blauw,
+     zodat "er is iets veranderd" nooit met een risiconiveau te verwarren is. */
+  --update: #0e7c86;
+  --update-bg: #e6f4f5;
+  --update-text: #0b5f66;
+  --update-border: #a9d4d8;
   --radius: 0;              /* plat ontwerp: scherpe hoeken */
   --shadow: none;           /* plat ontwerp: geen schaduwen */
   --page: 1560px;           /* gedeelde breedte voor topbar-inhoud, main en footer */
@@ -188,6 +195,22 @@ input:focus, select:focus { outline: 2px solid var(--link); outline-offset: 0; b
 .source-map { max-width: 100%; height: auto; border: 1px solid var(--border-soft); border-radius: 4px; display: block; margin: 4px 0; }
 .map-missing { display: inline-block; font-size: 13px; color: var(--muted); background: #f4f5f7; border: 1px dashed var(--border); border-radius: 4px; padding: 6px 10px; }
 .regional-toggle:hover { text-decoration: underline; }
+
+/* "Laatste wijziging"-kolom (summary-table): kind-label + citaat van de
+   belangrijkste toegevoegde zin, met een link die naar de matrixcel springt.
+   Meerdere wijzigingen voor dezelfde bron staan onder een <details>-uitklapper
+   — zelfde patroon als de gewijzigde secties in het tabje Recente wijzigingen. */
+.wijziging-kind { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .02em; color: var(--muted); margin-bottom: 3px; }
+.wijziging-quote {
+  display: block; width: 100%; text-align: left; max-width: 340px;
+  background: var(--update-bg); color: var(--update-text); border: none; border-left: 3px solid var(--update);
+  padding: 5px 9px; font-size: 12.5px; line-height: 1.4; cursor: pointer; font-family: inherit;
+}
+.wijziging-quote:hover { background: var(--update-border); }
+.wijziging-details { max-width: 340px; }
+.wijziging-details > summary { cursor: pointer; font-size: 12.5px; font-weight: 600; color: var(--update-text); }
+.wijziging-details > summary::marker { color: var(--update); }
+.wijziging-item + .wijziging-item { margin-top: 9px; }
 .regional-detail-row td { background: #fbf7ef; border-top: none; padding: 12px 18px; }
 .regional-detail { font-size: 13.5px; }
 .regional-caveat { margin: 0 0 10px; color: #8a5a00; font-size: 12.5px; }
@@ -288,6 +311,19 @@ input:focus, select:focus { outline: 2px solid var(--link); outline-offset: 0; b
 .matrix .txt.empty { color: var(--muted); font-style: italic; font-size: 13px; }
 .matrix .txt.empty.miss { background: #fdf6ee; }
 .matrix .block { margin-bottom: 10px; }
+
+/* Doelcel van een "Laatste wijziging"-link: blijvend gemarkeerd (niet alleen
+   tijdens de sprong) zodat ook ná het klikken meteen duidelijk blijft wat er
+   is toegevoegd. .flash geeft er bij het springen zelf een korte pulse bij. */
+.matrix .cell.txt.has-recent-change { box-shadow: inset 0 0 0 2px var(--update); background: var(--update-bg); }
+.matrix .new-tag { display: inline-block; font-size: 10.5px; font-weight: 700; letter-spacing: .02em; background: var(--update); color: #fff; padding: 1px 6px; margin-bottom: 6px; }
+@keyframes pulse-target {
+  0%   { box-shadow: inset 0 0 0 2px var(--update), 0 0 0 0 var(--update-border); }
+  60%  { box-shadow: inset 0 0 0 2px var(--update), 0 0 0 10px transparent; }
+  100% { box-shadow: inset 0 0 0 2px var(--update), 0 0 0 0 transparent; }
+}
+.matrix .cell.txt.flash { animation: pulse-target 1.1s ease-out 2; }
+@media (prefers-reduced-motion: reduce) { .matrix .cell.txt.flash { animation: none; } }
 /* Uniform lettertype in de matrix: platte tekst wordt gerenderd (geen bron-HTML),
    maar dwing font/afmeting hoe dan ook af voor een consistente cel-look. */
 .matrix .txt .rich, .matrix .txt .rich * { font-family: inherit; font-size: inherit; font-weight: inherit; }
@@ -439,7 +475,8 @@ input:focus, select:focus { outline: 2px solid var(--link); outline-offset: 0; b
 .print-note { display: none; }
 @media print {
   .tabs, .settings-panel, .settings-btn, .controls, .status, .hint, .footer,
-  .topic-search, .matrix, .adddrop, .btn, .regional-toggle { display: none !important; }
+  .topic-search, .matrix, .adddrop, .btn, .regional-toggle,
+  .wijziging-quote, .wijziging-details { display: none !important; }
   .topbar { padding: 8px 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   main { max-width: none; padding: 6px 0 0; }
   .print-note { display: block; font-size: 10px; color: #555; margin: 0 0 10px; }

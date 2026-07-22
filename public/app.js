@@ -901,6 +901,15 @@ async function ensureSourceDates() {
   catch { SOURCE_DATES = {}; }
 }
 
+/** Zorgt dat de recente-wijzigingen-data (recent-changes.json) geladen is —
+ *  gebruikt voor de "Laatste wijziging"-kolom in de vergelijker (dezelfde
+ *  data als het tabje Recente wijzigingen, hier per land+bron uitgefilterd). */
+async function ensureRecentChanges() {
+  if (RECENT_CHANGES) return;
+  try { RECENT_CHANGES = (await loadJSON('recent-changes.json')).changes || []; }
+  catch { RECENT_CHANGES = []; }
+}
+
 async function runComparison(country, sources, lang) {
   // Nieuwe (her)ophaling: een eventueel termfilter hoort bij het vorige land.
   if (!LAST_COMPARE || LAST_COMPARE.country?.iso3 !== country.iso3) MATRIX_FILTER = null;
@@ -909,7 +918,7 @@ async function runComparison(country, sources, lang) {
   status.className = 'status';
   status.innerHTML = `<span class="spinner"></span>Reisadvies laden voor ${esc(country.nl)}…`;
   try {
-    const [{ staticData, foreign }] = await Promise.all([fetchCountry(country, sources, lang), ensureSourceDates()]);
+    const [{ staticData, foreign }] = await Promise.all([fetchCountry(country, sources, lang), ensureSourceDates(), ensureRecentChanges()]);
     status.textContent = '';
     LAST_COMPARE = { country, sources, lang, staticData, foreign };
     pushRecentCountry(country.iso3);
@@ -1051,6 +1060,89 @@ function buildComparison(nl, foreignSources) {
     if (id !== '_other' && nlBlocks.length > 0 && !foreignHasIt && forIdx.length) onlyNl.push({ theme: meta, nl: nlBlocks });
   }
   return { themes, missingFromNl, onlyNl };
+}
+
+// ==========================================================================
+// "Laatste wijziging" (per bron, in de vergelijker): koppelt recent
+// gedetecteerde tekstwijzigingen (recent-changes.json — dezelfde data als het
+// tabje Recente wijzigingen) aan het thema waar de toegevoegde tekst nu in de
+// matrix staat, zodat een klik precies naar die cel kan springen.
+// ==========================================================================
+const MAX_CHANGE_ITEMS = 6; // per bron; ruim genoeg voor de praktijk, voorkomt een oneindige lijst
+const normChangeText = (s) => String(s || '').toLowerCase().replace(/\s+/g, ' ').trim();
+
+/** Stabiele DOM-id voor de matrixcel van (bron, thema) — gedeeld tussen de
+ *  "Laatste wijziging"-links (renderSummaryTable) en de matrix zelf (renderMatrix). */
+function matrixCellId(sourceId, themeId) {
+  return `mxcell-${sourceId}-${themeId}`.replace(/[^a-zA-Z0-9_-]/g, '-');
+}
+
+/**
+ * Map<sourceId, Array<{date, kind, heading, sentence, targetId}>> — per
+ * geselecteerde bron de recent gedetecteerde toevoegingen voor DIT land,
+ * nieuwste eerst. `targetId` is de matrixcel-id waar die zin nu staat (null
+ * als de tekst niet (meer) terug te vinden is, bijv. na vertaling).
+ */
+function resolveRecentChanges(iso3, okSources, cmp) {
+  const out = new Map();
+  const findThemeId = (sourceId, original) => {
+    const needle = normChangeText(original).slice(0, 60);
+    if (!needle) return null;
+    for (const t of cmp.themes) {
+      const blocks = t.foreign[sourceId]?.blocks;
+      if (!blocks) continue;
+      if (blocks.some((b) => normChangeText(b.text).includes(needle) || normChangeText(b.textNl).includes(needle))) return t.theme.id;
+    }
+    return null;
+  };
+  for (const s of okSources) {
+    const entries = (RECENT_CHANGES || []).filter(
+      (c) => c.iso3 === iso3 && c.source === s.source && c.kind === 'update' && c.sections?.length
+    );
+    const items = [];
+    for (const c of entries) {
+      for (const sec of c.sections) {
+        const originals = sec.added || [];
+        const displayed = sec.addedNl?.length === originals.length ? sec.addedNl : originals;
+        originals.forEach((original, i) => {
+          if (!original) return;
+          items.push({ date: c.date, kind: c.kind, heading: sec.heading, sentence: displayed[i] || original, original });
+        });
+      }
+    }
+    if (!items.length) continue;
+    items.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+    const capped = items.slice(0, MAX_CHANGE_ITEMS);
+    capped.forEach((it) => {
+      const themeId = findThemeId(s.source, it.original);
+      it.targetId = themeId ? matrixCellId(s.source, themeId) : null;
+    });
+    out.set(s.source, capped);
+  }
+  return out;
+}
+
+/** Springt naar de matrixcel van een recent toegevoegde zin en markeert die
+ *  kort (de cel zelf heeft al een blijvende rand — zie renderMatrix). Kon
+ *  geen exacte cel worden bepaald (bijv. de tekst staat er vertaald), dan
+ *  scrollt hij alsnog netjes naar de matrix in plaats van niets te doen. */
+function jumpToMatrixCell(targetId) {
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const target = targetId ? document.getElementById(targetId) : null;
+  if (!target) {
+    $('#compare-result .matrix')?.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+    return;
+  }
+  // Compacte weergave klapt lange cellen visueel in — eerst uitklappen zodat
+  // de gemarkeerde tekst niet achter de afkapping verdwijnt.
+  if (MATRIX_DENSITY === 'compact' && !target.classList.contains('open')) {
+    target.classList.add('open');
+    const more = target.querySelector('.cell-more');
+    if (more) more.textContent = '▴ Inklappen';
+  }
+  target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'center' });
+  target.classList.add('flash');
+  setTimeout(() => target.classList.remove('flash'), 2400);
 }
 
 const colorSquare = (color, cls = '') => el('span', { class: `sq c-${color || 'none'}${cls ? ' ' + cls : ''}` });
@@ -1202,12 +1294,12 @@ function renderRegionalDetail(s) {
 }
 
 /** Compacte, scanbare tabel: één rij per bron (i.p.v. een kaartengrid). */
-function renderSummaryTable(nl, okSources, naSources = [], iso3 = null) {
+function renderSummaryTable(nl, okSources, naSources = [], iso3 = null, changesBySource = null) {
   const table = el('table', { class: 'summary-table' });
-  const COLS = 6;
+  const COLS = 7;
   const thead = el('thead', {}, el('tr', {},
     el('th', {}, 'Bron'), el('th', {}, 'Kleurcode'), el('th', {}, 'Regionaal'), el('th', {}, 'Origineel niveau'),
-    el('th', {}, 'Bijgewerkt'), el('th', {}, '')));
+    el('th', {}, 'Bijgewerkt'), el('th', {}, 'Laatste wijziging'), el('th', {}, '')));
   table.append(thead);
   const tbody = el('tbody');
 
@@ -1245,6 +1337,7 @@ function renderSummaryTable(nl, okSources, naSources = [], iso3 = null) {
     el('td', { class: 'muted' }, '—'),
     el('td', { class: 'muted' }, '—'),
     el('td', { class: 'muted' }, nl.modificationDate ? nl.modificationDate.split('|')[0].replace('Laatst gewijzigd op:', '').trim() : fmtDateShort(nl.lastModified)),
+    el('td', { class: 'muted' }, '—'),
     el('td', {}, el('a', { href: nl.url, target: '_blank', rel: 'noopener' }, 'origineel →'))));
 
   // Kaart-affordance: bronnen mét een zonekaart (bijv. VK/FCDO, Frankrijk)
@@ -1275,6 +1368,28 @@ function renderSummaryTable(nl, okSources, naSources = [], iso3 = null) {
     el('a', { href: s.url, target: '_blank', rel: 'noopener' }, 'origineel →'),
     m ? [' · ', m.btn] : null);
 
+  // "Laatste wijziging"-cel: alleen gevuld als de dagelijkse snapshot-
+  // vergelijking sinds de vorige keer daadwerkelijk iets heeft toegevoegd bij
+  // deze bron voor dit land — exact dezelfde data als het tabje Recente
+  // wijzigingen. Eén wijziging: het citaat staat direct in de cel. Meerdere:
+  // onder een uitklapper (zelfde <details>-patroon als de gewijzigde secties
+  // in dat tabje). Elk citaat springt naar de bijbehorende cel in de matrix.
+  const wijzigingItem = (it) => {
+    const q = it.sentence.length > 160 ? it.sentence.slice(0, 160).trim() + '…' : it.sentence;
+    return el('div', { class: 'wijziging-item' },
+      el('span', { class: 'wijziging-kind' }, `${CHANGE_KIND_LABEL[it.kind] || it.kind} · ${fmtDateShort(it.date)}`),
+      el('button', { type: 'button', class: 'wijziging-quote', onclick: () => jumpToMatrixCell(it.targetId) },
+        `“${q}” — bekijk in matrix ↓`));
+  };
+  const wijzigingCell = (s) => {
+    const items = changesBySource?.get(s.source);
+    if (!items || !items.length) return el('td', { class: 'muted' }, '—');
+    if (items.length === 1) return el('td', {}, wijzigingItem(items[0]));
+    return el('td', {}, el('details', { class: 'wijziging-details' },
+      el('summary', {}, `${items.length} wijzigingen sinds vorige snapshot`),
+      items.map(wijzigingItem)));
+  };
+
   okSources.forEach((s) => {
     const rColor = ['', 'groen', 'geel', 'oranje', 'rood'][s.regionalMaxLevel] || null;
     const count = s.regionalBreakdown?.length || 0;
@@ -1298,6 +1413,7 @@ function renderSummaryTable(nl, okSources, naSources = [], iso3 = null) {
         regionalCell,
         el('td', { class: 'muted' }, s.levelLabel || '—'),
         dateCell(s),
+        wijzigingCell(s),
         actionsCell(s, m)));
       tbody.append(detailRow);
       if (m) tbody.append(m.detailRow);
@@ -1309,6 +1425,7 @@ function renderSummaryTable(nl, okSources, naSources = [], iso3 = null) {
         el('td', { class: 'muted' }, '—'),
         el('td', { class: 'muted' }, s.levelLabel || '—'),
         dateCell(s),
+        wijzigingCell(s),
         actionsCell(s, m)));
       if (m) tbody.append(m.detailRow);
     }
@@ -1321,7 +1438,7 @@ function renderSummaryTable(nl, okSources, naSources = [], iso3 = null) {
   naSources.forEach((s) => {
     tbody.append(el('tr', { class: 'na-row' },
       el('td', {}, `${s.flag || SOURCE_FLAG[s.source] || ''} ${s.label || s.sourceLabel || s.source}`),
-      el('td', { class: 'muted', colspan: 4 }, 'niet automatisch beschikbaar — controleer bij de bron zelf'),
+      el('td', { class: 'muted', colspan: 5 }, 'niet automatisch beschikbaar — controleer bij de bron zelf'),
       el('td', {}, s.url
         ? el('a', { href: s.url, target: '_blank', rel: 'noopener' }, 'bron →')
         : el('span', { class: 'muted' }, '—'))));
@@ -1760,7 +1877,13 @@ function renderComparison(staticData, foreign, root) {
     copyBtn, printBtn));
   frag.append(el('p', { class: 'print-note' },
     `Reisadviezen-buddy · afgedrukt op ${new Date().toLocaleString('nl-NL')} · ${location.href}`));
-  frag.append(renderSummaryTable(nl, okSources, problems, staticData.country.iso3));
+  // cmp (thema's × bronnen) wordt hier al opgebouwd — niet pas verderop bij de
+  // matrix — omdat de "Laatste wijziging"-kolom in de tabel eronder al moet
+  // weten in welk thema een recent toegevoegde zin nu staat (voor de
+  // spring-naar-matrix-link).
+  const cmp = buildComparison(nl, okSources);
+  const changesBySource = resolveRecentChanges(staticData.country.iso3, okSources, cmp);
+  frag.append(renderSummaryTable(nl, okSources, problems, staticData.country.iso3, changesBySource));
   if (nl.colors?.colors?.length > 1) {
     const ul = el('ul', { class: 'color-contexts' });
     nl.colors.colors.forEach((c) => ul.append(el('li', {}, el('strong', {}, `${COLOR_LABELS[c.color]}: `), c.context)));
@@ -1820,8 +1943,7 @@ function renderComparison(staticData, foreign, root) {
 
   frag.append(topicWrap);
 
-  // ---- Vergelijking per thema ----
-  const cmp = buildComparison(nl, okSources);
+  // ---- Vergelijking per thema (cmp is hierboven al opgebouwd) ----
   if (cmp.missingFromNl.length) {
     const gapBtn = el('button', { class: 'btn primary', type: 'button', onclick: () => {
       activateTab('gaps'); activateGapMode('single');
@@ -1888,7 +2010,7 @@ function renderComparison(staticData, foreign, root) {
       clear));
   }
 
-  frag.append(renderMatrix(cmp, nl, okSources));
+  frag.append(renderMatrix(cmp, nl, okSources, changesBySource));
   frag.append(el('p', { class: 'hint', style: 'margin-top:10px' },
     'De kolomkoppen en de themakolom blijven staan tijdens scrollen. Verwijder een bron met × in de kop; voeg er een toe met "+ Bron toevoegen". ',
     MATRIX_DENSITY === 'compact'
@@ -1924,7 +2046,12 @@ function initMatrixClamp(root) {
  * verwijderen (×) of toe te voegen (+ Bron toevoegen). Veel bronnen → de matrix
  * scrolt horizontaal.
  */
-function renderMatrix(cmp, nl, okSources) {
+function renderMatrix(cmp, nl, okSources, changesBySource = null) {
+  // Cel-id's die een link uit de "Laatste wijziging"-kolom naar toe kan
+  // springen — die cellen krijgen een blijvende markering + het NIEUW-label.
+  const changeTargetIds = new Set();
+  if (changesBySource) for (const items of changesBySource.values()) for (const it of items) if (it.targetId) changeTargetIds.add(it.targetId);
+
   const cols = [
     { id: '__nl', label: 'NederlandWereldwijd', flag: '🇳🇱', nl: true },
     ...okSources.map((s) => ({ id: s.source, label: s.sourceLabel, flag: s.flag, src: s })),
@@ -1997,24 +2124,37 @@ function renderMatrix(cmp, nl, okSources) {
     const anyContent = re ? true : (t.nlHasIt || t.foreignHasIt);
     grid.append(el('div', { class: 'cell rowlabel' }, t.theme.label));
     grid.append(cellFor(nlBlocks, false, anyContent, re, nl.url));
-    fBlocks.forEach((b, i) => grid.append(cellFor(b, true, anyContent, re, okSources[i].url)));
+    fBlocks.forEach((b, i) => {
+      const cellId = matrixCellId(okSources[i].source, t.theme.id);
+      const isChanged = changeTargetIds.has(cellId);
+      grid.append(cellFor(b, true, anyContent, re, okSources[i].url, isChanged ? cellId : null, isChanged));
+    });
     grid.append(el('div', { class: 'cell addcol' }));
   });
 
   return el('div', { class: 'matrix' }, grid);
 }
 
-/** Eén matrix-cel: thema-blokken of een (eventueel gemarkeerde) leegte. */
-function cellFor(blocks, foreign, anyContent, mark, sourceUrl) {
+/**
+ * Eén matrix-cel: thema-blokken of een (eventueel gemarkeerde) leegte.
+ * `cellId`/`isChanged`: gezet wanneer deze cel het doel is van een
+ * "Laatste wijziging"-link in de samenvattingstabel — krijgt een blijvende
+ * markering + NIEUW-label, en het id waar die link naartoe springt.
+ */
+function cellFor(blocks, foreign, anyContent, mark, sourceUrl, cellId, isChanged) {
   if (blocks && blocks.length) {
+    const attrs = cellId ? { id: cellId } : {};
+    const cls = 'cell txt' + (isChanged ? ' has-recent-change' : '');
+    const newTag = isChanged ? el('span', { class: 'new-tag' }, 'NIEUW SINDS VORIGE SNAPSHOT') : null;
     // 'plain': altijd platte tekst → één uniform lettertype in alle cellen.
     // Compact: volledige tekst renderen maar visueel afkappen (cellclamp);
     // de per-blok "Lees volledige tekst"-knoppen zouden daar dubbelop zijn.
     if (MATRIX_DENSITY === 'compact') {
-      return el('div', { class: 'cell txt' },
+      return el('div', { class: cls, ...attrs },
+        newTag,
         el('div', { class: 'cellclamp' }, renderBlocks(blocks, foreign, { full: true, plain: true, mark, sourceUrl })));
     }
-    return el('div', { class: 'cell txt' }, renderBlocks(blocks, foreign, { plain: true, mark, sourceUrl }));
+    return el('div', { class: cls, ...attrs }, newTag, renderBlocks(blocks, foreign, { plain: true, mark, sourceUrl }));
   }
   // Leeg terwijl andere bronnen het thema wél behandelen = opvallend hiaat.
   return el('div', { class: 'cell txt empty' + (anyContent ? ' miss' : '') },
