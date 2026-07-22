@@ -20,22 +20,25 @@ import { SEVERITY_LABELS } from './severity-detector.js';
 
 const norm = (s) => (s || '').replace(/\s+/g, ' ').toLowerCase();
 
-/** Landelijk niveau uit de "Grundsätzliche Einschätzung"-tekst. */
+/**
+ * Landelijk niveau uit de "Grundsätzliche Einschätzung"-tekst. Het EDA zet
+ * het landelijke oordeel altijd in de EERSTE zin ("Von Reisen … wird
+ * abgeraten", "… gelten grundsätzlich als sicher", …); regionale nuances
+ * komen in latere zinnen. Daarom classificeren we de eerste zin — zo maakt
+ * het niet uit of het land "nach X", "in dieses Land" of "in die Ukraine/den
+ * Irak" (lidwoord-landen) heet, en tilt een rode regiozone het landniveau
+ * niet op.
+ */
 export function classifyChNational(grundText) {
   const t = norm(grundText);
   if (!t) return null;
-  // Volgorde: eerst de "nicht dringend/touristisch"-vorm (3), anders de
-  // ongekwalificeerde landelijke "wird abgeraten" (4) — zodat een 3-zin niet
-  // per ongeluk als 4 telt.
-  if (/(?:von )?(?:nicht dringend notwendige[nr]?|touristische[nr]?) reisen[^.]{0,90}wird abgeraten/.test(t)) return 3;
-  if (/von reisen (?:nach [^.,;]{0,40}|in dieses land|in das land)[^.]{0,90}wird abgeraten/.test(t)
-    || /von reisen[^.]{0,10}(?:und von aufenthalten|jeder art)[^.]{0,50}wird abgeraten/.test(t)) return 4;
-  if (/aufmerksamkeit zu schenken|erh[öo]hte vorsicht|besondere vorsicht/.test(t)) return 2;
-  if (/grunds[äa]tzlich als sicher/.test(t)) return 1;
-  // Vangnet: staat er ergens een landelijke "wird abgeraten" zonder scope?
-  if (/wird abgeraten/.test(t) && !/region|provinz|gebiet|landesteil|grenz/.test(t)) {
-    return /nicht dringend|touristisch/.test(t) ? 3 : 4;
-  }
+  const first = t.split(/\.\s/)[0] || t; // eerste zin = het landelijke oordeel
+  // "nicht dringend notwendige / touristische Reisen … wird abgeraten" (3) vóór
+  // de ongekwalificeerde "wird abgeraten" (4).
+  if (/(?:nicht dringend notwendige[nr]?|touristische[nr]?) reisen[^.]{0,90}wird abgeraten/.test(first)) return 3;
+  if (/wird abgeraten/.test(first)) return 4;
+  if (/aufmerksamkeit zu schenken|erh[öo]hte vorsicht|besondere vorsicht/.test(first)) return 2;
+  if (/grunds[äa]tzlich als sicher/.test(first)) return 1;
   return null;
 }
 

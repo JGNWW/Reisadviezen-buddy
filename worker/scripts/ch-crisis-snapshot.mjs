@@ -78,7 +78,7 @@ async function main() {
     if (!iso) { stats.geen_iso++; continue; }
     if (only.length && !only.includes(iso)) continue;
     const a = assessChAdvisory(b.grund, b.full);
-    if (!a) { stats.geen_formule++; if (process.env.DIAG) console.log(`  ${iso} (${b.iso2}): geen formule — overslaan`); continue; }
+    if (!a) { stats.geen_formule++; if (process.env.DIAG) console.log(`  ${iso} (${b.iso2}): geen formule — overslaan · grund="${(b.grund || '').slice(0, 120)}"`); continue; }
     byIso[iso] = { ...a, date: parseEditedDate(b.date), grund: b.grund, full: b.full };
   }
 
