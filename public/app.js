@@ -584,7 +584,27 @@ function setupSourcePicker() {
     addBtn.setAttribute('aria-expanded', String(open));
   });
   document.addEventListener('click', (e) => { if (!$('#source-add').contains(e.target)) closeMenu(); });
+  $('#source-select-all')?.addEventListener('click', selectAllSources);
+  $('#source-select-none')?.addEventListener('click', deselectAllSources);
   renderSourcePicker();
+}
+
+/** Selecteert in één klik alle beschikbare bronnen (i.p.v. ze stuk voor stuk toe te voegen). */
+function selectAllSources() {
+  SELECTED_SOURCES = allSourceIds();
+  saveSelectedSources();
+  renderSourcePicker();
+  syncUrl();
+  rerunLastCompare();
+}
+/** Verwijdert in één klik alle geselecteerde bronnen. */
+function deselectAllSources() {
+  if (!SELECTED_SOURCES.length) return;
+  SELECTED_SOURCES = [];
+  saveSelectedSources();
+  renderSourcePicker();
+  syncUrl();
+  rerunLastCompare();
 }
 
 function renderSourcePicker() {
@@ -592,6 +612,11 @@ function renderSourcePicker() {
   if (!chips) return;
   chips.innerHTML = '';
   const sel = orderedSelected();
+  const total = allSourceIds().length;
+  const selectAllBtn = $('#source-select-all');
+  const selectNoneBtn = $('#source-select-none');
+  if (selectAllBtn) selectAllBtn.disabled = sel.length >= total;
+  if (selectNoneBtn) selectNoneBtn.disabled = !sel.length;
   if (!sel.length) {
     chips.append(el('span', { class: 'hint', style: 'margin:0' }, 'Geen bronnen gekozen — voeg er minstens één toe.'));
   }
