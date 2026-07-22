@@ -132,6 +132,90 @@ function applyMapColor(out, mc) {
   return out;
 }
 
+/** Gecombineerde tekstlengte van de thema's — om een volwaardig advies te
+ *  onderscheiden van een lege SPA-schil (die live nauwelijks tekst teruggeeft). */
+export function textVolume(adv) {
+  return (adv?.themes || []).reduce((n, t) => n + (t?.text ? String(t.text).length : 0), 0);
+}
+export const MIN_USABLE_TEXT = 400; // minder is geen bruikbaar advies, alleen een schil
+
+/** Heeft dit resultaat toonbare adviestekst (ten minste één thema met tekst)? */
+const hasText = (adv) => !!(adv && adv.themes?.some((t) => t && t.text));
+
+/**
+ * Kiest — puur, zonder neveneffecten — welke van de twee kandidaten getoond
+ * wordt: het live-resultaat of de opgeslagen snapshot. Twee uitgangspunten:
+ *
+ *   • Live heeft voorrang (het actueelst); de snapshot is enkel vangnet. (#2)
+ *   • De adviestekst wint van "niets": zodra er tekst is wordt die getoond,
+ *     ook als het niveau/de kleur ontbreekt (die blijft dan 'onbekend'). (#1)
+ *
+ * Voorrang (eerste die past):
+ *   1. Live mét betrouwbaar niveau     → 'live'  (vers + kleur)
+ *   2. Live met volwaardige tekst       → 'live'  (vers; kleur mag ontbreken)
+ *   3. Snapshot (heeft altijd tekst)    → 'snap'  (vangt de lege-schil-bron op)
+ *   4. Live met wat-dan-ook aan tekst   → 'live'
+ *   5. Niets bruikbaars                 → 'none'
+ *
+ * @returns {'live'|'snap'|'none'}
+ */
+export function pickSourceResult(live, snap) {
+  if (live && live.level != null && live.assessmentStatus !== 'uncertain') return 'live';
+  if (live && textVolume(live) >= MIN_USABLE_TEXT) return 'live';
+  if (hasText(snap)) return 'snap';
+  if (hasText(live)) return 'live';
+  return 'none';
+}
+
+/**
+ * Lost één bron op: probeert ALTIJD eerst live op te halen en valt uitsluitend
+ * bij mislukking terug op de laatste snapshot (zie pickSourceResult voor de
+ * exacte voorrang). Zorgt dat een niveauloos-maar-tekstrijk resultaat toch de
+ * tekst toont met een 'onbekende' kleur.
+ */
+async function resolveSource(s, iso, rec, translateTo) {
+  const adapter = ADAPTERS[s];
+  const id = sourceId(iso, s);
+  const lang = adapter.meta.lang || 'en';
+  const srcUrl = (() => { try { return adapter.sourceUrl?.(id, { iso, en: rec.en }) || null; } catch { return null; } })();
+  if (!id) return { source: s, unavailable: true, label: adapter.meta.label, url: srcUrl };
+
+  // ---- Altijd eerst LIVE proberen (actueelst).
+  let live = null, liveError = null;
+  try {
+    live = await adapter.getAdvisory(id, { iso, en: rec.en, nl: rec.nl });
+  } catch (e) {
+    liveError = e;
+  }
+
+  // Alleen een snapshot ophalen als live niet meteen een betrouwbaar niveau
+  // gaf — scheelt een netwerkrondje in het gangbare geval. snapshotFallback
+  // geeft null zonder tekst, dus een teruggegeven snapshot bevat altijd thema's.
+  const liveConfident = live && live.level != null && live.assessmentStatus !== 'uncertain';
+  const snap = liveConfident ? null : await snapshotFallback(iso, s);
+
+  switch (pickSourceResult(live, snap)) {
+    case 'live': {
+      live.mapProxy = live.hasMap ? `/map/${s}/${iso}` : null;
+      live.lang = lang;
+      // Tekst zonder betrouwbaar niveau: de kleur ontbreekt bewust (frontend
+      // toont 'Onzeker'), maar de tekst blijft staan.
+      if (live.level == null && !live.assessmentStatus) live.assessmentStatus = 'uncertain';
+      return await applyTranslation(live, translateTo);
+    }
+    case 'snap': {
+      snap.lang = snap.lang || lang;
+      if (snap.level == null && !snap.assessmentStatus) snap.assessmentStatus = 'uncertain';
+      return await applyTranslation(snap, translateTo);
+    }
+    default:
+      // Echt niets bruikbaars — alleen de bronlink zodat de redacteur zelf kan kijken.
+      return liveError
+        ? { source: s, error: String(liveError.message || liveError), label: adapter.meta.label, url: srcUrl }
+        : { source: s, unavailable: true, label: adapter.meta.label, url: srcUrl };
+  }
+}
+
 /** Vertaalt (indien gevraagd) de thema's van een advies naar de doeltaal. */
 async function applyTranslation(adv, translateTo) {
   if (!translateTo || adv.lang === translateTo || !adv.themes?.length) return adv;
@@ -179,61 +263,11 @@ export default {
         // als override op elke bron die een zonekaart heeft).
         const mcAll = await mapColorsFor(iso);
         const results = await Promise.all(
-          requested.map(async (s) => {
-            const mc = mcAll?.[s];
-            const out = await (async () => {
-            const id = sourceId(iso, s);
-            // Klikbare bron-URL, ook als de fetch straks faalt of geen mapping
-            // bestaat — zo kan de redacteur die ene bron altijd zelf nakijken.
-            const srcUrl = (() => { try { return ADAPTERS[s].sourceUrl?.(id, { iso, en: rec.en }) || null; } catch { return null; } })();
-            if (!id) return { source: s, unavailable: true, label: ADAPTERS[s].meta.label, url: srcUrl };
-            try {
-              // Context (ISO3 + Engelse naam) voor adapters die geen per-land
-              // URL scrapen maar in een gedeelde feed zoeken (VS-RSS).
-              const adv = await ADAPTERS[s].getAdvisory(id, { iso, en: rec.en, nl: rec.nl });
-              if (!adv) {
-                // Bron gaf niets (bijv. geblokkeerd zonder exceptie) → een
-                // snapshot mét bruikbaar niveau serveren; een niveauloze
-                // (onzekere) snapshot voegt niets toe en zou alleen ruis geven.
-                const snap = await snapshotFallback(iso, s);
-                if (snap && snap.level != null) {
-                  snap.lang = snap.lang || ADAPTERS[s].meta.lang || 'en';
-                  return await applyTranslation(snap, translateTo);
-                }
-                return { source: s, unavailable: true, label: ADAPTERS[s].meta.label, url: srcUrl };
-              }
-              // Live gelukt maar zónder bruikbaar niveau, terwijl de snapshot
-              // er wél een heeft (bijv. een SPA-schil die live nauwelijks tekst
-              // geeft, maar in de browser-snapshot volledig gerenderd is) →
-              // de zekere-maar-oudere snapshot is dan informatiever.
-              if ((adv.level == null || adv.assessmentStatus === 'uncertain')) {
-                const snap = await snapshotFallback(iso, s);
-                if (snap && snap.level != null && snap.assessmentStatus === 'ok') {
-                  snap.lang = snap.lang || ADAPTERS[s].meta.lang || 'en';
-                  return await applyTranslation(snap, translateTo);
-                }
-              }
-              adv.mapProxy = adv.hasMap ? `/map/${s}/${iso}` : null;
-              adv.lang = ADAPTERS[s].meta.lang || 'en';
-              // Vertaal op verzoek naar de doeltaal. Alleen bronnen die al in
-              // de doeltaal zijn slaan we over (Engelse bron + translate=en, of
-              // een NL-doel dat toevallig al klopt). Zo wordt bij 'Nederlands'
-              // óók de Engelstalige bron (UK/US/…) naar het NL vertaald.
-              return await applyTranslation(adv, translateTo);
-            } catch (e) {
-              // Live mislukt → laatste snapshot serveren (met stale-markering)
-              // in plaats van de bron te laten verdwijnen.
-              const snap = await snapshotFallback(iso, s);
-              if (snap) {
-                snap.lang = snap.lang || ADAPTERS[s].meta.lang || 'en';
-                return await applyTranslation(snap, translateTo);
-              }
-              return { source: s, error: String(e.message || e), label: ADAPTERS[s].meta.label, url: srcUrl };
-            }
-            })();
-            // Kleur preciezer maken met de kaart-afgeleide waardering.
-            return applyMapColor(out, mc);
-          })
+          requested.map(async (s) =>
+            // Live-eerst met snapshot-vangnet (resolveSource), daarna de kleur
+            // preciezer maken met de uit de zonekaart afgeleide waardering.
+            applyMapColor(await resolveSource(s, iso, rec, translateTo), mcAll?.[s])
+          )
         );
 
         return json(
