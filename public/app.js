@@ -43,10 +43,11 @@ const LEVEL_COLORS = ['', 'groen', 'geel', 'oranje', 'rood'];
 //   'nl'   → vertaald naar Nederlands (Engelse bronnen blijven Engels)
 //   'en'   → vertaald naar Engels (Engelse bronnen blijven origineel)
 //   'orig' → onvertaald, in de brontaal
-// Sleutel bewust hernoemd (v2): de standaardtaal wijzigde van 'nl' naar
-// 'orig', en zonder nieuwe sleutel zou een eerder opgeslagen voorkeur (bijv.
-// 'nl' of 'en' uit vóór deze wijziging) die nieuwe standaard overschaduwen.
-let COMPARE_LANG = localStorage.getItem('compareLangV2') || 'orig';
+// Start ALTIJD op 'Origineel', ongeacht een eerdere keuze: de taalkeuze wordt
+// bewust niet meer onthouden tussen bezoeken. Een gedeelde link met ?taal=…
+// (zie initFromUrl) blijft die expliciete keuze wél honoreren — dat is geen
+// "selectiegeschiedenis" maar een bewuste deellink.
+let COMPARE_LANG = 'orig';
 // Matrix-weergave: 'compact' (cellen ingeklapt tot ±4 regels) of 'volledig'.
 let MATRIX_DENSITY = localStorage.getItem('matrixDensity') || 'compact';
 // Verborgen thema-rijen in de matrix (punt 17), gedeeld over alle landen.
@@ -159,7 +160,7 @@ function syncUrl(push = false) {
   updateUrl({
     land: LAST_COMPARE?.country?.iso3 || null,
     bronnen: cur === defaultSourceIds().join(',') ? null : cur,
-    taal: COMPARE_LANG === 'nl' ? null : COMPARE_LANG,
+    taal: COMPARE_LANG === 'orig' ? null : COMPARE_LANG,
   }, push);
 }
 
@@ -810,7 +811,8 @@ async function setCompareLang(lang) {
   if (lang === COMPARE_LANG || LANG_SWITCH_BUSY) return;
   const prev = COMPARE_LANG;
   COMPARE_LANG = lang;
-  localStorage.setItem('compareLangV2', lang);
+  // Keuze bewust NIET in localStorage bewaren: elk nieuw bezoek start op
+  // 'Origineel'. Binnen de sessie houdt de URL (syncUrl) de keuze vast.
   $$('#lang-seg button').forEach((b) => b.classList.toggle('on', b.dataset.lang === lang));
   syncUrl();
   if (!LAST_COMPARE) return;
