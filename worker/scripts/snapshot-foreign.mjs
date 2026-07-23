@@ -53,10 +53,11 @@ import * as norway from '../src/adapters/norway.js';
 import * as austria from '../src/adapters/austria.js';
 import * as switzerland from '../src/adapters/switzerland.js';
 import { setReaderKey, setCorsProxy } from '../src/lib/fetch.js';
-import { translate } from '../src/lib/translate.js';
+import { translate, configureTranslator } from '../src/lib/translate.js';
 
 setReaderKey(process.env.JINA_KEY);
 setCorsProxy(process.env.CORS_PROXY_URL);
+configureTranslator(process.env); // zelfde vertaalbackend-keuze als de Worker
 
 const ADAPTERS = { uk, us, ca: canada, ie: ireland, fr: france, au: australia, es: spain, de: germany, nz: newzealand, dk: denmark, jp: japan, it: italy, fi: finland, kr: southkorea, no: norway, at: austria, ch: switzerland };
 const SOURCE_LANG = { uk: 'en', us: 'en', ca: 'en', ie: 'en', au: 'en', fr: 'fr', es: 'es', de: 'de', nz: 'en', dk: 'da', jp: 'ja', it: 'it', fi: 'fi', kr: 'ko', no: 'no', at: 'de', ch: 'de' };

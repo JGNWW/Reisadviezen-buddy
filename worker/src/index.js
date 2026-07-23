@@ -31,7 +31,7 @@ import * as southkorea from './adapters/southkorea.js';
 import * as norway from './adapters/norway.js';
 import * as austria from './adapters/austria.js';
 import * as switzerland from './adapters/switzerland.js';
-import { translate, translateBlocks } from './lib/translate.js';
+import { translate, translateBlocks, configureTranslator } from './lib/translate.js';
 import { classifyTheme } from './lib/themes.js';
 import { setReaderKey, setCorsProxy } from './lib/fetch.js';
 
@@ -237,6 +237,7 @@ export default {
     if (request.method === 'OPTIONS') return new Response(null, { headers: CORS });
     setReaderKey(env?.JINA_KEY); // optioneel: hogere limieten voor de reader-proxy
     setCorsProxy(env?.CORS_PROXY_URL); // optioneel: fallback-proxy als directe fetch faalt
+    configureTranslator(env); // vertaalbackend uit secrets (DEEPL_KEY / LIBRETRANSLATE_URL), anders Google
 
     const url = new URL(request.url);
     const parts = url.pathname.split('/').filter(Boolean);

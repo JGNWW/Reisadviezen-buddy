@@ -21,3 +21,13 @@ compatibility_flags = ["nodejs_compat"]
 # CORS-proxy als secret; de waarde komt nooit in de broncode terecht:
 #   npx wrangler secret put CORS_PROXY_URL
 # Zonder deze secret werkt alles gewoon door met alleen de directe fetch.
+#
+# Optioneel: vertaalbackend. Standaard vertaalt de Worker via het gratis
+# (niet-officiële) Google-endpoint — geen key nodig, maar het rate-limit't
+# onder druk. Voor betere/betrouwbaardere vertaling kies je een backend via
+# een secret (voorrang: DeepL > LibreTranslate > Google):
+#   npx wrangler secret put DEEPL_KEY          # DeepL (gratis tier: 500k tekens/mnd) — aanbevolen
+#   npx wrangler secret put LIBRETRANSLATE_URL # zelf-gehoste LibreTranslate (bijv. https://vertaal.mijndomein.nl)
+#   npx wrangler secret put LIBRETRANSLATE_KEY # optioneel, als jouw LibreTranslate een key eist
+# Zet je niets, dan blijft Google de standaard. Zelfde secretnamen gelden ook
+# als GitHub-repo-secret voor de snapshot-CI (die vertaalt de wijzigingsfeed).
