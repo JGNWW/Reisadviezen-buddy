@@ -2214,38 +2214,54 @@ function renderBlocks(blocks, foreign = false, opts = {}) {
   blocks.forEach((b) => {
     // Vertaalde weergave (NL of EN) tenzij de taalkeuze op 'Origineel' staat.
     const useTranslated = foreign && COMPARE_LANG !== 'orig' && (b.textNl || b.headingNl);
-    const heading = useTranslated && b.headingNl ? b.headingNl : b.heading;
-    const fullText = useTranslated && b.textNl ? b.textNl : (b.text || '');
+    const origHeading = b.heading || '';
+    const heading = useTranslated && b.headingNl ? b.headingNl : origHeading;
+    const origText = b.text || '';
+    const fullText = useTranslated && b.textNl ? b.textNl : origText;
     // In 'plain'-modus (matrix) nooit de rijke bron-HTML injecteren: platte,
     // ge-escapete tekst geeft één uniform lettertype in alle cellen.
-    const fullHtml = plain ? null : (useTranslated && b.textNl ? null : (b.html || null));
+    const origHtml = plain ? null : (b.html || null);
+    const fullHtml = useTranslated && b.textNl ? null : origHtml;
 
+    const headingEl = heading ? el('div', { class: 'block-heading' }, heading) : null;
     const blockEl = el('div', { class: 'block' },
-      heading ? el('div', { class: 'block-heading' }, heading) : null,
+      headingEl,
       b.category && b.category !== heading ? el('div', { class: 'block-cat' }, b.category) : null);
 
-    if (!noTrunc && fullText.length > SNIPPET_MAXLEN) {
-      let expanded = false;
-      const shortNode = el('div', { class: 'rich' }, fullText.slice(0, SNIPPET_MAXLEN).trim() + '…');
-      const fullNode = el('div', { class: 'rich', html: fullHtml || markText(fullText, mark) });
-      fullNode.hidden = true;
-      const toggle = el('button', { class: 'btn-link', type: 'button' }, `Lees volledige tekst (${fullText.length} tekens) →`);
-      toggle.addEventListener('click', () => {
-        expanded = !expanded;
-        shortNode.hidden = expanded;
-        fullNode.hidden = !expanded;
-        toggle.textContent = expanded ? '▲ Inklappen' : `Lees volledige tekst (${fullText.length} tekens) →`;
-      });
-      blockEl.append(shortNode, fullNode, toggle);
-    } else {
-      blockEl.append(el('div', { class: 'rich', html: fullHtml || markText(fullText, mark) }));
+    // Tekst in een eigen host zodat de per-blok vertaalknoppen hem in-place
+    // kunnen vervangen (met behoud van de "Lees volledige tekst"-inkorting).
+    const textHost = el('div', { class: 'block-text' });
+    function renderText(text, html) {
+      textHost.textContent = '';
+      if (!noTrunc && text.length > SNIPPET_MAXLEN) {
+        let expanded = false;
+        const shortNode = el('div', { class: 'rich' }, text.slice(0, SNIPPET_MAXLEN).trim() + '…');
+        const fullNode = el('div', { class: 'rich', html: html || markText(text, mark) });
+        fullNode.hidden = true;
+        const toggle = el('button', { class: 'btn-link', type: 'button' }, `Lees volledige tekst (${text.length} tekens) →`);
+        toggle.addEventListener('click', () => {
+          expanded = !expanded;
+          shortNode.hidden = expanded;
+          fullNode.hidden = !expanded;
+          toggle.textContent = expanded ? '▲ Inklappen' : `Lees volledige tekst (${text.length} tekens) →`;
+        });
+        textHost.append(shortNode, fullNode, toggle);
+      } else {
+        textHost.append(el('div', { class: 'rich', html: html || markText(text, mark) }));
+      }
     }
+    renderText(fullText, fullHtml);
+    blockEl.append(textHost);
+
+    // Actiebalk onder de tekst: bron-deeplink + (voor buitenlandse blokken)
+    // vertaalvlaggetjes. Ná de tekst, niet ervóór — een link/knoppenrij boven
+    // de tekst verdrong anders leestekst in de ingeklapte matrixweergave
+    // (cellclamp knipt op vaste hoogte af).
+    const actions = el('div', { class: 'block-actions' });
 
     // Deeplink naar de exacte passage op de bronpagina (Text-Fragment,
     // Edge/Chrome); zonder geschikte ankertekst valt terug op de kale
-    // bron-URL, zodat er altijd een link is. Ná de tekst, niet ervóór — een
-    // link boven de tekst verdrong anders leestekst in de ingeklapte
-    // matrixweergave (cellclamp knipt op vaste hoogte af).
+    // bron-URL, zodat er altijd een link is.
     // b.url (indien aanwezig) is de URL van de sub-pagina waar dít blok
     // daadwerkelijk staat — sommige bronnen (bijv. GOV.UK) verdelen één
     // advies over meerdere sub-pagina's; de algemene bron-URL bevat dan
@@ -2259,13 +2275,74 @@ function renderBlocks(blocks, foreign = false, opts = {}) {
       // markering kan niet oplichten zolang het paneel dicht is. Zeg dat
       // eerlijk in de tooltip i.p.v. een markering te beloven die uitblijft.
       const isTabAnchored = blockUrl.includes('#');
-      blockEl.append(el('a', {
+      actions.append(el('a', {
         href: frag, target: '_blank', rel: 'noopener', class: 'frag-link block-frag-link',
         title: isTabAnchored
           ? 'Opent de bron bij dit onderwerp — klik het onderwerp-tabblad aan om het uit te klappen.'
           : 'Opent de bronpagina met deze passage geel gemarkeerd (Edge/Chrome).',
       }, '🔗 bekijk in bron'));
     }
+
+    // Vertaalvlaggetjes: alleen voor buitenlandse blokken (er is dan een
+    // bron-/vreemde tekst om te vertalen). 🇳🇱 vertaalt dit fragment naar het
+    // Nederlands, 🇬🇧 naar het Engels; nogmaals klikken zet het terug op de
+    // originele brontekst. NL hergebruikt de al geladen vertaling (b.textNl)
+    // zonder netwerkverkeer; anders vertaalt de Worker het fragment live.
+    if (foreign && (origText || origHeading)) {
+      // De initieel getoonde tekst volgt de globale taalkeuze: bij 'nl'/'en'
+      // bevat b.textNl de vertaling in die taal (de Worker vult het veld met
+      // de gevraagde doeltaal), bij 'orig' tonen we de brontekst.
+      let snipLang = useTranslated ? COMPARE_LANG : 'orig';
+      const nlBtn = el('button', { class: 'snip-flag', type: 'button', 'aria-label': 'Vertaal dit fragment naar het Nederlands', title: 'Vertaal dit fragment naar het Nederlands' }, '🇳🇱');
+      const enBtn = el('button', { class: 'snip-flag', type: 'button', 'aria-label': 'Vertaal dit fragment naar het Engels', title: 'Vertaal dit fragment naar het Engels (English)' }, '🇬🇧');
+      const setActive = () => {
+        nlBtn.classList.toggle('active', snipLang === 'nl');
+        enBtn.classList.toggle('active', snipLang === 'en');
+      };
+      setActive();
+
+      const restoreOrig = () => {
+        snipLang = 'orig';
+        if (headingEl) headingEl.textContent = origHeading;
+        renderText(origText, origHtml);
+        setActive();
+      };
+
+      async function toTranslated(lang, btn) {
+        if (snipLang === lang) { restoreOrig(); return; }
+        // De doeltaal van de globale keuze staat al lokaal klaar (b.textNl) →
+        // direct tonen, zonder netwerk. (Bij COMPARE_LANG 'nl' geldt dit voor
+        // de NL-knop, bij 'en' voor de EN-knop.)
+        if (lang === COMPARE_LANG && b.textNl) {
+          snipLang = lang;
+          if (headingEl && b.headingNl) headingEl.textContent = b.headingNl;
+          renderText(b.textNl, null);
+          setActive();
+          return;
+        }
+        if (!getProxy()) return; // zonder proxy geen live vertaling mogelijk
+        btn.classList.add('loading');
+        nlBtn.disabled = enBtn.disabled = true;
+        try {
+          const [tText, tHead] = await Promise.all([
+            origText ? translateText(origText, lang, 'auto') : Promise.resolve(''),
+            origHeading ? translateText(origHeading, lang, 'auto') : Promise.resolve(''),
+          ]);
+          snipLang = lang;
+          if (headingEl && tHead) headingEl.textContent = tHead;
+          renderText(tText || origText, null);
+          setActive();
+        } finally {
+          btn.classList.remove('loading');
+          nlBtn.disabled = enBtn.disabled = false;
+        }
+      }
+      nlBtn.addEventListener('click', () => toTranslated('nl', nlBtn));
+      enBtn.addEventListener('click', () => toTranslated('en', enBtn));
+      actions.append(el('span', { class: 'snip-flags' }, nlBtn, enBtn));
+    }
+
+    if (actions.childNodes.length) blockEl.append(actions);
     wrap.append(blockEl);
   });
   return wrap;
