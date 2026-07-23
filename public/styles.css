@@ -544,7 +544,9 @@ input:focus, select:focus { outline: 2px solid var(--link); outline-offset: 0; b
   background: none; cursor: pointer; line-height: 1; font-size: 13px;
   opacity: .55; transition: opacity .12s, border-color .12s, background .12s;
 }
-.snip-flag .flag-img { width: 18px; height: auto; display: block; border-radius: 2px; }
+/* Vlaggen hebben verschillende beeldverhoudingen (NL 3:2, GB 2:1); fixeer de
+   hoogte (niet de breedte) zodat ze even hoog op één lijn staan. */
+.snip-flag .flag-img { height: 12px; width: auto; display: block; border-radius: 2px; object-fit: contain; }
 .snip-flag:hover { opacity: 1; background: #f0f3f8; }
 .snip-flag.active { opacity: 1; border-color: var(--link, #007bc7); background: #eaf1fd; }
 .snip-flag.loading { opacity: .4; cursor: progress; }
