@@ -1067,7 +1067,15 @@ function buildComparison(nl, foreignSources) {
 // gedetecteerde tekstwijzigingen (recent-changes.json — dezelfde data als het
 // tabje Recente wijzigingen) aan het thema waar de toegevoegde tekst nu in de
 // matrix staat, zodat een klik precies naar die cel kan springen.
+//
+// Vast tijdvenster i.p.v. "sinds de vorige snapshot": veel landen worden niet
+// elke keer opnieuw bekeken, dus "vorige snapshot" kan weken/maanden terug
+// liggen. In plaats daarvan: alles wat in de afgelopen CHANGE_WINDOW_DAYS is
+// gedetecteerd telt als "recent". Is dezelfde sectie binnen dat venster
+// meermaals gewijzigd, dan telt alleen de nieuwste wijziging — een latere
+// update vervangt de vorige in de lijst, in plaats van dat beide blijven staan.
 // ==========================================================================
+const CHANGE_WINDOW_DAYS = 14;
 const MAX_CHANGE_ITEMS = 6; // per bron; ruim genoeg voor de praktijk, voorkomt een oneindige lijst
 const normChangeText = (s) => String(s || '').toLowerCase().replace(/\s+/g, ' ').trim();
 
@@ -1079,12 +1087,16 @@ function matrixCellId(sourceId, themeId) {
 
 /**
  * Map<sourceId, Array<{date, kind, heading, sentence, targetId}>> — per
- * geselecteerde bron de recent gedetecteerde toevoegingen voor DIT land,
- * nieuwste eerst. `targetId` is de matrixcel-id waar die zin nu staat (null
- * als de tekst niet (meer) terug te vinden is, bijv. na vertaling).
+ * geselecteerde bron de wijzigingen voor DIT land binnen de afgelopen
+ * CHANGE_WINDOW_DAYS dagen, nieuwste eerst en gededupliceerd per sectie
+ * (heading): is dezelfde sectie meermaals gewijzigd binnen het venster, dan
+ * blijft alleen de nieuwste wijziging over. `targetId` is de matrixcel-id
+ * waar die zin nu staat (null als de tekst niet (meer) terug te vinden is,
+ * bijv. na vertaling).
  */
 function resolveRecentChanges(iso3, okSources, cmp) {
   const out = new Map();
+  const cutoff = new Date(Date.now() - CHANGE_WINDOW_DAYS * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
   const findThemeId = (sourceId, original) => {
     const needle = normChangeText(original).slice(0, 60);
     if (!needle) return null;
@@ -1097,7 +1109,7 @@ function resolveRecentChanges(iso3, okSources, cmp) {
   };
   for (const s of okSources) {
     const entries = (RECENT_CHANGES || []).filter(
-      (c) => c.iso3 === iso3 && c.source === s.source && c.kind === 'update' && c.sections?.length
+      (c) => c.iso3 === iso3 && c.source === s.source && c.kind === 'update' && c.sections?.length && c.date >= cutoff
     );
     const items = [];
     for (const c of entries) {
@@ -1111,8 +1123,19 @@ function resolveRecentChanges(iso3, okSources, cmp) {
       }
     }
     if (!items.length) continue;
-    items.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
-    const capped = items.slice(0, MAX_CHANGE_ITEMS);
+
+    // Per sectie (heading) alleen de nieuwste wijziging bewaren — een latere
+    // update aan diezelfde sectie vervangt de vorige i.p.v. beide te tonen.
+    const latestByHeading = new Map();
+    for (const it of items) {
+      const key = normChangeText(it.heading);
+      const cur = latestByHeading.get(key);
+      if (!cur || it.date > cur[0].date) latestByHeading.set(key, [it]);
+      else if (it.date === cur[0].date) cur.push(it);
+    }
+    const deduped = [...latestByHeading.values()].flat();
+    deduped.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+    const capped = deduped.slice(0, MAX_CHANGE_ITEMS);
     capped.forEach((it) => {
       const themeId = findThemeId(s.source, it.original);
       it.targetId = themeId ? matrixCellId(s.source, themeId) : null;
@@ -1299,7 +1322,9 @@ function renderSummaryTable(nl, okSources, naSources = [], iso3 = null, changesB
   const COLS = 7;
   const thead = el('thead', {}, el('tr', {},
     el('th', {}, 'Bron'), el('th', {}, 'Kleurcode'), el('th', {}, 'Regionaal'), el('th', {}, 'Origineel niveau'),
-    el('th', {}, 'Bijgewerkt'), el('th', {}, 'Laatste wijziging'), el('th', {}, '')));
+    el('th', {}, 'Bijgewerkt'),
+    el('th', { title: `Wijzigingen gedetecteerd in de afgelopen ${CHANGE_WINDOW_DAYS} dagen — ongeacht wanneer dit land voor het laatst bekeken is.` }, 'Laatste wijziging'),
+    el('th', {}, '')));
   table.append(thead);
   const tbody = el('tbody');
 
@@ -1368,12 +1393,16 @@ function renderSummaryTable(nl, okSources, naSources = [], iso3 = null, changesB
     el('a', { href: s.url, target: '_blank', rel: 'noopener' }, 'origineel →'),
     m ? [' · ', m.btn] : null);
 
-  // "Laatste wijziging"-cel: alleen gevuld als de dagelijkse snapshot-
-  // vergelijking sinds de vorige keer daadwerkelijk iets heeft toegevoegd bij
-  // deze bron voor dit land — exact dezelfde data als het tabje Recente
-  // wijzigingen. Eén wijziging: het citaat staat direct in de cel. Meerdere:
-  // onder een uitklapper (zelfde <details>-patroon als de gewijzigde secties
-  // in dat tabje). Elk citaat springt naar de bijbehorende cel in de matrix.
+  // "Laatste wijziging"-cel: alleen gevuld als de bron in de afgelopen
+  // CHANGE_WINDOW_DAYS dagen daadwerkelijk iets heeft toegevoegd voor dit
+  // land — exact dezelfde data als het tabje Recente wijzigingen, maar op een
+  // vast tijdvenster i.p.v. "sinds de vorige snapshot" (veel landen worden
+  // niet elke keer opnieuw bekeken). Is dezelfde sectie binnen dat venster
+  // meermaals gewijzigd, dan staat hier alleen de nieuwste wijziging — zie
+  // resolveRecentChanges. Eén wijziging: het citaat staat direct in de cel.
+  // Meerdere (verschillende secties): onder een uitklapper (zelfde
+  // <details>-patroon als de gewijzigde secties in dat tabje). Elk citaat
+  // springt naar de bijbehorende cel in de matrix.
   const wijzigingItem = (it) => {
     const q = it.sentence.length > 160 ? it.sentence.slice(0, 160).trim() + '…' : it.sentence;
     return el('div', { class: 'wijziging-item' },
@@ -1386,7 +1415,7 @@ function renderSummaryTable(nl, okSources, naSources = [], iso3 = null, changesB
     if (!items || !items.length) return el('td', { class: 'muted' }, '—');
     if (items.length === 1) return el('td', {}, wijzigingItem(items[0]));
     return el('td', {}, el('details', { class: 'wijziging-details' },
-      el('summary', {}, `${items.length} wijzigingen sinds vorige snapshot`),
+      el('summary', {}, `${items.length} wijzigingen in de afgelopen ${CHANGE_WINDOW_DAYS} dagen`),
       items.map(wijzigingItem)));
   };
 
