@@ -2055,9 +2055,13 @@ function renderComparison(staticData, foreign, root) {
   if (PENDING_BRIEFING === staticData.country.iso3) { PENDING_BRIEFING = null; openBriefing(); }
 }
 
-/** Voegt per daadwerkelijk afgekapte matrixcel een uitklap-knop toe. */
+/** Voegt per daadwerkelijk afgekapte matrixcel een uitklap-knop toe. Idempotent:
+ *  slaat cellen over die al een knop hebben, zodat een dubbele aanroep (bijv.
+ *  na een sprong-naar-cel die de cel al programmatisch opent) nooit een
+ *  tweede "Toon alles"/"Inklappen" toevoegt. */
 function initMatrixClamp(root) {
   root.querySelectorAll('.matrix .cell.txt:not(.empty)').forEach((cell) => {
+    if (cell.querySelector('.cell-more')) return;
     const cl = cell.querySelector('.cellclamp');
     if (!cl || cl.scrollHeight <= cl.clientHeight + 6) return;
     const btn = el('button', { type: 'button', class: 'cell-more' }, '▾ Toon alles');
@@ -2168,13 +2172,13 @@ function renderMatrix(cmp, nl, okSources, changesBySource = null) {
  * Eén matrix-cel: thema-blokken of een (eventueel gemarkeerde) leegte.
  * `cellId`/`isChanged`: gezet wanneer deze cel het doel is van een
  * "Laatste wijziging"-link in de samenvattingstabel — krijgt een blijvende
- * markering + NIEUW-label, en het id waar die link naartoe springt.
+ * markering + label, en het id waar die link naartoe springt.
  */
 function cellFor(blocks, foreign, anyContent, mark, sourceUrl, cellId, isChanged) {
   if (blocks && blocks.length) {
     const attrs = cellId ? { id: cellId } : {};
     const cls = 'cell txt' + (isChanged ? ' has-recent-change' : '');
-    const newTag = isChanged ? el('span', { class: 'new-tag' }, 'NIEUW SINDS VORIGE SNAPSHOT') : null;
+    const newTag = isChanged ? el('span', { class: 'new-tag' }, 'RECENTELIJK GEÜPDATET') : null;
     // 'plain': altijd platte tekst → één uniform lettertype in alle cellen.
     // Compact: volledige tekst renderen maar visueel afkappen (cellclamp);
     // de per-blok "Lees volledige tekst"-knoppen zouden daar dubbelop zijn.
