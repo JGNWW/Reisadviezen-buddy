@@ -238,9 +238,24 @@ export function interpretStructured(structured) {
     if (!text) {
       return ok({ level: 1, regionalMaxLevel: null, label: 'Ingen reiseadvarsel (geen waarschuwing)', explanation: 'Utenriksdepartementet (Noorwegen): geen reiseadvarsel voor dit land.' });
     }
-    const sev = findSeverity(text, 'no');
-    if (!sev) return uncertain('Reiseadvarsel-blok aanwezig maar geen herkenbare formulering (fraråder …).');
-    return ok({ level: sev.level, label: sev.phrase.trim(), explanation: `Utenriksdepartementet (Noorwegen): ${sev.phrase.trim()}.` });
+    // De sterke markeerformules ("… er under normale omstendigheter et trygt
+    // land …" / "Sikkerhetssituasjonen … er svært utfordrende" / "fraråder
+    // …") staan altijd in de EERSTE zin — net als bij Zwitserland
+    // (ch-classify.js) classificeren we die zin eerst. Zo kan een generiek
+    // "utvis aktsomhet"-devies verderop in een langere inleiding (veel-
+    // voorkomende boilerplate, geen echt risicosignaal op zich) het oordeel
+    // niet overstemmen — vóór deze aanpassing werd zo'n land ten onrechte
+    // geel, puur omdat die formulering toevallig eerder in de tekst stond.
+    const first = text.split(/\.\s/)[0] || text;
+    const strong = findSeverity(first, 'no');
+    if (strong) return ok({ level: strong.level, label: strong.phrase.trim(), explanation: `Utenriksdepartementet (Noorwegen): ${strong.phrase.trim()}.` });
+    // Vangnet: geen herkenbare formule in de eerste zin, maar wél een
+    // mildere aktsomhet-formulering verderop → geel. Kan nooit escaleren
+    // (alleen niveau ≤2 telt hier mee), zodat dit vangnet een land nooit ten
+    // onrechte naar oranje/rood tilt op basis van tekst buiten de openingszin.
+    const mild = allSeverityMatches(text, 'no').find((m) => m.level <= 2);
+    if (mild) return ok({ level: mild.level, label: mild.phrase.trim(), confidence: 'medium', explanation: `Utenriksdepartementet (Noorwegen): ${mild.phrase.trim()}.` });
+    return uncertain('Reiseadvarsel-blok aanwezig maar geen herkenbare formulering (fraråder/aktsomhet/trygt land/svært utfordrende …).');
   }
 
   if (kind === 'kr_alert_zones') {

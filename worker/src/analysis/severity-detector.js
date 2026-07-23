@@ -99,14 +99,20 @@ const PATTERNS = {
     P(/noudata erityist[äa] varovaisuutta|erityist[äa] varovaisuutta/i, 2),
     P(/noudata tavanomaista varovaisuutta|tavanomaista varovaisuutta/i, 1),
   ],
-  // Noorwegen (regjeringen.no) — twee vaste reisadvarsel-vormen. De
-  // 3-variant ("… som ikke er strengt nødvendige") bevat de 4-frase
-  // ("fraråder alle reiser"); langste-match-ontdubbeling lost dat op.
+  // Noorwegen (regjeringen.no) — reisadvarsel-vormen (4/3) plus twee
+  // templateformules die het land zelf gebruikt aan het begin van het
+  // Sikkerhet-/inleidingsblok: "{land} er under normale omstendigheter et
+  // trygt land å ferdes og oppholde seg i" (groen) en "Sikkerhetssituasjonen
+  // i {land} er svært utfordrende" (rood). De 3-variant ("… som ikke er
+  // strengt nødvendige") bevat de 4-frase ("fraråder alle reiser");
+  // langste-match-ontdubbeling lost dat op.
   no: [
     P(/frar[åa]der (alle )?reiser som ikke er strengt n[øo]dvendige/i, 3),
     P(/frar[åa]der alle reiser/i, 4),
     P(/frar[åa]der reiser til/i, 3),
+    P(/sikkerhetssituasjonen[^.]{0,80}sv[æa]rt utfordrende/i, 4),
     P(/utvis (s[æa]rlig )?aktsomhet/i, 2),
+    P(/under normale omstendigheter et trygt land [åa] ferdes og oppholde seg i/i, 1),
   ],
   // Zuid-Korea (0404.go.kr) — vier vaste stappen (여행경보) plus de
   // 특별여행주의보 (speciale waarschuwing, tussen stap 2 en 3 — genormaliseerd
