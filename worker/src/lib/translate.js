@@ -1,48 +1,39 @@
 /**
  * Vertaling, server-side in de Worker (geen CORS-/keyproblemen; resultaten
- * cachebaar). Er zijn drie inwisselbare backends; de keuze gebeurt puur via
- * environment-secrets (configureTranslator), zonder codewijziging:
+ * cachebaar). Twee backends met een vaste voorrang:
  *
- *   • google  (standaard) — het gratis, niet-officiële Google-endpoint. Geen
- *     key, goede kwaliteit voor alle 17 brontalen, maar het rate-limit't onder
- *     druk (429) → onvertaalde stukken. Prima voor licht redactioneel verkeer.
- *   • deepl   — zet DEEPL_KEY (gratis tier: 500k tekens/maand). Beste kwaliteit
- *     + betrouwbaar; dekt en/de/fr/es/it/da/fi/ja/ko/nb. Aanbevolen upgrade.
- *   • libre   — zet LIBRETRANSLATE_URL (+ optioneel LIBRETRANSLATE_KEY) naar een
- *     (zelf-gehoste) LibreTranslate. Betrouwbaar als je 'm zelf draait, maar de
- *     vertaalkwaliteit ligt merkbaar lager, vooral voor de Noordse/Aziatische
- *     talen — alleen zinvol als je de betrouwbaarheid boven kwaliteit stelt.
+ *   1. Google (primair) — het gratis, niet-officiële Google-endpoint. Geen key,
+ *      goede kwaliteit voor alle 17 brontalen, maar het rate-limit't onder druk
+ *      (429) → dan vielen stukken voorheen onvertaald terug op de brontekst.
+ *   2. MyMemory (vangnet) — een gratis, keyloze vertaal-API (een ándere engine
+ *      dan Google, dus hij helpt juist wanneer Google beknot raakt). Wordt
+ *      alleen aangesproken als Google faalt; zo blijft de kwaliteit standaard
+ *      die van Google, maar krijg je toch een vertaling i.p.v. brontekst als
+ *      Google het laat afweten. Geen account nodig; een optionele
+ *      MYMEMORY_EMAIL-secret verhoogt alleen de gratis daglimiet.
  *
  * De rest van de pijplijn (chunking, batching, retry, concurrency-limiet)
- * blijft identiek ongeacht de backend.
+ * is backend-onafhankelijk.
  */
 const GOOGLE_ENDPOINT = 'https://translate.googleapis.com/translate_a/single';
+const MYMEMORY_ENDPOINT = 'https://api.mymemory.translated.net/get';
 
-// Actieve backend (module-scope = per Worker-invocatie / per script-run).
-let PROVIDER = 'google';
-let DEEPL = { key: null, url: 'https://api-free.deepl.com/v2/translate' };
-let LIBRE = { url: null, key: null };
+// Optioneel: e-mail voor MyMemory (verhoogt de gratis daglimiet van ~5k naar
+// ~50k woorden/dag). Zonder werkt het vangnet anoniem gewoon door.
+let MYMEMORY_EMAIL = null;
 
 /**
- * Kiest de vertaalbackend op basis van environment-secrets. Volgorde:
- * DEEPL_KEY > LIBRETRANSLATE_URL > (standaard) google. Aanroepen vanuit
- * index.js (Worker-env) en de snapshot-scripts (process.env).
+ * Leest optionele vertaal-config uit de environment. Op dit moment alleen
+ * MYMEMORY_EMAIL (om de gratis MyMemory-daglimiet te verhogen). Aanroepen
+ * vanuit index.js (Worker-env) en de snapshot-scripts (process.env).
  */
 export function configureTranslator(env = {}) {
-  if (env.DEEPL_KEY) {
-    PROVIDER = 'deepl';
-    DEEPL = { key: env.DEEPL_KEY, url: env.DEEPL_URL || 'https://api-free.deepl.com/v2/translate' };
-  } else if (env.LIBRETRANSLATE_URL) {
-    PROVIDER = 'libre';
-    LIBRE = { url: String(env.LIBRETRANSLATE_URL).replace(/\/+$/, ''), key: env.LIBRETRANSLATE_KEY || null };
-  } else {
-    PROVIDER = 'google';
-  }
-  return PROVIDER;
+  MYMEMORY_EMAIL = env.MYMEMORY_EMAIL || null;
+  return activeTranslator();
 }
 
-/** Welke backend nu actief is — voor diagnose/tests. */
-export function activeTranslator() { return PROVIDER; }
+/** Welke keten nu actief is — voor diagnose/tests. */
+export function activeTranslator() { return 'google→mymemory'; }
 
 const cache = new Map();
 const TTL = 24 * 60 * 60 * 1000;
@@ -85,44 +76,9 @@ function limited(fn) {
   return new Promise((resolve, reject) => { translationQueue.push({ fn, resolve, reject }); runQueued(); });
 }
 
-// DeepL-taalcode: hoofdletters; Noors (no) → Bokmål (NB); Engels als DOELtaal
-// wil een variant (EN-GB), als brontaal volstaat EN.
-function deeplLang(code, isTarget = false) {
-  const c = String(code || '').toLowerCase();
-  if (c === 'no' || c === 'nb') return 'NB';
-  if (c === 'en' && isTarget) return 'EN-GB';
-  return c.toUpperCase();
-}
-
-/** Eén vertaalcall (één tekstdeel) → {text, detected}. Werpt een Error met
- *  .status bij een HTTP-fout, zodat de retry-laag 429/5xx kan herkennen. */
-async function callProvider(part, to, from) {
-  if (PROVIDER === 'deepl') {
-    const body = new URLSearchParams();
-    body.set('text', part);
-    body.set('target_lang', deeplLang(to, true));
-    if (from && from !== 'auto') body.set('source_lang', deeplLang(from));
-    const res = await fetch(DEEPL.url, {
-      method: 'POST',
-      headers: { Authorization: `DeepL-Auth-Key ${DEEPL.key}`, 'Content-Type': 'application/x-www-form-urlencoded' },
-      body,
-    });
-    if (!res.ok) { const e = new Error(`DeepL ${res.status}`); e.status = res.status; throw e; }
-    const d = await res.json();
-    const t = d?.translations?.[0];
-    return { text: t?.text || '', detected: (t?.detected_source_language || '').toLowerCase() || null };
-  }
-  if (PROVIDER === 'libre') {
-    const res = await fetch(`${LIBRE.url}/translate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ q: part, source: from === 'auto' ? 'auto' : from, target: to, format: 'text', ...(LIBRE.key ? { api_key: LIBRE.key } : {}) }),
-    });
-    if (!res.ok) { const e = new Error(`LibreTranslate ${res.status}`); e.status = res.status; throw e; }
-    const d = await res.json();
-    return { text: d?.translatedText || '', detected: d?.detectedLanguage?.language || null };
-  }
-  // google (standaard, geen key)
+/** Eén Google-call (één tekstdeel) → {text, detected}. Werpt Error met .status
+ *  bij een HTTP-fout zodat de retry-laag 429/5xx herkent. */
+async function callGoogle(part, to, from) {
   const url = `${GOOGLE_ENDPOINT}?client=gtx&sl=${from}&tl=${to}&dt=t&q=${encodeURIComponent(part)}`;
   const res = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' } });
   if (!res.ok) { const e = new Error(`Vertaling ${res.status}`); e.status = res.status; throw e; }
@@ -131,26 +87,84 @@ async function callProvider(part, to, from) {
   return { text, detected: d?.[2] || null };
 }
 
-/** Eén vertaalcall met retries bij 429/5xx (rate-limit/transiënt), backend-agnostisch. */
-async function translateOnce(part, to, from, tries = 3) {
+// MyMemory begrenst één query op ~500 tekens, dus het vangnet hakt een deel
+// intern nog in kleinere segmenten (op zin-/spatiegrenzen).
+const MM_MAX = 450;
+// Foutmeldingen die MyMemory soms mét HTTP 200 in het tekstveld teruggeeft
+// (dagquotum op, ongeldige taal, …) — die tellen als een mislukte call.
+const MM_ERROR = /MYMEMORY WARNING|YOU USED ALL|QUERY LENGTH LIMIT|INVALID (?:LANGUAGE|EMAIL|SOURCE|TARGET)|PLEASE SELECT/i;
+
+function mmSubchunks(text) {
+  const out = [];
+  let buf = '';
+  for (const piece of String(text).split(/(?<=[.!?。])\s+|\s+/)) {
+    if ((buf ? buf.length + 1 + piece.length : piece.length) > MM_MAX) {
+      if (buf) out.push(buf);
+      buf = piece.length > MM_MAX ? piece.slice(0, MM_MAX) : piece;
+    } else buf = buf ? `${buf} ${piece}` : piece;
+  }
+  if (buf) out.push(buf);
+  return out.length ? out : [String(text).slice(0, MM_MAX)];
+}
+
+/** Vangnet: MyMemory (gratis, keyloos). Vereist een concrete brontaal (kent
+ *  geen auto-detectie); bij 'auto'/leeg faalt hij bewust zodat de vertaling
+ *  netjes op de brontekst terugvalt i.p.v. een verkeerd taalpaar te gokken. */
+async function callMyMemory(part, to, from) {
+  const src = String(from || '').toLowerCase();
+  if (!src || src === 'auto') { const e = new Error('MyMemory vereist een brontaal'); e.status = 400; throw e; }
+  const out = [];
+  for (const seg of mmSubchunks(part)) {
+    const url = `${MYMEMORY_ENDPOINT}?q=${encodeURIComponent(seg)}&langpair=${encodeURIComponent(src)}|${encodeURIComponent(to)}`
+      + (MYMEMORY_EMAIL ? `&de=${encodeURIComponent(MYMEMORY_EMAIL)}` : '');
+    const res = await fetch(url, { headers: { 'User-Agent': 'ReisadviezenBuddy/1.0' } });
+    if (!res.ok) { const e = new Error(`MyMemory ${res.status}`); e.status = res.status; throw e; }
+    const d = await res.json();
+    const t = d?.responseData?.translatedText;
+    const status = Number(d?.responseStatus) || 0;
+    // Quotum-/foutmeldingen (403) tellen als niet-herbruikbaar: niet opnieuw
+    // proberen (429/5xx wél), want een dagquotum lost een retry niet op.
+    if (status !== 200 || !t || MM_ERROR.test(t)) { const e = new Error('MyMemory: geen bruikbare vertaling'); e.status = 403; throw e; }
+    out.push(t);
+  }
+  return { text: out.join(' '), detected: src };
+}
+
+/** Voert één call uit met retries bij 429/5xx (rate-limit/transiënt). */
+async function withRetries(call, tries = 3) {
   for (let attempt = 1; attempt <= tries; attempt++) {
     try {
-      return await limited(() => callProvider(part, to, from));
+      return await limited(call);
     } catch (e) {
       const status = e?.status || 0;
       if (attempt === tries || (status !== 429 && status < 500)) throw e;
-      // Rate-limit/transiënt: korte, oplopende pauze; het wachtrij-slot komt
-      // tijdens deze pauze vrij zodat andere bronnen ondertussen door kunnen.
+      // Korte, oplopende pauze; het wachtrij-slot komt tijdens de pauze vrij
+      // zodat andere bronnen ondertussen door kunnen.
       await sleep(300 * attempt + Math.random() * 200);
     }
   }
   throw new Error('Vertaling: geen resultaat');
 }
 
+/** Eén tekstdeel vertalen: Google eerst, en pas als Google het écht laat
+ *  afweten (na retries) het MyMemory-vangnet. Falen beide, dan werpen we de
+ *  oorspronkelijke Google-fout zodat de aanroeper het als 'onvertaald' afhandelt. */
+async function translateOnce(part, to, from) {
+  try {
+    return await withRetries(() => callGoogle(part, to, from));
+  } catch (googleErr) {
+    try {
+      return await withRetries(() => callMyMemory(part, to, from), 2);
+    } catch {
+      throw googleErr;
+    }
+  }
+}
+
 export async function translate(text, to = 'nl', from = 'auto') {
   const clean = (text || '').trim();
   if (!clean) return { text: '', detected: null };
-  const key = `${PROVIDER}|${from}|${to}|${clean}`;
+  const key = `${from}|${to}|${clean}`;
   const hit = cache.get(key);
   if (hit && Date.now() - hit.t < TTL) return hit.v;
 

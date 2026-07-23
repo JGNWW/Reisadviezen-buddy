@@ -237,7 +237,7 @@ export default {
     if (request.method === 'OPTIONS') return new Response(null, { headers: CORS });
     setReaderKey(env?.JINA_KEY); // optioneel: hogere limieten voor de reader-proxy
     setCorsProxy(env?.CORS_PROXY_URL); // optioneel: fallback-proxy als directe fetch faalt
-    configureTranslator(env); // vertaalbackend uit secrets (DEEPL_KEY / LIBRETRANSLATE_URL), anders Google
+    configureTranslator(env); // Google primair, MyMemory-vangnet; MYMEMORY_EMAIL-secret is optioneel
 
     const url = new URL(request.url);
     const parts = url.pathname.split('/').filter(Boolean);

@@ -1,8 +1,9 @@
 /**
- * Tests voor de inwisselbare vertaalbackends (src/lib/translate.js). Er wordt
- * niet echt over het netwerk vertaald: globalThis.fetch wordt gemockt zodat we
- * (a) de backendkeuze via configureTranslator, (b) de opgebouwde request en
- * (c) het parsen van de respons per backend kunnen controleren.
+ * Tests voor de vertaalketen (src/lib/translate.js): Google primair, MyMemory
+ * als vangnet wanneer Google faalt. Er wordt niet echt over het netwerk
+ * vertaald: globalThis.fetch wordt gemockt en op URL gerouteerd (Google vs
+ * MyMemory) zodat we het overschakelen, het request en het parsen kunnen
+ * controleren.
  *
  * Draaien: cd worker && node --test test/translate.test.mjs
  */
@@ -11,70 +12,84 @@ import assert from 'node:assert/strict';
 import { configureTranslator, activeTranslator, translate } from '../src/lib/translate.js';
 
 const realFetch = globalThis.fetch;
-let LAST; // laatste { url, opts } die aan fetch is meegegeven
-function mockFetch(jsonForCall) {
-  globalThis.fetch = async (url, opts) => {
-    LAST = { url: String(url), opts: opts || {} };
-    return { ok: true, status: 200, json: async () => jsonForCall(LAST) };
-  };
-}
 test.after(() => { globalThis.fetch = realFetch; });
 
-test('configureTranslator kiest de backend op basis van secrets', () => {
-  assert.equal(configureTranslator({}), 'google');
-  assert.equal(configureTranslator({ LIBRETRANSLATE_URL: 'http://lt:5000/' }), 'libre');
-  assert.equal(configureTranslator({ DEEPL_KEY: 'x' }), 'deepl'); // DeepL wint van Libre
-  assert.equal(configureTranslator({ DEEPL_KEY: 'x', LIBRETRANSLATE_URL: 'http://lt' }), 'deepl');
+let calls;
+/** Routeert fetch naar de google- of mymemory-handler en logt elke call. */
+function route({ google, mymemory }) {
+  calls = [];
+  globalThis.fetch = async (url, opts) => {
+    const u = String(url);
+    const kind = u.includes('mymemory') ? 'mymemory' : 'google';
+    calls.push({ kind, url: u, opts: opts || {} });
+    const h = kind === 'mymemory' ? mymemory : google;
+    return h(u, opts || {});
+  };
+}
+const okJson = (obj) => ({ ok: true, status: 200, json: async () => obj });
+const httpErr = (status) => ({ ok: false, status, json: async () => ({}) });
+const googleOk = (t) => okJson([[[t, 'src', null, null]], null, 'en']);
+const mmOk = (t) => okJson({ responseStatus: 200, responseData: { translatedText: t } });
+
+test('activeTranslator meldt de keten google→mymemory', () => {
+  assert.equal(configureTranslator({}), 'google→mymemory');
+  assert.equal(activeTranslator(), 'google→mymemory');
+});
+
+test('Google lukt → Google-resultaat, MyMemory wordt niet aangeroepen', async () => {
   configureTranslator({});
-  assert.equal(activeTranslator(), 'google');
+  route({ google: () => googleOk('Hallo via google A'), mymemory: () => { throw new Error('niet aanroepen'); } });
+  const r = await translate('Hello google-primair-A', 'nl', 'en');
+  assert.equal(r.text, 'Hallo via google A');
+  assert.deepEqual(calls.map((c) => c.kind), ['google']);
 });
 
-test('google (standaard): juist endpoint + parse van de geneste array-respons', async () => {
+test('Google faalt (403) → schakelt over op MyMemory', async () => {
   configureTranslator({});
-  mockFetch(() => [[['Hallo wereld google', 'Hello world', null, null]], null, 'en']);
-  const r = await translate('Hello world google-uniek', 'nl', 'en');
-  assert.match(LAST.url, /translate_a\/single/);
-  assert.match(LAST.url, /tl=nl/);
-  assert.equal(r.text, 'Hallo wereld google');
-  assert.equal(r.detected, 'en');
+  route({ google: () => httpErr(403), mymemory: () => mmOk('Hallo via mymemory B') });
+  const r = await translate('Hello fallback-B', 'nl', 'en');
+  assert.equal(r.text, 'Hallo via mymemory B');
+  assert.equal(calls.filter((c) => c.kind === 'google').length, 1);
+  assert.equal(calls.filter((c) => c.kind === 'mymemory').length, 1);
+  const mm = calls.find((c) => c.kind === 'mymemory');
+  assert.match(mm.url, /langpair=en\|nl/); // en|nl (pipe letterlijk, geldig voor MyMemory)
 });
 
-test('deepl: POST met Authorization-header, uppercase target_lang, parse van translations[]', async () => {
-  configureTranslator({ DEEPL_KEY: 'test-key' });
-  mockFetch(() => ({ translations: [{ text: 'Hallo wereld deepl', detected_source_language: 'EN' }] }));
-  const r = await translate('Hello world deepl-uniek', 'nl', 'en');
-  assert.match(LAST.url, /api-free\.deepl\.com/);
-  assert.equal(LAST.opts.method, 'POST');
-  assert.equal(LAST.opts.headers.Authorization, 'DeepL-Auth-Key test-key');
-  assert.match(String(LAST.opts.body), /target_lang=NL/);
-  assert.equal(r.text, 'Hallo wereld deepl');
-  assert.equal(r.detected, 'en');
+test('MYMEMORY_EMAIL wordt als &de= meegestuurd', async () => {
+  configureTranslator({ MYMEMORY_EMAIL: 'redactie@example.org' });
+  route({ google: () => httpErr(403), mymemory: () => mmOk('vertaald C') });
+  await translate('Hello email-C', 'nl', 'en');
+  const mm = calls.find((c) => c.kind === 'mymemory');
+  assert.match(mm.url, /de=redactie%40example\.org/);
+  configureTranslator({}); // reset voor volgende tests
 });
 
-test('deepl: Noors (no) → Bokmål (NB) als source_lang', async () => {
-  configureTranslator({ DEEPL_KEY: 'k' });
-  mockFetch(() => ({ translations: [{ text: 'vertaald', detected_source_language: 'NB' }] }));
-  await translate('Norsk kildetekst deepl-no', 'nl', 'no');
-  assert.match(String(LAST.opts.body), /source_lang=NB/);
+test('beide backends falen → translate() werpt (aanroeper toont dan de brontekst)', async () => {
+  configureTranslator({});
+  route({ google: () => httpErr(403), mymemory: () => httpErr(403) });
+  await assert.rejects(translate('Hello beide-falen-D', 'nl', 'en'));
 });
 
-test('libre: POST /translate met JSON-body en parse van translatedText', async () => {
-  configureTranslator({ LIBRETRANSLATE_URL: 'http://lt:5000/', LIBRETRANSLATE_KEY: 'lk' });
-  mockFetch(() => ({ translatedText: 'Hallo wereld libre', detectedLanguage: { language: 'en' } }));
-  const r = await translate('Hello world libre-uniek', 'nl', 'en');
-  assert.equal(LAST.url, 'http://lt:5000/translate'); // trailing slash genormaliseerd
-  const body = JSON.parse(LAST.opts.body);
-  assert.equal(body.q, 'Hello world libre-uniek');
-  assert.equal(body.target, 'nl');
-  assert.equal(body.api_key, 'lk');
-  assert.equal(r.text, 'Hallo wereld libre');
-  assert.equal(r.detected, 'en');
+test('MyMemory-quotummelding in het tekstveld telt als mislukt', async () => {
+  configureTranslator({});
+  route({
+    google: () => httpErr(403),
+    mymemory: () => okJson({ responseStatus: 200, responseData: { translatedText: 'MYMEMORY WARNING: YOU USED ALL AVAILABLE FREE TRANSLATIONS FOR TODAY' } }),
+  });
+  await assert.rejects(translate('Hello quota-E', 'nl', 'en'));
 });
 
-test('lege invoer → lege vertaling, geen fetch', async () => {
+test('MyMemory wordt overgeslagen bij bron "auto" (geen taalpaar mogelijk)', async () => {
+  configureTranslator({});
+  route({ google: () => httpErr(403), mymemory: () => mmOk('zou niet mogen') });
+  await assert.rejects(translate('Hello auto-F', 'nl', 'auto'));
+  assert.equal(calls.filter((c) => c.kind === 'mymemory').length, 0);
+});
+
+test('lege invoer → lege vertaling, geen enkele fetch', async () => {
   configureTranslator({});
   let called = false;
-  globalThis.fetch = async () => { called = true; return { ok: true, json: async () => [] }; };
+  globalThis.fetch = async () => { called = true; return okJson([]); };
   const r = await translate('   ', 'nl', 'en');
   assert.equal(r.text, '');
   assert.equal(called, false);
