@@ -27,7 +27,7 @@ const OUT = path.join(__dirname, '..', 'data', 'mapping-health.json');
 const UK_INDEX = 'https://www.gov.uk/api/content/foreign-travel-advice';
 const DE_INDEX = 'https://www.auswaertiges-amt.de/opendata/travelwarning';
 const CA_INDEX = 'https://data.international.gc.ca/travel-voyage/index-alpha-eng.json';
-const IE_AZ = 'https://www.dfa.ie/travel/travel-advice/a-z-list-of-countries/';
+const IE_AZ = 'https://www.ireland.ie/en/dfa/overseas-travel/advice/';
 const UA = 'Mozilla/5.0 (compatible; ReisadviezenBuddy/1.0)';
 
 async function getJson(url) {
@@ -114,7 +114,7 @@ async function main() {
   // Ierland: alle slugs van de A-Z-pagina.
   try {
     const html = await getText(IE_AZ);
-    const slugs = new Set([...html.matchAll(/\/a-z-list-of-countries\/([a-z0-9-]+)\//g)].map((m) => m[1]));
+    const slugs = new Set([...html.matchAll(/\/overseas-travel\/advice\/([a-z0-9-]+)\//g)].map((m) => m[1]));
     result.sources.ie = await checkAgainstSet('ie', (r) => r.sources.ie, slugs);
   } catch (e) { result.sources.ie = { error: e.message }; }
 

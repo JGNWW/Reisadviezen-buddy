@@ -27,7 +27,7 @@ const ISO_JSON =
   'https://raw.githubusercontent.com/lukes/ISO-3166-Countries-with-Regional-Codes/master/all/all.json';
 const UK_INDEX = 'https://www.gov.uk/api/content/foreign-travel-advice';
 const US_RSS = 'https://travel.state.gov/_res/rss/TAsTWs.xml';
-const IE_AZ = 'https://www.dfa.ie/travel/travel-advice/a-z-list-of-countries/';
+const IE_AZ = 'https://www.ireland.ie/en/dfa/overseas-travel/advice/';
 const CA_INDEX = 'https://data.international.gc.ca/travel-voyage/index-alpha-eng.json';
 const DE_INDEX = 'https://www.auswaertiges-amt.de/opendata/travelwarning';
 
@@ -166,7 +166,7 @@ async function main() {
     [...usXml.matchAll(/traveladvisories\/([a-z0-9-]+)-travel-advisory\.html/g)].map((m) => m[1])
   );
   const ieSlugs = new Set(
-    [...ieHtml.matchAll(/\/a-z-list-of-countries\/([a-z0-9-]+)\//g)].map((m) => m[1])
+    [...ieHtml.matchAll(/\/overseas-travel\/advice\/([a-z0-9-]+)\//g)].map((m) => m[1])
   );
   // Canada: ISO2 -> { id, eng }
   const caByIso2 = {};

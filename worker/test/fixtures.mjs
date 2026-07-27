@@ -10,7 +10,7 @@ export const ROUTES = [
   ['_res/rss/TAsTWs.xml', 'us-rss.xml'],
   ['index-alpha-eng.json', 'ca-index.json'],
   ['travel.gc.ca/destinations/nepal', 'ca-nepal.html'],
-  ['a-z-list-of-countries/nepal', 'ie-nepal.html'],
+  ['overseas-travel/advice/nepal', 'ie-nepal.html'],
   // Nieuwe France Diplomatie-structuur: subpagina's per onderwerp.
   ['information-par-pays/nepal/conseils-aux-voyageurs-securite', 'fr-nepal-securite.html'],
   ['information-par-pays/nepal/conseils-aux-voyageurs-entree-sejour', 'fr-nepal-entree-sejour.html'],
