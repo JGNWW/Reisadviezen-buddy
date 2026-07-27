@@ -576,6 +576,15 @@ input:focus, select:focus { outline: 2px solid var(--link); outline-offset: 0; b
 .news-multi { background: #fdf6ec; border: 1px solid #ecd9b0; color: #9a6200; font-size: 11px; padding: 0 5px; white-space: nowrap; }
 .news-foot { font-size: 12px; color: var(--muted); margin: 6px 16px 12px; }
 
+/* Twijfelgevallen van het geofilter: apart, ingeklapt, visueel gedempt —
+   zichtbaar genoeg om te controleren, rustig genoeg om te negeren. */
+.news-demoted { margin: 4px 16px 10px; border-top: 1px solid var(--border-soft); padding-top: 6px; }
+.news-demoted > summary { cursor: pointer; font-size: 12.5px; color: var(--muted); }
+.news-demoted .news-row { opacity: .75; }
+.news-demoted-note { font-size: 12px; color: var(--muted); margin: 6px 0 8px; }
+.news-demoted-cat { font-size: 11.5px; color: var(--muted); }
+.news-demoted-cat::before { content: '· '; }
+
 .context-box { border: 1px solid var(--border-soft); margin: 0 0 18px; }
 .context-box > summary { cursor: pointer; padding: 9px 14px; font-weight: 600; font-size: 14px; }
 .context-list { margin: 0; padding: 4px 16px 12px 30px; font-size: 13.5px; }

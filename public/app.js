@@ -439,6 +439,27 @@ async function loadLocalNews(iso3, slot) {
       }
       box.append(wrap);
     }
+    // Twijfelgevallen: de kop wijst op een ánder land (of noemt dit land niet
+    // terwijl het uit gemengde, wereldwijde media komt). Niet weggegooid maar
+    // ingeklapt onderaan — liever zelf beoordelen dan stil iets missen.
+    if (d.demoted?.length) {
+      const sub = el('details', { class: 'news-demoted' });
+      sub.append(el('summary', {}, `🌍 Mogelijk niet over dit land (${d.demoted.length})`));
+      sub.append(el('p', { class: 'news-demoted-note' },
+        'Deze koppen wijzen op een ander land, of noemen dit land niet. Ze staan hier apart zodat je zelf kunt beoordelen of ze toch relevant zijn.'));
+      for (const it of d.demoted) {
+        sub.append(el('div', { class: 'news-row' },
+          el('span', { class: 'news-date' }, it.date ? new Date(it.date).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' }) : '—'),
+          el('div', { class: 'news-main' },
+            el('a', { href: it.link || '#', target: '_blank', rel: 'noopener' }, it.title),
+            it.titleNl ? el('div', { class: 'news-nl' }, it.titleNl) : null,
+            el('div', { class: 'news-meta' },
+              el('span', { class: 'news-outlet' }, it.outlet),
+              it.cat ? el('span', { class: 'news-demoted-cat' }, it.cat) : null))));
+      }
+      box.append(sub);
+    }
+
     box.append(el('p', { class: 'news-foot' },
       d.mixed
         ? 'Voor dit land is (nog) geen gecureerde top-3 van lokale bronnen; getoond wordt reisadvies-relevant nieuws over het land uit alle door Google News geïndexeerde media. 🔁 markeert nieuws dat meerdere media brengen. NL-vertaling is automatisch; koppen linken naar het bronartikel.'

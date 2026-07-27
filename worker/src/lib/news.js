@@ -11,7 +11,10 @@
  * entertainment, economie) valt bewust weg — dit is een reisadvies-filter,
  * geen nieuwslezer. Kruisbevestiging (zelfde nieuws bij meerdere van de
  * drie outlets) markeert wat lokaal als belangrijk geldt.
+ *
+ * Daarnaast filtert splitByGeo op PLAATS: gaat de kop wel over dít land?
  */
+import GEO_TERMS from '../data/geo-terms.json' with { type: 'json' };
 
 // Categorieën, uitgelijnd op de NL-reisadviesthema's. Patronen dekken
 // en/fr/es — de gangbare perstalen in de gecureerde bronnenlijst.
@@ -78,6 +81,100 @@ export function classifyNews(title) {
   if (!t || t.length < 15 || NOISE.test(t) || SPORT.test(t) || JUNK_ID.test(t)) return null;
   for (const c of NEWS_CATEGORIES) if (c.re.test(t)) return c.id;
   return null;
+}
+
+// ---- Geofilter: gaat deze kop wel over dít land? -------------------------
+// De categorieën hierboven filteren op ONDERWERP, nooit op PLAATS. Daardoor
+// belandde een NYT-kop over Groenland onder België (de landenquery matcht de
+// artikeltekst, wij lezen alleen de kop) en vulden Afghaanse outlets hun
+// conflictrubriek met Oekraïne en Mexico (een site:-query garandeert een
+// lokale krant, geen lokaal onderwerp). geo-terms.json levert per land de
+// herkenningswoorden; zie scripts/build-geo-terms.mjs.
+
+let _matcher = null;
+/** Bouwt (eenmalig) de landherkenner: langste term eerst, zodat "South Sudan"
+ *  wint van "Sudan" en "American Samoa" van "Samoa". */
+function matcher() {
+  if (_matcher) return _matcher;
+  const owners = new Map(); // term (lowercase) -> [{ iso, strong }]
+  for (const [iso, e] of Object.entries(GEO_TERMS)) {
+    const strongSet = new Set(e.veto || []);
+    for (const t of e.self || []) {
+      const k = t.toLowerCase();
+      if (!owners.has(k)) owners.set(k, []);
+      owners.get(k).push({ iso, strong: strongSet.has(t) });
+    }
+  }
+  const terms = [...owners.keys()].sort((a, b) => b.length - a.length);
+  const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  // \b werkt niet na een punt ("U.S."), dus sluiten we af op een niet-letter.
+  const re = new RegExp(`(?<![\\p{L}])(${terms.map(esc).join('|')})(?![\\p{L}])`, 'giu');
+  _matcher = { re, owners };
+  return _matcher;
+}
+
+/**
+ * Bepaalt of een kop over `iso` gaat:
+ *   'self'  — het land (of zijn demonym/hoofdstad/alias) staat in de kop
+ *   'other' — er staat aantoonbaar een ánder land in, en dit land niet
+ *   'none'  — geen enkel land herkenbaar (bij een lokale krant is dat normaal:
+ *             "Explosion rocks capital" noemt het eigen land zelden)
+ * Alleen 'sterke' termen mogen beschuldigen; dubbelzinnige woorden (Georgia,
+ * Jordan, Chad, Turkey) tellen wel mee om te behouden, nooit om af te wijzen.
+ */
+export function geoVerdict(title, iso) {
+  const t = String(title || '');
+  // ReliefWeb-achtige koppen beginnen met de ISO3-code ("LAO: Flood - 07-2026").
+  // Alleen hélemaal vooraan mét dubbele punt: los zijn die codes veel te
+  // gevaarlijk (AND, ARE, CAN, COG zijn ook gewone woorden).
+  if (new RegExp(`^${iso}\\s*:`, 'i').test(t.trim())) return 'self';
+  const { re, owners } = matcher();
+  re.lastIndex = 0;
+  let other = false;
+  for (const m of t.matchAll(re)) {
+    const cands = owners.get(m[1].toLowerCase()) || [];
+    if (cands.some((c) => c.iso === iso)) return 'self';
+    if (cands.some((c) => c.strong)) other = true;
+  }
+  return other ? 'other' : 'none';
+}
+
+/**
+ * Is de outlet zelf van dit land? "Cook Islands News" en "The Namibian"
+ * verraden dat in hun naam. Bij de gemengde landenquery wisselt de outlet per
+ * item, en juist bij kleine landen komt het meeste nieuws dan tóch van de
+ * lokale krant — die schrijft "Teen tourist rescued from cross-island track"
+ * zonder het land te noemen. Zulke items mogen we niet wegzetten enkel omdat
+ * het bewijs in de kop ontbreekt.
+ */
+function localOutlet(outlet, iso) {
+  const e = GEO_TERMS[iso];
+  if (!e || !outlet) return false;
+  const o = String(outlet).toLowerCase();
+  return (e.self || []).some((t) => t.length > 3 && o.includes(t.toLowerCase()));
+}
+
+/**
+ * Splitst items in wat over dit land gaat en wat vermoedelijk niet.
+ * Bewust asymmetrisch, want lokale kranten noemen hun eigen land zelden:
+ *   - gecureerde outlet: alleen wegzetten bij hard tegenbewijs ('other').
+ *   - landenquery (gemengde, wereldwijde media): positief bewijs vereist,
+ *     want daar matchte Google op de artikeltekst en zegt de kop niets.
+ * Niets wordt weggegooid — 'demoted' toont de frontend apart en ingeklapt,
+ * zodat een terecht bericht nooit stil verdwijnt.
+ */
+export function splitByGeo(items, iso, curated) {
+  const onTopic = [];
+  const demoted = [];
+  for (const it of items) {
+    const v = geoVerdict(it.title, iso);
+    // Een outlet uit het land zelf krijgt dezelfde coulance als een gecureerde
+    // bron, ook binnen de landenquery.
+    const lenient = curated || localOutlet(it.outlet, iso);
+    const off = lenient ? v === 'other' : v !== 'self';
+    (off ? demoted : onTopic).push({ ...it, geo: v });
+  }
+  return { onTopic, demoted };
 }
 
 const STOP = new Set('the and for with from that this over after into amid says say will been were their them they have has had des les dans pour avec sur une del las los para con por que'.split(' '));
