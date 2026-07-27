@@ -18,7 +18,7 @@
  */
 import { parseSections } from './document-parser.js';
 import { classifySentence } from './sentence-classifier.js';
-import { extractRegions, extractRegionFromListItem, headingRegion, headingHasScopeWord, normalizeRegionKey } from './region-extractor.js';
+import { extractRegions, extractRegionFromListItem, headingRegion, headingHasScopeWord, normalizeRegionKey, STRUCTURAL_HEADING } from './region-extractor.js';
 import { interpretStructured, deriveNationalFromSentences, levelToColor } from './country-level.js';
 import { findSeverity } from './severity-detector.js';
 
@@ -53,11 +53,17 @@ export function analyzeAdvisory({ sections = [], lang = 'en', structured = null,
   // ---- Zinnen classificeren per sectie (rol bepaalt de scan-diepte).
   const classified = doc.map((section) => {
     const geo = section !== anchor ? headingRegion(section.heading, lang) : null;
-    const role = section === anchor ? 'anchor' : geo ? 'geo' : (section.heading && SCANNABLE_HEADING.test(section.heading)) ? 'summary' : 'other';
+    // Een structureel kopje ("General Travel Advice") levert geen regionaam op,
+    // maar de sectie eronder moet wél doorzocht blijven — anders verdwijnen
+    // met de nepregio ook alle échte regio's die eronder staan.
+    const scanbaar = section.heading
+      && (SCANNABLE_HEADING.test(section.heading) || STRUCTURAL_HEADING.test(section.heading.trim()));
+    const structural = !!(section.heading && STRUCTURAL_HEADING.test(section.heading.trim()));
+    const role = section === anchor ? 'anchor' : geo ? 'geo' : scanbaar ? 'summary' : 'other';
     const analyzed = (role === 'other')
       ? [] // niet-relevante secties niet op zinsniveau analyseren (ruisbeheersing)
       : section.sentences.map((t) => classifySentence(t, lang, { countryName, sectionRole: role }));
-    return { section, role, geo, analyzed };
+    return { section, role, geo, structural, analyzed };
   });
 
   // ---- Landelijk niveau: gestructureerd bewijs eerst, anders ankertekst.
@@ -89,7 +95,8 @@ export function analyzeAdvisory({ sections = [], lang = 'en', structured = null,
     });
   }
 
-  for (const { section, role, geo, analyzed } of classified) {
+  const naamloosNiveaus = []; // escalaties zonder noembaar gebied — zie hieronder
+  for (const { section, role, geo, structural, analyzed } of classified) {
     // a) Geografische kop + niveau-formulering in de sectie → regiokop-vermelding.
     if (geo) {
       const sev = findSeverity(section.text, lang);
@@ -110,6 +117,16 @@ export function analyzeAdvisory({ sections = [], lang = 'en', structured = null,
           extractionMethod: 'heading_plus_section_level',
         });
       }
+    }
+    // b0) Structureel kopje ("General Travel Advice") met een zware
+    // niveauformulering: de waarschuwing is echt, maar er is geen gebied om
+    // hem aan te hangen. Het niveau telt daarom wél mee voor de regionale
+    // maximum-vlag, maar komt niet als verzonnen "regio" in de uitsplitsing —
+    // de frontend meldt dan eerlijk dat er geen gebieden te extraheren waren.
+    if (structural && !geo) {
+      const sev = findSeverity(section.text, lang);
+      const modal = sev && /^\s*(on|at|during|after|alone|by|via)\b/i.test(section.text.slice(sev.index + sev.length));
+      if (sev && !modal && sev.level >= 3) naamloosNiveaus.push(sev.level);
     }
     if (role === 'other') continue;
 
@@ -176,12 +193,14 @@ export function analyzeAdvisory({ sections = [], lang = 'en', structured = null,
 
   // ---- Samenvoegen: regionale max + vlaggen (landelijk niveau blijft onaangetast).
   const levels = regionalBreakdown.map((m) => m.level);
+  levels.push(...naamloosNiveaus);
   if (national.regionalMaxLevel != null) levels.push(national.regionalMaxLevel);
   if (regionalHintOnly?.regionalMaxLevel != null) levels.push(regionalHintOnly.regionalMaxLevel);
   const regionalMaxLevel = levels.length ? Math.max(...levels) : null;
   const hasRegionalWarnings =
     national.hasRegionalWarnings ||
     regionalBreakdown.length > 0 ||
+    naamloosNiveaus.length > 0 ||
     (regionalHintOnly?.regionalMaxLevel != null && national.level != null && regionalHintOnly.regionalMaxLevel > national.level);
 
   // ---- AdvisoryAtlas-achtige regiokaart: naam → niveau (additief veld).
