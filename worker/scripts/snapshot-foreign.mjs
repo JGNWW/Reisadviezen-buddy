@@ -456,6 +456,11 @@ async function main() {
   const newChanges = [];
   let checked = 0;
   let failed = 0;
+  // Per bron bijhouden hoe vaak we het probeerden en hoe vaak het misging. Een
+  // enkele hapering is normaal, maar een bron die structureel 100% faalt (zoals
+  // Noorwegen deed: een Cloudflare-botcheck die als lege pagina binnenkwam)
+  // verdween in het totaalcijfer. Onderaan noemen we die bronnen bij naam.
+  const perSource = {}; // sid -> { tried, failed, reason }
 
   await mapLimit(entries, CONCURRENCY, async ([iso3, rec]) => {
     const histFile = path.join(HISTORY_DIR, `${iso3}.json`);
@@ -477,13 +482,17 @@ async function main() {
       const id = rec.sources[sid];
       if (!id) continue;
       checked++;
+      const tally = (perSource[sid] ||= { tried: 0, failed: 0, reason: null });
+      tally.tried++;
       let adv = null;
       try {
         adv = await adapter.getAdvisory(id);
-      } catch {
+        if (!adv) tally.reason ||= 'geen advies teruggegeven';
+      } catch (e) {
         adv = null;
+        tally.reason ||= String(e?.message || e).slice(0, 120);
       }
-      if (!adv) { failed++; continue; } // tijdelijke fout: vorige staat behouden, geen diff
+      if (!adv) { failed++; tally.failed++; continue; } // tijdelijke fout: vorige staat behouden, geen diff
       fetchedAny = true;
       for (const t of indexTokens(adv.fullText)) countryTerms.add(t);
 
@@ -619,6 +628,20 @@ async function main() {
   console.log(`Trefwoordindex: ${Object.keys(indexDocs).length} landen geïndexeerd.`);
 
   console.log(`Snapshot klaar: ${entries.length} landen, ${checked} bron-aanvragen (${failed} mislukt/overgeslagen), ${newChanges.length} wijziging(en) gevonden vandaag.`);
+
+  // Bronnen die (bijna) altijd falen bij naam noemen. Zo'n bron levert nooit
+  // een snapshot en valt dus wég zodra live ophalen hapert — precies wat er bij
+  // Noorwegen maandenlang onopgemerkt gebeurde, verstopt in het totaalcijfer.
+  const zorgelijk = Object.entries(perSource)
+    .filter(([, t]) => t.tried >= 10 && t.failed / t.tried >= 0.5)
+    .sort((a, b) => b[1].failed / b[1].tried - a[1].failed / a[1].tried);
+  if (zorgelijk.length) {
+    console.log('LET OP — bronnen met een hoog faalpercentage (geen/nauwelijks vangnet):');
+    for (const [sid, t] of zorgelijk) {
+      const pct = Math.round((t.failed / t.tried) * 100);
+      console.log(`  ${sid}: ${t.failed}/${t.tried} mislukt (${pct}%)${t.reason ? ` — eerste oorzaak: ${t.reason}` : ''}`);
+    }
+  }
 }
 
 // Alleen draaien bij direct aanroepen — de tests importeren dit bestand om

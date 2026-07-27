@@ -31,12 +31,38 @@ export function sourceUrl(slugId) {
 // Paginakoppen die geen adviesinhoud zijn.
 const SKIP_HEADING = /du er her|tema\b|kontakt oss|om regjeringen|hovednavigasjon|s[øo]k\b|relatert/i;
 
+// Cloudflare's wachtkamer ("Just a moment…") komt terug met HTTP 200. Een
+// geslaagde fetch zei dus niets: de parser vond op zo'n pagina geen koppen en
+// de adapter gaf stilletjes null terug — waardoor Noorwegen ongemerkt in geen
+// enkel land in het snapshot-vangnet belandde. Herkennen en hardop melden.
+const BOTCHECK = /just a moment|cf-chl|performing security verification|verifying you are|attention required|enable javascript and cookies/i;
+
+/** Is dit een botcheck-/challenge-pagina in plaats van het advies zelf? */
+export const looksBlocked = (html) => BOTCHECK.test(String(html || ''));
+
+/**
+ * Haalt de pagina op via de reader. Staat Cloudflare ervoor, dan nog één
+ * poging met de browser-engine (die voert de JS-challenge wél uit). Blijft de
+ * wachtkamer staan, dan werpen we — een stille null is hier misleidend: de
+ * aanroeper (Worker/snapshot-CI) moet dit als mislukking behandelen, niet als
+ * "dit land heeft geen advies".
+ */
+async function fetchPage(url) {
+  const html = await getViaReader(url, 'html');
+  if (!looksBlocked(html)) return html;
+  try {
+    const viaBrowser = await getViaReader(url, { format: 'html', browser: true, timeout: 45 });
+    if (!looksBlocked(viaBrowser)) return viaBrowser;
+  } catch { /* browser-engine niet beschikbaar (bijv. geen reader-key) */ }
+  throw new Error(`norway: Cloudflare-botcheck op ${url}`);
+}
+
 export async function getAdvisory(slugId) {
   if (!slugId) return null;
   const [slug, id] = String(slugId).split('/');
   if (!slug || !id) return null;
   const url = `${SITE}/no/tema/utenrikssaker/reiseinformasjon/velg-land/reiseinfo_${slug}/id${id}/`;
-  const html = await getViaReader(url, 'html');
+  const html = await fetchPage(url);
   if (!html) return null;
   const root = parse(html);
 
