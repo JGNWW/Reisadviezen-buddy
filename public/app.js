@@ -297,30 +297,89 @@ async function loadJSON(path) {
   _cache.set(path, p);
   return p.catch((e) => { _cache.delete(path); throw e; });
 }
+// De 6-uurlijkse snapshot-CI schrijft per land het laatste volledige advies
+// naar worker/data/latest/ in de (publieke) repo. De Worker gebruikt dat al als
+// vangnet pér bron — maar dat vangnet zit ín de Worker: valt een hele
+// Worker-aanroep om (503/timeout), dan verdwijnen álle bronnen uit die batch
+// zonder ooit bij hun snapshot te komen. Daarom kan de frontend hetzelfde
+// bestand rechtstreeks lezen; raw.githubusercontent stuurt CORS: *.
+const SNAPSHOT_BASE = 'https://raw.githubusercontent.com/JGNWW/Reisadviezen-buddy/main/worker/data/latest';
+
+/** Leest de opgeslagen snapshot van dit land en levert de gevraagde bronnen op
+ *  in hetzelfde formaat als de Worker, met stale-markering (📸-badge). */
+async function snapshotSources(iso, ids) {
+  if (!ids.length) return [];
+  try {
+    const r = await fetchWithTimeout(`${SNAPSHOT_BASE}/${iso}.json`, 12000);
+    if (!r.ok) return [];
+    const d = await r.json();
+    return ids
+      .map((id) => {
+        const e = d?.sources?.[id];
+        if (!e?.themes?.length) return null;
+        return {
+          ...e,
+          stale: true,
+          snapshotDate: d.fetchedAt?.[id] || null,
+          mapProxy: e.hasMap ? `/map/${id}/${iso}` : null,
+        };
+      })
+      .filter(Boolean);
+  } catch { return []; }
+}
+
 async function fetchForeign(iso, sources, translate = 'nl') {
   const proxy = getProxy();
   if (!proxy || !sources.length) return null;
-  // Eén Worker-aanroep met álle (17) bronnen overschrijdt bij inhoudsrijke
-  // landen het subrequest-/CPU-budget van Cloudflare (503). Splits daarom in
-  // batches van maximaal 8 bronnen en voeg de resultaten samen — de volgorde
-  // van `sources` blijft leidend voor de weergave.
+  const q = translate ? `&translate=${translate}` : '';
+  const call = (ids) => proxyJson(`/advisory/${iso}?sources=${ids.join(',')}${q}`);
+
+  const bySource = new Map();
+  let firstRes = null, firstErr = null;
+  // allSettled i.p.v. all: een enkele hapering mag niet de héle vergelijking
+  // wegvagen — de bronnen die wél lukten tonen we, de rest halen we hieronder
+  // alsnog op.
+  const collect = (settled) => {
+    for (const s of settled) {
+      if (s.status === 'rejected') { firstErr = firstErr || s.reason; continue; }
+      firstRes = firstRes || s.value;
+      for (const src of s.value?.sources || []) bySource.set(src.source, src);
+    }
+  };
+
+  // Ronde 1: eén Worker-aanroep met álle (17) bronnen overschrijdt bij
+  // inhoudsrijke landen het subrequest-/CPU-budget van Cloudflare (503).
+  // Splits daarom in batches van maximaal 8 bronnen — de volgorde van
+  // `sources` blijft leidend voor de weergave.
   const BATCH = 8;
   const batches = [];
   for (let i = 0; i < sources.length; i += BATCH) batches.push(sources.slice(i, i + BATCH));
-  // allSettled i.p.v. all: een enkele hapering mag niet de héle vergelijking
-  // wegvagen — de bronnen die wél lukten tonen we, de rest melden we zacht.
-  const settled = await Promise.allSettled(batches.map((batch) => {
-    const q = translate ? `&translate=${translate}` : '';
-    return proxyJson(`/advisory/${iso}?sources=${batch.join(',')}${q}`);
-  }));
-  const ok = settled.filter((s) => s.status === 'fulfilled').map((s) => s.value);
-  if (!ok.length) throw settled[0].reason || new Error('proxy onbereikbaar');
-  const bySource = new Map();
-  for (const res of ok) for (const s of res.sources || []) bySource.set(s.source, s);
+  collect(await Promise.allSettled(batches.map(call)));
+
+  // Ronde 2: lukte er minstens één batch, dan léeft de Worker en was de
+  // gesneuvelde batch simpelweg te zwaar (de trage bronnen zitten bij elkaar
+  // in de lijst, dus één batch nam er in één klap acht mee). Haal die bronnen
+  // los op: elke aanroep krijgt zo zijn eigen budget én komt daarmee alsnog
+  // bij het snapshot-vangnet ín de Worker — inclusief vertaling.
+  let missing = sources.filter((id) => !bySource.has(id));
+  if (missing.length && bySource.size) {
+    collect(await Promise.allSettled(missing.map((id) => call([id]))));
+    missing = sources.filter((id) => !bySource.has(id));
+  }
+
+  // Ronde 3: nog steeds niets binnen → de Worker is voor deze bronnen
+  // onbereikbaar. Lees het opgeslagen snapshot dan rechtstreeks uit de repo,
+  // zodat een bron nooit zomaar uit de vergelijking verdwijnt.
+  if (missing.length) {
+    for (const s of await snapshotSources(iso, missing)) bySource.set(s.source, s);
+    missing = sources.filter((id) => !bySource.has(id));
+  }
+
+  if (!bySource.size) throw firstErr || new Error('proxy onbereikbaar');
+
   const got = sources.map((id) => bySource.get(id)).filter(Boolean);
-  const merged = { ...ok[0], sources: got };
-  // Melding als een deel van de bronnen deze keer niet binnenkwam.
-  const missing = sources.filter((id) => !bySource.has(id));
+  const merged = { country: { iso3: iso }, ...(firstRes || {}), sources: got };
+  // Melding als een bron zelfs na de losse poging én het snapshot ontbreekt.
   if (missing.length) merged.partialNotice = missing;
   return merged;
 }
@@ -884,7 +943,7 @@ async function fetchCountry(country, sources, lang) {
       // Toon de rest gewoon en meld welke ontbreken — geen lege tabel meer.
       if (res?.partialNotice?.length) {
         const namen = res.partialNotice.map((id) => sourceMeta(id)?.label || id).join(', ');
-        foreign.notice = `Een deel van de bronnen was tijdelijk niet bereikbaar (${namen}). De overige staan hieronder — probeer het zo nog eens voor de rest.`;
+        foreign.notice = `Een deel van de bronnen was niet bereikbaar én heeft geen opgeslagen snapshot om op terug te vallen (${namen}). De overige staan hieronder — probeer het zo nog eens voor de rest.`;
       }
     } catch (err) {
       foreign.notice = 'De buitenlandse bronnen waren even niet bereikbaar (' + err.message + '). Dit is meestal tijdelijk — probeer het over een paar seconden opnieuw.';
