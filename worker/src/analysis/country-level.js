@@ -21,6 +21,23 @@ const uncertain = (explanation) => ({
   confidence: 'low', sourceMethod: 'fallback-text', assessmentStatus: 'uncertain',
 });
 
+/**
+ * De bron publiceert aantoonbaar GEEN kleurcode voor dit land. Dat is iets
+ * anders dan 'uncertain' (wij konden het niet bepalen): hier is het antwoord
+ * juist zeker, namelijk dat er niets te kleuren valt.
+ *
+ * Aanleiding: FCDO kent geen kleurenschaal. Bij landen zonder
+ * vermijdingswaarschuwing — El Salvador bijvoorbeeld — publiceert het geen
+ * gekleurde zones en staat er in hun API een leeg alert_status. Wij maakten
+ * daar groen van, en dat is een gok: de afwezigheid van een waarschuwing als
+ * kleur presenteren suggereert een oordeel dat de bron niet geeft.
+ */
+const geenKleurcode = (explanation) => ({
+  level: null, color: null, label: null, explanation,
+  regionalMaxLevel: null, hasRegionalWarnings: false,
+  confidence: 'high', sourceMethod: 'structured', assessmentStatus: 'none',
+});
+
 const ok = (o) => ({
   label: null, regionalMaxLevel: o.level ?? null, hasRegionalWarnings: false,
   confidence: 'high', sourceMethod: 'structured', assessmentStatus: 'ok',
@@ -118,7 +135,10 @@ export function interpretStructured(structured) {
       }
       return ok({ level: 1, regionalMaxLevel: partsMax, hasRegionalWarnings: true, explanation: 'VK-waarschuwing geldt voor delen van het land, niet landelijk — zie regionale risico’s.' });
     }
-    return ok({ level: 1, regionalMaxLevel: null, explanation: 'Geen VK-vermijdingswaarschuwing gevonden voor dit land.' });
+    // Leeg alert_status: FCDO geeft geen enkele vermijdingswaarschuwing én
+    // publiceert voor zo'n land geen gekleurde zones. Hier stond eerder groen,
+    // maar dat is een afleiding die de bron zelf niet maakt — zie geenKleurcode.
+    return geenKleurcode('FCDO publiceert geen kleurcode voor dit land (geen vermijdingswaarschuwing).');
   }
 
   if (kind === 'us_level_heading') {

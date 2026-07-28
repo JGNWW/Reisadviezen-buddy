@@ -160,7 +160,7 @@ const hasText = (adv) => !!(adv && adv.themes?.some((t) => t && t.text));
  * @returns {'live'|'snap'|'none'}
  */
 export function pickSourceResult(live, snap) {
-  if (live && live.level != null && live.assessmentStatus !== 'uncertain') return 'live';
+  if (live && (live.level != null || live.assessmentStatus === 'none') && live.assessmentStatus !== 'uncertain') return 'live';
   if (live && textVolume(live) >= MIN_USABLE_TEXT) return 'live';
   if (hasText(snap)) return 'snap';
   if (hasText(live)) return 'live';
@@ -191,7 +191,11 @@ async function resolveSource(s, iso, rec, translateTo) {
   // Alleen een snapshot ophalen als live niet meteen een betrouwbaar niveau
   // gaf — scheelt een netwerkrondje in het gangbare geval. snapshotFallback
   // geeft null zonder tekst, dus een teruggegeven snapshot bevat altijd thema's.
-  const liveConfident = live && live.level != null && live.assessmentStatus !== 'uncertain';
+  // 'none' = de bron publiceert aantoonbaar geen kleurcode. Dat is net zo
+  // definitief als een niveau, dus ook dan is een snapshot-rondje overbodig.
+  const liveConfident = live
+    && (live.level != null || live.assessmentStatus === 'none')
+    && live.assessmentStatus !== 'uncertain';
   const snap = liveConfident ? null : await snapshotFallback(iso, s);
 
   switch (pickSourceResult(live, snap)) {

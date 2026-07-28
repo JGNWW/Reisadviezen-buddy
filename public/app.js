@@ -1287,7 +1287,16 @@ function regionalExtraColors(s) {
  * gevolgd door eventuele regionale extra-kleuren klein ("ook regionaal").
  * spec = { predominant, uncertain, explanation, extras }
  */
-function colorCode({ predominant, uncertain, explanation, extras = [] }) {
+function colorCode({ predominant, uncertain, none, explanation, extras = [] }) {
+  // 'none' is iets anders dan 'onzeker': de bron publiceert aantoonbaar geen
+  // kleurcode (FCDO kent er geen en geeft bij landen zonder waarschuwing niets
+  // uit). Dat als groen tonen zou een oordeel suggereren dat de bron niet
+  // geeft, dus melden we het gewoon.
+  if (none) {
+    return el('span', { class: 'kc kc-none' },
+      el('span', { class: 'prim', title: explanation || 'Deze bron publiceert geen kleurcode voor dit land.' },
+        'Kleurcode ontbreekt'));
+  }
   if (uncertain) {
     return el('span', { class: 'kc' },
       el('span', { class: 'prim', title: explanation || 'Niveau kon niet betrouwbaar worden vastgesteld — geen gok gedaan.' },
@@ -1308,12 +1317,14 @@ function colorCode({ predominant, uncertain, explanation, extras = [] }) {
 const sourceColorCode = (s) => colorCode({
   predominant: s.color,
   uncertain: s.assessmentStatus === 'uncertain',
-  explanation: s.levelLabel,
+  none: s.assessmentStatus === 'none',
+  explanation: s.assessmentStatus === 'none' ? s.explanation || s.levelLabel : s.levelLabel,
   extras: regionalExtraColors(s),
 });
 
 /** Tekstversie van een kleurcode, voor export naar klembord/CSV. */
-function colorTextFor(color, extras = [], uncertain = false) {
+function colorTextFor(color, extras = [], uncertain = false, none = false) {
+  if (none) return 'Kleurcode ontbreekt';
   if (uncertain) return 'Onzeker';
   if (!color) return '—';
   let t = COLOR_LABELS[color] || color;
@@ -1332,7 +1343,9 @@ async function copySummaryTable(staticData, nl, okSources, btn) {
     nl.modificationDate ? nl.modificationDate.split('|')[0].replace('Laatst gewijzigd op:', '').trim() : fmt(nl.lastModified), nl.url || '']);
   okSources.forEach((s) => rows.push([
     s.sourceLabel,
-    colorTextFor(s.color, regionalExtraColors(s), s.assessmentStatus === 'uncertain') + ' (benadering)',
+    s.assessmentStatus === 'none'
+      ? colorTextFor(null, [], false, true)
+      : colorTextFor(s.color, regionalExtraColors(s), s.assessmentStatus === 'uncertain') + ' (benadering)',
     s.levelLabel || '—', fmt(s.lastModified), s.url || '',
   ]));
   const title = `Reisadvies ${staticData.country.nl} — kleurcodes per bron (${new Date().toLocaleDateString('nl-NL')})`;

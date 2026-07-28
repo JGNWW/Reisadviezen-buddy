@@ -50,9 +50,11 @@ for (const [id, adapter, arg, ctx] of ADAPTERS) {
     assert.ok(adv, `${id}: getAdvisory gaf null`);
     assert.equal(typeof adv.url, 'string');
 
-    // Niveau: 1..4 of een eerlijke "uncertain" — nooit iets ertussenin.
-    if (adv.assessmentStatus === 'uncertain') {
-      assert.equal(adv.level, null, `${id}: uncertain hoort geen niveau te hebben`);
+    // Niveau: 1..4, of een eerlijke "uncertain" (wij konden het niet bepalen),
+    // of "none" (de bron publiceert er zelf geen) — nooit iets ertussenin.
+    if (adv.assessmentStatus === 'uncertain' || adv.assessmentStatus === 'none') {
+      assert.equal(adv.level, null, `${id}: ${adv.assessmentStatus} hoort geen niveau te hebben`);
+      assert.equal(adv.color, null, `${id}: ${adv.assessmentStatus} hoort geen kleur te hebben`);
     } else {
       assert.ok(adv.level >= 1 && adv.level <= 4, `${id}: niveau ${adv.level} buiten 1..4`);
       assert.ok(['groen', 'geel', 'oranje', 'rood'].includes(adv.color), `${id}: kleur ${adv.color}`);

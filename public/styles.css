@@ -688,3 +688,7 @@ h2 .flag-img { width: 30px; height: 22px; vertical-align: -3px; border-radius: 3
 /* Bronnen zonder automatisch advies: eerlijke 'n.b.'-rij met bronlink */
 .summary-table tr.na-row td { color: var(--muted); font-style: italic; background: #fafbfc; }
 .summary-table tr.na-row a { font-style: normal; }
+
+/* Bron publiceert geen kleurcode (FCDO bij landen zonder waarschuwing):
+   neutraal en gedempt, zodat het niet als een vierde kleur oogt. */
+.kc-none .prim { color: var(--muted); font-style: italic; }

@@ -510,8 +510,14 @@ async function main() {
       // niveau waar de kale server-fetch er geen heeft (SPA-schil, blokkade).
       // Zo'n niveauloos resultaat mag de browser-versie in het vangnet nooit
       // vervangen — anders wist elke 6-uursrun de wekelijkse browser-capture.
+      // Een bewuste "geen kleurcode" (assessmentStatus 'none') is geen
+      // uitgeklede ophaling maar het juiste antwoord — anders zou het vangnet
+      // voor de 137 VK-landen zonder waarschuwing voorgoed op de oude groene
+      // stand blijven staan.
       const wouldDowngrade = latest.sources[sid]
-        && latest.sources[sid].level != null && (adv.level == null);
+        && latest.sources[sid].level != null
+        && adv.level == null
+        && adv.assessmentStatus !== 'none';
 
       if (!before) {
         // Eerste keer voor deze bron: niets om mee te vergelijken, wel het
