@@ -393,15 +393,35 @@ export function interpretStructured(structured) {
     if (iPoints >= 0) body = body.slice(0, iPoints);
     const JA_LEVEL = /レベル([１２３４1234])/;
     const toNum = (d) => '１２３４'.includes(d) ? '１２３４'.indexOf(d) + 1 : Number(d);
+    // MOFA's rangnummer is NIET onze schaal. Hun laagste trap is al een
+    // waarschuwing — レベル1 「十分注意」 betekent "wees goed op uw hoede", niet
+    // "niets aan de hand" — en de trap daarboven ontraadt al niet-noodzakelijke
+    // reizen. Eén-op-één overnemen maakte El Salvador landelijk groen terwijl
+    // MOFA er geel en oranje geeft; Japan kwam zo structureel een trap milder
+    // in de matrix dan de andere bronnen.
+    //
+    //   レベル1 十分注意                  → geel
+    //   レベル2 不要不急の渡航中止        → oranje
+    //   レベル3 渡航中止勧告              → rood
+    //   レベル4 退避してください          → rood (zwaarder dan onze rood)
+    //
+    // Groen blijft voorbehouden aan landen zonder 危険情報 (zie hierboven).
+    const JP_SCALE = { 1: 2, 2: 3, 3: 4, 4: 4 };
+    const JP_GLOSS = { 1: 'wees op uw hoede', 2: 'geen niet-noodzakelijke reizen', 3: 'reizen ontraden', 4: 'vertrek aanbevolen' };
+    // Datumregels ("2026年03月25日") zijn geen gebied maar de publicatiedatum
+    // van de badge; zonder deze uitsluiting belandden ze als regio in de
+    // uitsplitsing.
+    const JA_DATE_ONLY = /^\s*\d{4}\s*年\s*\d{1,2}\s*月\s*\d{1,2}\s*日\s*$/;
     const bullets = body.split('●').map((s) => s.trim()).filter(Boolean);
     let national = null;
-    let nationalAlert = null;
+    let nationalTier = null;
     let nationalLabel = null;
     const structuredRegional = [];
     for (const b of bullets) {
       const m = b.match(JA_LEVEL);
       if (!m) continue;
-      const level = toNum(m[1]);
+      const tier = toNum(m[1]);
+      const level = JP_SCALE[tier] ?? tier;
       // Regionaam: tekst vóór レベルN; samengestelde beschrijvingen worden
       // afgekapt op de sublijst-separator " ・" (spatie + interpunct — de
       // interpunct ín namen als ジャンム・カシミール heeft geen spatie ervoor).
@@ -409,8 +429,10 @@ export function interpretStructured(structured) {
       const phrase = (b.slice(m.index).match(/^レベル[１２３４1234][：:]?[^（(●]*/) || [b.slice(m.index)])[0].trim();
       if (/全土|全域|国全体/.test(region) || /その他の地域|それ以外の地域|上記以外の地域/.test(region) || !region) {
         // 全土 wint altijd; その他の地域 alleen als er nog geen landelijk niveau is.
-        if (national == null || /全土|全域|国全体/.test(region)) { national = level; nationalLabel = phrase; }
-      } else {
+        if (national == null || /全土|全域|国全体/.test(region)) {
+          national = level; nationalTier = tier; nationalLabel = phrase;
+        }
+      } else if (!JA_DATE_ONLY.test(region)) {
         structuredRegional.push({ region, level });
       }
     }
@@ -434,7 +456,8 @@ export function interpretStructured(structured) {
       regionalMaxLevel: maxR != null ? Math.max(maxR, national) : national,
       hasRegionalWarnings: structuredRegional.length > 0,
       label: nationalLabel || null,
-      explanation: `MOFA (Japan): ${nationalLabel || `レベル${national}`}.`,
+      explanation: `MOFA (Japan): ${nationalLabel || `レベル${nationalTier}`}`
+        + `${JP_GLOSS[nationalTier] ? ` — ${JP_GLOSS[nationalTier]}` : ''}.`,
       structuredRegional: structuredRegional.length ? structuredRegional : undefined,
     });
   }
