@@ -72,3 +72,14 @@ test('Reisehinweise-sectie: landelijk groen + regionale rode zone', () => {
   assert.equal(a.regionalColor, 'rood');
   assert.equal(a.hasRegionalWarnings, true);
 });
+
+test('opsomming van beperkingen blijft oranje (gemeld: Koeweit)', () => {
+  // Het EDA somt de beperkingen vaak op. Zonder ruimte voor die opsomming viel
+  // de zin door naar de ongekwalificeerde vorm en werd Koeweit ten onrechte
+  // rood in plaats van oranje.
+  assert.equal(classifyChNational('Von touristischen und nicht dringenden Reisen nach Kuwait wird abgeraten.'), 3);
+  assert.equal(classifyChNational('Von nicht dringenden und touristischen Reisen nach X wird abgeraten.'), 3);
+  assert.equal(classifyChNational('Von touristischen, privaten und nicht notwendigen Reisen nach X wird abgeraten.'), 3);
+  // Zonder beperking blijft het de zwaarste EDA-vorm.
+  assert.equal(classifyChNational('Von Reisen nach X wird abgeraten.'), 4);
+});

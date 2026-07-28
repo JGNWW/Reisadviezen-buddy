@@ -20,6 +20,17 @@ import { SEVERITY_LABELS } from './severity-detector.js';
 
 const norm = (s) => (s || '').replace(/\s+/g, ' ').toLowerCase();
 
+// Beperkingswoorden die de reizen inperken tot niet-noodzakelijk of
+// toeristisch; zo'n advies is oranje, geen rood.
+const BEPERKING = String.raw`(?:nicht dringend(?:e[nr]?)?(?: notwendige[nr]?| erforderliche[nr]?)?|nicht notwendige[nr]?|nicht unbedingt notwendige[nr]?|touristische[nr]?|private[nr]?)`;
+// De EDA somt die beperkingen vaak op ("Von touristischen UND nicht dringenden
+// Reisen nach Kuwait wird abgeraten"). Zonder ruimte voor die opsomming viel
+// zo'n zin door naar de ongekwalificeerde vorm en werd het land ten onrechte
+// rood in plaats van oranje.
+const BEPERKTE_REIZEN = new RegExp(
+  `${BEPERKING}(?:\\s*(?:,|und|oder|sowie|bzw\\.?)\\s*${BEPERKING})*\\s+reisen[^.]{0,90}wird abgeraten`,
+);
+
 /**
  * Landelijk niveau uit de "Grundsätzliche Einschätzung"-tekst. Het EDA zet
  * het landelijke oordeel altijd in de EERSTE zin ("Von Reisen … wird
@@ -35,7 +46,7 @@ export function classifyChNational(grundText) {
   const first = t.split(/\.\s/)[0] || t; // eerste zin = het landelijke oordeel
   // "nicht dringend notwendige / touristische Reisen … wird abgeraten" (3) vóór
   // de ongekwalificeerde "wird abgeraten" (4).
-  if (/(?:nicht dringend notwendige[nr]?|touristische[nr]?) reisen[^.]{0,90}wird abgeraten/.test(first)) return 3;
+  if (BEPERKTE_REIZEN.test(first)) return 3;
   if (/wird abgeraten/.test(first)) return 4;
   if (/aufmerksamkeit zu schenken|erh[öo]hte vorsicht|besondere vorsicht/.test(first)) return 2;
   if (/grunds[äa]tzlich als sicher/.test(first)) return 1;
@@ -56,7 +67,7 @@ export function classifyChRegionalMax(fullText, national) {
   // Regionale "von Reisen … wird abgeraten" (do-not-travel-zone) → 4.
   if (reg < 4 && /von reisen in (?:die|das|den|folgende|bestimmte|einzelne)[^.]{0,90}wird abgeraten/.test(t)) reg = 4;
   // Regionale "nicht dringend notwendige Reisen … wird abgeraten" → 3.
-  else if (reg < 3 && /(?:nicht dringend notwendige[nr]?|touristische[nr]?) reisen in[^.]{0,90}wird abgeraten/.test(t)) reg = 3;
+  else if (reg < 3 && BEPERKTE_REIZEN.test(t)) reg = 3;
   return reg;
 }
 
