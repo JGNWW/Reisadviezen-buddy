@@ -261,19 +261,43 @@ export function interpretStructured(structured) {
   if (kind === 'kr_alert_zones') {
     // 0404.go.kr toont per land één of meer (waarschuwing, gebied)-paren:
     //   여행금지 | 전 지역                          → landelijk niveau 4
-    //   출국권고 | X를 제외한 전지역                → landelijke basislijn 3
+    //   출국권고 | X를 제외한 전지역                → landelijke basislijn 4
     //   여행자제 | 북부 국경지역                    → regionale vermelding 2
     // De adapter levert de RUWE paren; de betekenis staat hier.
+    //
+    // De schaal volgt de KLEUREN die MOFA zelf aan zijn niveaus geeft, niet de
+    // rangorde. Korea kent vijf stappen (blauw/geel/rood-gestreept/rood/zwart)
+    // en wij vier. Werd de bovenkant verankerd — 여행금지 (zwart) op onze rood
+    // — dan schoof alles eronder een trap omlaag en belandde Korea's eigen
+    // RODE niveau 출국권고 op onze oranje. Zuid-Korea kwam daardoor
+    // structureel milder in de matrix dan alle andere bronnen, terwijl die
+    // matrix juist bestaat om bronnen naast elkaar te leggen (Bahrein: op
+    // 0404.go.kr rood, bij ons oranje).
+    //
+    // Daarom nu op kleur: blauw→groen, geel→geel, rood-gestreept→oranje,
+    // rood→rood. 여행금지 (zwart) is zwaarder dan onze rood maar valt daar
+    // noodgedwongen mee samen; het onderscheid met 출국권고 blijft in het
+    // label en de toelichting staan.
     const zones = Array.isArray(value) ? value : [];
     const KR_LEVEL = [
-      [/여행금지/, 4], [/출국권고|철수권고/, 3], [/특별여행주의보|특별/, 3],
+      [/여행금지/, 4], [/출국권고|철수권고/, 4], [/특별여행주의보|특별/, 3],
       [/여행자제|자제/, 2], [/여행유의|유의/, 1],
     ];
+    // Nederlandse toelichting per trap — nodig nu 출국권고 en 여행금지 dezelfde
+    // kleur delen: in de tekst blijft "vertrek aanbevolen" te onderscheiden van
+    // een juridisch reisverbod.
+    const KR_GLOSS = [
+      [/여행금지/, 'reisverbod'], [/출국권고|철수권고/, 'vertrek aanbevolen'],
+      [/특별여행주의보|특별/, 'speciale reiswaarschuwing'],
+      [/여행자제|자제/, 'reizen afraden'], [/여행유의|유의/, 'oplettendheid geboden'],
+    ];
     const toLevel = (word) => (KR_LEVEL.find(([re]) => re.test(String(word || ''))) || [null, null])[1];
+    const toGloss = (word) => (KR_GLOSS.find(([re]) => re.test(String(word || ''))) || [null, null])[1];
     if (!zones.length) {
       return ok({ level: 1, regionalMaxLevel: null, label: '여행경보 없음 (geen waarschuwing)', explanation: 'MOFA (Zuid-Korea): geen 여행경보 (reiswaarschuwing) voor dit land.' });
     }
     let national = null;
+    let nationalAlert = null;
     let nationalLabel = null;
     const structuredRegional = [];
     for (const z of zones) {
@@ -286,7 +310,11 @@ export function interpretStructured(structured) {
       if (isNationwide) {
         // Plain 전지역 wint van een "X를 제외한 전지역"-basislijn.
         const plain = !/제외/.test(area);
-        if (national == null || plain) { national = level; nationalLabel = `${z.alert}${area ? ` (${area})` : ''}`; }
+        if (national == null || plain) {
+          national = level;
+          nationalAlert = z.alert;
+          nationalLabel = `${z.alert}${area ? ` (${area})` : ''}`;
+        }
       } else {
         structuredRegional.push({ region: area, level });
       }
@@ -309,7 +337,9 @@ export function interpretStructured(structured) {
       regionalMaxLevel: maxR != null ? Math.max(maxR, national) : national,
       hasRegionalWarnings: structuredRegional.length > 0,
       label: nationalLabel,
-      explanation: `MOFA (Zuid-Korea): ${nationalLabel}.`,
+      // Gloss erbij: 출국권고 en 여행금지 delen sinds de kleurmapping dezelfde
+      // rode kleur, dus het verschil moet uit de tekst blijken.
+      explanation: `MOFA (Zuid-Korea): ${nationalLabel}${toGloss(nationalAlert) ? ` — ${toGloss(nationalAlert)}` : ''}.`,
       structuredRegional: structuredRegional.length ? structuredRegional : undefined,
     });
   }
@@ -345,6 +375,7 @@ export function interpretStructured(structured) {
     const toNum = (d) => '１２３４'.includes(d) ? '１２３４'.indexOf(d) + 1 : Number(d);
     const bullets = body.split('●').map((s) => s.trim()).filter(Boolean);
     let national = null;
+    let nationalAlert = null;
     let nationalLabel = null;
     const structuredRegional = [];
     for (const b of bullets) {
