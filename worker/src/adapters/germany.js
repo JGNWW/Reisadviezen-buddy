@@ -70,11 +70,25 @@ export async function getAdvisory(iso3) {
     .filter((s) => s.heading && s.text && s.text.length > 30)
     .map((s) => ({ category: s.heading, heading: s.heading, themeId: classifyTheme(s.heading, s.text), html: s.html, text: s.text }));
 
+  // Het AA zet de kleurbepalende regels bij elk land onder "Aktuelles", en
+  // herhaalt ze verderop met "Siehe Aktuelles". Alleen dat blok telt dus mee
+  // voor het niveau; de rest van de pagina is toelichting.
+  //
+  // Dat is niet alleen netter maar ook nodig: de sectiekoppen eronder
+  // ("Sicherheit", "Weiterreise in Nachbarländer/Grenzübergänge",
+  // "Sicherheitshinweise Irak") oogden als eigennamen en werden daardoor als
+  // GEBIED opgevat. Koeweit — waar Aktuelles enkel "Von Reisen nach Kuwait
+  // wird dringend abgeraten" zegt, dus rood en verder niets — kreeg zo een
+  // oranje gebied "Sicherheit" naast zich, en zelfs waarschuwingen die over
+  // Irak gingen.
+  const aktuelles = themes.filter((t) => /^aktuelles\b/i.test(t.heading.trim()));
+  const beoordeeld = aktuelles.length ? aktuelles : themes;
+
   // Landelijk niveau uit de gestructureerde waarschuwingsvlaggen van de
   // opendata-API; regionale vermeldingen ("Vor Reisen in das Grenzgebiet zu X
   // wird gewarnt") uit de Duitse tekst — beide via de gedeelde engine.
   const assessment = analyzeAdvisory({
-    sections: themes,
+    sections: beoordeeld,
     lang: 'de',
     structured: {
       kind: 'de_warning_flags',
@@ -89,11 +103,12 @@ export async function getAdvisory(iso3) {
   const note = e.lastChanges ? htmlToText(e.lastChanges).replace(/^Letzte Änderungen:\s*/i, '').trim() : null;
 
   const fullText = themes.map((t) => t.text).join('\n');
+  const beoordeeldeTekst = beoordeeld.map((t) => t.text).join('\n');
   // De opendata-vlaggen kennen geen oranje trap. Als de tekst een landelijke
   // ontradingsformule bevat ("Von (nicht unbedingt erforderlichen) Reisen wird
   // abgeraten") die zwaarder is dan de vlag-uitkomst, tilt die het niveau op de
   // juiste oranje/rood-trap. Nooit verlagen: we nemen het hoogste van beide.
-  const textLevel = classifyGermanNational(fullText, e.countryName || null);
+  const textLevel = classifyGermanNational(beoordeeldeTekst, e.countryName || null);
   let level = assessment.level;
   let color = assessment.color;
   let levelLabel = assessment.levelLabel;
@@ -102,8 +117,26 @@ export async function getAdvisory(iso3) {
     color = levelToColor(textLevel);
     levelLabel = SEVERITY_LABELS[textLevel];
   }
-  const regionalMaxLevel = Math.max(assessment.regionalMaxLevel ?? 0, level ?? 0) || assessment.regionalMaxLevel;
-  const hasRegionalWarnings = !!assessment.hasRegionalWarnings || (regionalMaxLevel != null && level != null && regionalMaxLevel > level);
+  // Het AA schrijft zijn gebiedsadviezen in Aktuelles als lopende zin ("Von
+  // Reisen in das unmittelbare syrisch-jordanische Grenzgebiet sowie in den
+  // Nordosten des Landes … wird dringend abgeraten"). Daar valt geen nette
+  // plaatsnaam uit te halen, dus de engine valt terug op de zin zélf als
+  // "gebied". Zo'n zin tonen we niet als regionaam — de frontend meldt dan
+  // eerlijk dat er geen gebieden te extraheren waren — maar het niveau telt
+  // wél mee. Behalve als het juist de LANDELIJKE formule is: die staat al in
+  // het landniveau en zou anders als rode zone dubbelop komen (Jordanië:
+  // "Von Reisen in andere Landesteile Jordaniens wird abgeraten").
+  const genoemdeRegios = [];
+  const naamlozeNiveaus = [];
+  for (const m of assessment.regionalBreakdown || []) {
+    if (m.extractionMethod !== 'anchor_sentence_level') { genoemdeRegios.push(m); continue; }
+    if (classifyGermanNational(m.region, e.countryName || null) == null) naamlozeNiveaus.push(m.level);
+  }
+  const regionaleNiveaus = [...genoemdeRegios.map((m) => m.level), ...naamlozeNiveaus].filter((n) => n != null);
+  const regionalMaxLevel = Math.max(level ?? 0, ...regionaleNiveaus) || null;
+  const hasRegionalWarnings = genoemdeRegios.length > 0
+    || naamlozeNiveaus.length > 0
+    || (regionalMaxLevel != null && level != null && regionalMaxLevel > level);
 
   return {
     source: meta.id,
@@ -118,7 +151,7 @@ export async function getAdvisory(iso3) {
     levelLabel,
     regionalMaxLevel,
     hasRegionalWarnings,
-    regionalBreakdown: assessment.regionalBreakdown,
+    regionalBreakdown: genoemdeRegios,
     regionalCoverage: assessment.regionalCoverage,
     regions: assessment.regions,
     confidence: assessment.confidence,

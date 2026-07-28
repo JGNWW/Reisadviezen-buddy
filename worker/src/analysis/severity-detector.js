@@ -69,6 +69,11 @@ const PATTERNS = {
   ],
   de: [
     P(/wird gewarnt|reisewarnung/i, 4),
+    // "dringend abgeraten" is bij het Auswärtiges Amt de zwaarste trap en moet
+    // vóór de mildere patronen staan: het AA gebruikt binnen één advies zowel
+    // "dringend abgeraten" (rood, gebied) als kaal "abgeraten" (oranje, de
+    // rest van het land) — zie Jordanië.
+    P(/wird (?:\w+ ){0,2}?(?:dringend|eindringlich) (?:\w+ ){0,2}?abgeraten/i, 4),
     // Zwitserse EDA-vormen ("Von Reisen nach X … wird abgeraten" = tegen
     // álle reizen, hun zwaarste vorm; Duitsland zelf zegt "Vor Reisen …
     // wird gewarnt", dus deze patronen raken Duitse teksten niet).

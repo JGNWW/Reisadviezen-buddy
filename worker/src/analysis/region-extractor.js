@@ -192,7 +192,7 @@ export function extractRegionFromListItem(sentence, lang = 'en', opts = {}) {
 
 // Koppen die vrijwel nooit een regionaam zijn (rubrieken, thema's, service-
 // pagina's) — overgenomen uit de vorige level-assessment en hier beheerd.
-export const NON_REGIONAL_HEADING = /^(safety and security|entry requirements|health|getting help|local laws|customs rules|customs|terrorism\b|crime\b|road travel|rail travel|air travel|bus travel|boat travel|sea travel|river travel|ferry|trekking|mountaineering|swimming|scams?\b|natural disasters|extreme weather|hurricanes?|tsunamis?|cyclones?|storms?|monsoons?|money\b|travel insurance|insurance\b|before you travel|about (fcdo|this)|summary|overview|general (travel )?(advice|information)|general$|additional information|embassy|(latest )?travel alert|border security|security status|warnings? and insurance|documentation|visa requirements|applying for a visa|vaccine|passport|dual nationals?|taking money|travel(l)?ing with children|souvenirs|risk of arrest|protecting yourself|security escorts|laws and cultural|personal id|ramadan|alcohol laws|illegal drugs|mobile phone|using cameras|lgbt|family law|military service|road conditions|taxis\b|wildfires|flooding|earthquakes|emergency|refunds|support from|contact(ing)?|help (abroad|in)|risk information|risk levels?|situation s[ée]curitaire|s[ée]curit[ée]\b|entr[ée]e.{0,3}s[ée]jour|sant[ée]\b|informations utiles|documentaci[oó]n y visados|sanidad|divisas|^otros$|direcciones y tel[ée]fonos|notas importantes|seguridad\b|recommandations? g[ée]n[ée]rales?|s[ûu]ret[ée]\b|aktuelles|kriminalit[äa]t|gesundheit|einreise|reiseinfos|rischi\b|rischio\b|calamit|avvertenz|indicazioni|normative|vaccinazion|ambasciat|documenti|moneta\b|informazioni|situazione sanitaria|mobilit[àa]|aree di particolare|viaggi\b|dati paese|yleinen|rikollisuus|liikenne|luonnonolot|terveys|maan lait|maahantulo|ajankohtaista|turvallisuustaso|erityiset)\b/i;
+export const NON_REGIONAL_HEADING = /^(safety and security|entry requirements|health|getting help|local laws|customs rules|customs|terrorism\b|crime\b|road travel|rail travel|air travel|bus travel|boat travel|sea travel|river travel|ferry|trekking|mountaineering|swimming|scams?\b|natural disasters|extreme weather|hurricanes?|tsunamis?|cyclones?|storms?|monsoons?|money\b|travel insurance|insurance\b|before you travel|about (fcdo|this)|summary|overview|general (travel )?(advice|information)|general$|additional information|embassy|(latest )?travel alert|border security|security status|warnings? and insurance|documentation|visa requirements|applying for a visa|vaccine|passport|dual nationals?|taking money|travel(l)?ing with children|souvenirs|risk of arrest|protecting yourself|security escorts|laws and cultural|personal id|ramadan|alcohol laws|illegal drugs|mobile phone|using cameras|lgbt|family law|military service|road conditions|taxis\b|wildfires|flooding|earthquakes|emergency|refunds|support from|contact(ing)?|help (abroad|in)|risk information|risk levels?|situation s[ée]curitaire|s[ée]curit[ée]\b|entr[ée]e.{0,3}s[ée]jour|sant[ée]\b|informations utiles|documentaci[oó]n y visados|sanidad|divisas|^otros$|direcciones y tel[ée]fonos|notas importantes|seguridad\b|recommandations? g[ée]n[ée]rales?|s[ûu]ret[ée]\b|aktuelles|kriminalit[äa]t|gesundheit|einreise|reiseinfos|sicherheit|sicherheitslage|sicherheitshinweise|innenpolitische lage|infrastruktur|terrorismus|reisedokumente|piraterie|doppelstaater|kampfhandlungen|weiterreise|[üu]brige landesteile|landminen|natur und klima|f[üu]hrerschein|rischi\b|rischio\b|calamit|avvertenz|indicazioni|normative|vaccinazion|ambasciat|documenti|moneta\b|informazioni|situazione sanitaria|mobilit[àa]|aree di particolare|viaggi\b|dati paese|yleinen|rikollisuus|liikenne|luonnonolot|terveys|maan lait|maahantulo|ajankohtaista|turvallisuustaso|erityiset)\b/i;
 
 /** Bevat de kop een expliciet geografisch scope-woord (regio/grens/stad/eiland)? */
 export function headingHasScopeWord(heading, lang = 'en') {
@@ -216,7 +216,27 @@ export function headingHasScopeWord(heading, lang = 'en') {
  * dichtzetten — en daarmee ook de échte regio's erin (bij Ethiopië ruim
  * twintig, van Tigray tot de Somalische grensstreek).
  */
-export const STRUCTURAL_HEADING = /^(?:general(?: travel)?(?: advice| information)?|additional information|embassy[\w\s]*|(?:latest )?travel alert|border security|security status)$/i;
+export const STRUCTURAL_HEADING = new RegExp(
+  '^(?:'
+  // Ierland (DFA)
+  + 'general(?: travel)?(?: advice| information)?|additional information|embassy[\\w\\s]*'
+  + '|(?:latest )?travel alert|border security|security status'
+  // Duitsland/Oostenrijk (Auswärtiges Amt, BMEIA): zelfde verhaal — vaste
+  // kopjes, geen plaatsnaam, maar de gebiedsadviezen staan er wél onder.
+  + '|aktuelles|sicherheit|innenpolitische lage|infrastruktur|terrorismus'
+  + '|kampfhandlungen|weiterreise|übrige landesteile|ubrige landesteile'
+  + '|reisedokumente|doppelstaater|landminen|natur und klima|führerschein|fuhrerschein'
+  // Ook onderwerpskoppen die géén plaats zijn maar wél gebiedsadviezen bevatten
+  // (bij Frankrijk staan de Seychellen-eilanden onder "Piraterie maritime").
+  + '|piraterie'
+  // Bewust een PREFIX-test, geen exacte match: bronnen plakken er van alles
+  // achter ("Sicherheit & Kriminalität", "Infrastruktur/Verkehr",
+  // "Sicherheitsstufe 4)!"). Zou zo'n kop wél buiten de regionamen vallen maar
+  // buiten deze lijst blijven, dan kreeg de sectie de rol 'other' en werd hij
+  // helemaal niet meer doorzocht — precies de valkuil die bij Ierland ruim
+  // twintig échte regio's kostte.
+  + ')\\b', 'i',
+);
 
 /**
  * Bepaalt of een sectiekop een geografische naam is (en dus als regiokop mag
