@@ -401,14 +401,14 @@ export function interpretStructured(structured) {
     // in de matrix dan de andere bronnen.
     //
     //   レベル1 十分注意                  → geel
-    //   レベル2 不要不急の渡航中止        → geel
-    //   レベル3 渡航中止勧告              → oranje
-    //   レベル4 退避してください          → rood
+    //   レベル2 不要不急の渡航中止        → oranje
+    //   レベル3 渡航中止勧告              → rood
+    //   レベル4 退避してください          → rood (zwaarder dan onze rood)
     //
-    // Alleen de laagste trap schuift op: レベル2 en レベル3 kwamen al op de
-    // juiste kleur uit, dus die blijven staan zoals ze waren. Groen blijft
-    // voorbehouden aan landen zonder 危険情報 (zie hierboven).
-    const JP_SCALE = { 1: 2, 2: 2, 3: 3, 4: 4 };
+    // Groen blijft voorbehouden aan landen zonder 危険情報 (zie hierboven).
+    // Omdat レベル3 en レベル4 dezelfde kleur delen, benoemt de toelichting de
+    // trap in het Nederlands zodat het verschil zichtbaar blijft.
+    const JP_SCALE = { 1: 2, 2: 3, 3: 4, 4: 4 };
     const JP_GLOSS = { 1: 'wees op uw hoede', 2: 'geen niet-noodzakelijke reizen', 3: 'reizen ontraden', 4: 'vertrek aanbevolen' };
     // Datumregels ("2026年03月25日") zijn geen gebied maar de publicatiedatum
     // van de badge; zonder deze uitsluiting belandden ze als regio in de

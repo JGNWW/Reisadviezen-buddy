@@ -6,16 +6,15 @@
  * laagste trap is al een waarschuwing.
  *
  *   レベル1 十分注意          "wees goed op uw hoede"        -> geel
- *   レベル2 不要不急の渡航中止 "geen niet-noodzakelijke reizen" -> geel
- *   レベル3 渡航中止勧告      "reizen ontraden"               -> oranje
+ *   レベル2 不要不急の渡航中止 "geen niet-noodzakelijke reizen" -> oranje
+ *   レベル3 渡航中止勧告      "reizen ontraden"               -> rood
  *   レベル4 退避してください   "vertrek"                       -> rood
  *
- * Alleen de laagste trap schuift op. レベル1 「十分注意」 betekent "wees goed
- * op uw hoede" en is dus geen groen: El Salvador — waar MOFA レベル2 voor zes
- * districten en レベル1 voor de rest geeft — kwam landelijk op groen uit
- * terwijl de bron er wel degelijk waarschuwt. De trappen erboven kwamen al op
- * de juiste kleur uit en blijven ongewijzigd. Groen blijft voorbehouden aan
- * landen zonder 危険情報.
+ * Eerder werd レベルN één-op-één als niveau N overgenomen, maar MOFA's laagste
+ * trap is al een waarschuwing. El Salvador — waar MOFA レベル2 voor zes
+ * districten en レベル1 voor de rest geeft — kwam daardoor landelijk op groen
+ * uit terwijl de bron er wel degelijk waarschuwt. Groen blijft voorbehouden
+ * aan landen zonder 危険情報.
  *
  * Draaien: cd worker && node --test test/japan-levels.test.mjs
  */
@@ -30,15 +29,15 @@ test('het gemelde geval El Salvador: geel landelijk, oranje regionaal', () => {
     + ' ●上記以外の地域 レベル1：十分注意してください。《継続》 【ポイント】');
   assert.equal(r.level, 2);
   assert.equal(r.color, 'geel');
-  assert.equal(r.regionalMaxLevel, 2);
+  assert.equal(r.regionalMaxLevel, 3);
   assert.equal(r.hasRegionalWarnings, true);
 });
 
 test('elke MOFA-trap landt op de bedoelde kleur', () => {
   const heelLand = (n) => jp(`【危険レベル】 ●全土 レベル${n}：テスト`);
   assert.equal(heelLand(1).color, 'geel');
-  assert.equal(heelLand(2).color, 'geel');
-  assert.equal(heelLand(3).color, 'oranje');
+  assert.equal(heelLand(2).color, 'oranje');
+  assert.equal(heelLand(3).color, 'rood');
   assert.equal(heelLand(4).color, 'rood');
 });
 
@@ -58,7 +57,7 @@ test('een publicatiedatum is geen gebied', () => {
 test('een zwaarder gebied tilt het landelijke niveau niet op', () => {
   const r = jp('【危険レベル】 ●北部国境地帯 レベル3：渡航は止めてください。 ●その他の地域 レベル1：十分注意してください。');
   assert.equal(r.level, 2, 'landelijk = レベル1 -> geel');
-  assert.equal(r.regionalMaxLevel, 3, 'regionaal = レベル3 -> oranje');
+  assert.equal(r.regionalMaxLevel, 4, 'regionaal = レベル3 -> rood');
 });
 
 test('de toelichting benoemt de trap in het Nederlands', () => {
