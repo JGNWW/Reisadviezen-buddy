@@ -93,7 +93,7 @@ export async function getAdvisory(iso3) {
   // ontradingsformule bevat ("Von (nicht unbedingt erforderlichen) Reisen wird
   // abgeraten") die zwaarder is dan de vlag-uitkomst, tilt die het niveau op de
   // juiste oranje/rood-trap. Nooit verlagen: we nemen het hoogste van beide.
-  const textLevel = classifyGermanNational(fullText);
+  const textLevel = classifyGermanNational(fullText, e.countryName || null);
   let level = assessment.level;
   let color = assessment.color;
   let levelLabel = assessment.levelLabel;
