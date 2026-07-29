@@ -61,6 +61,10 @@ let COMPARE_COUNTRIES = [];          // gekozen landen (de chips), in volgorde
 let COMPARE_RESULTS = new Map();     // iso3 → { country, staticData, foreign }
 let COMPARE_SOURCES = [];            // bronnen van de laatste ophaling
 let COMPARE_ACTIVE = null;           // iso3 van het open landtabblad
+// Naam van de groep waaruit deze selectie komt (alleen in dit tabblad, niet in
+// de URL). Wijkt de selectie ervan af, dan kun je die groep bijwerken in plaats
+// van een bijna-identieke tweede groep te maken.
+let ACTIVE_GROUP = null;
 // Vooringevulde term voor de onderwerp-zoeker (gezet door de indexzoeker en
 // de gazetteer-chips; wordt na de eerstvolgende vergelijking uitgevoerd).
 let PENDING_TOPIC = null;
@@ -574,7 +578,7 @@ function activateTab(view) {
   updateUrl({ tab: view === 'compare' ? null : view });
   // De favorietenlijst kan zijn gewijzigd terwijl het tabblad dicht stond
   // (ster gezet bij een land, lijst geïmporteerd) — altijd vers tonen.
-  if (view === 'favorieten') renderFavorites();
+  if (view === 'favorieten') { renderFavorites(); renderGroups(); }
 }
 $$('.tab').forEach((t) => t.addEventListener('click', () => activateTab(t.dataset.view)));
 
@@ -832,14 +836,23 @@ function setupCountryCombo() {
     return li;
   };
   // Regel die in één klik een hele set landen neerzet (groep of favorieten).
-  const bulkItem = (icon, label, countries, i) => {
+  // `icon` is een element (vlaggenstapel) of een teken (★).
+  const bulkItem = (icon, label, countries, i, groep = null) => {
     const li = el('li', { class: 'combo-item combo-bulk', role: 'option', id: `combo-opt-${i}` },
-      el('span', { class: 'combo-icon' }, icon), ` ${label}`,
+      typeof icon === 'string' ? el('span', { class: 'combo-icon' }, icon) : icon, ` ${label}`,
       el('span', { class: 'combo-count' }, `${countries.length} land${countries.length === 1 ? '' : 'en'}`));
     li.addEventListener('mousedown', (e) => {
       e.preventDefault();
       input.value = ''; setComboFlag(null); close();
-      countries.forEach(addCompareCountry);
+      // Een groep openen vervangt de selectie — dat is wat "deze groep
+      // vergelijken" betekent. Losse favorieten vullen juist aan.
+      if (groep) {
+        COMPARE_COUNTRIES = countries.slice(0, MAX_COMPARE_COUNTRIES);
+        ACTIVE_GROUP = groep;
+        renderCompareChips();
+      } else {
+        countries.forEach(addCompareCountry);
+      }
       input.focus();
     });
     return li;
@@ -872,17 +885,17 @@ function setupCountryCombo() {
       const groups = loadGroups();
       const namen = Object.keys(groups).sort();
       if (namen.length) {
-        const beheer = el('a', { href: '#', class: 'combo-manage' }, 'beheren…');
-        beheer.addEventListener('mousedown', (e) => { e.preventDefault(); close(); manageGroups(); });
+        const beheer = el('a', { href: '#', class: 'combo-manage' }, 'alle groepen beheren →');
+        beheer.addEventListener('mousedown', (e) => { e.preventDefault(); close(); activateTab('favorieten'); });
         list.append(groupHead('Groepen', beheer));
         namen.forEach((naam) => {
           const landen = groups[naam].map((iso) => COUNTRIES.find((c) => c.iso3 === iso)).filter(Boolean);
-          if (landen.length) list.append(bulkItem('▣', naam, landen, n++));
+          if (landen.length) list.append(bulkItem(groupStack(groups[naam]), naam, landen, n++, naam));
         });
       }
       const favs = favoriteItems();
       if (favs.length) {
-        const alle = el('a', { href: '#', class: 'combo-manage' }, 'bekijk alle…');
+        const alle = el('a', { href: '#', class: 'combo-manage' }, 'alle favorieten →');
         alle.addEventListener('mousedown', (e) => { e.preventDefault(); close(); activateTab('favorieten'); });
         list.append(groupHead('Favorieten', favs.length > MAX_FAV_IN_LIST ? alle : null));
         list.append(bulkItem('★', 'Alle favorieten', favs, n++));
@@ -979,60 +992,126 @@ function removeCompareCountry(iso3) {
   }
 }
 
+/** Wijkt de huidige selectie af van de groep waaruit hij komt? */
+function groupChanged() {
+  if (!ACTIVE_GROUP) return false;
+  const bewaard = loadGroups()[ACTIVE_GROUP];
+  if (!bewaard) return false;
+  return COMPARE_COUNTRIES.map((c) => c.iso3).join(',') !== bewaard.join(',');
+}
+
 function renderCompareChips() {
   const wrap = $('#compare-chips');
   wrap.innerHTML = '';
+  const n = COMPARE_COUNTRIES.length;
+  if (!n) ACTIVE_GROUP = null;
+  const groups = loadGroups();
+  if (ACTIVE_GROUP && !groups[ACTIVE_GROUP]) ACTIVE_GROUP = null;
+  const gewijzigd = groupChanged();
+
+  // Komt deze selectie uit een groep? Dat links vermelden, zodat de knoppen
+  // rechts ("bijwerken") ergens op slaan.
+  if (ACTIVE_GROUP) {
+    wrap.append(el('span', { class: 'chip-group' },
+      groupStack(groups[ACTIVE_GROUP]), 'Groep ', el('strong', {}, ACTIVE_GROUP),
+      gewijzigd ? el('span', { class: 'chip-group-dirty' }, ' · gewijzigd') : null));
+    wrap.append(el('span', { class: 'chip-sep' }));
+  }
+
   COMPARE_COUNTRIES.forEach((c) => {
     const rm = el('button', { type: 'button', class: 'chip-x', title: `${c.nl} verwijderen`, 'aria-label': `${c.nl} verwijderen` }, '✕');
     rm.addEventListener('click', () => removeCompareCountry(c.iso3));
     wrap.append(el('span', { class: 'chip' }, `${countryFlag(c.iso2)} ${c.nl}`, rm));
   });
-  const n = COMPARE_COUNTRIES.length;
-  // Bewaren verschijnt pas als er iets te bewaren valt — bij één land is een
-  // groep zinloos.
-  if (n > 1) {
-    const save = el('button', { type: 'button', class: 'btn chip-save' }, `💾 Bewaar deze ${n} als groep`);
-    save.addEventListener('click', saveCurrentAsGroup);
-    wrap.append(el('span', { class: 'chip-sep' }), save);
+
+  // Bewaren verschijnt pas als er iets te bewaren valt: bij één land is een
+  // groep zinloos, en een ongewijzigd geladen groep hoeft niet opnieuw.
+  if (n > 1 && (!ACTIVE_GROUP || gewijzigd)) {
+    wrap.append(el('span', { class: 'chip-sep' }));
+    if (gewijzigd) {
+      const bij = el('button', { type: 'button', class: 'btn chip-update' }, `💾 ${ACTIVE_GROUP} bijwerken`);
+      bij.addEventListener('click', () => {
+        const g = loadGroups();
+        g[ACTIVE_GROUP] = COMPARE_COUNTRIES.map((c) => c.iso3);
+        saveGroups(g);
+        compareStatus(`Groep “${ACTIVE_GROUP}” bijgewerkt (${g[ACTIVE_GROUP].length} landen).`, 'ok');
+        renderCompareChips();
+        renderGroups();
+      });
+      wrap.append(bij);
+    }
+    const save = el('button', { type: 'button', class: 'btn chip-save' },
+      gewijzigd ? 'Bewaar als nieuwe groep…' : `💾 Bewaar deze ${n} als groep`);
+    save.addEventListener('click', toggleSavePanel);
+    wrap.append(save);
   }
+
   $('#compare-fetchnote').hidden = n === 0;
+  renderSavePanel(false);
   const btn = $('#compare-form button[type="submit"]');
   if (btn) btn.textContent = n > 1 ? `Vergelijken (${n} landen)` : 'Vergelijken';
 }
 
-/** Bewaart de huidige chips als groep; de naam vraagt hij één keer. */
-function saveCurrentAsGroup() {
-  if (COMPARE_COUNTRIES.length < 2) return;
-  const naam = prompt('Naam voor deze groep (bijv. Golfstaten):', '');
-  if (!naam || !naam.trim()) return;
-  const groups = loadGroups();
-  groups[naam.trim()] = COMPARE_COUNTRIES.map((c) => c.iso3);
-  saveGroups(groups);
-  compareStatus(`Groep “${naam.trim()}” bewaard — je vindt hem terug in het landenveld.`, 'ok');
-}
+let SAVE_PANEL_OPEN = false;
+const toggleSavePanel = () => renderSavePanel(!SAVE_PANEL_OPEN);
 
-/** Groepenbeheer: hernoemen of verwijderen. Zelden nodig, dus geen eigen
- *  scherm — een simpele keuzelijst volstaat. */
-function manageGroups() {
+/**
+ * Bewaarpaneel in het scherm zelf in plaats van een prompt-venster: een
+ * naamveld plus de bestaande groepen, die je rechtstreeks kunt overschrijven —
+ * met het verschil erbij, zodat je nooit ongemerkt een grotere groep wist.
+ */
+function renderSavePanel(open) {
+  const host = $('#compare-savepanel');
+  if (!host) return;
+  SAVE_PANEL_OPEN = !!open && COMPARE_COUNTRIES.length > 1;
+  host.innerHTML = '';
+  host.hidden = !SAVE_PANEL_OPEN;
+  if (!SAVE_PANEL_OPEN) return;
+
+  const isos = COMPARE_COUNTRIES.map((c) => c.iso3);
   const groups = loadGroups();
-  const namen = Object.keys(groups).sort();
-  if (!namen.length) return;
-  const keuze = prompt(
-    'Welke groep wil je beheren? Typ de naam.\n\n' + namen.map((x) => `· ${x} (${groups[x].length})`).join('\n'), namen[0]);
-  if (!keuze) return;
-  const naam = namen.find((x) => x.toLowerCase() === keuze.trim().toLowerCase());
-  if (!naam) return compareStatus(`Geen groep “${keuze.trim()}” gevonden.`, 'error');
-  const nieuw = prompt(`Nieuwe naam voor “${naam}” — leeg laten om de groep te verwijderen:`, naam);
-  if (nieuw === null) return;
-  const isos = groups[naam];
-  delete groups[naam];
-  if (nieuw.trim()) {
-    groups[nieuw.trim()] = isos;
-    compareStatus(`Groep hernoemd naar “${nieuw.trim()}”.`, 'ok');
-  } else {
-    compareStatus(`Groep “${naam}” verwijderd.`, 'ok');
+  const bewaar = (naam) => {
+    const g = loadGroups();
+    g[naam] = [...isos];
+    saveGroups(g);
+    ACTIVE_GROUP = naam;
+    compareStatus(`Groep “${naam}” bewaard — je vindt hem terug in het landenveld en op Favorieten.`, 'ok');
+    renderCompareChips();
+    renderGroups();
+  };
+
+  const input = el('input', { autocomplete: 'off', placeholder: 'Naam van de groep', value: ACTIVE_GROUP || '' });
+  const bewaarUitVeld = () => {
+    const naam = input.value.trim();
+    if (!naam) return;
+    if (groups[naam] && !confirm(`Groep “${naam}” bestaat al (${groups[naam].length} landen). Overschrijven met deze ${isos.length}?`)) return;
+    bewaar(naam);
+  };
+  const ok = el('button', { type: 'button', class: 'btn primary' }, 'Bewaren');
+  ok.addEventListener('click', bewaarUitVeld);
+  input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); bewaarUitVeld(); } });
+  const annuleer = el('button', { type: 'button', class: 'btn' }, 'Annuleren');
+  annuleer.addEventListener('click', () => renderSavePanel(false));
+
+  const paneel = el('div', { class: 'savepanel' },
+    el('h6', {}, `Deze ${isos.length} landen bewaren`),
+    el('div', { class: 'saverow' }, input, ok, annuleer));
+
+  const namen = Object.keys(groups).sort((a, b) => a.localeCompare(b, 'nl'));
+  if (namen.length) {
+    const ow = el('div', { class: 'overwrite' }, el('p', { class: 'ow-title' }, 'Of werk een bestaande groep bij'));
+    namen.forEach((naam) => {
+      const oud = groups[naam].length;
+      const knop = el('button', { type: 'button', class: 'btn' + (oud > isos.length ? ' warn' : '') }, 'Overschrijven');
+      knop.addEventListener('click', () => bewaar(naam));
+      ow.append(el('div', { class: 'ow-row' },
+        groupStack(groups[naam]), el('span', { class: 'ow-name' }, naam),
+        el('span', { class: 'ow-delta' }, `${oud} → ${isos.length} land${isos.length === 1 ? '' : 'en'}`), knop));
+    });
+    paneel.append(ow);
   }
-  saveGroups(groups);
+  host.append(paneel);
+  input.focus();
 }
 
 function setupCompareSelection() {
@@ -2761,6 +2840,7 @@ async function buildFavorites() {
   $('#fav-export').addEventListener('click', exportFavorites);
   $('#fav-import').addEventListener('change', importFavorites);
 
+  setupGroups();
   renderFavorites();
 }
 
@@ -2848,6 +2928,236 @@ function renderFavorites() {
     grid.append(el('div', { class: 'favcard' + (sel ? ' sel' : '') },
       box, naam, note ? el('span', { class: 'favnote' }, note) : null, ster));
   });
+}
+
+// ==========================================================================
+// GROEPEN — een set landen die je in één klik in de vergelijker zet.
+//
+// Beheren gebeurt hier, op het favorietentabblad: in de uitklaplijst van het
+// landenveld ben je aan het typen, en één misklik zou daar je selectie kosten.
+// Wijzigingen aan de landen van een groep worden pas opgeslagen als je op
+// Opslaan klikt (GROUP_DRAFT houdt ze tot die tijd vast).
+// ==========================================================================
+let GROUP_OPEN = null;   // naam van de opengeklapte groep
+let GROUP_DRAFT = null;  // { naam, isos: [...] } — nog niet opgeslagen wijzigingen
+
+const groupNames = () => Object.keys(loadGroups()).sort((a, b) => a.localeCompare(b, 'nl'));
+const groupCountries = (isos) => (isos || []).map((iso) => COUNTRIES.find((c) => c.iso3 === iso)).filter(Boolean);
+
+/**
+ * Vlaggenstapel: de eerste landen van een groep, licht overlappend. Zegt in
+ * dezelfde beeldtaal als de rest van de lijst wat er in de groep zit — een
+ * abstract icoontje doet dat niet.
+ */
+function groupStack(isos, max = 3) {
+  const wrap = el('span', { class: 'gstack' });
+  groupCountries(isos).slice(0, max).forEach((c) => wrap.append(el('span', {}, countryFlag(c.iso2))));
+  if (!wrap.childNodes.length) wrap.append(el('span', { class: 'empty' }, '·'));
+  return wrap;
+}
+
+function setGroupStatus(msg, cls = '') {
+  const s = $('#group-status');
+  if (!s) return;
+  s.className = 'status' + (cls ? ' ' + cls : '');
+  s.textContent = msg;
+}
+
+/** Zet de vergelijkselectie op de landen van een groep — vervangen, niet
+ *  aanvullen: "een groep openen" betekent dat je met díe landen verdergaat. */
+function compareGroup(naam) {
+  const landen = groupCountries(loadGroups()[naam]).slice(0, MAX_COMPARE_COUNTRIES);
+  if (!landen.length) return setGroupStatus(`Groep “${naam}” is leeg — voeg er eerst landen aan toe.`, 'error');
+  activateTab('compare');
+  COMPARE_COUNTRIES = landen;
+  COMPARE_RESULTS = new Map();
+  COMPARE_ACTIVE = landen[0].iso3;
+  ACTIVE_GROUP = naam;
+  renderCompareChips();
+  runCompare();
+}
+
+function setupGroups() {
+  const openRow = (row, input) => { row.hidden = false; input.value = ''; input.focus(); };
+
+  // + Land toevoegen aan favorieten
+  const favRow = $('#fav-add-row'), favInput = $('#fav-add-input');
+  $('#fav-add-open').addEventListener('click', () => openRow(favRow, favInput));
+  $('#fav-add-close').addEventListener('click', () => { favRow.hidden = true; });
+  favRow.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const c = resolveCountry(favInput.value.trim());
+    if (!c) return setFavStatus(`Land “${favInput.value.trim()}” niet gevonden.`, 'error');
+    if (FAVORITES.has(c.iso3)) setFavStatus(`${c.nl} stond er al bij.`, '');
+    else { FAVORITES.add(c.iso3); saveFavorites(); setFavStatus(`${c.nl} toegevoegd aan je favorieten.`, 'ok'); }
+    favInput.value = '';
+    favInput.focus();
+    renderFavorites();
+  });
+
+  // + Nieuwe groep
+  const newRow = $('#group-new-row'), newName = $('#group-new-name');
+  $('#group-new-open').addEventListener('click', () => openRow(newRow, newName));
+  $('#group-new-close').addEventListener('click', () => { newRow.hidden = true; setGroupStatus(''); });
+  newRow.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const naam = newName.value.trim();
+    if (!naam) return;
+    const groups = loadGroups();
+    if (groups[naam]) return setGroupStatus(`Er is al een groep “${naam}”.`, 'error');
+    groups[naam] = [];
+    saveGroups(groups);
+    newRow.hidden = true;
+    GROUP_OPEN = naam;
+    GROUP_DRAFT = { naam, isos: [] };
+    setGroupStatus(`Groep “${naam}” aangemaakt — voeg er landen aan toe.`, 'ok');
+    renderGroups();
+  });
+
+  renderGroups();
+}
+
+function setFavStatus(msg, cls = '') {
+  const s = $('#fav-status');
+  if (!s) return;
+  s.className = 'status' + (cls ? ' ' + cls : '');
+  s.textContent = msg;
+}
+
+/** Landen van de opengeklapte groep zoals ze nu op het scherm staan. */
+const draftIsos = (naam) => (GROUP_DRAFT && GROUP_DRAFT.naam === naam ? GROUP_DRAFT.isos : loadGroups()[naam] || []);
+const draftDirty = (naam) => {
+  if (!GROUP_DRAFT || GROUP_DRAFT.naam !== naam) return false;
+  return GROUP_DRAFT.isos.join(',') !== (loadGroups()[naam] || []).join(',');
+};
+
+function renderGroups() {
+  const root = $('#group-list');
+  if (!root) return;
+  const groups = loadGroups();
+  const namen = groupNames();
+  $('#group-count').textContent = namen.length ? `· ${namen.length} groep${namen.length === 1 ? '' : 'en'}` : '';
+  root.innerHTML = '';
+  if (!namen.length) {
+    root.append(el('p', { class: 'hint', style: 'margin:0;padding:12px' },
+      'Nog geen groepen. Maak er hierboven een aan, of zet landen klaar in de vergelijker en klik daar op "Bewaar als groep".'));
+    return;
+  }
+
+  namen.forEach((naam) => {
+    const open = GROUP_OPEN === naam;
+    const isos = open ? draftIsos(naam) : (groups[naam] || []);
+    const row = el('div', { class: 'grouprow' });
+
+    const caret = el('button', {
+      type: 'button', class: 'gcaret', 'aria-expanded': String(open),
+      title: open ? 'Inklappen' : `Toon de landen van ${naam}`,
+    }, open ? '▾' : '▸');
+    const naamBtn = el('button', { type: 'button', class: 'gname' }, naam);
+    const toggle = () => {
+      if (open && draftDirty(naam) && !confirm(`Je hebt “${naam}” aangepast maar niet opgeslagen. Wijzigingen weggooien?`)) return;
+      GROUP_OPEN = open ? null : naam;
+      GROUP_DRAFT = open ? null : { naam, isos: [...(groups[naam] || [])] };
+      setGroupStatus('');
+      renderGroups();
+    };
+    caret.addEventListener('click', toggle);
+    naamBtn.addEventListener('click', toggle);
+
+    const cmp = el('button', { type: 'button', class: 'btn primary gbtn' }, 'Vergelijken →');
+    cmp.addEventListener('click', () => compareGroup(naam));
+    const ren = el('button', { type: 'button', class: 'btn gbtn' }, 'Hernoemen');
+    ren.addEventListener('click', () => {
+      const nieuw = prompt(`Nieuwe naam voor “${naam}”:`, naam);
+      if (!nieuw || !nieuw.trim() || nieuw.trim() === naam) return;
+      const g = loadGroups();
+      if (g[nieuw.trim()]) return setGroupStatus(`Er is al een groep “${nieuw.trim()}”.`, 'error');
+      g[nieuw.trim()] = g[naam];
+      delete g[naam];
+      saveGroups(g);
+      if (GROUP_OPEN === naam) { GROUP_OPEN = nieuw.trim(); if (GROUP_DRAFT) GROUP_DRAFT.naam = nieuw.trim(); }
+      if (ACTIVE_GROUP === naam) ACTIVE_GROUP = nieuw.trim();
+      setGroupStatus(`Hernoemd naar “${nieuw.trim()}”.`, 'ok');
+      renderGroups();
+      renderCompareChips();
+    });
+    const del = el('button', { type: 'button', class: 'btn gbtn' }, 'Verwijderen');
+    del.addEventListener('click', () => {
+      if (!confirm(`Groep “${naam}” verwijderen? De landen zelf blijven gewoon bestaan.`)) return;
+      const g = loadGroups();
+      delete g[naam];
+      saveGroups(g);
+      if (GROUP_OPEN === naam) { GROUP_OPEN = null; GROUP_DRAFT = null; }
+      if (ACTIVE_GROUP === naam) ACTIVE_GROUP = null;
+      setGroupStatus(`Groep “${naam}” verwijderd.`, 'ok');
+      renderGroups();
+      renderCompareChips();
+    });
+
+    row.append(el('div', { class: 'grouphead' },
+      caret, groupStack(isos), naamBtn,
+      el('span', { class: 'gcount' }, `${isos.length} land${isos.length === 1 ? '' : 'en'}`),
+      draftDirty(naam) ? el('span', { class: 'gdirty' }, 'niet opgeslagen') : null,
+      el('span', { class: 'groupacts' }, cmp, ren, del)));
+
+    if (open) row.append(renderGroupBody(naam, isos));
+    root.append(row);
+  });
+}
+
+/** Opengeklapte groep: de landen als chips, een invoerveld om er een toe te
+ *  voegen, en pas onderaan Opslaan/Annuleren — wijzigen is hier expliciet. */
+function renderGroupBody(naam, isos) {
+  const body = el('div', { class: 'groupbody' });
+  const chips = el('div', { class: 'memberchips' });
+  if (!isos.length) chips.append(el('span', { class: 'hint', style: 'margin:0' }, 'Nog geen landen in deze groep.'));
+  groupCountries(isos).forEach((c) => {
+    const rm = el('button', { type: 'button', class: 'member-x', title: `${c.nl} uit deze groep halen` }, '✕');
+    rm.addEventListener('click', () => {
+      GROUP_DRAFT = { naam, isos: draftIsos(naam).filter((x) => x !== c.iso3) };
+      renderGroups();
+    });
+    chips.append(el('span', { class: 'member' }, `${countryFlag(c.iso2)} ${c.nl}`, rm));
+  });
+  body.append(chips);
+
+  const input = el('input', { list: 'country-list', autocomplete: 'off', placeholder: 'Typ een land…', 'aria-label': `Land toevoegen aan ${naam}` });
+  const add = () => {
+    const c = resolveCountry(input.value.trim());
+    if (!c) return setGroupStatus(`Land “${input.value.trim()}” niet gevonden.`, 'error');
+    const huidig = draftIsos(naam);
+    if (huidig.includes(c.iso3)) { setGroupStatus(`${c.nl} zit al in deze groep.`, ''); input.value = ''; return; }
+    GROUP_DRAFT = { naam, isos: [...huidig, c.iso3] };
+    setGroupStatus('');
+    renderGroups();
+    // Na het opnieuw tekenen staat het veld er weer leeg bij — meteen door.
+    requestAnimationFrame(() => $('#group-list .group-add input')?.focus());
+  };
+  const addBtn = el('button', { type: 'button', class: 'btn' }, '+ Toevoegen');
+  addBtn.addEventListener('click', add);
+  input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); add(); } });
+  body.append(el('div', { class: 'group-add' }, input, addBtn));
+
+  const dirty = draftDirty(naam);
+  const save = el('button', { type: 'button', class: 'btn primary', disabled: dirty ? null : '' }, '💾 Opslaan');
+  save.addEventListener('click', () => {
+    const g = loadGroups();
+    g[naam] = [...draftIsos(naam)];
+    saveGroups(g);
+    GROUP_DRAFT = { naam, isos: [...g[naam]] };
+    setGroupStatus(`Groep “${naam}” opgeslagen (${g[naam].length} land${g[naam].length === 1 ? '' : 'en'}).`, 'ok');
+    renderGroups();
+  });
+  const undo = el('button', { type: 'button', class: 'btn', disabled: dirty ? null : '' }, 'Annuleren');
+  undo.addEventListener('click', () => {
+    GROUP_DRAFT = { naam, isos: [...(loadGroups()[naam] || [])] };
+    setGroupStatus('');
+    renderGroups();
+  });
+  body.append(el('div', { class: 'group-save' }, save, undo,
+    el('span', { class: 'hint', style: 'margin:0' },
+      dirty ? 'Wijzigingen zijn nog niet opgeslagen.' : 'Landen toevoegen of weghalen; opslaan doe je hier.')));
+  return body;
 }
 
 // ---- Delen, exporteren, importeren, briefing -------------------------------

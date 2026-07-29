@@ -506,7 +506,6 @@ input:focus, select:focus { outline: 2px solid var(--link); outline-offset: 0; b
 .combo-icon { width: 16px; display: inline-block; text-align: center; opacity: .8; }
 .combo-count { margin-left: auto; font-size: 12px; font-weight: 400; color: var(--muted); }
 .combo-star { color: #e8a400; margin-left: 4px; }
-.combo-manage { font-size: 12px; font-weight: 400; text-transform: none; letter-spacing: 0; }
 .chip-sep { width: 1px; height: 22px; background: var(--border); margin: 0 4px; display: inline-block; }
 .chip-save { padding: 6px 12px; font-size: 13px; background: #fff; border: 1px solid var(--border); color: var(--nl-blue); }
 
@@ -532,7 +531,14 @@ input:focus, select:focus { outline: 2px solid var(--link); outline-offset: 0; b
   margin: 0; padding: 0; list-style: none; background: #fff;
   border: 1px solid var(--border); max-height: 320px; overflow-y: auto;
 }
-.combo-group { padding: 7px 12px 4px; font-size: 11px; text-transform: uppercase; letter-spacing: .03em; color: var(--muted); }
+/* Kopje in de lijst: de beheerlink hoort aan de andere kant van de regel, niet
+   tegen de kop aan geplakt. */
+.combo-group {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 16px;
+  padding: 8px 12px 5px; font-size: 11px; text-transform: uppercase; letter-spacing: .03em;
+  color: var(--muted); background: #f7fafc; border-bottom: 1px solid var(--border-soft);
+}
+.combo-manage { font-size: 11.5px; text-transform: none; letter-spacing: 0; white-space: nowrap; }
 .combo-item { padding: 8px 12px; font-size: 14.5px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
 .combo-item:hover, .combo-item.active { background: var(--hero); }
 .combo-why { margin-left: auto; font-size: 11px; color: var(--muted); font-style: italic; }
@@ -685,6 +691,80 @@ input:focus, select:focus { outline: 2px solid var(--link); outline-offset: 0; b
 .favnote { font-size: 11.5px; color: var(--muted); white-space: nowrap; }
 .favstar { background: none; border: none; cursor: pointer; color: #e8a400; font-size: 15px; line-height: 1; padding: 0 2px; }
 .favstar:hover { color: var(--rood); }
+
+/* ---- Toevoegrijen (+ land, + nieuwe groep) ---- */
+.btn.add-btn { border: 1px dashed var(--link); color: var(--link); background: #fff; padding: 8px 13px; font-size: 13.5px; }
+.addrow {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  background: var(--hero); border: 1px solid #bcd8ef; padding: 10px 14px; margin: 0 0 14px;
+}
+.addrow[hidden] { display: none; }
+.addrow label { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .03em; }
+.addrow input { font-size: 14px; padding: 7px 10px; }
+.addrow .btn { padding: 8px 14px; font-size: 13.5px; }
+
+/* ---- Groepen: vlaggenstapel, lijst, leden, opslaan ---- */
+.gstack { display: inline-flex; flex: 0 0 auto; align-items: center; }
+.gstack > span {
+  width: 19px; height: 15px; display: inline-flex; align-items: center; justify-content: center;
+  margin-right: -4px; background: #fff; box-shadow: 0 0 0 1.5px #fff; border-radius: 1px; font-size: 14px; line-height: 1;
+}
+.gstack > span:last-child { margin-right: 0; }
+.gstack .flag-img { height: 12px; width: auto; display: block; }
+.gstack .empty { color: var(--muted); box-shadow: none; }
+
+.group-head { display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin: 34px 0 12px; }
+.group-head .btn { margin-left: auto; }
+.grouplist { border: 1px solid var(--border); }
+.grouplist:empty { display: none; }
+.grouprow { border-bottom: 1px solid var(--border-soft); }
+.grouprow:last-child { border-bottom: none; }
+.grouphead { display: flex; align-items: center; gap: 10px; padding: 9px 12px; flex-wrap: wrap; }
+.gcaret { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 12px; padding: 0 2px; }
+.gname { background: none; border: none; cursor: pointer; color: var(--nl-blue); font-weight: 600; font-size: 15px; padding: 0; font-family: inherit; }
+.gname:hover { text-decoration: underline; }
+.gcount { font-size: 12px; color: var(--muted); }
+.gdirty { font-size: 11.5px; color: #7a5400; background: #fff8e6; border: 1px solid #e6d0a0; padding: 1px 7px; }
+.groupacts { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; }
+.groupacts .gbtn { padding: 6px 11px; font-size: 12.5px; background: #fff; border: 1px solid var(--border); color: var(--nl-blue); }
+.groupacts .gbtn.primary { background: var(--nl-blue); color: #fff; border-color: var(--nl-blue); }
+
+.groupbody { padding: 4px 12px 12px 34px; background: #fbfcfd; border-top: 1px solid var(--border-soft); }
+.memberchips { display: flex; flex-wrap: wrap; gap: 6px; }
+.member {
+  display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--border-soft);
+  background: #fff; padding: 4px 4px 4px 9px; font-size: 13px;
+}
+.member-x { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 13px; line-height: 1; padding: 0 3px; }
+.member-x:hover { color: var(--rood); }
+.group-add { display: flex; gap: 8px; align-items: center; margin-top: 10px; flex-wrap: wrap; }
+.group-add input { font-size: 13.5px; padding: 6px 9px; min-width: 200px; }
+.group-add .btn { padding: 7px 12px; font-size: 13px; background: #fff; border: 1px solid var(--border); color: var(--nl-blue); }
+.group-save { display: flex; gap: 8px; align-items: center; margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--border-soft); flex-wrap: wrap; }
+.group-save .btn { padding: 7px 13px; font-size: 13px; }
+.group-save .btn:not(.primary) { background: #fff; border: 1px solid var(--border); color: var(--nl-blue); }
+.group-save .btn:disabled { opacity: .45; cursor: not-allowed; }
+
+/* ---- Chiprij: herkomst van de selectie + bijwerken ---- */
+.chip-group { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; color: var(--muted); }
+.chip-group strong { color: var(--nl-blue); }
+.chip-group-dirty { color: #7a5400; font-weight: 600; }
+.chip-update { padding: 6px 12px; font-size: 13px; background: #fff8e6; border: 1px solid #d0a24a; color: #7a5400; }
+
+/* ---- Bewaarpaneel onder de chips ---- */
+.savepanel { border: 1px solid var(--border); background: #f7fafc; padding: 12px 14px; max-width: 560px; margin: 0 0 12px; }
+.savepanel h6 { margin: 0 0 8px; font-size: 13px; font-weight: 700; color: var(--nl-blue); }
+.saverow { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.saverow input { font-size: 13.5px; padding: 7px 10px; min-width: 200px; }
+.saverow .btn { padding: 7px 13px; font-size: 13px; }
+.saverow .btn:not(.primary) { background: #fff; border: 1px solid var(--border); color: var(--nl-blue); }
+.overwrite { margin-top: 10px; padding-top: 9px; border-top: 1px dashed var(--border-soft); }
+.ow-title { margin: 0 0 6px; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.ow-row { display: flex; align-items: center; gap: 9px; padding: 4px 0; font-size: 13px; }
+.ow-name { font-weight: 600; color: var(--nl-blue); }
+.ow-delta { font-size: 12px; color: var(--muted); }
+.ow-row .btn { margin-left: auto; padding: 5px 11px; font-size: 12.5px; background: #fff; border: 1px solid var(--border); color: var(--nl-blue); }
+.ow-row .btn.warn { background: #fff8e6; border-color: #d0a24a; color: #7a5400; }
 
 /* ---- Vlag-afbeeldingen (flagify) ----------------------------------------
    Emoji-vlaggen renderen op Windows als kale letters; de flagify-laag in

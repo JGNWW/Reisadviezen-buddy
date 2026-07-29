@@ -59,6 +59,7 @@
           <button type="submit" class="btn primary compare-run">Vergelijken</button>
         </div>
         <div id="compare-chips" class="chip-list" style="flex:1 1 100%;order:2"></div>
+        <div id="compare-savepanel" style="flex:1 1 100%;order:2" hidden></div>
         <p id="compare-fetchnote" class="hint" style="flex:1 1 100%;order:2;margin:-6px 0 8px">
           Er wordt niets opgehaald tot je op <strong>Vergelijken</strong> klikt — landen toevoegen of weghalen kost dus geen wachttijd.
         </p>
@@ -100,6 +101,7 @@
         </div>
       </div>
       <div class="bar-row" id="fav-tools">
+        <button id="fav-add-open" type="button" class="btn add-btn">+ Land toevoegen</button>
         <button id="fav-all" type="button" class="btn-link">Alles selecteren</button>
         <button id="fav-none" type="button" class="btn-link">Niets selecteren</button>
         <span class="fav-spacer"></span>
@@ -110,8 +112,30 @@
           <input id="fav-import" type="file" accept=".json,application/json" hidden />
         </label>
       </div>
+      <form id="fav-add-row" class="addrow" hidden>
+        <label for="fav-add-input">Land toevoegen aan favorieten</label>
+        <input id="fav-add-input" list="country-list" autocomplete="off" placeholder="Typ een land…" />
+        <button type="submit" class="btn primary">Toevoegen</button>
+        <button type="button" id="fav-add-close" class="btn">Klaar</button>
+      </form>
       <div id="fav-status" class="status"></div>
       <div id="fav-grid" class="favgrid"></div>
+
+      <div class="group-head">
+        <div>
+          <h2 class="fav-title">Mijn groepen <span id="group-count" class="fav-count"></span></h2>
+          <p class="hint" style="margin:2px 0 0">Een groep is een set landen die je in één klik in de vergelijker zet. Klik op een groep om te zien welke landen erin zitten.</p>
+        </div>
+        <button id="group-new-open" type="button" class="btn add-btn">+ Nieuwe groep</button>
+      </div>
+      <form id="group-new-row" class="addrow" hidden>
+        <label for="group-new-name">Naam van de nieuwe groep</label>
+        <input id="group-new-name" autocomplete="off" placeholder="Bijv. Golfregio" />
+        <button type="submit" class="btn primary">Aanmaken</button>
+        <button type="button" id="group-new-close" class="btn">Annuleren</button>
+      </form>
+      <div id="group-status" class="status"></div>
+      <div id="group-list" class="grouplist"></div>
     </section>
 
     <!-- ================= DATUMSCANNER ================= -->
