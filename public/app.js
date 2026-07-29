@@ -56,7 +56,15 @@ const saveHiddenThemes = () => localStorage.setItem('hiddenThemes', JSON.stringi
 // Actief matrix-termfilter (gezet door een gazetteer-chip): toont alleen de
 // passages die deze term noemen, over alle bronkolommen. { label, term, re }.
 let MATRIX_FILTER = null;
+// De data van het land dat nu open staat (het actieve landtabblad). Alles wat
+// over "dit land" gaat — briefing, volgknop, ?land= in de URL — leest hier.
 let LAST_COMPARE = null;
+// Vergelijkselectie: één land = het scherm zoals het altijd was, meerdere
+// landen = kleurcodematrix + landentabs boven datzelfde schema.
+let COMPARE_COUNTRIES = [];          // gekozen landen (de chips), in volgorde
+let COMPARE_RESULTS = new Map();     // iso3 → { country, staticData, foreign }
+let COMPARE_SOURCES = [];            // bronnen van de laatste ophaling
+let COMPARE_ACTIVE = null;           // iso3 van het open landtabblad
 // Vooringevulde term voor de onderwerp-zoeker (gezet door de indexzoeker en
 // de gazetteer-chips; wordt na de eerstvolgende vergelijking uitgevoerd).
 let PENDING_TOPIC = null;
@@ -157,8 +165,14 @@ const defaultSourceIds = () => (CFG.SOURCES || []).filter((s) => s.default !== f
 /** Schrijft de huidige vergelijkingsstaat naar de URL (default-waarden blijven weg). */
 function syncUrl(push = false) {
   const cur = orderedSelected().join(',');
+  // Eén land blijft ?land= (korte, herkenbare deellink); meerdere landen
+  // krijgen ?landen= met het open tabblad in ?tabland=.
+  const sel = COMPARE_COUNTRIES.map((c) => c.iso3);
   updateUrl({
-    land: LAST_COMPARE?.country?.iso3 || null,
+    land: sel.length === 1 ? sel[0] : null,
+    landen: sel.length > 1 ? sel.join(',') : null,
+    tabland: sel.length > 1 && COMPARE_ACTIVE && COMPARE_ACTIVE !== sel[0] ? COMPARE_ACTIVE : null,
+    vs: null,
     bronnen: cur === defaultSourceIds().join(',') ? null : cur,
     taal: COMPARE_LANG === 'orig' ? null : COMPARE_LANG,
   }, push);
@@ -181,30 +195,23 @@ function activateFromUrl() {
   const sp = new URLSearchParams(location.search);
   const tab = sp.get('tab');
   if (tab && $(`.tab[data-view="${tab}"]`)) activateTab(tab);
-  // ?vs=A,B opent direct de twee-landen-vergelijking (feature 1).
-  const vs = sp.get('vs');
-  if (vs) {
-    const [a, b] = vs.split(',').map((x) => resolveCountry(x.trim()));
-    if (a && b) {
-      $('#vs-field').hidden = false;
-      $('#vs-toggle').textContent = '× Tweede land sluiten';
-      $('#country-input').value = a.nl;
-      $('#country-input-b').value = b.nl;
-      runVersus(a, b, orderedSelected(), COMPARE_LANG);
-      return;
-    }
-  }
   // ?briefing=watchlist opent de bundel-ochtendbriefing over de volglijst.
   if (sp.get('briefing') === 'watchlist') { openWatchlistBriefing(); return; }
   // ?briefing=ISO opent na het laden direct de briefing (punt 15).
   const briefing = sp.get('briefing');
-  const land = briefing || sp.get('land');
-  if (land) {
-    const c = resolveCountry(land);
-    if (c) {
-      if (briefing) PENDING_BRIEFING = c.iso3;
-      $('#country-input').value = c.nl;
-      runComparison(c, orderedSelected(), COMPARE_LANG);
+  // ?landen=A,B,C is de meerlandenselectie; ?land= en het oudere ?vs=A,B
+  // blijven werken zodat bestaande deellinks niet breken.
+  const raw = briefing || sp.get('landen') || sp.get('land') || sp.get('vs');
+  if (raw) {
+    const gekozen = raw.split(',').map((x) => resolveCountry(x.trim())).filter(Boolean)
+      .slice(0, MAX_COMPARE_COUNTRIES);
+    if (gekozen.length) {
+      if (briefing) PENDING_BRIEFING = gekozen[0].iso3;
+      COMPARE_COUNTRIES = gekozen;
+      const tabland = resolveCountry(sp.get('tabland') || '');
+      COMPARE_ACTIVE = (tabland && gekozen.some((c) => c.iso3 === tabland.iso3) ? tabland : gekozen[0]).iso3;
+      renderCompareChips();
+      runCompare();
     }
   }
 }
@@ -623,7 +630,7 @@ async function bootstrap() {
   }
 
   loadWatchlistFromUrl();
-  setupExport();
+  setupCompareSelection();
   // Await zodat deeplinks (?briefing=watchlist) de offline data al hebben.
   await Promise.all([buildChanges(), buildWorklist(), loadSeasons()]);
   updateWatchUI();
@@ -641,11 +648,13 @@ window.addEventListener('popstate', () => {
     $$('.tab').forEach((t) => t.classList.toggle('active', t.dataset.view === tab));
     $$('.view').forEach((v) => v.classList.toggle('active', v.id === `view-${tab}`));
   }
-  const land = sp.get('land');
-  const c = land ? resolveCountry(land) : null;
-  if (c && LAST_COMPARE?.country?.iso3 !== c.iso3) {
-    $('#country-input').value = c.nl;
-    runComparison(c, orderedSelected(), COMPARE_LANG);
+  const raw = sp.get('landen') || sp.get('land') || sp.get('vs');
+  const gekozen = (raw || '').split(',').map((x) => resolveCountry(x.trim())).filter(Boolean);
+  if (gekozen.length && gekozen.map((c) => c.iso3).join(',') !== COMPARE_COUNTRIES.map((c) => c.iso3).join(',')) {
+    COMPARE_COUNTRIES = gekozen.slice(0, MAX_COMPARE_COUNTRIES);
+    COMPARE_ACTIVE = COMPARE_COUNTRIES[0].iso3;
+    renderCompareChips();
+    runCompare();
   }
 });
 
@@ -745,7 +754,7 @@ function removeSource(id) {
   rerunLastCompare();
 }
 function rerunLastCompare() {
-  if (LAST_COMPARE) runComparison(LAST_COMPARE.country, orderedSelected(), COMPARE_LANG);
+  if (COMPARE_RESULTS.size) runCompare();
 }
 
 // ==========================================================================
@@ -849,10 +858,14 @@ function setupCountryCombo() {
     input.setAttribute('aria-activedescendant', opts[active].id);
     opts[active].scrollIntoView({ block: 'nearest' });
   };
+  // Kiezen = als chip toevoegen. Er wordt bewust nog niets opgehaald: dat
+  // gebeurt pas bij een klik op Vergelijken, ook bij één land.
   const pick = (c) => {
-    input.value = c.nl;
+    input.value = '';
+    setComboFlag(null);
     close();
-    $('#compare-form').requestSubmit();
+    addCompareCountry(c);
+    input.focus();
   };
 
   input.addEventListener('input', () => {
@@ -895,12 +908,11 @@ async function setCompareLang(lang) {
   // 'Origineel'. Binnen de sessie houdt de URL (syncUrl) de keuze vast.
   $$('#lang-seg button').forEach((b) => b.classList.toggle('on', b.dataset.lang === lang));
   syncUrl();
-  if (!LAST_COMPARE) return;
+  if (!COMPARE_RESULTS.size) return;
   // Alleen 'en' gebruikt een andere vertaalophaling; nl↔orig delen dezelfde data.
   const needsRefetch = (lang === 'en') !== (prev === 'en');
   if (!needsRefetch) {
-    LAST_COMPARE.lang = lang;
-    renderComparison(LAST_COMPARE.staticData, LAST_COMPARE.foreign, $('#compare-result'));
+    renderCompareView();
     return;
   }
   // Vertalen kan een paar seconden duren — expliciet zichtbaar maken (niet
@@ -913,7 +925,7 @@ async function setCompareLang(lang) {
   const matrix = $('#compare-result .matrix');
   matrix?.classList.add('lang-loading');
   try {
-    await runComparison(LAST_COMPARE.country, LAST_COMPARE.sources, lang);
+    await runCompare();
   } finally {
     LANG_SWITCH_BUSY = false;
     seg?.classList.remove('busy');
@@ -924,33 +936,131 @@ async function setCompareLang(lang) {
 // ==========================================================================
 // VERGELIJKEN
 // ==========================================================================
-// Tweede-land-invoer tonen/verbergen (feature 1: A ↔ B).
-$('#vs-toggle').addEventListener('click', () => {
-  const f = $('#vs-field');
-  f.hidden = !f.hidden;
-  $('#vs-toggle').textContent = f.hidden ? '⇄ Twee landen vergelijken' : '× Tweede land sluiten';
-  if (f.hidden) $('#country-input-b').value = '';
-  else $('#country-input-b').focus();
-});
+// ---- Landselectie: chips, opgeslagen groepen, volglijst -------------------
+const MAX_COMPARE_COUNTRIES = 20;
+const GROUPS_KEY = 'exportGroups'; // bestaande sleutel: eerder bewaarde groepen blijven werken
+const loadGroups = () => { try { return JSON.parse(localStorage.getItem(GROUPS_KEY)) || {}; } catch { return {}; } };
+const saveGroups = (g) => localStorage.setItem(GROUPS_KEY, JSON.stringify(g));
+
+function compareStatus(msg, cls = '') {
+  const s = $('#compare-status');
+  s.className = 'status' + (cls ? ' ' + cls : '');
+  s.textContent = msg;
+}
+
+/** Voegt een land toe aan de selectie. Haalt bewust niets op — dat gebeurt pas
+ *  bij een klik op Vergelijken, ook bij één land. */
+function addCompareCountry(c) {
+  if (!c) return;
+  if (COMPARE_COUNTRIES.some((x) => x.iso3 === c.iso3)) return;
+  if (COMPARE_COUNTRIES.length >= MAX_COMPARE_COUNTRIES) {
+    compareStatus(`Maximaal ${MAX_COMPARE_COUNTRIES} landen tegelijk — haal er eerst een weg.`, 'error');
+    return;
+  }
+  COMPARE_COUNTRIES.push(c);
+  renderCompareChips();
+}
+
+function removeCompareCountry(iso3) {
+  COMPARE_COUNTRIES = COMPARE_COUNTRIES.filter((x) => x.iso3 !== iso3);
+  COMPARE_RESULTS.delete(iso3);
+  renderCompareChips();
+  // Al opgehaalde landen blijven staan; alleen het weggehaalde verdwijnt.
+  if (COMPARE_RESULTS.size) {
+    if (COMPARE_ACTIVE === iso3) COMPARE_ACTIVE = COMPARE_COUNTRIES.find((c) => COMPARE_RESULTS.has(c.iso3))?.iso3 || null;
+    renderCompareView();
+  } else {
+    COMPARE_ACTIVE = null; LAST_COMPARE = null;
+    $('#compare-result').innerHTML = '';
+  }
+}
+
+function renderCompareChips() {
+  const wrap = $('#compare-chips');
+  wrap.innerHTML = '';
+  COMPARE_COUNTRIES.forEach((c) => {
+    const rm = el('button', { type: 'button', class: 'chip-x', title: `${c.nl} verwijderen`, 'aria-label': `${c.nl} verwijderen` }, '✕');
+    rm.addEventListener('click', () => removeCompareCountry(c.iso3));
+    wrap.append(el('span', { class: 'chip' }, `${countryFlag(c.iso2)} ${c.nl}`, rm));
+  });
+  const n = COMPARE_COUNTRIES.length;
+  $('#compare-fetchnote').hidden = n === 0;
+  const btn = $('#compare-form button[type="submit"]');
+  if (btn) btn.textContent = n > 1 ? `Vergelijken (${n} landen)` : 'Vergelijken';
+}
+
+function refreshGroupSelect() {
+  const sel = $('#group-select');
+  const groups = loadGroups();
+  const cur = sel.value;
+  sel.innerHTML = '';
+  sel.append(el('option', { value: '' }, '— kies een groep —'));
+  Object.keys(groups).sort().forEach((name) => sel.append(el('option', { value: name }, `${name} (${groups[name].length})`)));
+  if (groups[cur]) sel.value = cur;
+}
+
+function setupCompareSelection() {
+  $('#group-from-watch').addEventListener('click', () => {
+    const added = [...WATCHLIST].map((iso) => COUNTRIES.find((c) => c.iso3 === iso)).filter(Boolean);
+    if (!added.length) return compareStatus('Je volglijst is leeg — voeg eerst landen toe via het 👁 bij een land.', 'error');
+    added.forEach(addCompareCountry);
+  });
+  $('#group-save').addEventListener('click', () => {
+    if (!COMPARE_COUNTRIES.length) return compareStatus('Kies eerst landen om te bewaren.', 'error');
+    const name = prompt('Naam voor deze groep (bijv. GOF-landen):', '');
+    if (!name) return;
+    const groups = loadGroups();
+    groups[name.trim()] = COMPARE_COUNTRIES.map((c) => c.iso3);
+    saveGroups(groups);
+    refreshGroupSelect();
+    $('#group-select').value = name.trim();
+    compareStatus(`Groep “${name.trim()}” bewaard.`, 'ok');
+  });
+  $('#group-load').addEventListener('click', () => {
+    const name = $('#group-select').value;
+    if (!name) return;
+    COMPARE_COUNTRIES = (loadGroups()[name] || [])
+      .map((iso) => COUNTRIES.find((c) => c.iso3 === iso)).filter(Boolean)
+      .slice(0, MAX_COMPARE_COUNTRIES);
+    renderCompareChips();
+  });
+  $('#group-delete').addEventListener('click', () => {
+    const name = $('#group-select').value;
+    if (!name || !confirm(`Groep “${name}” verwijderen?`)) return;
+    const groups = loadGroups();
+    delete groups[name];
+    saveGroups(groups);
+    refreshGroupSelect();
+  });
+  refreshGroupSelect();
+  renderCompareChips();
+}
 
 $('#compare-form').addEventListener('submit', (e) => {
   e.preventDefault();
-  const input = $('#country-input').value.trim();
-  const status = $('#compare-status'), result = $('#compare-result');
-  if (!input) return;
-  const country = resolveCountry(input);
-  if (!country) { status.className = 'status error'; status.textContent = `Land “${input}” niet gevonden.`; result.innerHTML = ''; return; }
-  // Tweede land ingevuld → A-vs-B-modus.
-  const inputB = !$('#vs-field').hidden ? $('#country-input-b').value.trim() : '';
-  if (inputB) {
-    const countryB = resolveCountry(inputB);
-    if (!countryB) { status.className = 'status error'; status.textContent = `Land “${inputB}” niet gevonden.`; result.innerHTML = ''; return; }
-    if (countryB.iso3 === country.iso3) { status.className = 'status error'; status.textContent = 'Kies twee verschillende landen.'; return; }
-    runVersus(country, countryB, orderedSelected(), COMPARE_LANG);
-    return;
+  // Iets ingetypt maar nog niet als chip toegevoegd? Dat alsnog meenemen —
+  // anders lijkt Enter niets te doen.
+  const typed = $('#country-input').value.trim();
+  if (typed) {
+    const c = resolveCountry(typed);
+    if (!c) { compareStatus(`Land “${typed}” niet gevonden.`, 'error'); return; }
+    $('#country-input').value = '';
+    addCompareCountry(c);
   }
-  runComparison(country, orderedSelected(), COMPARE_LANG);
+  runCompare();
 });
+
+/** Opent één land in de vergelijker (vanuit werklijst, zoeken, wijzigingen…):
+ *  vervangt de selectie en haalt meteen op. */
+function openCompareFor(country) {
+  if (!country) return;
+  activateTab('compare');
+  COMPARE_COUNTRIES = [country];
+  COMPARE_RESULTS = new Map();
+  COMPARE_ACTIVE = country.iso3;
+  renderCompareChips();
+  runCompare();
+}
 
 /** Haalt de statische NL-data + (live) buitenlandse bronnen voor één land op. */
 async function fetchCountry(country, sources, lang) {
@@ -992,56 +1102,136 @@ async function ensureRecentChanges() {
   catch { RECENT_CHANGES = []; }
 }
 
-async function runComparison(country, sources, lang) {
-  // Nieuwe (her)ophaling: een eventueel termfilter hoort bij het vorige land.
-  if (!LAST_COMPARE || LAST_COMPARE.country?.iso3 !== country.iso3) MATRIX_FILTER = null;
-  const status = $('#compare-status'), result = $('#compare-result');
-  setComboFlag(country);
-  status.className = 'status';
-  status.innerHTML = `<span class="spinner"></span>Reisadvies laden voor ${esc(country.nl)}…`;
+/**
+ * Haalt alle gekozen landen op en toont het resultaat. Eén land = precies het
+ * scherm van hiervoor; meer landen = kleurcodematrix + landentabs boven dat
+ * scherm. Landen worden na elkaar opgehaald (met voortgang) zodat een falend
+ * land de rest niet meesleept.
+ */
+let COMPARE_BUSY = false;
+async function runCompare() {
+  if (COMPARE_BUSY) return;
+  const list = [...COMPARE_COUNTRIES];
+  if (!list.length) return compareStatus('Kies eerst minstens één land.', 'error');
+  const sources = orderedSelected();
+  const lang = COMPARE_LANG;
+  // Andere landenselectie? Dan hoort een eventueel termfilter bij het vorige
+  // resultaat en gaat het weg.
+  const key = list.map((c) => c.iso3).join(',');
+  if (key !== [...COMPARE_RESULTS.keys()].join(',')) MATRIX_FILTER = null;
+
+  COMPARE_BUSY = true;
+  const btn = $('#compare-form button[type="submit"]');
+  if (btn) btn.disabled = true;
+  const status = $('#compare-status');
+  const results = new Map();
+  const failed = [];
   try {
-    const [{ staticData, foreign }] = await Promise.all([fetchCountry(country, sources, lang), ensureSourceDates(), ensureRecentChanges()]);
-    status.textContent = '';
-    LAST_COMPARE = { country, sources, lang, staticData, foreign };
-    pushRecentCountry(country.iso3);
-    // Ander land dan de URL nu toont = nieuwe history-entry (terug-knop
-    // werkt); zelfde land (herladen/taalwissel/bron erbij) = vervangen.
-    const urlLand = new URLSearchParams(location.search).get('land');
-    syncUrl(urlLand !== country.iso3);
-    renderComparison(staticData, foreign, result);
-  } catch (err) {
-    status.className = 'status error'; status.textContent = err.message;
+    await Promise.all([ensureSourceDates(), ensureRecentChanges()]);
+    for (let i = 0; i < list.length; i++) {
+      const c = list[i];
+      status.className = 'status';
+      status.innerHTML = `<span class="spinner"></span>Reisadvies laden voor ${esc(c.nl)}…`
+        + (list.length > 1 ? ` <span class="muted">(${i + 1}/${list.length})</span>` : '');
+      try {
+        const { staticData, foreign } = await fetchCountry(c, sources, lang);
+        results.set(c.iso3, { country: c, staticData, foreign });
+        pushRecentCountry(c.iso3);
+      } catch (err) {
+        failed.push(`${c.nl} (${err.message})`);
+      }
+    }
+    if (!results.size) {
+      compareStatus(`Ophalen mislukt: ${failed.join(' · ')}`, 'error');
+      return;
+    }
+    COMPARE_RESULTS = results;
+    COMPARE_SOURCES = sources;
+    if (!COMPARE_ACTIVE || !results.has(COMPARE_ACTIVE)) COMPARE_ACTIVE = [...results.keys()][0];
+    setComboFlag(results.get(COMPARE_ACTIVE).country);
+    compareStatus(failed.length ? `Niet gelukt voor ${failed.join(' · ')} — de rest staat hieronder.` : '', failed.length ? 'error' : '');
+    // Andere selectie dan de URL nu toont = nieuwe history-entry (terug-knop
+    // werkt); dezelfde (herladen, taalwissel, bron erbij) = vervangen.
+    const urlSel = new URLSearchParams(location.search).get('landen') || new URLSearchParams(location.search).get('land');
+    syncUrl(urlSel !== key);
+    renderCompareView();
+  } finally {
+    COMPARE_BUSY = false;
+    if (btn) btn.disabled = false;
   }
 }
 
-// ==========================================================================
-// TWEE LANDEN VERGELIJKEN (feature 1): kleurcode per bron A ↔ B met verschil.
-// ==========================================================================
-async function runVersus(a, b, sources, lang) {
-  const status = $('#compare-status'), result = $('#compare-result');
-  status.className = 'status';
-  status.innerHTML = `<span class="spinner"></span>${esc(a.nl)} ↔ ${esc(b.nl)} laden…`;
-  try {
-    const [da, db] = await Promise.all([fetchCountry(a, sources, lang), fetchCountry(b, sources, lang)]);
-    status.textContent = '';
-    updateUrl({ vs: `${a.iso3},${b.iso3}`, land: null }, true);
-    renderVersus(a, b, da, db, result);
-  } catch (err) {
-    status.className = 'status error'; status.textContent = err.message;
-  }
-}
-
-function renderVersus(a, b, da, db, root) {
+/**
+ * Tekent het hele resultaatgebied opnieuw. Alles wat de weergave verandert
+ * (thema's tonen/verbergen, compact/volledig, termfilter, ander landtabblad)
+ * loopt hierlangs — zo blijven matrix, tabs en schema altijd bij elkaar.
+ */
+function renderCompareView() {
+  const root = $('#compare-result');
   root.innerHTML = '';
+  const shown = COMPARE_COUNTRIES.filter((c) => COMPARE_RESULTS.has(c.iso3));
+  if (!shown.length) return;
+  const multi = shown.length > 1;
+
+  if (multi) {
+    root.append(renderOverviewBlock(shown));
+    // Precies twee landen: het oordeel "welk land noemen de bronnen veiliger"
+    // (voorheen de aparte A↔B-modus) hoort hier vanzelf thuis.
+    if (shown.length === 2) root.append(renderVersusBlock(shown[0], shown[1]));
+    root.append(renderCountryTabs(shown));
+  }
+
+  const detail = el('div', { id: 'compare-detail' });
+  root.append(detail);
+  const active = COMPARE_RESULTS.get(COMPARE_ACTIVE);
+  if (active) {
+    LAST_COMPARE = { country: active.country, sources: COMPARE_SOURCES, lang: COMPARE_LANG, staticData: active.staticData, foreign: active.foreign };
+    renderComparison(active.staticData, active.foreign, detail);
+  }
+  root.append(renderExportBar(shown));
+}
+
+/** Landentabs — één per vergeleken land, direct boven het bestaande schema. */
+function renderCountryTabs(shown) {
+  const nav = el('div', { class: 'country-tabs', role: 'tablist', 'aria-label': 'Vergeleken landen' });
+  shown.forEach((c) => {
+    const r = COMPARE_RESULTS.get(c.iso3);
+    const color = r?.staticData?.nl?.colors?.overall || null;
+    const on = c.iso3 === COMPARE_ACTIVE;
+    const tab = el('button', {
+      type: 'button', role: 'tab', 'aria-selected': String(on),
+      class: 'country-tab' + (on ? ' on' : ''),
+      title: `Toon de volledige vergelijking voor ${c.nl}`,
+    }, colorSquare(color, 'mini'), ` ${c.nl}`);
+    tab.addEventListener('click', () => {
+      if (COMPARE_ACTIVE === c.iso3) return;
+      COMPARE_ACTIVE = c.iso3;
+      MATRIX_FILTER = null; // filter hoorde bij het vorige land
+      setComboFlag(c);
+      syncUrl();
+      renderCompareView();
+      $('#compare-detail')?.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+    });
+    nav.append(tab);
+  });
+  return el('div', { class: 'country-tabs-wrap' },
+    el('p', { class: 'hint', style: 'margin:0 0 6px' }, 'Kies een land voor de volledige vergelijking per thema:'),
+    nav);
+}
+
+/**
+ * Precies twee landen vergeleken: welk land noemen de bronnen veiliger?
+ * (Voorheen een aparte A↔B-modus; nu een blok binnen de gewone vergelijking.)
+ */
+function renderVersusBlock(a, b) {
+  const da = COMPARE_RESULTS.get(a.iso3), db = COMPARE_RESULTS.get(b.iso3);
+  const wrap = el('details', { class: 'versus-block', open: '' });
   const frag = document.createDocumentFragment();
   const okA = new Map((da.foreign.sources || []).filter((s) => !s.unavailable && !s.error).map((s) => [s.source, s]));
   const okB = new Map((db.foreign.sources || []).filter((s) => !s.unavailable && !s.error).map((s) => [s.source, s]));
   const fa = countryFlagByIso3(a.iso3), fb = countryFlagByIso3(b.iso3);
 
-  frag.append(el('div', { class: 'result-head' },
-    el('div', { class: 'result-head-main' },
-      el('h2', {}, `${fa ? fa + ' ' : ''}${a.nl}  ↔  ${fb ? fb + ' ' : ''}${b.nl}`),
-      el('p', { class: 'meta' }, 'Welk land beoordeelt elke bron als veiliger? Lager niveau = veiliger.'))));
+  wrap.append(el('summary', {}, `⇄ ${a.nl} ↔ ${b.nl}: welk land noemen de bronnen veiliger?`));
 
   // Verdict op basis van bronnen die beide landen beoordelen.
   let aSafer = 0, bSafer = 0, equal = 0;
@@ -1088,21 +1278,11 @@ function renderVersus(a, b, da, db, root) {
       el('td', {}, cmp)));
   });
   table.append(tbody);
-  frag.append(el('h3', { class: 'section-title' }, 'Kleurcode per bron'), table);
+  frag.append(table);
   frag.append(el('p', { class: 'hint' }, 'Buitenlandse kleurcodes zijn een benadering op de Nederlandse schaal. Bronnen die maar één van beide landen beoordelen, tellen niet mee in het oordeel.'));
 
-  const openSingle = (c) => {
-    if (!$('#vs-field').hidden) $('#vs-toggle').click(); // verbergt B + wist het veld
-    $('#country-input').value = c.nl;
-    $('#compare-form').requestSubmit();
-  };
-  const oa = el('button', { class: 'btn', type: 'button' }, `Volledige vergelijking ${a.nl} →`);
-  oa.addEventListener('click', () => openSingle(a));
-  const ob = el('button', { class: 'btn', type: 'button' }, `Volledige vergelijking ${b.nl} →`);
-  ob.addEventListener('click', () => openSingle(b));
-  frag.append(el('div', { class: 'briefing-actions' }, oa, ob));
-
-  root.append(frag);
+  wrap.append(frag);
+  return wrap;
 }
 
 /** Groepeert thema-blokken per canoniek thema-id. */
@@ -1793,7 +1973,7 @@ function renderBriefing(staticData, foreign) {
   const back = el('button', { type: 'button', class: 'btn' }, '← Volledige vergelijking');
   back.addEventListener('click', () => {
     updateUrl({ briefing: null }, true);
-    renderComparison(LAST_COMPARE.staticData, LAST_COMPARE.foreign, $('#compare-result'));
+    renderCompareView();
     window.scrollTo({ top: 0 });
   });
   const printB = el('button', { type: 'button', class: 'btn', onclick: () => window.print() }, '🖨 Print');
@@ -1992,13 +2172,11 @@ function renderComparison(staticData, foreign, root) {
   // ---- Samenvattingstabel (kleurcode + niveau + datum + link per bron) ----
   const copyBtn = el('button', { class: 'btn', type: 'button', title: 'Kopieert de kleurcode-tabel als opgemaakte tabel — plakt netjes in Word/Outlook.' }, '📋 Kopieer als tabel');
   copyBtn.addEventListener('click', () => copySummaryTable(staticData, nl, okSources, copyBtn));
-  const printBtn = el('button', {
-    class: 'btn', type: 'button', onclick: () => window.print(),
-    title: 'Print of bewaar als PDF: een compacte samenvatting (kleurcodes + afwijkingen, zonder de matrix).',
-  }, '🖨 Print / PDF');
+  // Printen/exporteren zit nu onderin in de uitdraaibalk — hier alleen nog het
+  // kopiëren naar Word/Outlook, dat bij déze tabel hoort.
   frag.append(el('div', { class: 'theme-head-row' },
     el('h3', { class: 'section-title', style: 'flex:1;margin:0;border:none' }, 'Kleurcodes op een rij'),
-    copyBtn, printBtn));
+    copyBtn));
   frag.append(el('p', { class: 'print-note' },
     `Reisadviezen-buddy · afgedrukt op ${new Date().toLocaleString('nl-NL')} · ${location.href}`));
   // cmp (thema's × bronnen) wordt hier al opgebouwd — niet pas verderop bij de
@@ -2043,7 +2221,7 @@ function renderComparison(staticData, foreign, root) {
         // Filter de matrix op deze term: alleen passages die de term noemen,
         // over alle bronkolommen, met de term gemarkeerd.
         MATRIX_FILTER = { label: `${g.cat} ${g.nl}`, term: g.term, re: g.re };
-        renderComparison(LAST_COMPARE.staticData, LAST_COMPARE.foreign, $('#compare-result'));
+        renderCompareView();
         requestAnimationFrame(() => {
           const m = $('#compare-result .matrix');
           if (m) m.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -2088,7 +2266,7 @@ function renderComparison(staticData, foreign, root) {
       if (MATRIX_DENSITY === val) return;
       MATRIX_DENSITY = val;
       localStorage.setItem('matrixDensity', val);
-      if (LAST_COMPARE) renderComparison(LAST_COMPARE.staticData, LAST_COMPARE.foreign, $('#compare-result'));
+      if (LAST_COMPARE) renderCompareView();
     });
     densitySeg.append(b);
   });
@@ -2106,7 +2284,7 @@ function renderComparison(staticData, foreign, root) {
     chip.addEventListener('click', () => {
       if (HIDDEN_THEMES.has(t.theme.id)) HIDDEN_THEMES.delete(t.theme.id); else HIDDEN_THEMES.add(t.theme.id);
       saveHiddenThemes();
-      renderComparison(LAST_COMPARE.staticData, LAST_COMPARE.foreign, $('#compare-result'));
+      renderCompareView();
     });
     themeChips.append(chip);
   });
@@ -2115,7 +2293,7 @@ function renderComparison(staticData, foreign, root) {
     reset.addEventListener('click', () => {
       themeIds.forEach((id) => HIDDEN_THEMES.delete(id));
       saveHiddenThemes();
-      renderComparison(LAST_COMPARE.staticData, LAST_COMPARE.foreign, $('#compare-result'));
+      renderCompareView();
     });
     themeChips.append(reset);
   }
@@ -2126,7 +2304,7 @@ function renderComparison(staticData, foreign, root) {
     const clear = el('button', { type: 'button', class: 'btn-link' }, '× filter wissen');
     clear.addEventListener('click', () => {
       MATRIX_FILTER = null;
-      renderComparison(LAST_COMPARE.staticData, LAST_COMPARE.foreign, $('#compare-result'));
+      renderCompareView();
     });
     frag.append(el('div', { class: 'matrix-filter-bar' },
       el('span', {}, '🔎 Matrix gefilterd op term: ', el('strong', {}, MATRIX_FILTER.label),
@@ -2695,9 +2873,7 @@ function renderWorklist() {
       const flag = countryFlagByIso3(i.iso3);
       const landBtn = el('button', { type: 'button', class: 'btn-link worklist-country' }, `${flag ? flag + ' ' : ''}${i.nl}`);
       landBtn.addEventListener('click', () => {
-        activateTab('compare');
-        $('#country-input').value = i.nl;
-        $('#compare-form').requestSubmit();
+        openCompareFor(COUNTRIES.find((c) => c.iso3 === i.iso3));
       });
 
       let verdict;
@@ -2788,9 +2964,7 @@ function renderAges() {
     const flag = countryFlagByIso3(i.iso3);
     const landBtn = el('button', { type: 'button', class: 'btn-link worklist-country' }, `${flag ? flag + ' ' : ''}${i.nl}`);
     landBtn.addEventListener('click', () => {
-      activateTab('compare');
-      $('#country-input').value = i.nl;
-      $('#compare-form').requestSubmit();
+      openCompareFor(COUNTRIES.find((c) => c.iso3 === i.iso3));
     });
 
     // Achterstand: bron recenter dan NL. Rood ≥ 60 dagen, oranje ≥ 21.
@@ -2831,7 +3005,7 @@ function renderWatchBar() {
     const chips = el('span', { class: 'watch-chips' });
     items.forEach((c) => {
       const chip = el('button', { type: 'button', class: 'watch-chip', title: 'Open ' + c.nl }, `${countryFlag(c.iso2)} ${c.nl}`);
-      chip.addEventListener('click', () => { activateTab('compare'); $('#country-input').value = c.nl; $('#compare-form').requestSubmit(); });
+      chip.addEventListener('click', () => openCompareFor(c));
       const x = el('span', { class: 'watch-chip-x', title: 'Van volglijst halen' }, '×');
       x.addEventListener('click', (e) => { e.stopPropagation(); toggleWatch(c.iso3); });
       chip.append(' ', x);
@@ -2940,7 +3114,7 @@ function renderWatchlistBriefing(items) {
       `📝 ${recent.length} wijziging${recent.length === 1 ? '' : 'en'} (7 dgn): `,
       recent.slice(0, 3).map((x) => srcMeta.get(x.source)?.label || x.sourceLabel).join(', ')));
     const open = el('button', { type: 'button', class: 'btn-link', style: 'font-size:12.5px' }, 'volledige vergelijking →');
-    open.addEventListener('click', () => { activateTab('compare'); $('#country-input').value = c.nl; $('#compare-form').requestSubmit(); });
+    open.addEventListener('click', () => openCompareFor(c));
     block.append(el('p', { style: 'margin:4px 0 0' }, open));
     wrap.append(block);
   });
@@ -3128,9 +3302,7 @@ function renderChanges(sourceFilter, from, to) {
       who,
       el('p', { class: 'change-desc' }, c.description));
     if (c.countryNl) row.querySelector('.change-country').addEventListener('click', () => {
-      activateTab('compare');
-      $('#country-input').value = c.countryNl;
-      $('#compare-form').requestSubmit();
+      openCompareFor(resolveCountry(c.countryNl));
     });
 
     // De eigen wijzigingsnotitie van de bron (NL-vertaling indien beschikbaar).
@@ -3188,9 +3360,7 @@ function renderChanges(sourceFilter, from, to) {
         el('button', { type: 'button', class: 'btn-link change-country' }, `${r.flag || ''} ${r.label} — ${r.countryNl}`),
         el('p', { class: 'change-desc' }, 'Bron meldt: advies voor het laatst bijgewerkt op deze datum.'));
       row.querySelector('.change-country').addEventListener('click', () => {
-        activateTab('compare');
-        $('#country-input').value = r.countryNl;
-        $('#compare-form').requestSubmit();
+        openCompareFor(resolveCountry(r.countryNl));
       });
       root.append(row);
     });
@@ -3336,9 +3506,7 @@ function renderForeignIndexResult(res, q, root) {
         el('span', { class: 'index-hit-terms' }, r.terms.join(', ')));
       btn.addEventListener('click', () => {
         PENDING_TOPIC = q;
-        activateTab('compare');
-        $('#country-input').value = r.country.nl;
-        $('#compare-form').requestSubmit();
+        openCompareFor(r.country);
       });
       grid.append(btn);
     });
@@ -3522,168 +3690,123 @@ function renderDateScan(countries, today, root) {
 }
 
 // ==========================================================================
-// UITDRAAI — meerdere landen naar Excel (.xlsx) en PDF (feature)
+// UITDRAAI — het scherm dat je ziet, als Excel of als printklaar rapport.
+//
+// Zit onderaan het Vergelijken-tabblad (geen apart tabblad meer): de landen,
+// bronnen, taal en thema-instellingen komen uit het scherm erboven, zodat de
+// uitdraai per definitie hetzelfde toont als de vergelijking.
+//
+// De vorm van de bladen en pagina's zit in export-model.js — DOM-vrij en
+// getest in worker/test/export-model.test.mjs.
 // ==========================================================================
-let EXPORT_COUNTRIES = [];
-const EXPORT_GROUPS_KEY = 'exportGroups';
-const loadExportGroups = () => { try { return JSON.parse(localStorage.getItem(EXPORT_GROUPS_KEY)) || {}; } catch { return {}; } };
-const saveExportGroups = (g) => localStorage.setItem(EXPORT_GROUPS_KEY, JSON.stringify(g));
-
 const CC_STYLE = { groen: 'cc_groen', geel: 'cc_geel', oranje: 'cc_oranje', rood: 'cc_rood' };
+const CC_HEX = { groen: '#d7ecc6', geel: '#fbf3ba', oranje: '#f8ddb8', rood: '#f3c0c0' };
+const SRC_SHORT = { uk: 'VK', us: 'VS', ca: 'CA', ie: 'IE', fr: 'FR', au: 'AU', es: 'ES', de: 'DE', nz: 'NZ', dk: 'DK', jp: 'JP', it: 'IT', fi: 'FI', kr: 'KR', no: 'NO', at: 'AT', ch: 'CH' };
 const cleanText = (s) => String(s || '').replace(/\s+/g, ' ').trim();
+const shortFor = (id) => SRC_SHORT[id] || id.toUpperCase();
 
-function renderExportChips() {
-  const wrap = $('#export-chips');
-  wrap.innerHTML = '';
-  if (!EXPORT_COUNTRIES.length) {
-    wrap.append(el('span', { class: 'hint', style: 'margin:0' }, 'Nog geen landen gekozen — voeg er hierboven een paar toe of laad een groep.'));
-  }
-  EXPORT_COUNTRIES.forEach((c) => {
-    const rm = el('button', { type: 'button', class: 'chip-x', title: `${c.nl} verwijderen`, 'aria-label': `${c.nl} verwijderen` }, '✕');
-    rm.addEventListener('click', () => { EXPORT_COUNTRIES = EXPORT_COUNTRIES.filter((x) => x.iso3 !== c.iso3); renderExportChips(); });
-    wrap.append(el('span', { class: 'chip' }, `${countryFlag(c.iso2)} ${c.nl}`, rm));
-  });
+// Wat gaat er mee in de uitdraai? Twee onafhankelijke vinkjes, bewaard zodat
+// een redacteur ze niet elke sessie opnieuw hoeft te zetten.
+let EXPORT_OPTS = (() => {
+  try { return { colors: true, text: true, ...(JSON.parse(localStorage.getItem('exportOpts')) || {}) }; }
+  catch { return { colors: true, text: true }; }
+})();
+const saveExportOpts = () => localStorage.setItem('exportOpts', JSON.stringify(EXPORT_OPTS));
+
+/** dd-mm-jjjj uit een ISO-datum of losse datumtekst; leeg blijft leeg. */
+function fmtDay(s) {
+  if (!s) return '';
+  const d = new Date(s);
+  return isNaN(d) ? String(s).slice(0, 10) : d.toLocaleDateString('nl-NL');
 }
 
-function refreshExportGroupSelect() {
-  const sel = $('#export-group-select');
-  const groups = loadExportGroups();
-  const cur = sel.value;
-  sel.innerHTML = '';
-  sel.append(el('option', { value: '' }, '— kies een groep —'));
-  Object.keys(groups).sort().forEach((name) => sel.append(el('option', { value: name }, `${name} (${groups[name].length})`)));
-  if (groups[cur]) sel.value = cur;
+/** NL-datum kort (dd-mm-jjjj) uit modificationDate of lastModified. */
+function nlDateShort(nl) {
+  const m = (nl.modificationDate || '').match(/(\d{2}-\d{2}-\d{4})/);
+  if (m) return m[1];
+  return fmtDay(nl.lastModified) || '—';
 }
 
-function setupExport() {
-  const input = $('#export-country-input');
-  const add = () => {
-    const c = resolveCountry(input.value);
-    if (!c) return;
-    if (!EXPORT_COUNTRIES.find((x) => x.iso3 === c.iso3)) EXPORT_COUNTRIES.push(c);
-    input.value = '';
-    renderExportChips();
-  };
-  $('#export-add').addEventListener('click', add);
-  $('#export-form').addEventListener('submit', (e) => { e.preventDefault(); add(); });
-
-  $('#export-from-watch').addEventListener('click', () => {
-    const added = [...WATCHLIST].map((iso) => COUNTRIES.find((c) => c.iso3 === iso)).filter(Boolean);
-    added.forEach((c) => { if (!EXPORT_COUNTRIES.find((x) => x.iso3 === c.iso3)) EXPORT_COUNTRIES.push(c); });
-    renderExportChips();
-    if (!added.length) setExportStatus('Je volglijst is leeg — voeg eerst landen toe via het ☆ bij een land.', 'error');
-  });
-
-  $('#export-group-save').addEventListener('click', () => {
-    if (!EXPORT_COUNTRIES.length) return setExportStatus('Kies eerst landen om te bewaren.', 'error');
-    const name = prompt('Naam voor deze groep (bijv. GOF-landen):', '');
-    if (!name) return;
-    const groups = loadExportGroups();
-    groups[name.trim()] = EXPORT_COUNTRIES.map((c) => c.iso3);
-    saveExportGroups(groups);
-    refreshExportGroupSelect();
-    $('#export-group-select').value = name.trim();
-    setExportStatus(`Groep “${name.trim()}” bewaard.`, 'ok');
-  });
-  $('#export-group-load').addEventListener('click', () => {
-    const name = $('#export-group-select').value;
-    if (!name) return;
-    const isos = loadExportGroups()[name] || [];
-    EXPORT_COUNTRIES = isos.map((iso) => COUNTRIES.find((c) => c.iso3 === iso)).filter(Boolean);
-    renderExportChips();
-  });
-  $('#export-group-delete').addEventListener('click', () => {
-    const name = $('#export-group-select').value;
-    if (!name || !confirm(`Groep “${name}” verwijderen?`)) return;
-    const groups = loadExportGroups();
-    delete groups[name];
-    saveExportGroups(groups);
-    refreshExportGroupSelect();
-  });
-
-  $('#export-xlsx').addEventListener('click', () => runExport('xlsx'));
-  $('#export-pdf').addEventListener('click', () => runExport('pdf'));
-
-  // Themadropdown vullen (gegroepeerd zoals themes.json).
-  const themeSel = $('#export-theme');
-  const groups = new Map();
-  THEMES_META.forEach((t) => { if (!groups.has(t.group)) groups.set(t.group, []); groups.get(t.group).push(t); });
-  for (const [group, items] of groups) {
-    const og = el('optgroup', { label: group });
-    items.forEach((t) => og.append(el('option', { value: t.id }, t.label)));
-    themeSel.append(og);
-  }
-
-  refreshExportGroupSelect();
-  renderExportChips();
-  const n = orderedSelected().length;
-  $('#export-src-count').textContent = `${n} bron${n === 1 ? '' : 'nen'} aangevinkt`;
-}
-
-function setExportStatus(msg, cls = '') {
-  const s = $('#export-status');
-  s.className = 'status' + (cls ? ' ' + cls : '');
-  s.textContent = msg;
+/** Heeft deze bron een gebied dat zwaarder is dan het landelijke niveau? (▲) */
+function hasStricterRegion(s) {
+  const nat = s.level || COLOR_LEVEL[s.color] || 0;
+  return regionalExtraColors(s).some((c) => (COLOR_LEVEL[c] || 0) > nat);
 }
 
 /**
- * Haalt voor elk gekozen land de NL-data + buitenlandse bronnen op.
- * Sequentieel (≤15 landen) met voortgang; een land dat faalt wordt gemeld
- * maar breekt de uitdraai niet af.
+ * Zet het opgehaalde resultaat om in de platte dataset die export-model.js
+ * verwacht. `withThemes` voegt de bronteksten per thema toe (alleen nodig voor
+ * de uitdraai zelf, niet voor de kleurcodematrix op het scherm).
  */
-async function gatherExportData(sources, lang) {
-  const out = [];
-  const failed = [];
-  for (let i = 0; i < EXPORT_COUNTRIES.length; i++) {
-    const c = EXPORT_COUNTRIES[i];
-    setExportStatus(`Ophalen… land ${i + 1}/${EXPORT_COUNTRIES.length}: ${c.nl}`, '');
-    try {
-      const staticData = await loadJSON(`compare/${c.iso3}.json`);
-      let foreign = { sources: [] };
-      if (sources.length && getProxy()) {
-        foreign = await fetchForeign(c.iso3, sources, lang === 'orig' ? '' : 'nl');
+function buildDataset({ withThemes = false } = {}) {
+  const sources = COMPARE_SOURCES.map((id) => ({ id, label: sourceMeta(id)?.label || id, short: shortFor(id) }));
+  const countries = [];
+  for (const c of COMPARE_COUNTRIES) {
+    const r = COMPARE_RESULTS.get(c.iso3);
+    if (!r) continue;
+    const nl = r.staticData.nl;
+    const all = r.foreign.sources || [];
+    const byId = new Map(all.map((s) => [s.source, s]));
+    const srcRows = COMPARE_SOURCES.map((id) => {
+      const s = byId.get(id);
+      const meta = sourceMeta(id);
+      const base = { id, label: meta?.label || id, short: shortFor(id) };
+      if (!s || s.unavailable || s.error) return { ...base, status: 'na' };
+      return {
+        ...base,
+        label: s.sourceLabel || base.label,
+        color: s.color || null,
+        level: s.level != null ? s.level : (COLOR_LEVEL[s.color] || null),
+        status: s.assessmentStatus === 'uncertain' ? 'uncertain'
+          : s.assessmentStatus === 'none' ? 'none' : 'ok',
+        levelLabel: s.levelLabel || '',
+        extras: regionalExtraColors(s),
+        regional: hasStricterRegion(s),
+        date: fmtDay(s.lastModified) || fmtDay(SOURCE_DATES?.[c.iso3]?.[id]) || '',
+        stale: !!s.stale,
+        snapshotDate: fmtDay(s.snapshotDate),
+        colorSource: s.colorSource || '',
+        url: s.url || '',
+      };
+    });
+    const nlExtras = nlExtraColors(nl);
+    const nlLevel = COLOR_LEVEL[nl.colors?.overall] || null;
+    const entry = {
+      iso3: c.iso3, iso2: c.iso2, name: c.nl,
+      nl: {
+        color: nl.colors?.overall || null, level: nlLevel, extras: nlExtras,
+        regional: nlExtras.some((x) => (COLOR_LEVEL[x] || 0) > (nlLevel || 0)),
+        date: nlDateShort(nl), url: nl.url || '',
+      },
+      sources: srcRows,
+      themes: [], changes: [],
+    };
+    if (withThemes) {
+      const ok = all.filter((s) => !s.unavailable && !s.error && s.themes);
+      entry.themes = filteredThemeContent(nl, ok, exportFilter());
+      const cmp = buildComparison(nl, ok);
+      const changes = resolveRecentChanges(c.iso3, ok, cmp);
+      for (const [sid, items] of changes) {
+        const meta = sourceMeta(sid);
+        items.forEach((it) => entry.changes.push({
+          label: meta?.label || sid, date: fmtDay(it.date), heading: it.heading, sentence: cleanText(it.sentence),
+        }));
       }
-      out.push({ country: c, nl: staticData.nl, foreign: foreign?.sources || [] });
-    } catch (e) {
-      failed.push(c.nl);
+      entry.changes.sort((a, b) => (a.date < b.date ? 1 : -1));
     }
+    countries.push(entry);
   }
-  return { rows: out, failed };
+  return { sources, countries };
 }
 
-async function runExport(kind) {
-  if (!EXPORT_COUNTRIES.length) return setExportStatus('Kies eerst minstens één land.', 'error');
-  if (EXPORT_COUNTRIES.length > 20) return setExportStatus('Maximaal 20 landen per uitdraai — splits grote lijsten op.', 'error');
-  const sources = orderedSelected();
-  const lang = $('#export-lang').value;
-  const content = $('#export-content').value; // full | text | colors
-  const opts = {
-    content,
-    withText: content !== 'colors',
-    withColors: content !== 'text',
-    themeId: $('#export-theme').value || null,
-    word: $('#export-word').value.trim(),
-  };
-  $('#export-xlsx').disabled = $('#export-pdf').disabled = true;
-  try {
-    const { rows, failed } = await gatherExportData(sources, lang);
-    if (!rows.length) return setExportStatus('Geen data opgehaald — probeer het opnieuw.', 'error');
-    const built = kind === 'xlsx'
-      ? buildExportXlsx(rows, sources, lang, opts)
-      : buildExportPdf(rows, sources, lang, opts);
-    const warn = failed.length ? ` (niet gelukt: ${failed.join(', ')})` : '';
-    if (built === 'empty') setExportStatus(`Geen bronteksten gevonden voor dit filter${opts.word ? ` (“${opts.word}”)` : ''}${warn}.`, 'error');
-    else setExportStatus(`Klaar — ${rows.length} land${rows.length === 1 ? '' : 'en'} in de uitdraai${warn}.`, failed.length ? '' : 'ok');
-  } catch (e) {
-    setExportStatus('Uitdraai mislukt: ' + e.message, 'error');
-  } finally {
-    $('#export-xlsx').disabled = $('#export-pdf').disabled = false;
-  }
+/** Het filter dat op het scherm actief is — dat gaat één-op-één mee in de
+ *  uitdraai, zodat er nooit iets in staat wat je niet ziet (en omgekeerd). */
+function exportFilter() {
+  return { hidden: HIDDEN_THEMES, word: MATRIX_FILTER?.term || '' };
 }
 
-// ---- Thema-/woordfilter voor de inhoud ------------------------------------
-/** Levert per land de gefilterde thema-inhoud: [{theme, entries:[{label,color,level,text}]}]. */
-function filteredThemeContent(nl, foreign, { themeId, word }) {
+/** Levert per land de thema-inhoud: [{id, label, entries:[{sourceId,…,text}]}]. */
+function filteredThemeContent(nl, foreign, { hidden, word } = {}) {
   const comp = buildComparison(nl, foreign.filter((s) => s.themes));
   const nlColor = nl.colors?.overall;
   const wq = word ? norm(word) : null;
@@ -3695,116 +3818,157 @@ function filteredThemeContent(nl, foreign, { themeId, word }) {
   const out = [];
   for (const t of comp.themes) {
     if (t.theme.id === '_other') continue;
-    if (themeId && t.theme.id !== themeId) continue;
+    if (hidden && hidden.has(t.theme.id)) continue;
     const entries = [];
     const nlText = pick(cleanText((t.nl || []).map((b) => b.text).join(' ')));
-    if (nlText) entries.push({ label: 'NL (NWW)', color: nlColor, level: null, text: nlText, isNl: true });
+    if (nlText) entries.push({ sourceId: 'nl', label: 'NederlandWereldwijd', color: nlColor, level: COLOR_LEVEL[nlColor] || null, status: nlColor ? 'ok' : 'na', text: nlText, url: nl.url || '' });
     for (const [sid, f] of Object.entries(t.foreign)) {
       const txt = pick(cleanText((f.blocks || []).map((b) => b.text).join(' ')));
       if (!txt) continue;
       const s = foreign.find((x) => x.source === sid);
-      entries.push({ label: f.label, color: s?.color, level: s?.level, text: txt });
+      entries.push({
+        sourceId: sid, label: f.label, color: s?.color || null, level: s?.level != null ? s.level : (COLOR_LEVEL[s?.color] || null),
+        status: s?.assessmentStatus === 'uncertain' ? 'uncertain' : s?.assessmentStatus === 'none' ? 'none' : 'ok',
+        text: txt, url: s?.url || f.url || '',
+      });
     }
-    if (entries.length) out.push({ theme: t.theme, entries });
+    if (entries.length) out.push({ id: t.theme.id, label: t.theme.label, entries });
   }
   return out;
 }
 
-/** NL-datum kort (dd-mm-jjjj) uit modificationDate of lastModified. */
-function nlDateShort(nl) {
-  const m = (nl.modificationDate || '').match(/(\d{2}-\d{2}-\d{4})/);
-  if (m) return m[1];
-  if (nl.lastModified) { const d = new Date(nl.lastModified); if (!isNaN(d)) return d.toLocaleDateString('nl-NL'); }
-  return '—';
-}
+// ---- Overzicht op het scherm: landen × bronnen ----------------------------
+/**
+ * De kleurcodematrix boven de landentabs. Toont per land het niveaucijfer per
+ * bron (▲ = een gebied is zwaarder dan het land) en de grootste afwijking
+ * t.o.v. NederlandWereldwijd — precies dezelfde cijfers als de uitdraai.
+ */
+function renderOverviewBlock(shown) {
+  const ds = buildDataset();
+  const { body, tally } = ExportModel.overviewMatrix(ds);
+  const wrap = el('div', { class: 'overview-block' });
+  wrap.append(el('div', { class: 'theme-head-row' },
+    el('h3', { class: 'section-title', style: 'flex:1;margin:0;border:none' },
+      `Overzicht — kleurcodes van ${shown.length} landen naast elkaar`)));
 
-/** Rijen voor het kleurcodes-overzicht (blad 1 / PDF-voorblad). */
-function overviewMatrix(rows, sources) {
-  const header = ['Land', 'NL (NWW)', ...sources.map((id) => sourceMeta(id)?.label || id), 'Hoogste afwijking', 'NL bijgewerkt'];
-  const body = rows.map(({ country, nl, foreign }) => {
-    const nlColor = nl.colors?.overall || null;
-    const nlLvl = COLOR_LEVEL[nlColor] || 0;
-    const bySrc = new Map(foreign.map((s) => [s.source, s]));
-    let maxDiff = 0, diffLabel = '—';
-    const srcCells = sources.map((id) => {
-      const s = bySrc.get(id);
-      if (!s || s.unavailable || s.error || !s.color) return { v: s?.error ? 'n.b.' : '—', color: null };
-      const lvl = COLOR_LEVEL[s.color] || 0;
-      if (nlColor && lvl - nlLvl > maxDiff) { maxDiff = lvl - nlLvl; diffLabel = `${sourceMeta(id)?.label || id} strenger (${COLOR_LABELS[s.color]} vs NL ${COLOR_LABELS[nlColor]})`; }
-      return { v: s.levelLabel && /^\d/.test(String(s.level)) ? `${COLOR_LABELS[s.color]} (${s.level})` : COLOR_LABELS[s.color], color: s.color };
+  const table = el('table', { class: 'overview-matrix' });
+  const head = el('tr', {}, el('th', { class: 'ov-land' }, 'Land'), el('th', { title: 'NederlandWereldwijd' }, 'NL'));
+  ds.sources.forEach((s) => head.append(el('th', { title: s.label }, s.short)));
+  head.append(el('th', { class: 'ov-dev' }, 'Grootste afwijking t.o.v. NL'));
+  table.append(el('thead', {}, head));
+
+  const tbody = el('tbody');
+  const cell = (c) => {
+    const td = el('td', {
+      class: 'ov-cc' + (c.status === 'ok' && c.color ? ` c-${c.color}` : ' c-none'),
+      title: `${c.label}: ${ExportModel.colorText(c)}${c.regional ? ' — een gebied is zwaarder dan het land' : ''}`,
+    }, ExportModel.cellMark(c));
+    if (c.regional) td.append(el('span', { class: 'ov-reg' }, '▲'));
+    return td;
+  };
+  body.forEach((r) => {
+    const open = el('button', { type: 'button', class: 'btn-link' }, `${countryFlagByIso3(r.iso3) || ''} ${r.country}`);
+    open.addEventListener('click', () => {
+      COMPARE_ACTIVE = r.iso3;
+      MATRIX_FILTER = null;
+      syncUrl();
+      renderCompareView();
+      $('#compare-detail')?.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
     });
-    return { country, nlColor, srcCells, diffLabel: maxDiff > 0 ? diffLabel : '—', date: nlDateShort(nl) };
+    tbody.append(el('tr', { class: r.iso3 === COMPARE_ACTIVE ? 'on' : '' },
+      el('td', { class: 'ov-land' }, open),
+      cell(r.nl), ...r.cells.map(cell),
+      el('td', { class: 'ov-dev' }, r.deviation)));
   });
-  return { header, body };
+  table.append(tbody);
+  wrap.append(el('div', { class: 'overview-scroll' }, table));
+
+  const telling = ['groen', 'geel', 'oranje', 'rood'].filter((k) => tally[k])
+    .map((k) => `${tally[k]}× ${COLOR_LABELS[k].toLowerCase()}`).join(' · ');
+  wrap.append(el('p', { class: 'hint', style: 'margin:8px 0 0' },
+    'Cijfer = niveau 1–4 · ▲ = een gebied binnen het land is zwaarder dan het landelijke niveau · — = de bron publiceert geen kleurcode · ? = niet vast te stellen · · = deze keer niet opgehaald.',
+    telling ? ` NederlandWereldwijd: ${telling}.` : ''));
+  return wrap;
 }
 
-/** Bouwt en downloadt het Excel-bestand. Geeft 'empty' als het filter niets oplevert. */
-function buildExportXlsx(rows, sources, lang, opts) {
-  const stamp = new Date().toISOString().slice(0, 10);
-  const themeLabel = opts.themeId ? (THEME_BY_ID.get(opts.themeId)?.label || opts.themeId) : null;
-  const sheets = [];
+// ---- Uitdraaibalk onderaan -------------------------------------------------
+function renderExportBar(shown) {
+  const bar = el('div', { class: 'exportbar' });
+  bar.append(el('span', { class: 'exportbar-label' }, 'Uitdraai'));
 
-  // ---- Blad 1: kleurcodes-overzicht (tenzij focus-modus) ----
-  if (opts.withColors) {
-    const { header, body } = overviewMatrix(rows, sources);
-    const s1 = { name: 'Kleurcodes-overzicht', freeze: 2, cols: [26, 14, ...sources.map(() => 15), 34, 14],
-      merges: [`A1:${String.fromCharCode(65 + header.length - 1)}1`], rows: [] };
-    s1.rows.push([{ v: `Reisadviezen — uitdraai ${stamp}`, t: 'title' }]);
-    s1.rows.push(header.map((h) => ({ v: h, t: 'header' })));
-    for (const r of body) {
-      const nlCell = r.nlColor ? { v: COLOR_LABELS[r.nlColor], t: CC_STYLE[r.nlColor] } : { v: '—', t: 'plain' };
-      const srcCells = r.srcCells.map((c) => c.color ? { v: c.v, t: CC_STYLE[c.color] } : { v: c.v, t: 'plain' });
-      s1.rows.push([{ v: r.country.nl, t: 'country' }, nlCell, ...srcCells, { v: r.diffLabel, t: 'text' }, { v: r.date, t: 'num' }]);
-    }
-    sheets.push(s1);
+  const checks = el('div', { class: 'exportbar-checks' });
+  const mk = (key, label, title) => {
+    const box = el('input', { type: 'checkbox', id: `exp-${key}` });
+    box.checked = !!EXPORT_OPTS[key];
+    box.addEventListener('change', () => {
+      EXPORT_OPTS[key] = box.checked;
+      saveExportOpts();
+      updateBar();
+    });
+    return el('label', { class: 'check-inline', title }, box, ' ', label);
+  };
+  checks.append(
+    mk('colors', 'Kleurcodes', 'Het overzicht met kleurcodes per land en bron, plus het blad met afwijkingen.'),
+    mk('text', 'Wat bronnen zeggen', 'De bronteksten per thema. Uit = alleen kleurcodes, dus zonder landpagina’s.'));
+  bar.append(checks);
+
+  const xlsxBtn = el('button', { type: 'button', class: 'btn primary' }, '⬇ Excel (.xlsx)');
+  const pdfBtn = el('button', { type: 'button', class: 'btn' }, '⬇ PDF (rapport)');
+  const printBtn = el('button', { type: 'button', class: 'btn', title: 'Print het scherm zoals het nu is (compacte samenvatting, zonder de matrix).' }, '🖨 Printen');
+  xlsxBtn.addEventListener('click', () => runUitdraai('xlsx'));
+  pdfBtn.addEventListener('click', () => runUitdraai('pdf'));
+  printBtn.addEventListener('click', () => window.print());
+  bar.append(xlsxBtn, pdfBtn, printBtn);
+
+  const note = el('span', { class: 'exportbar-note' });
+  bar.append(note);
+
+  const updateBar = () => {
+    const niets = !EXPORT_OPTS.colors && !EXPORT_OPTS.text;
+    xlsxBtn.disabled = pdfBtn.disabled = niets;
+    const langLabel = COMPARE_LANG === 'orig' ? 'origineel' : COMPARE_LANG === 'en' ? 'Engels' : 'Nederlands';
+    const filters = [
+      HIDDEN_THEMES.size ? `${HIDDEN_THEMES.size} thema’s verborgen` : null,
+      MATRIX_FILTER ? `filter “${MATRIX_FILTER.label}”` : null,
+    ].filter(Boolean);
+    note.textContent = niets
+      ? 'Kies minstens één onderdeel om uit te draaien.'
+      : `${shown.length} land${shown.length === 1 ? '' : 'en'} · ${COMPARE_SOURCES.length} bronnen · ${langLabel}${filters.length ? ' · ' + filters.join(' · ') : ''}`;
+  };
+  updateBar();
+  bar.__update = updateBar; // zodat runUitdraai na afloop de juiste staat herstelt
+  return bar;
+}
+
+function setExportStatus(msg, cls = '') {
+  let s = $('#export-status');
+  if (!s) {
+    s = el('div', { id: 'export-status', class: 'status' });
+    $('#compare-result .exportbar')?.after(s);
   }
+  s.className = 'status' + (cls ? ' ' + cls : '');
+  s.textContent = msg;
+}
 
-  // ---- Blad 2: per land → thema + bron (met thema-/woordfilter) ----
-  let contentRows = 0;
-  if (opts.withText) {
-    const s2title = themeLabel ? `Inhoud — ${themeLabel}`.slice(0, 31) : 'Per land — inhoud';
-    const s2 = { name: s2title, freeze: 2, cols: [22, 22, 12, 84], merges: [], rows: [] };
-    const filterBits = [themeLabel && `thema: ${themeLabel}`, opts.word && `zoekwoord: “${opts.word}”`].filter(Boolean).join(' · ');
-    s2.rows.push([{ v: filterBits ? `Wat bronnen zeggen (${filterBits})` : 'Wat de bronnen per thema zeggen', t: 'title' }]);
-    s2.merges.push(`A1:D1`);
-    s2.rows.push([{ v: 'Land', t: 'header' }, { v: 'Bron', t: 'header' }, { v: 'Niveau', t: 'header' }, { v: 'Wat de bron zegt', t: 'header' }]);
-    for (const { country, nl, foreign } of rows) {
-      const content = filteredThemeContent(nl, foreign, opts);
-      if (!content.length) continue;
-      s2.rows.push([{ v: country.nl, t: 'band' }, { v: '', t: 'band' }, { v: '', t: 'band' }, { v: '', t: 'band' }]);
-      s2.merges.push(`A${s2.rows.length}:D${s2.rows.length}`);
-      for (const { theme, entries } of content) {
-        s2.rows.push([{ v: `▸ ${theme.label}`, t: 'country' }, { v: '', t: 'plain' }, { v: '', t: 'plain' }, { v: '', t: 'plain' }]);
-        for (const e of entries) {
-          const lvl = e.color ? `${COLOR_LABELS[e.color]}${e.level ? ` (${e.level})` : ''}` : '';
-          s2.rows.push([{ v: '', t: 'plain' }, { v: e.label, t: 'text' }, { v: lvl, t: 'num' }, { v: e.text, t: 'text' }]);
-          contentRows++;
-        }
-      }
-    }
-    if (!contentRows && !opts.withColors) return 'empty';
-    if (contentRows) sheets.push(s2);
+async function runUitdraai(kind) {
+  if (!COMPARE_RESULTS.size) return;
+  const buttons = $$('#compare-result .exportbar .btn');
+  buttons.forEach((b) => { b.disabled = true; });
+  setExportStatus('Uitdraai samenstellen…');
+  try {
+    // Even laten renderen: bij 15 landen kost het opbouwen van de teksten
+    // merkbaar tijd en anders lijkt de knop niets te doen.
+    await new Promise((r) => setTimeout(r, 0));
+    const ds = buildDataset({ withThemes: EXPORT_OPTS.text });
+    const built = kind === 'xlsx' ? buildExportXlsx(ds) : buildExportPdf(ds);
+    if (built === 'empty') setExportStatus('Geen bronteksten gevonden voor dit filter — zet het themafilter uit of vink “Kleurcodes” aan.', 'error');
+    else setExportStatus(kind === 'xlsx' ? 'Excel gedownload.' : 'Rapport klaar — de printdialoog staat open (kies “Opslaan als pdf”).', 'ok');
+  } catch (e) {
+    setExportStatus('Uitdraai mislukt: ' + e.message, 'error');
+  } finally {
+    buttons.forEach((b) => { b.disabled = false; });
+    $('#compare-result .exportbar')?.__update?.();
   }
-
-  // ---- Blad 3: toelichting & bronnen ----
-  const s3 = { name: 'Toelichting & bronnen', cols: [26, 90], rows: [] };
-  s3.rows.push([{ v: 'Over deze uitdraai', t: 'title' }]);
-  s3.rows.push([{ v: 'Gemaakt op', t: 'country' }, { v: new Date().toLocaleString('nl-NL'), t: 'text' }]);
-  if (themeLabel) s3.rows.push([{ v: 'Thema-filter', t: 'country' }, { v: themeLabel, t: 'text' }]);
-  if (opts.word) s3.rows.push([{ v: 'Zoekwoord', t: 'country' }, { v: opts.word + ' (alleen passages met dit woord)', t: 'text' }]);
-  s3.rows.push([{ v: 'Taal bronteksten', t: 'country' }, { v: lang === 'orig' ? 'Origineel' : 'Nederlands (automatisch vertaald)', t: 'text' }]);
-  s3.rows.push([{ v: 'Kleurcodes', t: 'country' }, { v: 'Groen = normale risico’s · Geel = let op · Oranje = niet-noodzakelijke reizen ontraden · Rood = niet reizen. Niveaus (1–4) komen van de bron zelf.', t: 'text' }]);
-  s3.rows.push([{ v: '', t: 'plain' }, { v: '', t: 'plain' }]);
-  s3.rows.push([{ v: 'Bron-URL’s per land', t: 'header' }, { v: '', t: 'header' }]);
-  for (const { country, nl, foreign } of rows) {
-    s3.rows.push([{ v: `${country.nl} — NL`, t: 'country' }, { v: nl.url || '', t: 'text' }]);
-    for (const s of foreign) if (s.url) s3.rows.push([{ v: `${country.nl} — ${s.sourceLabel}`, t: 'plain' }, { v: s.url, t: 'text' }]);
-  }
-  sheets.push(s3);
-
-  const suffix = themeLabel ? '_' + themeLabel.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') : '';
-  downloadBlob(buildXlsx(sheets), `Reisadviezen_uitdraai${suffix}_${stamp}.xlsx`);
-  return 'ok';
 }
 
 function downloadBlob(blob, name) {
@@ -3813,89 +3977,239 @@ function downloadBlob(blob, name) {
   setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
 }
 
-/** Bouwt een printbaar rapport in een verborgen container en opent de printdialoog. */
-function buildExportPdf(rows, sources, lang, opts) {
+// ---- Excel ----------------------------------------------------------------
+/** Bouwt en downloadt het Excel-bestand. Geeft 'empty' als er niets in komt. */
+function buildExportXlsx(ds) {
+  const stamp = new Date().toISOString().slice(0, 10);
+  const sheets = [];
+  const langLabel = COMPARE_LANG === 'orig' ? 'Origineel' : COMPARE_LANG === 'en' ? 'Engels (automatisch vertaald)' : 'Nederlands (automatisch vertaald)';
+
+  // ---- Blad "Overzicht": landen × bronnen, breed en leesbaar ----
+  if (EXPORT_OPTS.colors) {
+    const { header, body } = ExportModel.overviewMatrix(ds);
+    const s = {
+      name: 'Overzicht', freeze: 2, autofilter: 2,
+      cols: [26, 16, ...ds.sources.map(() => 16), 40, 14],
+      merges: [`A1:${String.fromCharCode(65 + header.length - 1)}1`], rows: [],
+    };
+    s.rows.push([{ v: `Reisadviezen — vergelijking van ${ds.countries.length} land${ds.countries.length === 1 ? '' : 'en'} · ${stamp}`, t: 'title' }]);
+    s.rows.push(header.map((h) => ({ v: h, t: 'header' })));
+    const cc = (c) => {
+      const txt = ExportModel.colorText(c) + (c.regional ? ' ▲' : '');
+      return c.status === 'ok' && c.color ? { v: txt, t: CC_STYLE[c.color] } : { v: txt, t: 'plain' };
+    };
+    for (const r of body) {
+      s.rows.push([{ v: r.country, t: 'country' }, cc(r.nl), ...r.cells.map(cc),
+        { v: r.deviation, t: 'text' }, { v: r.date, t: 'num' }]);
+    }
+    sheets.push(s);
+  }
+
+  // ---- Blad "Per bron per thema": lang en filterbaar ----
+  const long = EXPORT_OPTS.text ? ExportModel.longRows(ds) : [];
+  if (EXPORT_OPTS.text && long.length) {
+    const s = { name: 'Per bron per thema', freeze: 1, autofilter: 1, cols: [22, 30, 26, 9, 18, 96, 13, 16], rows: [] };
+    s.rows.push(['Land', 'Bron', 'Thema', 'Niveau', 'Kleurcode', 'Wat de bron zegt', 'Bijgewerkt', 'Herkomst']
+      .map((h) => ({ v: h, t: 'header' })));
+    for (const r of long) {
+      s.rows.push([
+        { v: r.land, t: 'country' }, { v: r.bron, t: 'plain' }, { v: r.thema, t: 'plain' },
+        // Echt numeriek: zo kun je erop sorteren en optellen.
+        r.niveau != null ? { v: r.niveau, t: 'num' } : { v: '', t: 'num' },
+        { v: r.kleur, t: r.niveau != null && CC_STYLE[LEVEL_COLORS[r.niveau]] ? CC_STYLE[LEVEL_COLORS[r.niveau]] : 'plain' },
+        { v: r.tekst, t: 'text' }, { v: r.bijgewerkt, t: 'num' }, { v: r.herkomst, t: 'plain' },
+      ]);
+    }
+    sheets.push(s);
+  }
+
+  // ---- Blad "Afwijkingen": de werklijst ----
+  if (EXPORT_OPTS.colors) {
+    const rows = ExportModel.divergenceRows(ds);
+    const s = { name: 'Afwijkingen', freeze: 1, autofilter: 1, cols: [22, 30, 18, 20, 16, 10, 13, 16], rows: [] };
+    s.rows.push(['Land', 'Bron', 'NederlandWereldwijd', 'Bron', 'Richting', 'Verschil', 'Bijgewerkt', 'Herkomst']
+      .map((h) => ({ v: h, t: 'header' })));
+    for (const r of rows) {
+      s.rows.push([
+        { v: r.land, t: 'country' }, { v: r.bron, t: 'plain' }, { v: r.nl, t: 'plain' }, { v: r.bronKleur, t: 'plain' },
+        { v: r.richting, t: 'plain' }, r.verschil != null ? { v: r.verschil, t: 'num' } : { v: '', t: 'num' },
+        { v: r.bijgewerkt, t: 'num' }, { v: r.herkomst, t: 'plain' },
+      ]);
+    }
+    if (!rows.length) s.rows.push([{ v: 'Geen enkele bron wijkt af van NederlandWereldwijd.', t: 'text' }]);
+    sheets.push(s);
+  }
+
+  if (!sheets.length) return 'empty';
+
+  // ---- Blad "Verantwoording": waar komt dit vandaan? ----
+  const s4 = { name: 'Verantwoording', cols: [30, 12, 12, 16, 16, 16], rows: [] };
+  s4.rows.push([{ v: 'Over deze uitdraai', t: 'title' }]);
+  s4.rows.push([{ v: 'Gemaakt op', t: 'country' }, { v: new Date().toLocaleString('nl-NL'), t: 'text' }]);
+  s4.rows.push([{ v: 'Landen', t: 'country' }, { v: ds.countries.map((c) => c.name).join(', '), t: 'text' }]);
+  s4.rows.push([{ v: 'Taal bronteksten', t: 'country' }, { v: langLabel, t: 'text' }]);
+  if (HIDDEN_THEMES.size) s4.rows.push([{ v: 'Thema-filter', t: 'country' }, { v: `${HIDDEN_THEMES.size} thema’s verborgen op het scherm en dus ook hier`, t: 'text' }]);
+  if (MATRIX_FILTER) s4.rows.push([{ v: 'Zoekwoord', t: 'country' }, { v: `${MATRIX_FILTER.label} (alleen passages met deze term)`, t: 'text' }]);
+  s4.rows.push([{ v: 'Kleurcodes', t: 'country' }, { v: 'Groen = normale risico’s · Geel = let op · Oranje = niet-noodzakelijke reizen ontraden · Rood = niet reizen. “Kleurcode ontbreekt” betekent dat de bron er zelf geen publiceert; “onzeker” dat wij hem niet betrouwbaar konden vaststellen. Niveaus (1–4) komen van de bron.', t: 'text' }]);
+  s4.rows.push([{ v: 'Vertaling', t: 'country' }, { v: 'Vertalingen zijn automatisch gemaakt; de originele tekst is leidend.', t: 'text' }]);
+  s4.rows.push([{ v: '', t: 'plain' }]);
+  s4.rows.push(['Bron', 'Live', 'Snapshot', 'Niet opgehaald', 'Geen kleurcode', 'Nieuwste datum'].map((h) => ({ v: h, t: 'header' })));
+  for (const p of ExportModel.provenanceRows(ds)) {
+    s4.rows.push([{ v: p.bron, t: 'plain' }, { v: p.live, t: 'num' }, { v: p.snapshot, t: 'num' },
+      { v: p.nietOpgehaald, t: 'num' }, { v: p.geenKleurcode, t: 'num' }, { v: p.bijgewerkt, t: 'num' }]);
+  }
+  s4.rows.push([{ v: '', t: 'plain' }]);
+  s4.rows.push([{ v: 'Een snapshot is de laatst opgeslagen versie: die bron was bij het samenstellen niet bereikbaar.', t: 'text' }]);
+  s4.rows.push([{ v: '', t: 'plain' }]);
+  s4.rows.push([{ v: 'Bron-URL’s per land', t: 'header' }, { v: '', t: 'header' }]);
+  for (const c of ds.countries) {
+    s4.rows.push([{ v: `${c.name} — NederlandWereldwijd`, t: 'country' }, { v: c.nl.url, t: 'text' }]);
+    for (const s of c.sources) if (s.url) s4.rows.push([{ v: `${c.name} — ${s.label}`, t: 'plain' }, { v: s.url, t: 'text' }]);
+  }
+  sheets.push(s4);
+
+  downloadBlob(buildXlsx(sheets), `Reisadviezen_uitdraai_${stamp}.xlsx`);
+  return 'ok';
+}
+
+// ---- PDF (via de printdialoog) --------------------------------------------
+/**
+ * Bouwt een printbaar rapport in een verborgen container en opent de
+ * printdialoog. Drie soorten pagina's: voorblad + kleurcodematrix liggend,
+ * landpagina's staand (daar zijn citaten leesbaarder).
+ *
+ * De oriëntatie per pagina loopt via benoemde @page-regels; browsers die dat
+ * niet kennen printen alles in de stand uit de printdialoog — minder mooi,
+ * maar compleet.
+ */
+function buildExportPdf(ds) {
   const stamp = new Date().toLocaleDateString('nl-NL');
-  const themeLabel = opts.themeId ? (THEME_BY_ID.get(opts.themeId)?.label || opts.themeId) : null;
-  const filterBits = [themeLabel && `thema: ${themeLabel}`, opts.word && `zoekwoord “${opts.word}”`].filter(Boolean).join(' · ');
   const root = $('#export-print') || el('div', { id: 'export-print' });
   root.innerHTML = '';
   if (!root.parentNode) document.body.append(root);
 
-  // ---- Voorblad: compacte kleurmatrix (tenzij focus-modus) ----
-  const cover = el('section', { class: 'exp-page' });
-  cover.append(el('h1', { class: 'exp-title' }, 'Reisadviezen — uitdraai meerdere landen'));
-  cover.append(el('p', { class: 'exp-meta' },
-    `Vergelijking NederlandWereldwijd ↔ buitenlandse bronnen · ${rows.length} landen · ${stamp}` + (filterBits ? ` · ${filterBits}` : '')));
-  if (opts.withColors) {
-    const { body } = overviewMatrix(rows, sources);
+  const langLabel = COMPARE_LANG === 'orig' ? 'originele taal' : COMPARE_LANG === 'en' ? 'Engels (automatisch vertaald)' : 'Nederlands (automatisch vertaald)';
+  const filterBits = [
+    HIDDEN_THEMES.size ? `${HIDDEN_THEMES.size} thema’s verborgen` : null,
+    MATRIX_FILTER ? `alleen passages met “${MATRIX_FILTER.label}”` : null,
+  ].filter(Boolean).join(' · ') || 'alle thema’s';
+
+  const pages = [];
+  const page = (orient, ...kids) => {
+    const p = el('section', { class: `exp-page exp-${orient}` }, el('div', { class: 'exp-body' }, ...kids));
+    pages.push(p);
+    return p;
+  };
+  const { body, tally } = ExportModel.overviewMatrix(ds);
+
+  // ---- Voorblad ----
+  if (EXPORT_OPTS.colors) {
+    const cover = [];
+    cover.push(el('h1', { class: 'exp-title' },
+      `Reisadviezen — vergelijking van ${ds.countries.length} land${ds.countries.length === 1 ? '' : 'en'}`));
+    cover.push(el('p', { class: 'exp-meta' },
+      `NederlandWereldwijd naast ${ds.sources.length} buitenlandse bron${ds.sources.length === 1 ? '' : 'nen'} · ${stamp} · filter: ${filterBits}`,
+      el('br'), `Bronteksten in ${langLabel} · samengesteld met Reisadviezen-buddy`));
+
+    const tallyRow = el('div', { class: 'exp-tally' });
+    ['groen', 'geel', 'oranje', 'rood'].forEach((k) => tallyRow.append(
+      el('div', { class: `exp-tally-item c-${k}` }, el('b', {}, String(tally[k])), el('span', {}, COLOR_LABELS[k]))));
+    if (tally.onbekend) tallyRow.append(el('div', { class: 'exp-tally-item c-none' }, el('b', {}, String(tally.onbekend)), el('span', {}, 'Geen code')));
+    cover.push(el('p', { class: 'exp-sub' }, 'Landen per kleurcode van NederlandWereldwijd'), tallyRow);
+
+    const prov = el('table', { class: 'exp-matrix' });
+    prov.append(el('tr', {}, el('th', {}, 'Bron'), el('th', {}, 'Live'), el('th', {}, 'Uit snapshot'),
+      el('th', {}, 'Niet opgehaald'), el('th', {}, 'Nieuwste bijwerkdatum')));
+    ExportModel.provenanceRows(ds).forEach((p) => prov.append(el('tr', {},
+      el('td', {}, p.bron), el('td', { class: 'num' }, String(p.live)), el('td', { class: 'num' }, String(p.snapshot)),
+      el('td', { class: 'num' }, String(p.nietOpgehaald)), el('td', { class: 'num' }, p.bijgewerkt || '—'))));
+    cover.push(el('p', { class: 'exp-sub' }, 'Herkomst per bron'), prov);
+    cover.push(el('p', { class: 'exp-legend' },
+      'Een snapshot is de laatst opgeslagen versie: die bron was bij het samenstellen niet bereikbaar. Vertalingen zijn automatisch; de originele tekst is leidend.'));
+    page('land', ...cover);
+
+    // ---- Kleurcodematrix ----
+    const mx = [];
+    mx.push(el('h2', { class: 'exp-h2' }, 'Kleurcodes per bron'));
+    mx.push(el('p', { class: 'exp-meta' }, 'Cijfer = niveau 1–4 · ▲ = een gebied binnen het land is zwaarder dan het landelijke niveau'));
     const tbl = el('table', { class: 'exp-matrix compact' });
-    const codeHead = el('tr', {}, el('th', {}, 'Land'), el('th', {}, 'NL'));
-    sources.forEach((id) => codeHead.append(el('th', { title: sourceMeta(id)?.label || id }, SRC_SHORT[id] || id.toUpperCase())));
-    codeHead.append(el('th', { class: 'wide' }, 'Grootste afwijking t.o.v. NL'));
-    tbl.append(codeHead);
-    body.forEach((r) => {
-      const tr = el('tr', {}, el('td', { class: 'exp-country' }, r.country.nl));
-      const nlLbl = r.nlColor ? String(COLOR_LEVEL[r.nlColor]) : '';
-      tr.append(el('td', { class: 'exp-ccbox', style: r.nlColor ? `background:${CC_HEX[r.nlColor]}` : '', title: r.nlColor ? COLOR_LABELS[r.nlColor] : '' }, nlLbl || '–'));
-      r.srcCells.forEach((c) => {
-        const lvl = c.color ? String(COLOR_LEVEL[c.color]) : '';
-        tr.append(el('td', { class: 'exp-ccbox', style: c.color ? `background:${CC_HEX[c.color]}` : '', title: c.color ? COLOR_LABELS[c.color] : (c.v === 'n.b.' ? 'niet beschikbaar' : '') }, lvl || (c.v === 'n.b.' ? '·' : '–')));
-      });
-      tr.append(el('td', { class: 'exp-diff' }, r.diffLabel));
-      tbl.append(tr);
-    });
-    cover.append(tbl);
-    cover.append(el('p', { class: 'exp-legend' },
-      'Cel = niveau 1–4 · ',
-      el('span', { class: 'exp-cc', style: `background:${CC_HEX.groen}` }, '1 groen'), ' ',
-      el('span', { class: 'exp-cc', style: `background:${CC_HEX.geel}` }, '2 geel'), ' ',
-      el('span', { class: 'exp-cc', style: `background:${CC_HEX.oranje}` }, '3 oranje'), ' ',
-      el('span', { class: 'exp-cc', style: `background:${CC_HEX.rood}` }, '4 rood'),
-      ' · – = niets gemeld · · = bron niet beschikbaar. Broncodes bovenaan (beweeg erover voor de volledige naam).'));
-  } else {
-    cover.append(el('p', { class: 'exp-legend' }, 'Focus-uitdraai: alleen wat de bronnen inhoudelijk zeggen. Kleurniveaus staan per bron tussen haakjes.'));
+    const head = el('tr', {}, el('th', { class: 'exp-land' }, 'Land'), el('th', {}, 'NL'));
+    ds.sources.forEach((s) => head.append(el('th', { title: s.label }, s.short)));
+    head.append(el('th', { class: 'wide' }, 'Grootste afwijking t.o.v. NL'));
+    tbl.append(head);
+    const cc = (c) => el('td', {
+      class: 'exp-ccbox',
+      style: c.status === 'ok' && c.color ? `background:${CC_HEX[c.color]}` : '',
+      title: ExportModel.colorText(c),
+    }, ExportModel.cellMark(c) + (c.regional ? '▲' : ''));
+    body.forEach((r) => tbl.append(el('tr', {},
+      el('td', { class: 'exp-country' }, r.country), cc(r.nl), ...r.cells.map(cc),
+      el('td', { class: 'exp-diff' }, r.deviation))));
+    mx.push(tbl);
+    mx.push(el('p', { class: 'exp-legend' },
+      '— = de bron publiceert geen kleurcode voor dit land · ? = niet betrouwbaar vast te stellen · · = deze keer niet opgehaald. De bronnen staan voluit op het voorblad.'));
+    page('land', ...mx);
   }
-  root.append(cover);
 
-  // ---- Per land een pagina (met thema-/woordfilter) ----
-  // Teksten inkorten (Excel houdt de volledige tekst): anders wordt de PDF eindeloos.
-  const clip = (t, n = 380) => (t.length > n ? t.slice(0, n).replace(/\s+\S*$/, '') + '…' : t);
+  // ---- Per land een staande pagina ----
   let anyContent = false;
-  if (opts.withText) {
-    for (const { country, nl, foreign } of rows) {
-      const content = filteredThemeContent(nl, foreign, opts);
-      if (!content.length) continue;
+  if (EXPORT_OPTS.text) {
+    for (const c of ds.countries) {
+      if (!c.themes.length) continue;
       anyContent = true;
-      const page = el('section', { class: 'exp-page exp-country-page' });
-      page.append(el('h2', { class: 'exp-h2' }, `${countryFlag(country.iso2)} ${country.nl}` + (themeLabel ? ` — ${themeLabel}` : '')));
-      const nlColor = nl.colors?.overall;
-      page.append(el('p', { class: 'exp-meta' },
-        `NL: ${COLOR_LABELS[nlColor] || '—'} · ` + foreign.filter((s) => s.color).map((s) => `${s.sourceLabel.split(' (')[0]}: ${COLOR_LABELS[s.color]}`).join(' · ') +
-        ` — NL bijgewerkt ${nlDateShort(nl)}`));
-      for (const { theme, entries } of content) {
-        page.append(el('div', { class: 'exp-band' }, theme.label));
-        for (const e of entries) page.append(el('div', { class: 'exp-qa' },
-          el('b', {}, `${e.label}${e.color ? ` — ${COLOR_LABELS[e.color]}${e.level ? ` (${e.level})` : ''}` : ''}`), clip(e.text)));
+      const kids = [];
+      kids.push(el('h2', { class: 'exp-h2' }, c.name));
+      kids.push(el('p', { class: 'exp-meta' },
+        `NederlandWereldwijd: ${ExportModel.colorText({ status: c.nl.color ? 'ok' : 'na', color: c.nl.color })}`
+        + (c.nl.color ? ` — ${COLOR_MEANING[c.nl.color]}` : '') + ` · bijgewerkt ${c.nl.date}`));
+
+      const chipline = el('div', { class: 'exp-chipline' });
+      c.sources.forEach((s) => {
+        if (s.status === 'na') return;
+        chipline.append(el('span', {
+          class: 'exp-chip', style: s.status === 'ok' && s.color ? `background:${CC_HEX[s.color]}` : '',
+          title: `${s.label}: ${ExportModel.colorText(s)}`,
+        }, `${s.short} ${ExportModel.cellMark(s)}${s.regional ? ' ▲' : ''}`));
+      });
+      if (chipline.childNodes.length) kids.push(chipline);
+
+      for (const t of c.themes) {
+        kids.push(el('div', { class: 'exp-band' }, t.label));
+        for (const e of t.entries) {
+          const lvl = e.status === 'ok' && e.color
+            ? ` — ${COLOR_LABELS[e.color]}${e.level ? ` (${e.level})` : ''}`
+            : e.status === 'none' ? ' — kleurcode ontbreekt' : '';
+          kids.push(el('p', { class: 'exp-quote' },
+            el('b', {}, `${e.label}${lvl}`), ExportModel.clipSentences(e.text)));
+        }
       }
-      root.append(page);
+      if (c.changes.length) {
+        kids.push(el('div', { class: 'exp-band exp-band-change' }, 'Wat er veranderde',
+          el('span', {}, ` · laatste ${CHANGE_WINDOW_DAYS} dagen`)));
+        c.changes.slice(0, 6).forEach((ch) => kids.push(el('p', { class: 'exp-quote' },
+          el('b', {}, `${ch.label}${ch.date ? ` — ${ch.date}` : ''}${ch.heading ? ` · ${ch.heading}` : ''}`),
+          ExportModel.clipSentences(ch.sentence, 2, 320))));
+      }
+      page('port', ...kids);
     }
-    if (!anyContent && !opts.withColors) return 'empty';
+    if (!anyContent && !EXPORT_OPTS.colors) return 'empty';
   }
 
-  // Liggend printen: de kleurmatrix met alle bronnen past zo op de pagina.
-  let pageStyle = $('#exp-page-style');
-  if (!pageStyle) { pageStyle = el('style', { id: 'exp-page-style' }); document.head.append(pageStyle); }
-  pageStyle.textContent = '@media print { @page { size: A4 landscape; margin: 12mm; } }';
+  // Voettekst per pagina: welk onderdeel, de datum en "n van m". Bewust in JS
+  // geteld — CSS-paginatellers verschillen per browser.
+  pages.forEach((p, i) => {
+    const wat = p.querySelector('.exp-h2, .exp-title')?.textContent || 'Uitdraai';
+    p.append(el('div', { class: 'exp-foot' },
+      el('span', {}, wat), el('span', {}, stamp), el('span', {}, `${i + 1} van ${pages.length}`)));
+    root.append(p);
+  });
 
   document.body.classList.add('exp-printing');
   const cleanup = () => { document.body.classList.remove('exp-printing'); window.removeEventListener('afterprint', cleanup); };
   window.addEventListener('afterprint', cleanup);
   setTimeout(() => window.print(), 150);
+  return 'ok';
 }
-
-const CC_HEX = { groen: '#d7ecc6', geel: '#fbf3ba', oranje: '#f8ddb8', rood: '#f3c0c0' };
-const SRC_SHORT = { uk: 'VK', us: 'VS', ca: 'CA', ie: 'IE', fr: 'FR', au: 'AU', es: 'ES', de: 'DE', nz: 'NZ', dk: 'DK', jp: 'JP', it: 'IT', fi: 'FI', kr: 'KR', no: 'NO', at: 'AT', ch: 'CH' };
 
 // ---- Init -----------------------------------------------------------------
 bootstrap().catch((e) => {

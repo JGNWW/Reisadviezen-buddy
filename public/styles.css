@@ -476,7 +476,10 @@ input:focus, select:focus { outline: 2px solid var(--link); outline-offset: 0; b
 @media print {
   .tabs, .settings-panel, .settings-btn, .controls, .status, .hint, .footer,
   .topic-search, .matrix, .adddrop, .btn, .regional-toggle,
+  .exportbar, .country-tabs-wrap,
   .wijziging-quote, .wijziging-details { display: none !important; }
+  /* De landenmatrix hoort wél bij de afdruk van het scherm. */
+  .overview-matrix { -webkit-print-color-adjust: exact; print-color-adjust: exact; font-size: 10px; }
   .topbar { padding: 8px 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   main { max-width: none; padding: 6px 0 0; }
   .print-note { display: block; font-size: 10px; color: #555; margin: 0 0 10px; }
@@ -658,32 +661,118 @@ h2 .flag-img { width: 30px; height: 22px; vertical-align: -3px; border-radius: 3
 }
 @media print {
   /* Als er een meerlanden-uitdraai wordt geprint: verberg de héle app en
-     toon alleen het rapport (voorblad-matrix + pagina per land). */
+     toon alleen het rapport (voorblad + matrix liggend, landpagina's staand). */
   body.exp-printing > *:not(#export-print) { display: none !important; }
   body.exp-printing #export-print { display: block !important; }
+  /* Benoemde pagina's: het voorblad en de kleurcodematrix liggend (anders
+     passen 17 bronkolommen niet), de landpagina's staand (citaten lezen daar
+     prettiger). Browsers zonder ondersteuning printen alles in de stand uit de
+     printdialoog — minder mooi, maar compleet. */
+  @page exp-land { size: A4 landscape; margin: 12mm 12mm 14mm; }
+  @page exp-port { size: A4 portrait; margin: 14mm 14mm 16mm; }
+  .exp-page.exp-land { page: exp-land; }
+  .exp-page.exp-port { page: exp-port; }
   .exp-page { break-after: page; page-break-after: always; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .exp-page:last-child { break-after: auto; page-break-after: auto; }
 }
 #export-print { color: #1a1a1a; font-size: 11px; }
+.exp-page { position: relative; }
 .exp-title { color: var(--nl-blue); font-size: 20px; margin: 0 0 2px; }
 .exp-h2 { color: var(--nl-blue); font-size: 17px; margin: 0 0 2px; display: flex; align-items: center; gap: 8px; }
+.exp-sub { font-size: 11px; font-weight: 700; color: var(--nl-blue); margin: 14px 0 5px; }
 .exp-meta { color: #555; font-size: 10.5px; border-bottom: 1px solid #ccc; padding-bottom: 8px; margin: 0 0 12px; }
 .exp-matrix { border-collapse: collapse; width: 100%; font-size: 10.5px; margin-bottom: 10px; }
 .exp-matrix th, .exp-matrix td { border: 1px solid #ccc; padding: 4px 7px; text-align: left; vertical-align: top; }
 .exp-matrix th { background: #eff3f7; }
+.exp-matrix td.num { text-align: center; }
 .exp-country { font-weight: 600; white-space: nowrap; }
 .exp-cc { display: inline-block; padding: 1px 7px; border-radius: 3px; font-weight: 700; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 .exp-diff { font-size: 9.5px; color: #7a3e00; }
 .exp-legend { font-size: 9.5px; color: #666; margin-top: 8px; }
 .exp-band { background: var(--nl-blue); color: #fff; font-weight: 700; font-size: 11px; padding: 3px 8px; margin: 12px 0 6px; -webkit-print-color-adjust: exact; print-color-adjust: exact; break-after: avoid; }
-.exp-qa { margin: 0 0 7px; break-inside: avoid; }
-.exp-qa b { display: block; color: #154273; font-size: 10.5px; }
+.exp-band span { font-weight: 400; }
+.exp-band-change { background: #a2571a; }
+.exp-quote { margin: 0 0 7px; break-inside: avoid; font-size: 10.5px; line-height: 1.45; }
+.exp-quote b { display: block; color: #154273; font-size: 10.5px; }
 
-/* Compacte kleurmatrix op het PDF-voorblad (past liggend met alle 17 bronnen) */
+/* Voorblad: telling per kleurcode */
+.exp-tally { display: flex; gap: 8px; margin: 0 0 4px; }
+.exp-tally-item {
+  min-width: 74px; padding: 6px 10px; border: 1px solid #ccc; text-align: center;
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
+.exp-tally-item b { display: block; font-size: 19px; line-height: 1.1; }
+.exp-tally-item span { font-size: 9.5px; text-transform: uppercase; letter-spacing: .04em; }
+.exp-tally-item.c-groen { background: #d7ecc6; }
+.exp-tally-item.c-geel { background: #fbf3ba; }
+.exp-tally-item.c-oranje { background: #f8ddb8; }
+.exp-tally-item.c-rood { background: #f3c0c0; }
+.exp-tally-item.c-none { background: #eef1f4; }
+
+/* Landpagina: kleurcodes van alle bronnen op één regel */
+.exp-chipline { display: flex; flex-wrap: wrap; gap: 4px; margin: 0 0 8px; }
+.exp-chip {
+  border: 1px solid #ccc; padding: 1px 7px; font-size: 10px; font-weight: 700;
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
+
+/* Voettekst per pagina: onderdeel · datum · n van m */
+.exp-foot {
+  display: flex; justify-content: space-between; gap: 12px;
+  border-top: 1px solid #ccc; margin-top: 10px; padding-top: 4px;
+  font-size: 9px; color: #666;
+}
+
+/* Compacte kleurmatrix (past liggend met alle 17 bronnen) */
 .exp-matrix.compact th, .exp-matrix.compact td { padding: 3px 5px; text-align: center; }
 .exp-matrix.compact th:first-child, .exp-matrix.compact td:first-child { text-align: left; }
 .exp-matrix.compact th.wide { min-width: 150px; }
+.exp-matrix.compact td.exp-diff { text-align: left; }
 .exp-ccbox { font-weight: 700; text-align: center; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+/* ---- Vergelijken: landenselectie, overzichtsmatrix, tabs, uitdraaibalk ---- */
+.compare-groups { flex: 1 1 100%; order: 2; margin: 0 0 10px; }
+.compare-groups > summary { font-size: 13px; color: var(--nl-blue); cursor: pointer; font-weight: 600; }
+
+.overview-block { margin-bottom: 22px; }
+.overview-scroll { overflow-x: auto; }
+.overview-matrix { border-collapse: collapse; width: 100%; font-size: 13px; }
+.overview-matrix th, .overview-matrix td { border: 1px solid var(--border); padding: 5px 7px; text-align: center; }
+.overview-matrix th { background: var(--hero); font-size: 12px; white-space: nowrap; }
+.overview-matrix th.ov-land, .overview-matrix td.ov-land { text-align: left; white-space: nowrap; }
+.overview-matrix th.ov-dev, .overview-matrix td.ov-dev { text-align: left; font-size: 12px; color: #7a3e00; min-width: 170px; }
+.overview-matrix tr.on td { background: #f4f8fc; }
+.overview-matrix tr.on td.ov-land { font-weight: 700; }
+.overview-matrix td.ov-cc { font-weight: 700; font-variant-numeric: tabular-nums; }
+.overview-matrix td.ov-cc.c-groen { background: #d7ecc6; }
+.overview-matrix td.ov-cc.c-geel { background: #fbf3ba; }
+.overview-matrix td.ov-cc.c-oranje { background: #f8ddb8; }
+.overview-matrix td.ov-cc.c-rood { background: #f3c0c0; }
+.overview-matrix td.ov-cc.c-none { color: var(--muted); font-weight: 400; }
+.overview-matrix .ov-reg { font-size: 9px; vertical-align: super; margin-left: 1px; }
+
+.versus-block { border: 1px solid var(--border); padding: 10px 14px; margin-bottom: 22px; background: #fbfcfd; }
+.versus-block > summary { font-weight: 600; color: var(--nl-blue); cursor: pointer; }
+
+.country-tabs-wrap { margin: 0 0 4px; }
+.country-tabs { display: flex; flex-wrap: wrap; gap: 2px; border-bottom: 2px solid var(--nl-blue); }
+.country-tab {
+  font-size: 14px; padding: 8px 15px; font-weight: 400; cursor: pointer;
+  border: 1px solid var(--border); border-bottom: none; background: #eef3f8; color: var(--muted);
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.country-tab:hover { background: #e4ecf4; }
+.country-tab.on { background: var(--nl-blue); color: #fff; font-weight: 600; border-color: var(--nl-blue); }
+.country-tab.on .sq { box-shadow: 0 0 0 1px rgba(255,255,255,.7); }
+
+.exportbar {
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  background: #f3f7fa; border: 1px solid var(--border); padding: 10px 14px; margin: 22px 0 4px;
+}
+.exportbar-label { font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+.exportbar-checks { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+.exportbar-note { font-size: 12px; color: var(--muted); margin-left: auto; }
+.exportbar .btn:disabled { opacity: .5; cursor: not-allowed; }
 
 /* Bronnen zonder automatisch advies: eerlijke 'n.b.'-rij met bronlink */
 .summary-table tr.na-row td { color: var(--muted); font-style: italic; background: #fafbfc; }

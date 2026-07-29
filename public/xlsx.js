@@ -3,13 +3,15 @@
 // ==========================================================================
 // Minimale, dependency-vrije XLSX-schrijver (OOXML + store-only ZIP).
 // Genoeg voor nette redactie-uitdraaien: gekleurde cellen, vette koppen,
-// tekstterugloop, kolombreedtes, bevroren kopregel, samengevoegde cellen en
-// meerdere bladen. Geen externe bibliotheek, geen build-stap.
+// tekstterugloop, kolombreedtes, bevroren kopregel, filterknopjes,
+// samengevoegde cellen en meerdere bladen. Geen externe bibliotheek, geen
+// build-stap.
 //
 // Gebruik:
 //   const blob = buildXlsx([
 //     { name: 'Blad 1', cols: [24, 14, 14], freeze: 1,
-//       merges: ['A3:C3'],
+//       merges: ['A3:C3'], autofilter: 1, // rijnummer van de kopregel
+
 //       rows: [ [ {v:'Land', t:'header'}, {v:'VK', t:'header'} ],
 //               [ {v:'Kenia', t:'country'}, {v:'Groen', t:'cc_groen'} ] ] },
 //   ]);
@@ -138,10 +140,16 @@
 
     const dim = rows.length ? `A1:${colLetter(Math.max(0, maxCols - 1))}${rows.length}` : 'A1';
 
+    // Filterknopjes op de kopregel: sheet.autofilter = rijnummer van de kop.
+    // Excel wil autoFilter ná mergeCells; de rest van het blad blijft gewoon.
+    const filter = sheet.autofilter && rows.length
+      ? `<autoFilter ref="A${sheet.autofilter}:${colLetter(Math.max(0, maxCols - 1))}${rows.length}"/>`
+      : '';
+
     return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
       '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
       `<dimension ref="${dim}"/>` + freeze + cols +
-      `<sheetData>${body}</sheetData>` + merges +
+      `<sheetData>${body}</sheetData>` + merges + filter +
       '</worksheet>';
   }
 

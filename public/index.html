@@ -29,7 +29,6 @@
       <button class="tab" data-view="search" role="tab">Zoeken op thema/woord</button>
       <button class="tab" data-view="datescan" role="tab">Datumscanner</button>
       <button class="tab" data-view="changes" role="tab">Recente wijzigingen</button>
-      <button class="tab" data-view="export" role="tab">Uitdraai</button>
     </nav>
   </header>
 
@@ -49,7 +48,7 @@
       <form id="compare-form" class="panel controls">
         <div class="controls-row">
           <div class="field grow">
-            <label for="country-input">Land</label>
+            <label for="country-input">Landen <span class="src-hint">(voeg er meer toe om ze naast elkaar te zetten)</span></label>
             <div class="combo">
               <input id="country-input" autocomplete="off" role="combobox"
                      aria-expanded="false" aria-controls="country-listbox" aria-autocomplete="list"
@@ -57,11 +56,6 @@
               <ul id="country-listbox" class="combo-list" role="listbox" hidden></ul>
             </div>
             <datalist id="country-list"></datalist>
-            <button type="button" id="vs-toggle" class="btn-link" style="align-self:flex-start;margin-top:2px">⇄ Twee landen vergelijken</button>
-          </div>
-          <div class="field grow" id="vs-field" hidden>
-            <label for="country-input-b">Tweede land (A ↔ B)</label>
-            <input id="country-input-b" list="country-list" autocomplete="off" placeholder="Bijv. Tanzania" />
           </div>
           <div class="field">
             <label>Taal buitenlandse bronnen</label>
@@ -71,8 +65,25 @@
               <button type="button" data-lang="orig" class="on">Origineel</button>
             </div>
           </div>
-          <button type="submit" class="btn primary">Vergelijk</button>
+          <button type="submit" class="btn primary">Vergelijken</button>
         </div>
+        <div id="compare-chips" class="chip-list" style="flex:1 1 100%;order:2"></div>
+        <p id="compare-fetchnote" class="hint" style="flex:1 1 100%;order:2;margin:-6px 0 8px">
+          Er wordt niets opgehaald tot je op <strong>Vergelijken</strong> klikt — landen toevoegen of weghalen kost dus geen wachttijd.
+        </p>
+        <details id="compare-groups" class="compare-groups">
+          <summary>Groepen &amp; volglijst</summary>
+          <div class="bar-row" style="gap:10px;flex-wrap:wrap;align-items:end;margin:10px 0 0">
+            <div class="field">
+              <label for="group-select">Opgeslagen groep</label>
+              <select id="group-select"><option value="">— kies een groep —</option></select>
+            </div>
+            <button id="group-load" type="button" class="btn">Laden</button>
+            <button id="group-save" type="button" class="btn">💾 Bewaren als groep…</button>
+            <button id="group-delete" type="button" class="btn" title="Verwijder de geselecteerde groep">🗑</button>
+            <button id="group-from-watch" type="button" class="btn" title="Neem je volglijst over als selectie">Volglijst overnemen</button>
+          </div>
+        </details>
         <div class="field field-sources">
           <label>Vergelijk met <span class="src-hint">(bronlanden — voeg toe of verwijder)</span></label>
           <div class="source-picker">
@@ -223,69 +234,6 @@
       <div id="changes-result"></div>
     </section>
 
-    <!-- ================= UITDRAAI ================= -->
-    <section id="view-export" class="view">
-      <div class="panel controls" style="display:block">
-        <p style="margin:0 0 12px">Maak in één keer een nette uitdraai van <strong>meerdere landen</strong> — als redacteur handig om door te sturen. De Excel bevat een kleurcodes-overzicht én per land wat elke bron over elk thema zegt; de PDF is een printklaar rapport. Werkt vlot tot ±15 landen.</p>
-        <form id="export-form">
-          <div class="field grow">
-            <label for="export-country-input">Landen toevoegen</label>
-            <input id="export-country-input" list="country-list" autocomplete="off" placeholder="Typ een land en klik Toevoegen…" />
-          </div>
-          <button id="export-add" type="button" class="btn">+ Toevoegen</button>
-        </form>
-        <div id="export-chips" class="chip-list" style="margin:10px 0"></div>
-
-        <div class="bar-row" style="gap:10px;flex-wrap:wrap;align-items:end">
-          <div class="field">
-            <label for="export-group-select">Opgeslagen groep</label>
-            <select id="export-group-select"><option value="">— kies een groep —</option></select>
-          </div>
-          <button id="export-group-load" type="button" class="btn">Laden</button>
-          <button id="export-group-save" type="button" class="btn">💾 Bewaren als groep…</button>
-          <button id="export-group-delete" type="button" class="btn" title="Verwijder de geselecteerde groep">🗑</button>
-          <button id="export-from-watch" type="button" class="btn" title="Neem je volglijst over als selectie">Volglijst overnemen</button>
-        </div>
-
-        <div class="optrow" style="display:flex;flex-wrap:wrap;gap:22px;margin-top:14px;padding-top:12px;border-top:1px dashed var(--border)">
-          <div class="field" style="min-width:220px">
-            <label for="export-theme">Thema</label>
-            <select id="export-theme"><option value="">Alle thema’s</option></select>
-          </div>
-          <div class="field grow" style="min-width:200px">
-            <label for="export-word">Zoekwoord (optioneel)</label>
-            <input id="export-word" autocomplete="off" placeholder="Bijv. verkiezingen, aardbeving, grens…" />
-          </div>
-          <div class="field">
-            <label for="export-content">Inhoud</label>
-            <select id="export-content">
-              <option value="full" selected>Kleuren + wat bronnen zeggen</option>
-              <option value="text">Focus: alleen wat bronnen zeggen</option>
-              <option value="colors">Alleen kleurcodes-overzicht</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="export-lang">Taal bronteksten</label>
-            <select id="export-lang">
-              <option value="nl" selected>Nederlands (vertaald)</option>
-              <option value="orig">Origineel</option>
-            </select>
-          </div>
-          <div class="field">
-            <label>Bronnen</label>
-            <span style="font-size:13px">Volgt <strong>Vergelijken</strong> (<span id="export-src-count">–</span>).</span>
-          </div>
-        </div>
-
-        <div class="bar-row" style="gap:12px;margin-top:16px">
-          <button id="export-xlsx" type="button" class="btn primary">⬇ Excel (.xlsx)</button>
-          <button id="export-pdf" type="button" class="btn">⬇ PDF (print)</button>
-        </div>
-      </div>
-      <div id="export-status" class="status"></div>
-      <div id="export-preview"></div>
-    </section>
-
     <!-- ================= ZOEKEN ================= -->
     <section id="view-search" class="view">
       <form id="search-form" class="panel controls">
@@ -325,6 +273,7 @@
 
   <script src="config.js"></script>
   <script src="xlsx.js"></script>
+  <script src="export-model.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

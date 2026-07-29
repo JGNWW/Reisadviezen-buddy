@@ -49,3 +49,23 @@ test('buildXlsx: geldig ZIP-pakket met bladen, stijlen en celtekst', async () =>
   assert.ok(utf8.includes('Overzicht') && utf8.includes('Inhoud'), 'bladnamen aanwezig');
   assert.ok(utf8.includes('mergeCell ref="A1:B1"'), 'samengevoegde cel aanwezig');
 });
+
+test('buildXlsx: filterknopjes op de kopregel', async () => {
+  const blob = globalThis.buildXlsx([
+    { name: 'Lang', freeze: 1, autofilter: 1, rows: [
+      [{ v: 'Land', t: 'header' }, { v: 'Bron', t: 'header' }, { v: 'Niveau', t: 'header' }],
+      [{ v: 'Kenia', t: 'country' }, { v: 'VK', t: 'plain' }, { v: 2, t: 'num' }],
+      [{ v: 'Somalië', t: 'country' }, { v: 'VK', t: 'plain' }, { v: 4, t: 'num' }],
+    ] },
+  ]);
+  const utf8 = new TextDecoder('utf-8').decode(new Uint8Array(await blob.arrayBuffer()));
+  assert.ok(utf8.includes('<autoFilter ref="A1:C3"/>'), 'autoFilter over kop t/m laatste rij');
+  // Niveau moet écht numeriek zijn, anders kun je er in Excel niet op sorteren.
+  assert.ok(/<c r="C2"[^>]*><v>2<\/v><\/c>/.test(utf8), 'numerieke cel zonder inlineStr');
+});
+
+test('buildXlsx: zonder autofilter blijft het element weg', async () => {
+  const blob = globalThis.buildXlsx([{ name: 'Plat', rows: [[{ v: 'A', t: 'header' }]] }]);
+  const utf8 = new TextDecoder('utf-8').decode(new Uint8Array(await blob.arrayBuffer()));
+  assert.ok(!utf8.includes('autoFilter'), 'geen autoFilter-element');
+});
