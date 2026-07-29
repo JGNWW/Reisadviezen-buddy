@@ -93,11 +93,13 @@ input:focus, select:focus { outline: 2px solid var(--link); outline-offset: 0; b
   font-size: 15px; font-weight: 600; cursor: pointer;
 }
 .btn.primary { background: var(--nl-blue); color: #fff; }
+/* Even hoog als het invoerveld ernaast: zelfde padding, regelhoogte en rand. */
+.btn.compare-run { padding: 10px 22px; font-size: 15px; line-height: normal; border-color: var(--nl-blue); }
 .btn.primary:hover { background: var(--nl-blue-dark); }
-/* Bovenste regel van de compare-controls: land + taalkeuze + knop. */
+/* Bovenste regel van de compare-controls: landinvoer + de knop. */
 .controls-row { flex: 1 1 100%; display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; }
 
-/* Taalkeuze (Nederlands · English · Origineel). */
+/* Segmentkeuze (bijv. Compact · Volledig bij de matrix). */
 .seg { display: inline-flex; border: 1px solid var(--border); }
 .seg button {
   background: #fff; border: none; border-right: 1px solid var(--border);
@@ -105,17 +107,6 @@ input:focus, select:focus { outline: 2px solid var(--link); outline-offset: 0; b
 }
 .seg button:last-child { border-right: none; }
 .seg button.on { background: var(--nl-blue); color: #fff; font-weight: 600; }
-/* Taalwissel duurt door de live vertaalronde soms een paar seconden — dit
-   maakt zichtbaar dat er iets gebeurt, ook als de matrix buiten beeld is
-   gescrold en de statusregel bovenaan niet opvalt. */
-#lang-seg.busy { position: relative; }
-#lang-seg.busy::after {
-  content: "Vertalen…"; position: absolute; left: calc(100% + 10px); top: 50%; transform: translateY(-50%);
-  font-size: 12.5px; color: var(--muted); white-space: nowrap;
-}
-#lang-seg button:disabled { cursor: wait; opacity: .7; }
-.matrix.lang-loading { opacity: .45; pointer-events: none; transition: opacity .15s; }
-
 /* Bronselectie: "Bron toevoegen"-dropdown + verwijderbare chips (met vlag). */
 .source-picker { display: flex; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
 .adddrop { position: relative; flex: 0 0 auto; }
@@ -677,6 +668,14 @@ h2 .flag-img { width: 30px; height: 22px; vertical-align: -3px; border-radius: 3
 }
 #export-print { color: #1a1a1a; font-size: 11px; }
 .exp-page { position: relative; }
+/* Staande pagina's krijgen een vaste tekstkolom. Drukt een browser de PDF
+   tóch liggend af (Firefox/Safari kennen benoemde @page-regels niet, en in
+   Chrome overrulet een handmatig gekozen "Liggend" de CSS), dan blijven de
+   regels leesbaar in plaats van over de volle breedte uit te lopen. */
+.exp-page.exp-port .exp-body { max-width: 170mm; }
+/* Twee tabellen naast elkaar (herkomsttabel op het liggende voorblad). */
+.exp-cols { display: flex; gap: 14px; align-items: flex-start; }
+.exp-cols > table { flex: 1 1 0; }
 .exp-title { color: var(--nl-blue); font-size: 20px; margin: 0 0 2px; }
 .exp-h2 { color: var(--nl-blue); font-size: 17px; margin: 0 0 2px; display: flex; align-items: center; gap: 8px; }
 .exp-sub { font-size: 11px; font-weight: 700; color: var(--nl-blue); margin: 14px 0 5px; }
@@ -763,7 +762,7 @@ h2 .flag-img { width: 30px; height: 22px; vertical-align: -3px; border-radius: 3
 }
 .country-tab:hover { background: #e4ecf4; }
 .country-tab.on { background: var(--nl-blue); color: #fff; font-weight: 600; border-color: var(--nl-blue); }
-.country-tab.on .sq { box-shadow: 0 0 0 1px rgba(255,255,255,.7); }
+.country-tab .flag-img { height: 13px; width: auto; }
 
 .exportbar {
   display: flex; gap: 10px; align-items: center; flex-wrap: wrap;

@@ -60,8 +60,26 @@ test('buildXlsx: filterknopjes op de kopregel', async () => {
   ]);
   const utf8 = new TextDecoder('utf-8').decode(new Uint8Array(await blob.arrayBuffer()));
   assert.ok(utf8.includes('<autoFilter ref="A1:C3"/>'), 'autoFilter over kop t/m laatste rij');
+  assert.ok(utf8.includes('</sheetData><autoFilter'), 'autoFilter direct na sheetData');
   // Niveau moet écht numeriek zijn, anders kun je er in Excel niet op sorteren.
   assert.ok(/<c r="C2"[^>]*><v>2<\/v><\/c>/.test(utf8), 'numerieke cel zonder inlineStr');
+});
+
+test('buildXlsx: autoFilter staat vóór mergeCells (schemavolgorde)', async () => {
+  // Het schema (CT_Worksheet) schrijft deze volgorde voor. Andersom repareert
+  // Excel het bestand en verdwijnt het hele blad — dat gebeurde met het
+  // kleurenoverzicht, dat als enige blad merges én filterknopjes heeft.
+  const blob = globalThis.buildXlsx([
+    { name: 'Overzicht', freeze: 2, autofilter: 2, merges: ['A1:C1'], rows: [
+      [{ v: 'Titel', t: 'title' }],
+      [{ v: 'Land', t: 'header' }, { v: 'NL', t: 'header' }, { v: 'VK', t: 'header' }],
+      [{ v: 'Kenia', t: 'country' }, { v: 'Geel', t: 'cc_geel' }, { v: 'Geel', t: 'cc_geel' }],
+    ] },
+  ]);
+  const utf8 = new TextDecoder('utf-8').decode(new Uint8Array(await blob.arrayBuffer()));
+  const a = utf8.indexOf('<autoFilter'), m = utf8.indexOf('<mergeCells');
+  assert.ok(a > 0 && m > 0, 'beide elementen aanwezig');
+  assert.ok(a < m, `autoFilter (${a}) moet vóór mergeCells (${m}) staan`);
 });
 
 test('buildXlsx: zonder autofilter blijft het element weg', async () => {

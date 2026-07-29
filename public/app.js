@@ -39,15 +39,11 @@ const COLOR_MEANING = {
 const COLOR_LEVEL = { groen: 1, geel: 2, oranje: 3, rood: 4 };
 const LEVEL_COLORS = ['', 'groen', 'geel', 'oranje', 'rood'];
 
-// Taal waarin buitenlandse teksten worden getoond:
-//   'nl'   → vertaald naar Nederlands (Engelse bronnen blijven Engels)
-//   'en'   → vertaald naar Engels (Engelse bronnen blijven origineel)
-//   'orig' → onvertaald, in de brontaal
-// Start ALTIJD op 'Origineel', ongeacht een eerdere keuze: de taalkeuze wordt
-// bewust niet meer onthouden tussen bezoeken. Een gedeelde link met ?taal=…
-// (zie initFromUrl) blijft die expliciete keuze wél honoreren — dat is geen
-// "selectiegeschiedenis" maar een bewuste deellink.
-let COMPARE_LANG = 'orig';
+// Bronteksten staan altijd in de originele taal. De keuze "vertaal alles in
+// één keer" is eruit: die haalde bij elke vergelijking honderden fragmenten
+// door het vertaal-endpoint, wat traag was en regelmatig half mislukte. In
+// plaats daarvan zit er bij elk fragment een 🇳🇱/🇬🇧-knopje dat alleen dát
+// fragment vertaalt, op het moment dat je het nodig hebt.
 // Matrix-weergave: 'compact' (cellen ingeklapt tot ±4 regels) of 'volledig'.
 let MATRIX_DENSITY = localStorage.getItem('matrixDensity') || 'compact';
 // Verborgen thema-rijen in de matrix (punt 17), gedeeld over alle landen.
@@ -174,15 +170,13 @@ function syncUrl(push = false) {
     tabland: sel.length > 1 && COMPARE_ACTIVE && COMPARE_ACTIVE !== sel[0] ? COMPARE_ACTIVE : null,
     vs: null,
     bronnen: cur === defaultSourceIds().join(',') ? null : cur,
-    taal: COMPARE_LANG === 'orig' ? null : COMPARE_LANG,
+    taal: null, // bestaat niet meer; wist hem uit oudere deellinks
   }, push);
 }
 
 /** Leest taal/bronnen uit de URL in de globale staat (vóór de UI-opbouw). */
 function initFromUrl() {
   const sp = new URLSearchParams(location.search);
-  const taal = sp.get('taal');
-  if (['nl', 'en', 'orig'].includes(taal)) COMPARE_LANG = taal;
   const bronnen = sp.get('bronnen');
   if (bronnen != null) {
     const ids = bronnen.split(',').map((s) => s.trim()).filter((id) => allSourceIds().includes(id));
@@ -618,7 +612,6 @@ async function bootstrap() {
 
   initFromUrl();
   setupSourcePicker();
-  setupLangSeg();
   setupCountryCombo();
 
   if (meta?.builtAt) {
@@ -640,7 +633,6 @@ async function bootstrap() {
 // Terug/vooruit in de browser: staat uit de URL opnieuw toepassen.
 window.addEventListener('popstate', () => {
   initFromUrl();
-  $$('#lang-seg button').forEach((b) => b.classList.toggle('on', b.dataset.lang === COMPARE_LANG));
   renderSourcePicker();
   const sp = new URLSearchParams(location.search);
   const tab = sp.get('tab') || 'compare';
@@ -888,51 +880,6 @@ function setupCountryCombo() {
   });
 }
 
-// ---- Taalkeuze (Nederlands · English · Origineel) -------------------------
-function setupLangSeg() {
-  const seg = $('#lang-seg');
-  if (!seg) return;
-  $$('#lang-seg button').forEach((b) => b.classList.toggle('on', b.dataset.lang === COMPARE_LANG));
-  seg.addEventListener('click', (e) => {
-    const b = e.target.closest('button[data-lang]');
-    if (!b) return;
-    setCompareLang(b.dataset.lang);
-  });
-}
-let LANG_SWITCH_BUSY = false;
-async function setCompareLang(lang) {
-  if (lang === COMPARE_LANG || LANG_SWITCH_BUSY) return;
-  const prev = COMPARE_LANG;
-  COMPARE_LANG = lang;
-  // Keuze bewust NIET in localStorage bewaren: elk nieuw bezoek start op
-  // 'Origineel'. Binnen de sessie houdt de URL (syncUrl) de keuze vast.
-  $$('#lang-seg button').forEach((b) => b.classList.toggle('on', b.dataset.lang === lang));
-  syncUrl();
-  if (!COMPARE_RESULTS.size) return;
-  // Alleen 'en' gebruikt een andere vertaalophaling; nl↔orig delen dezelfde data.
-  const needsRefetch = (lang === 'en') !== (prev === 'en');
-  if (!needsRefetch) {
-    renderCompareView();
-    return;
-  }
-  // Vertalen kan een paar seconden duren — expliciet zichtbaar maken (niet
-  // alleen de statusregel bovenaan, die bij een gescrolde matrix buiten
-  // beeld valt) zodat het niet lijkt alsof de knop niets doet.
-  LANG_SWITCH_BUSY = true;
-  const seg = $('#lang-seg');
-  seg?.classList.add('busy');
-  $$('#lang-seg button').forEach((b) => { b.disabled = true; });
-  const matrix = $('#compare-result .matrix');
-  matrix?.classList.add('lang-loading');
-  try {
-    await runCompare();
-  } finally {
-    LANG_SWITCH_BUSY = false;
-    seg?.classList.remove('busy');
-    $$('#lang-seg button').forEach((b) => { b.disabled = false; });
-  }
-}
-
 // ==========================================================================
 // VERGELIJKEN
 // ==========================================================================
@@ -1062,13 +1009,16 @@ function openCompareFor(country) {
   runCompare();
 }
 
-/** Haalt de statische NL-data + (live) buitenlandse bronnen voor één land op. */
-async function fetchCountry(country, sources, lang) {
+/** Haalt de statische NL-data + (live) buitenlandse bronnen voor één land op.
+ *  Bewust ZONDER vertaling: bronteksten komen in de originele taal binnen en
+ *  worden per fragment vertaald met de vlagknopjes. Scheelt bij 17 bronnen
+ *  honderden vertaalverzoeken per land — de bron van de meeste haperingen. */
+async function fetchCountry(country, sources) {
   const staticData = await loadJSON(`compare/${country.iso3}.json`);
   const foreign = { sources: [], notice: null };
   if (sources.length && getProxy()) {
     try {
-      const res = await fetchForeign(country.iso3, sources, lang === 'en' ? 'en' : 'nl');
+      const res = await fetchForeign(country.iso3, sources, '');
       foreign.sources = res?.sources || [];
       // Deel van de bronnen kwam deze keer niet binnen (tijdelijke hapering)?
       // Toon de rest gewoon en meld welke ontbreken — geen lege tabel meer.
@@ -1114,7 +1064,6 @@ async function runCompare() {
   const list = [...COMPARE_COUNTRIES];
   if (!list.length) return compareStatus('Kies eerst minstens één land.', 'error');
   const sources = orderedSelected();
-  const lang = COMPARE_LANG;
   // Andere landenselectie? Dan hoort een eventueel termfilter bij het vorige
   // resultaat en gaat het weg.
   const key = list.map((c) => c.iso3).join(',');
@@ -1134,7 +1083,7 @@ async function runCompare() {
       status.innerHTML = `<span class="spinner"></span>Reisadvies laden voor ${esc(c.nl)}…`
         + (list.length > 1 ? ` <span class="muted">(${i + 1}/${list.length})</span>` : '');
       try {
-        const { staticData, foreign } = await fetchCountry(c, sources, lang);
+        const { staticData, foreign } = await fetchCountry(c, sources);
         results.set(c.iso3, { country: c, staticData, foreign });
         pushRecentCountry(c.iso3);
       } catch (err) {
@@ -1185,7 +1134,7 @@ function renderCompareView() {
   root.append(detail);
   const active = COMPARE_RESULTS.get(COMPARE_ACTIVE);
   if (active) {
-    LAST_COMPARE = { country: active.country, sources: COMPARE_SOURCES, lang: COMPARE_LANG, staticData: active.staticData, foreign: active.foreign };
+    LAST_COMPARE = { country: active.country, sources: COMPARE_SOURCES, staticData: active.staticData, foreign: active.foreign };
     renderComparison(active.staticData, active.foreign, detail);
   }
   root.append(renderExportBar(shown));
@@ -1201,8 +1150,9 @@ function renderCountryTabs(shown) {
     const tab = el('button', {
       type: 'button', role: 'tab', 'aria-selected': String(on),
       class: 'country-tab' + (on ? ' on' : ''),
-      title: `Toon de volledige vergelijking voor ${c.nl}`,
-    }, colorSquare(color, 'mini'), ` ${c.nl}`);
+      title: `Toon de volledige vergelijking voor ${c.nl}`
+        + (color ? ` (NederlandWereldwijd: ${COLOR_LABELS[color]})` : ''),
+    }, `${countryFlag(c.iso2)} ${c.nl}`);
     tab.addEventListener('click', () => {
       if (COMPARE_ACTIVE === c.iso3) return;
       COMPARE_ACTIVE = c.iso3;
@@ -2483,16 +2433,16 @@ function renderBlocks(blocks, foreign = false, opts = {}) {
   const noTrunc = full || !!mark;
   const wrap = el('div');
   blocks.forEach((b) => {
-    // Vertaalde weergave (NL of EN) tenzij de taalkeuze op 'Origineel' staat.
-    const useTranslated = foreign && COMPARE_LANG !== 'orig' && (b.textNl || b.headingNl);
+    // Altijd de originele brontekst: vertalen doe je per fragment met de
+    // vlagknopjes hieronder.
     const origHeading = b.heading || '';
-    const heading = useTranslated && b.headingNl ? b.headingNl : origHeading;
+    const heading = origHeading;
     const origText = b.text || '';
-    const fullText = useTranslated && b.textNl ? b.textNl : origText;
+    const fullText = origText;
     // In 'plain'-modus (matrix) nooit de rijke bron-HTML injecteren: platte,
     // ge-escapete tekst geeft één uniform lettertype in alle cellen.
     const origHtml = plain ? null : (b.html || null);
-    const fullHtml = useTranslated && b.textNl ? null : origHtml;
+    const fullHtml = origHtml;
 
     const headingEl = heading ? el('div', { class: 'block-heading' }, heading) : null;
     const blockEl = el('div', { class: 'block' },
@@ -2557,13 +2507,11 @@ function renderBlocks(blocks, foreign = false, opts = {}) {
     // Vertaalvlaggetjes: alleen voor buitenlandse blokken (er is dan een
     // bron-/vreemde tekst om te vertalen). 🇳🇱 vertaalt dit fragment naar het
     // Nederlands, 🇬🇧 naar het Engels; nogmaals klikken zet het terug op de
-    // originele brontekst. NL hergebruikt de al geladen vertaling (b.textNl)
-    // zonder netwerkverkeer; anders vertaalt de Worker het fragment live.
+    // originele brontekst. Dit is sinds het weghalen van de globale taalkeuze
+    // de enige manier om te vertalen — precies één fragment tegelijk, dus geen
+    // massale vertaalronde die halverwege strandt.
     if (foreign && (origText || origHeading)) {
-      // De initieel getoonde tekst volgt de globale taalkeuze: bij 'nl'/'en'
-      // bevat b.textNl de vertaling in die taal (de Worker vult het veld met
-      // de gevraagde doeltaal), bij 'orig' tonen we de brontekst.
-      let snipLang = useTranslated ? COMPARE_LANG : 'orig';
+      let snipLang = 'orig';
       const nlBtn = el('button', { class: 'snip-flag', type: 'button', 'aria-label': 'Vertaal dit fragment naar het Nederlands', title: 'Vertaal dit fragment naar het Nederlands' }, '🇳🇱');
       const enBtn = el('button', { class: 'snip-flag', type: 'button', 'aria-label': 'Vertaal dit fragment naar het Engels', title: 'Vertaal dit fragment naar het Engels (English)' }, '🇬🇧');
       const setActive = () => {
@@ -2581,10 +2529,9 @@ function renderBlocks(blocks, foreign = false, opts = {}) {
 
       async function toTranslated(lang, btn) {
         if (snipLang === lang) { restoreOrig(); return; }
-        // De doeltaal van de globale keuze staat al lokaal klaar (b.textNl) →
-        // direct tonen, zonder netwerk. (Bij COMPARE_LANG 'nl' geldt dit voor
-        // de NL-knop, bij 'en' voor de EN-knop.)
-        if (lang === COMPARE_LANG && b.textNl) {
+        // Staat er toevallig al een vertaling klaar (uit een snapshot), dan
+        // die gebruiken — scheelt een netwerkronde.
+        if (lang === 'nl' && b.textNl) {
           snipLang = lang;
           if (headingEl && b.headingNl) headingEl.textContent = b.headingNl;
           renderText(b.textNl, null);
@@ -3926,14 +3873,13 @@ function renderExportBar(shown) {
   const updateBar = () => {
     const niets = !EXPORT_OPTS.colors && !EXPORT_OPTS.text;
     xlsxBtn.disabled = pdfBtn.disabled = niets;
-    const langLabel = COMPARE_LANG === 'orig' ? 'origineel' : COMPARE_LANG === 'en' ? 'Engels' : 'Nederlands';
     const filters = [
       HIDDEN_THEMES.size ? `${HIDDEN_THEMES.size} thema’s verborgen` : null,
       MATRIX_FILTER ? `filter “${MATRIX_FILTER.label}”` : null,
     ].filter(Boolean);
     note.textContent = niets
       ? 'Kies minstens één onderdeel om uit te draaien.'
-      : `${shown.length} land${shown.length === 1 ? '' : 'en'} · ${COMPARE_SOURCES.length} bronnen · ${langLabel}${filters.length ? ' · ' + filters.join(' · ') : ''}`;
+      : `${shown.length} land${shown.length === 1 ? '' : 'en'} · ${COMPARE_SOURCES.length} bronnen · brontaal${filters.length ? ' · ' + filters.join(' · ') : ''}`;
   };
   updateBar();
   bar.__update = updateBar; // zodat runUitdraai na afloop de juiste staat herstelt
@@ -3962,7 +3908,8 @@ async function runUitdraai(kind) {
     const ds = buildDataset({ withThemes: EXPORT_OPTS.text });
     const built = kind === 'xlsx' ? buildExportXlsx(ds) : buildExportPdf(ds);
     if (built === 'empty') setExportStatus('Geen bronteksten gevonden voor dit filter — zet het themafilter uit of vink “Kleurcodes” aan.', 'error');
-    else setExportStatus(kind === 'xlsx' ? 'Excel gedownload.' : 'Rapport klaar — de printdialoog staat open (kies “Opslaan als pdf”).', 'ok');
+    else setExportStatus(kind === 'xlsx' ? 'Excel gedownload.'
+      : 'Rapport klaar — de printdialoog staat open (kies “Opslaan als pdf”). Staat alles liggend? Zet in de dialoog “Lay-out” op Staand; de matrixpagina’s draaien dan vanzelf mee naar liggend.', 'ok');
   } catch (e) {
     setExportStatus('Uitdraai mislukt: ' + e.message, 'error');
   } finally {
@@ -3982,7 +3929,7 @@ function downloadBlob(blob, name) {
 function buildExportXlsx(ds) {
   const stamp = new Date().toISOString().slice(0, 10);
   const sheets = [];
-  const langLabel = COMPARE_LANG === 'orig' ? 'Origineel' : COMPARE_LANG === 'en' ? 'Engels (automatisch vertaald)' : 'Nederlands (automatisch vertaald)';
+  const langLabel = 'Originele taal van de bron (op het scherm vertaal je per fragment)';
 
   // ---- Blad "Overzicht": landen × bronnen, breed en leesbaar ----
   if (EXPORT_OPTS.colors) {
@@ -4088,7 +4035,7 @@ function buildExportPdf(ds) {
   root.innerHTML = '';
   if (!root.parentNode) document.body.append(root);
 
-  const langLabel = COMPARE_LANG === 'orig' ? 'originele taal' : COMPARE_LANG === 'en' ? 'Engels (automatisch vertaald)' : 'Nederlands (automatisch vertaald)';
+  const langLabel = 'de originele taal van elke bron';
   const filterBits = [
     HIDDEN_THEMES.size ? `${HIDDEN_THEMES.size} thema’s verborgen` : null,
     MATRIX_FILTER ? `alleen passages met “${MATRIX_FILTER.label}”` : null,
@@ -4117,15 +4064,25 @@ function buildExportPdf(ds) {
     if (tally.onbekend) tallyRow.append(el('div', { class: 'exp-tally-item c-none' }, el('b', {}, String(tally.onbekend)), el('span', {}, 'Geen code')));
     cover.push(el('p', { class: 'exp-sub' }, 'Landen per kleurcode van NederlandWereldwijd'), tallyRow);
 
-    const prov = el('table', { class: 'exp-matrix' });
-    prov.append(el('tr', {}, el('th', {}, 'Bron'), el('th', {}, 'Live'), el('th', {}, 'Uit snapshot'),
-      el('th', {}, 'Niet opgehaald'), el('th', {}, 'Nieuwste bijwerkdatum')));
-    ExportModel.provenanceRows(ds).forEach((p) => prov.append(el('tr', {},
-      el('td', {}, p.bron), el('td', { class: 'num' }, String(p.live)), el('td', { class: 'num' }, String(p.snapshot)),
-      el('td', { class: 'num' }, String(p.nietOpgehaald)), el('td', { class: 'num' }, p.bijgewerkt || '—'))));
-    cover.push(el('p', { class: 'exp-sub' }, 'Herkomst per bron'), prov);
+    // Herkomst per bron: bij veel bronnen in twee kolommen naast elkaar, zodat
+    // het voorblad op één vel blijft in plaats van door te lopen.
+    const provRows = ExportModel.provenanceRows(ds);
+    const provTable = (rows) => {
+      const t = el('table', { class: 'exp-matrix' });
+      t.append(el('tr', {}, el('th', {}, 'Bron'), el('th', {}, 'Live'), el('th', {}, 'Snapshot'),
+        el('th', {}, 'Niet opgehaald'), el('th', {}, 'Nieuwste datum')));
+      rows.forEach((p) => t.append(el('tr', {},
+        el('td', {}, p.bron), el('td', { class: 'num' }, String(p.live)), el('td', { class: 'num' }, String(p.snapshot)),
+        el('td', { class: 'num' }, String(p.nietOpgehaald)), el('td', { class: 'num' }, p.bijgewerkt || '—'))));
+      return t;
+    };
+    const half = Math.ceil(provRows.length / 2);
+    cover.push(el('p', { class: 'exp-sub' }, 'Herkomst per bron'));
+    cover.push(provRows.length > 8
+      ? el('div', { class: 'exp-cols' }, provTable(provRows.slice(0, half)), provTable(provRows.slice(half)))
+      : provTable(provRows));
     cover.push(el('p', { class: 'exp-legend' },
-      'Een snapshot is de laatst opgeslagen versie: die bron was bij het samenstellen niet bereikbaar. Vertalingen zijn automatisch; de originele tekst is leidend.'));
+      'Een snapshot is de laatst opgeslagen versie: die bron was bij het samenstellen niet bereikbaar. Citaten staan in de originele taal van de bron.'));
     page('land', ...cover);
 
     // ---- Kleurcodematrix ----

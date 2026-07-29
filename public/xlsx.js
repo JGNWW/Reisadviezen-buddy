@@ -141,7 +141,9 @@
     const dim = rows.length ? `A1:${colLetter(Math.max(0, maxCols - 1))}${rows.length}` : 'A1';
 
     // Filterknopjes op de kopregel: sheet.autofilter = rijnummer van de kop.
-    // Excel wil autoFilter ná mergeCells; de rest van het blad blijft gewoon.
+    // LET OP de volgorde: het schema (CT_Worksheet) schrijft autoFilter vóór
+    // mergeCells voor. Andersom repareert Excel het bestand bij het openen en
+    // gooit het hele blad weg — precies wat er misging met het kleurenoverzicht.
     const filter = sheet.autofilter && rows.length
       ? `<autoFilter ref="A${sheet.autofilter}:${colLetter(Math.max(0, maxCols - 1))}${rows.length}"/>`
       : '';
@@ -149,7 +151,7 @@
     return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
       '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
       `<dimension ref="${dim}"/>` + freeze + cols +
-      `<sheetData>${body}</sheetData>` + merges + filter +
+      `<sheetData>${body}</sheetData>` + filter + merges +
       '</worksheet>';
   }
 
