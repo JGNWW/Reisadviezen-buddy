@@ -187,10 +187,12 @@ function initFromUrl() {
 /** Past tab + land uit de URL toe (ná de UI-opbouw); start zo nodig de vergelijking. */
 function activateFromUrl() {
   const sp = new URLSearchParams(location.search);
-  const tab = sp.get('tab');
+  // 'worklist' is de oude naam van het favorietentabblad — oude deellinks
+  // horen niet stilletjes op Vergelijken uit te komen.
+  const tab = sp.get('tab') === 'worklist' ? 'favorieten' : sp.get('tab');
   if (tab && $(`.tab[data-view="${tab}"]`)) activateTab(tab);
-  // ?briefing=watchlist opent de bundel-ochtendbriefing over de volglijst.
-  if (sp.get('briefing') === 'watchlist') { openWatchlistBriefing(); return; }
+  // ?briefing=favorieten opent de bundel-ochtendbriefing over alle favorieten.
+  if (['favorieten', 'watchlist'].includes(sp.get('briefing'))) { openFavoritesBriefing(); return; }
   // ?briefing=ISO opent na het laden direct de briefing (punt 15).
   const briefing = sp.get('briefing');
   // ?landen=A,B,C is de meerlandenselectie; ?land= en het oudere ?vs=A,B
@@ -570,6 +572,9 @@ function activateTab(view) {
   $$('.tab').forEach((t) => t.classList.toggle('active', t.dataset.view === view));
   $$('.view').forEach((v) => v.classList.toggle('active', v.id === `view-${view}`));
   updateUrl({ tab: view === 'compare' ? null : view });
+  // De favorietenlijst kan zijn gewijzigd terwijl het tabblad dicht stond
+  // (ster gezet bij een land, lijst geïmporteerd) — altijd vers tonen.
+  if (view === 'favorieten') renderFavorites();
 }
 $$('.tab').forEach((t) => t.addEventListener('click', () => activateTab(t.dataset.view)));
 
@@ -622,11 +627,11 @@ async function bootstrap() {
     $('#build-meta').textContent += ' · ⚠️ proxy niet ingesteld (klik ⚙)';
   }
 
-  loadWatchlistFromUrl();
+  loadFavoritesFromUrl();
   setupCompareSelection();
-  // Await zodat deeplinks (?briefing=watchlist) de offline data al hebben.
-  await Promise.all([buildChanges(), buildWorklist(), loadSeasons()]);
-  updateWatchUI();
+  // Await zodat deeplinks (?briefing=favorieten) de offline data al hebben.
+  await Promise.all([buildChanges(), buildFavorites(), loadSeasons()]);
+  updateFavoriteUI();
   activateFromUrl();
 }
 
@@ -635,7 +640,7 @@ window.addEventListener('popstate', () => {
   initFromUrl();
   renderSourcePicker();
   const sp = new URLSearchParams(location.search);
-  const tab = sp.get('tab') || 'compare';
+  const tab = (sp.get('tab') === 'worklist' ? 'favorieten' : sp.get('tab')) || 'compare';
   if ($(`.tab[data-view="${tab}"]`)) {
     $$('.tab').forEach((t) => t.classList.toggle('active', t.dataset.view === tab));
     $$('.view').forEach((v) => v.classList.toggle('active', v.id === `view-${tab}`));
@@ -759,29 +764,34 @@ function pushRecentCountry(iso3) {
   localStorage.setItem('recentCountries', JSON.stringify(list));
 }
 
-// ---- Volglijst (feature 2): persoonlijk, in localStorage; deelbaar via link/export ----
-let WATCHLIST = new Set((() => { try { return JSON.parse(localStorage.getItem('watchlist')) || []; } catch { return []; } })());
-const saveWatchlist = () => localStorage.setItem('watchlist', JSON.stringify([...WATCHLIST]));
-const isWatched = (iso3) => WATCHLIST.has(iso3);
-function toggleWatch(iso3) {
-  if (WATCHLIST.has(iso3)) WATCHLIST.delete(iso3); else WATCHLIST.add(iso3);
-  saveWatchlist();
-  updateWatchUI();
+// ---- Favorieten: persoonlijk, in localStorage; deelbaar via link/export ------
+// Heette eerder "volglijst" met een oogknop. Dat suggereerde dat er iets
+// gevolgd of gemeld werd; in werkelijkheid is het een lijstje dat je zelf
+// samenstelt. De opslagsleutel blijft 'watchlist', zodat bestaande lijsten
+// gewoon blijven staan.
+let FAVORITES = new Set((() => { try { return JSON.parse(localStorage.getItem('watchlist')) || []; } catch { return []; } })());
+const saveFavorites = () => localStorage.setItem('watchlist', JSON.stringify([...FAVORITES]));
+const isFavorite = (iso3) => FAVORITES.has(iso3);
+function toggleFavorite(iso3) {
+  if (FAVORITES.has(iso3)) FAVORITES.delete(iso3); else FAVORITES.add(iso3);
+  saveFavorites();
+  updateFavoriteUI();
 }
-/** Volglijst in config-onafhankelijke, gesorteerde vorm (op NL-naam). */
-const watchlistItems = () => [...WATCHLIST]
+/** Favorieten in config-onafhankelijke, gesorteerde vorm (op NL-naam). */
+const favoriteItems = () => [...FAVORITES]
   .map((iso3) => COUNTRIES.find((c) => c.iso3 === iso3)).filter(Boolean)
   .sort((a, b) => a.nl.localeCompare(b.nl, 'nl'));
 
-/** Werkt alle zichtbare volglijst-affordances bij (oog-knop, balk, filters). */
-function updateWatchUI() {
-  const eye = $('#watch-btn');
-  if (eye && LAST_COMPARE) {
-    const on = isWatched(LAST_COMPARE.country.iso3);
-    eye.classList.toggle('on', on);
-    eye.textContent = on ? '👁 Op volglijst' : '👁 Volgen';
+/** Werkt alle zichtbare favoriet-affordances bij (sterknop, lijst). */
+function updateFavoriteUI() {
+  const star = $('#fav-btn');
+  if (star && LAST_COMPARE) {
+    const on = isFavorite(LAST_COMPARE.country.iso3);
+    star.classList.toggle('on', on);
+    star.innerHTML = '';
+    star.append(el('span', { class: 'star' }, on ? '★' : '☆'), ' Favoriet');
   }
-  renderWatchBar();
+  renderFavorites();
 }
 
 /** Topkandidaten voor de combobox: alias > prefix > bevat > bigram-score. */
@@ -814,30 +824,77 @@ function setupCountryCombo() {
   let active = -1;
 
   const close = () => { list.hidden = true; input.setAttribute('aria-expanded', 'false'); active = -1; };
+
+  // Kopje in de lijst, met eventueel een actie rechts ("beheren…").
+  const groupHead = (label, action) => {
+    const li = el('li', { class: 'combo-group' }, el('span', {}, label));
+    if (action) li.append(action);
+    return li;
+  };
+  // Regel die in één klik een hele set landen neerzet (groep of favorieten).
+  const bulkItem = (icon, label, countries, i) => {
+    const li = el('li', { class: 'combo-item combo-bulk', role: 'option', id: `combo-opt-${i}` },
+      el('span', { class: 'combo-icon' }, icon), ` ${label}`,
+      el('span', { class: 'combo-count' }, `${countries.length} land${countries.length === 1 ? '' : 'en'}`));
+    li.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      input.value = ''; setComboFlag(null); close();
+      countries.forEach(addCompareCountry);
+      input.focus();
+    });
+    return li;
+  };
+
+  const MAX_FAV_IN_LIST = 5; // meer favorieten maken de lijst onoverzichtelijk
+
   const render = () => {
     const q = input.value.trim();
     list.innerHTML = '';
     active = -1;
-    let items;
-    if (!q) {
-      const recent = recentCountries().map((iso) => COUNTRIES.find((c) => c.iso3 === iso)).filter(Boolean);
-      if (!recent.length) { close(); return; }
-      list.append(el('li', { class: 'combo-group' }, 'Recent vergeleken'));
-      items = recent.map((c) => ({ c }));
-    } else {
-      items = countrySuggestions(q);
-      if (!items.length) { close(); return; }
-    }
-    items.forEach(({ c, why }, i) => {
-      const li = el('li', {
-        class: 'combo-item', role: 'option', id: `combo-opt-${i}`,
-      }, el('span', { class: 'fl' }, countryFlag(c.iso2)), ` ${c.nl}`,
+    let n = 0;
+    const landItem = (c, why) => {
+      const li = el('li', { class: 'combo-item', role: 'option', id: `combo-opt-${n++}` },
+        el('span', { class: 'fl' }, countryFlag(c.iso2)), ` ${c.nl}`,
+        isFavorite(c.iso3) ? el('span', { class: 'combo-star' }, '★') : null,
         why === 'lijkt op' ? el('span', { class: 'combo-why' }, 'bedoelde je?') : null);
       // mousedown i.p.v. click: gaat vóór de blur van het input-veld.
       li.addEventListener('mousedown', (e) => { e.preventDefault(); pick(c); });
       li.dataset.iso3 = c.iso3;
-      list.append(li);
-    });
+      return li;
+    };
+
+    if (q) {
+      const items = countrySuggestions(q);
+      if (!items.length) { close(); return; }
+      items.forEach(({ c, why }) => list.append(landItem(c, why)));
+    } else {
+      // Leeg veld: eerst je eigen ingangen (groepen, favorieten), dan recent.
+      const groups = loadGroups();
+      const namen = Object.keys(groups).sort();
+      if (namen.length) {
+        const beheer = el('a', { href: '#', class: 'combo-manage' }, 'beheren…');
+        beheer.addEventListener('mousedown', (e) => { e.preventDefault(); close(); manageGroups(); });
+        list.append(groupHead('Groepen', beheer));
+        namen.forEach((naam) => {
+          const landen = groups[naam].map((iso) => COUNTRIES.find((c) => c.iso3 === iso)).filter(Boolean);
+          if (landen.length) list.append(bulkItem('▣', naam, landen, n++));
+        });
+      }
+      const favs = favoriteItems();
+      if (favs.length) {
+        const alle = el('a', { href: '#', class: 'combo-manage' }, 'bekijk alle…');
+        alle.addEventListener('mousedown', (e) => { e.preventDefault(); close(); activateTab('favorieten'); });
+        list.append(groupHead('Favorieten', favs.length > MAX_FAV_IN_LIST ? alle : null));
+        list.append(bulkItem('★', 'Alle favorieten', favs, n++));
+        favs.slice(0, MAX_FAV_IN_LIST).forEach((c) => list.append(landItem(c)));
+      }
+      const recent = recentCountries().map((iso) => COUNTRIES.find((c) => c.iso3 === iso)).filter(Boolean);
+      if (recent.length) {
+        list.append(groupHead('Recent vergeleken'));
+        recent.forEach((c) => list.append(landItem(c)));
+      }
+      if (!list.childNodes.length) { close(); return; }
+    }
     list.hidden = false;
     input.setAttribute('aria-expanded', 'true');
   };
@@ -931,55 +988,54 @@ function renderCompareChips() {
     wrap.append(el('span', { class: 'chip' }, `${countryFlag(c.iso2)} ${c.nl}`, rm));
   });
   const n = COMPARE_COUNTRIES.length;
+  // Bewaren verschijnt pas als er iets te bewaren valt — bij één land is een
+  // groep zinloos.
+  if (n > 1) {
+    const save = el('button', { type: 'button', class: 'btn chip-save' }, `💾 Bewaar deze ${n} als groep`);
+    save.addEventListener('click', saveCurrentAsGroup);
+    wrap.append(el('span', { class: 'chip-sep' }), save);
+  }
   $('#compare-fetchnote').hidden = n === 0;
   const btn = $('#compare-form button[type="submit"]');
   if (btn) btn.textContent = n > 1 ? `Vergelijken (${n} landen)` : 'Vergelijken';
 }
 
-function refreshGroupSelect() {
-  const sel = $('#group-select');
+/** Bewaart de huidige chips als groep; de naam vraagt hij één keer. */
+function saveCurrentAsGroup() {
+  if (COMPARE_COUNTRIES.length < 2) return;
+  const naam = prompt('Naam voor deze groep (bijv. Golfstaten):', '');
+  if (!naam || !naam.trim()) return;
   const groups = loadGroups();
-  const cur = sel.value;
-  sel.innerHTML = '';
-  sel.append(el('option', { value: '' }, '— kies een groep —'));
-  Object.keys(groups).sort().forEach((name) => sel.append(el('option', { value: name }, `${name} (${groups[name].length})`)));
-  if (groups[cur]) sel.value = cur;
+  groups[naam.trim()] = COMPARE_COUNTRIES.map((c) => c.iso3);
+  saveGroups(groups);
+  compareStatus(`Groep “${naam.trim()}” bewaard — je vindt hem terug in het landenveld.`, 'ok');
+}
+
+/** Groepenbeheer: hernoemen of verwijderen. Zelden nodig, dus geen eigen
+ *  scherm — een simpele keuzelijst volstaat. */
+function manageGroups() {
+  const groups = loadGroups();
+  const namen = Object.keys(groups).sort();
+  if (!namen.length) return;
+  const keuze = prompt(
+    'Welke groep wil je beheren? Typ de naam.\n\n' + namen.map((x) => `· ${x} (${groups[x].length})`).join('\n'), namen[0]);
+  if (!keuze) return;
+  const naam = namen.find((x) => x.toLowerCase() === keuze.trim().toLowerCase());
+  if (!naam) return compareStatus(`Geen groep “${keuze.trim()}” gevonden.`, 'error');
+  const nieuw = prompt(`Nieuwe naam voor “${naam}” — leeg laten om de groep te verwijderen:`, naam);
+  if (nieuw === null) return;
+  const isos = groups[naam];
+  delete groups[naam];
+  if (nieuw.trim()) {
+    groups[nieuw.trim()] = isos;
+    compareStatus(`Groep hernoemd naar “${nieuw.trim()}”.`, 'ok');
+  } else {
+    compareStatus(`Groep “${naam}” verwijderd.`, 'ok');
+  }
+  saveGroups(groups);
 }
 
 function setupCompareSelection() {
-  $('#group-from-watch').addEventListener('click', () => {
-    const added = [...WATCHLIST].map((iso) => COUNTRIES.find((c) => c.iso3 === iso)).filter(Boolean);
-    if (!added.length) return compareStatus('Je volglijst is leeg — voeg eerst landen toe via het 👁 bij een land.', 'error');
-    added.forEach(addCompareCountry);
-  });
-  $('#group-save').addEventListener('click', () => {
-    if (!COMPARE_COUNTRIES.length) return compareStatus('Kies eerst landen om te bewaren.', 'error');
-    const name = prompt('Naam voor deze groep (bijv. GOF-landen):', '');
-    if (!name) return;
-    const groups = loadGroups();
-    groups[name.trim()] = COMPARE_COUNTRIES.map((c) => c.iso3);
-    saveGroups(groups);
-    refreshGroupSelect();
-    $('#group-select').value = name.trim();
-    compareStatus(`Groep “${name.trim()}” bewaard.`, 'ok');
-  });
-  $('#group-load').addEventListener('click', () => {
-    const name = $('#group-select').value;
-    if (!name) return;
-    COMPARE_COUNTRIES = (loadGroups()[name] || [])
-      .map((iso) => COUNTRIES.find((c) => c.iso3 === iso)).filter(Boolean)
-      .slice(0, MAX_COMPARE_COUNTRIES);
-    renderCompareChips();
-  });
-  $('#group-delete').addEventListener('click', () => {
-    const name = $('#group-select').value;
-    if (!name || !confirm(`Groep “${name}” verwijderen?`)) return;
-    const groups = loadGroups();
-    delete groups[name];
-    saveGroups(groups);
-    refreshGroupSelect();
-  });
-  refreshGroupSelect();
   renderCompareChips();
 }
 
@@ -2056,14 +2112,17 @@ function renderComparison(staticData, foreign, root) {
   const cflag = countryFlagByIso3(staticData.country.iso3);
   const briefingBtn = el('button', { type: 'button', class: 'btn briefing-btn', title: 'Compacte één-scherm-samenvatting voor het ochtendoverleg — printbaar en deelbaar.' }, '📋 Briefing');
   briefingBtn.addEventListener('click', openBriefing);
-  const watchOn = isWatched(staticData.country.iso3);
-  const watchBtn = el('button', { type: 'button', id: 'watch-btn', class: 'btn watch-btn' + (watchOn ? ' on' : ''), title: 'Zet dit land op je persoonlijke volglijst (blijft in deze browser bewaard).' }, watchOn ? '👁 Op volglijst' : '👁 Volgen');
-  watchBtn.addEventListener('click', () => toggleWatch(staticData.country.iso3));
+  const favOn = isFavorite(staticData.country.iso3);
+  const favBtn = el('button', {
+    type: 'button', id: 'fav-btn', class: 'btn fav-btn' + (favOn ? ' on' : ''),
+    title: 'Zet dit land bij je favorieten (blijft in deze browser bewaard).',
+  }, el('span', { class: 'star' }, favOn ? '★' : '☆'), ' Favoriet');
+  favBtn.addEventListener('click', () => toggleFavorite(staticData.country.iso3));
   frag.append(el('div', { class: 'result-head' },
     el('div', { class: 'result-head-main' },
       el('h2', {}, cflag ? `${cflag} ${staticData.country.nl}` : staticData.country.nl),
       el('p', { class: 'meta' }, nl.modificationDate || `Laatst gewijzigd: ${(nl.lastModified || '').slice(0, 10)}`)),
-    el('div', { class: 'result-head-actions' }, watchBtn, briefingBtn)));
+    el('div', { class: 'result-head-actions' }, favBtn, briefingBtn)));
 
   // ---- Divergentie-highlight ----
   const nlColor = nl.colors?.overall || null;
@@ -2195,19 +2254,14 @@ function renderComparison(staticData, foreign, root) {
 
   frag.append(topicWrap);
 
-  // ---- Vergelijking per thema (cmp is hierboven al opgebouwd) ----
-  if (cmp.missingFromNl.length) {
-    const gapBtn = el('button', { class: 'btn primary', type: 'button', onclick: () => {
-      activateTab('gaps'); activateGapMode('single');
-      $('#gap-country-input').value = staticData.country.nl;
-      renderGapSingle(staticData.country, nl, okSources, $('#gap-single-result'));
-      $('#gap-single-status').textContent = '';
-    } }, 'Bekijk volledig overzicht →');
-    frag.append(el('div', { class: 'callout' },
-      el('h3', {}, `💡 ${cmp.missingFromNl.length} thema${cmp.missingFromNl.length === 1 ? '' : "'s"} die andere landen wél noemen en NederlandWereldwijd niet`),
-      el('p', { style: 'margin:0 0 10px' }, cmp.missingFromNl.slice(0, 4).map((m) => m.theme.label).join(', ') + (cmp.missingFromNl.length > 4 ? ', …' : '')),
-      gapBtn));
-  }
+  // (Het blok "N thema's die andere landen wél noemen en NederlandWereldwijd
+  // niet" stond hier. Dat was dubbelop met de gazetteer-callout hierboven, die
+  // hetzelfde zegt maar concreter — met de onderwerpen zelf in plaats van de
+  // themanamen. Het tabblad "Wat ontbreekt?" geeft nog steeds het volledige
+  // overzicht per thema.)
+
+  // ---- Wat er recent veranderde, per bron (uitklapbaar) ----
+  frag.append(renderRecentChangesBlock(changesBySource, okSources));
 
   const densitySeg = el('span', { class: 'seg', role: 'group', 'aria-label': 'Matrix-weergave' });
   [['compact', 'Compact'], ['volledig', 'Volledig']].forEach(([val, label]) => {
@@ -2276,6 +2330,48 @@ function renderComparison(staticData, foreign, root) {
   if (MATRIX_DENSITY === 'compact') requestAnimationFrame(() => initMatrixClamp(root));
   // Deeplink ?briefing=ISO: meteen de briefing tonen na het laden.
   if (PENDING_BRIEFING === staticData.country.iso3) { PENDING_BRIEFING = null; openBriefing(); }
+}
+
+/**
+ * Uitklapper boven de thema-vergelijking: wat heeft elke bron de afgelopen
+ * CHANGE_WINDOW_DAYS dagen aan dít land veranderd? Dezelfde data als de
+ * "Laatste wijziging"-kolom in de tabel erboven, maar hier op één plek bij
+ * elkaar zodat je niet kolom voor kolom hoeft te kijken. Dichtgeklapt kost het
+ * één regel; de kop noemt meteen welke bronnen iets veranderd hebben.
+ */
+function renderRecentChangesBlock(changesBySource, okSources) {
+  const perSource = okSources
+    .map((s) => ({ s, items: changesBySource?.get(s.source) || [] }))
+    .filter((x) => x.items.length);
+  if (!perSource.length) {
+    return el('p', { class: 'hint', style: 'margin:18px 0 0' },
+      `Geen van de getoonde bronnen heeft dit reisadvies in de afgelopen ${CHANGE_WINDOW_DAYS} dagen aangepast.`);
+  }
+  const totaal = perSource.reduce((n, x) => n + x.items.length, 0);
+  const wrap = el('details', { class: 'changes-block' });
+  wrap.append(el('summary', {},
+    el('strong', {}, `🕔 ${totaal} wijziging${totaal === 1 ? '' : 'en'} in de afgelopen ${CHANGE_WINDOW_DAYS} dagen`),
+    el('span', { class: 'changes-who' }, ' — ' + perSource.map((x) => `${x.s.flag || ''} ${SRC_SHORT[x.s.source] || x.s.source.toUpperCase()}`).join(' · '))));
+
+  const fmt = (d) => { const x = new Date(d); return isNaN(x) ? String(d).slice(0, 10) : x.toLocaleDateString('nl-NL'); };
+  perSource.forEach(({ s, items }) => {
+    const box = el('div', { class: 'changes-src' });
+    box.append(el('div', { class: 'changes-src-head' },
+      `${s.flag || ''} ${s.sourceLabel}`,
+      el('a', { href: s.url, target: '_blank', rel: 'noopener', class: 'changes-src-link' }, 'origineel →')));
+    items.forEach((it) => {
+      const q = it.sentence.length > 260 ? it.sentence.slice(0, 260).replace(/\s+\S*$/, '') + '…' : it.sentence;
+      const row = el('div', { class: 'changes-item' },
+        el('span', { class: 'changes-date' }, fmt(it.date)),
+        el('div', {},
+          it.heading ? el('span', { class: 'changes-heading' }, it.heading) : null,
+          el('button', { type: 'button', class: 'wijziging-quote', onclick: () => jumpToMatrixCell(it.targetId) },
+            `“${q}” — bekijk in matrix ↓`)));
+      box.append(row);
+    });
+    wrap.append(box);
+  });
+  return wrap;
 }
 
 /** Voegt per daadwerkelijk afgekapte matrixcel een uitklap-knop toe. Idempotent:
@@ -2722,324 +2818,203 @@ function renderGapMultiResult(rows, total, root) {
 }
 
 // ==========================================================================
-// WERKLIJST — divergentie tussen NL en de internationale consensus, uit de
-// dagelijkse snapshot (docs/data/divergence.json, gegenereerd door de build).
+// FAVORIETEN — het tabblad met je eigen landenlijst.
+//
+// Verving de Werklijst: die rangschikte alle 226 landen op afwijking t.o.v. de
+// internationale consensus. Die rangschikking is niet weg, maar leeft nu als
+// sorteervolgorde binnen je favorieten (divergence.json / advisory-ages.json
+// uit de dagelijkse snapshot). Klikken opent een land; aanvinken verzamelt er
+// meerdere en zet ze in één keer in de vergelijker.
 // ==========================================================================
-let WORKLIST = null;
-let AGES = null;
-let WORKLIST_MODE = 'divergentie';
-
-const INTRO = {
-  divergentie: 'Waar wijkt het <strong>Nederlandse</strong> reisadvies af van de <strong>internationale consensus</strong> (mediaan van de buitenlandse bronnen, laatste snapshot)? Gesorteerd op grootte van de afwijking. Alleen landen met minstens 3 betrouwbaar beoordeelde bronnen tellen mee; een afwijking is niet per se fout, maar wel het bekijken waard.',
-  actualiteit: 'Hoe <strong>actueel</strong> is elk Nederlands reisadvies vergeleken met de buitenlandse bronnen? Gesorteerd op achterstand: bovenaan de landen waar buitenlandse bronnen ná NederlandWereldwijd zijn bijgewerkt — kandidaten voor herbeoordeling.',
-};
+let WORKLIST = null;   // divergence.json — voor de sortering "Afwijking"
+let AGES = null;       // advisory-ages.json — voor de sortering "Achterstand"
+let FAV_SELECTED = new Set();
 
 const countryRegion = (iso3) => COUNTRIES.find((c) => c.iso3 === iso3)?.region || null;
+// De landenlijst gebruikt de Engelse werelddeelnamen (UN-indeling).
+const REGION_NL = { Africa: 'Afrika', Asia: 'Azië', Americas: 'Amerika', Europe: 'Europa', Oceania: 'Oceanië' };
+const regionLabel = (iso3) => { const r = countryRegion(iso3); return r ? (REGION_NL[r] || r) : ''; };
 
-async function buildWorklist() {
-  const status = $('#worklist-status');
-  try {
-    WORKLIST = await loadJSON('divergence.json');
-  } catch {
-    WORKLIST = null;
-  }
+async function buildFavorites() {
+  try { WORKLIST = await loadJSON('divergence.json'); } catch { WORKLIST = null; }
   try { AGES = await loadJSON('advisory-ages.json'); } catch { AGES = null; }
-  if (!WORKLIST && !AGES) {
-    status.textContent = 'Nog geen gegevens — deze verschijnen na de eerstvolgende dagelijkse snapshot + site-build.';
+
+  $('#fav-sort').addEventListener('change', renderFavorites);
+  $('#fav-all').addEventListener('click', () => {
+    favoriteItems().forEach((c) => FAV_SELECTED.add(c.iso3));
+    renderFavorites();
+  });
+  $('#fav-none').addEventListener('click', () => { FAV_SELECTED.clear(); renderFavorites(); });
+  $('#fav-compare').addEventListener('click', () => {
+    const gekozen = favoriteItems().filter((c) => FAV_SELECTED.has(c.iso3)).slice(0, MAX_COMPARE_COUNTRIES);
+    if (!gekozen.length) return;
+    activateTab('compare');
+    COMPARE_COUNTRIES = gekozen;
+    COMPARE_RESULTS = new Map();
+    COMPARE_ACTIVE = gekozen[0].iso3;
+    renderCompareChips();
+    runCompare();
+  });
+  $('#fav-briefing').addEventListener('click', openFavoritesBriefing);
+  $('#fav-share').addEventListener('click', () => shareFavorites($('#fav-share')));
+  $('#fav-export').addEventListener('click', exportFavorites);
+  $('#fav-import').addEventListener('change', importFavorites);
+
+  renderFavorites();
+}
+
+/** Sorteert de favorieten volgens de gekozen volgorde in de balk. */
+function sortedFavorites() {
+  const items = favoriteItems();
+  const how = $('#fav-sort')?.value || 'alfabet';
+  if (how === 'regio') {
+    return [...items].sort((a, b) =>
+      (countryRegion(a.iso3) || 'zzz').localeCompare(countryRegion(b.iso3) || 'zzz', 'nl') || a.nl.localeCompare(b.nl, 'nl'));
+  }
+  if (how === 'afwijking') {
+    const d = new Map((WORKLIST?.items || []).map((i) => [i.iso3, Math.abs(i.delta || 0)]));
+    return [...items].sort((a, b) => (d.get(b.iso3) ?? -1) - (d.get(a.iso3) ?? -1) || a.nl.localeCompare(b.nl, 'nl'));
+  }
+  if (how === 'achterstand') {
+    const d = new Map((AGES?.items || []).map((i) => [i.iso3, i.behindDays ?? i.behind ?? 0]));
+    return [...items].sort((a, b) => (d.get(b.iso3) ?? -1) - (d.get(a.iso3) ?? -1) || a.nl.localeCompare(b.nl, 'nl'));
+  }
+  return items;
+}
+
+/** Korte toelichting bij de gekozen sortering — anders is een volgorde die je
+ *  niet kunt herleiden alleen maar verwarrend. */
+function favSortNote(how, land) {
+  if (how === 'afwijking') {
+    const i = (WORKLIST?.items || []).find((x) => x.iso3 === land.iso3);
+    if (!i || i.delta == null) return 'geen vergelijking';
+    if (i.delta === 0) return 'gelijk aan de consensus';
+    return i.delta > 0 ? `NL strenger (+${i.delta})` : `NL milder (${i.delta})`;
+  }
+  if (how === 'achterstand') {
+    const i = (AGES?.items || []).find((x) => x.iso3 === land.iso3);
+    const dagen = i?.behindDays ?? i?.behind;
+    if (dagen == null) return '';
+    return dagen > 0 ? `${dagen} dagen achter` : 'bij';
+  }
+  if (how === 'regio') return regionLabel(land.iso3);
+  return '';
+}
+
+function renderFavorites() {
+  const grid = $('#fav-grid');
+  if (!grid) return;
+  const items = sortedFavorites();
+  const how = $('#fav-sort')?.value || 'alfabet';
+  $('#fav-count').textContent = items.length ? `· ${items.length} land${items.length === 1 ? '' : 'en'}` : '';
+
+  // Selectie die niet meer bestaat opruimen (land uit favorieten gehaald).
+  [...FAV_SELECTED].forEach((iso) => { if (!FAVORITES.has(iso)) FAV_SELECTED.delete(iso); });
+  const gekozen = FAV_SELECTED.size;
+  const cmpBtn = $('#fav-compare');
+  cmpBtn.disabled = gekozen === 0;
+  cmpBtn.textContent = gekozen ? `Vergelijk ${gekozen} geselecteerde land${gekozen === 1 ? '' : 'en'} →` : 'Vergelijk geselecteerde landen →';
+  // Bij een lege lijst hebben selecteren/delen/exporteren geen zin; importeren
+  // juist wél — dat is dan de enige manier om er landen in te krijgen.
+  ['fav-all', 'fav-none', 'fav-briefing', 'fav-share', 'fav-export', 'fav-compare']
+    .forEach((id) => { const b = $('#' + id); if (b) b.hidden = !items.length; });
+  const sortWrap = $('.fav-sort');
+  if (sortWrap) sortWrap.hidden = items.length < 2;
+
+  grid.innerHTML = '';
+  if (!items.length) {
+    grid.append(el('p', { class: 'hint', style: 'margin:0' },
+      'Nog geen favorieten. Zet een ☆ bij een land in de vergelijker, of importeer een gedeelde lijst hierboven.'));
     return;
   }
-
-  // Regio-dropdown vullen (punt 13).
-  const regions = [...new Set(COUNTRIES.map((c) => c.region).filter(Boolean))].sort();
-  const regionSel = $('#worklist-region');
-  regions.forEach((r) => regionSel.append(el('option', { value: r }, r)));
-
-  $('#worklist-filter').addEventListener('change', renderWorklistView);
-  $('#worklist-watch').addEventListener('change', renderWorklistView);
-  regionSel.addEventListener('change', renderWorklistView);
-  renderWatchBar();
-  $('#worklist-mode').addEventListener('click', (e) => {
-    const b = e.target.closest('button[data-mode]');
-    if (!b || b.dataset.mode === WORKLIST_MODE) return;
-    WORKLIST_MODE = b.dataset.mode;
-    $$('#worklist-mode button').forEach((x) => x.classList.toggle('on', x.dataset.mode === WORKLIST_MODE));
-    $('#worklist-intro').innerHTML = INTRO[WORKLIST_MODE];
-    $('#worklist-filter-wrap').hidden = WORKLIST_MODE !== 'divergentie';
-    renderWorklistView();
+  items.forEach((c) => {
+    const sel = FAV_SELECTED.has(c.iso3);
+    const box = el('button', {
+      type: 'button', class: 'favbox' + (sel ? ' on' : ''),
+      'aria-pressed': String(sel), 'aria-label': `${c.nl} selecteren om te vergelijken`,
+    }, sel ? '✓' : '');
+    box.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (sel) FAV_SELECTED.delete(c.iso3); else FAV_SELECTED.add(c.iso3);
+      renderFavorites();
+    });
+    const naam = el('button', { type: 'button', class: 'favname', title: `Open ${c.nl} in de vergelijker` },
+      `${countryFlag(c.iso2)} ${c.nl}`);
+    naam.addEventListener('click', () => openCompareFor(c));
+    const note = favSortNote(how, c);
+    const ster = el('button', { type: 'button', class: 'favstar', title: `${c.nl} uit favorieten halen` }, '★');
+    ster.addEventListener('click', (e) => { e.stopPropagation(); toggleFavorite(c.iso3); });
+    grid.append(el('div', { class: 'favcard' + (sel ? ' sel' : '') },
+      box, naam, note ? el('span', { class: 'favnote' }, note) : null, ster));
   });
-  renderWorklistView();
 }
 
-function renderWorklistView() {
-  if (WORKLIST_MODE === 'actualiteit') renderAges();
-  else renderWorklist();
-}
-
-/** Vorige werklijst-stand van deze gebruiker (voor "NIEUW sinds je vorige bezoek"). */
-function worklistSeen() {
-  try { return JSON.parse(localStorage.getItem('worklistSeen')) || null; } catch { return null; }
-}
-
-function renderWorklist() {
-  const root = $('#worklist-result');
-  const status = $('#worklist-status');
-  root.innerHTML = '';
-  if (!WORKLIST?.items) { status.textContent = 'Nog geen divergentie-gegevens beschikbaar.'; return; }
-  status.textContent = WORKLIST.generatedAt
-    ? `Berekend op ${new Date(WORKLIST.generatedAt).toLocaleString('nl-NL')} · ${WORKLIST.items.length} landen met ≥3 betrouwbare bronnen.`
-    : '';
-  const onlyDiff = $('#worklist-filter').value === 'diff';
-  const region = $('#worklist-region').value;
-  const onlyWatch = $('#worklist-watch')?.checked;
-  const items = WORKLIST.items
-    .filter((i) => !onlyDiff || i.delta !== 0)
-    .filter((i) => !region || countryRegion(i.iso3) === region)
-    .filter((i) => !onlyWatch || WATCHLIST.has(i.iso3));
-
-  // Delta t.o.v. het vorige bezoek van deze redacteur (localStorage).
-  const seen = worklistSeen();
-  const prevDeltas = seen?.deltas || null;
-  const isNew = (i) => prevDeltas && i.delta !== 0 && !(prevDeltas[i.iso3] && prevDeltas[i.iso3] !== 0);
-  const resolved = prevDeltas
-    ? Object.entries(prevDeltas)
-        .filter(([iso, d]) => d !== 0 && !WORKLIST.items.some((i) => i.iso3 === iso && i.delta !== 0))
-        .map(([iso]) => WORKLIST.items.find((i) => i.iso3 === iso)?.nl || COUNTRIES.find((c) => c.iso3 === iso)?.nl || iso)
-    : [];
-
-  if (!items.length) {
-    root.append(el('p', { class: 'empty-col' }, 'Geen afwijkingen: NL zit overal op de internationale consensus. 🎉'));
-  } else {
-    const srcMeta = new Map((CFG.SOURCES || []).map((s) => [s.id, s]));
-    const table = el('table', { class: 'summary-table' });
-    const COLS = 5;
-    table.append(el('thead', {}, el('tr', {},
-      el('th', {}, 'Land'), el('th', {}, 'NL'), el('th', {}, 'Consensus'),
-      el('th', {}, 'Verschil'), el('th', {}, 'Bronnen'))));
-    const tbody = el('tbody');
-    items.forEach((i) => {
-      const flag = countryFlagByIso3(i.iso3);
-      const landBtn = el('button', { type: 'button', class: 'btn-link worklist-country' }, `${flag ? flag + ' ' : ''}${i.nl}`);
-      landBtn.addEventListener('click', () => {
-        openCompareFor(COUNTRIES.find((c) => c.iso3 === i.iso3));
-      });
-
-      let verdict;
-      if (i.delta === 0) verdict = el('span', { class: 'delta same' }, 'gelijk');
-      else if (i.delta > 0) verdict = el('span', { class: 'delta stricter' }, `NL strenger (+${i.delta})`);
-      else verdict = el('span', { class: 'delta looser' }, `NL soepeler (−${Math.abs(i.delta)})`);
-
-      // Per-bron mini-vierkantjes; klik op de rij-uitklap toont de citaten.
-      const srcCell = el('span', { class: 'kc' });
-      Object.entries(i.perSource).forEach(([sid, lvl]) => {
-        const m = srcMeta.get(sid);
-        srcCell.append(el('span', {
-          class: `sq mini c-${LEVEL_COLORS[lvl]}`,
-          title: `${m?.label || sid}: ${COLOR_LABELS[LEVEL_COLORS[lvl]]}`,
-        }));
-      });
-
-      const landCell = el('td', {}, landBtn);
-      if (isNew(i)) landCell.append(' ', el('span', { class: 'new-badge', title: 'Nieuw afwijkend sinds je vorige bezoek aan deze lijst.' }, 'NIEUW'));
-
-      // Uitklap met het letterlijke niveau-citaat per bron (uit de snapshot).
-      const hasQuotes = i.quotes && Object.keys(i.quotes).length;
-      const srcTd = el('td', {}, srcCell, el('span', { class: 'muted', style: 'margin-left:8px' }, `${i.nSources}`));
-      const row = el('tr', {},
-        landCell,
-        el('td', {}, colorCode({ predominant: i.nlColor })),
-        el('td', {}, colorCode({ predominant: i.consensusColor })),
-        el('td', {}, verdict),
-        srcTd);
-      tbody.append(row);
-      if (hasQuotes) {
-        const detail = el('tr', { class: 'regional-detail-row', hidden: true },
-          el('td', { colspan: COLS },
-            el('div', { class: 'worklist-quotes' },
-              ...Object.entries(i.quotes).map(([sid, q]) => {
-                const m = srcMeta.get(sid);
-                const lvl = i.perSource[sid];
-                return el('p', { class: 'worklist-quote' },
-                  colorSquare(LEVEL_COLORS[lvl] || 'none', 'mini'),
-                  el('strong', {}, ` ${m?.flag || ''} ${m?.label || sid}: `), `“${q}”`);
-              }))));
-        const toggle = el('button', { type: 'button', class: 'btn-link', style: 'margin-left:8px;font-size:12.5px' }, 'citaten ▸');
-        toggle.addEventListener('click', () => {
-          detail.hidden = !detail.hidden;
-          toggle.textContent = detail.hidden ? 'citaten ▸' : 'citaten ▾';
-        });
-        srcTd.append(toggle);
-        tbody.append(detail);
-      }
-    });
-    table.append(tbody);
-    root.append(table);
-  }
-
-  if (resolved.length) {
-    root.append(el('p', { class: 'hint', style: 'margin-top:12px' },
-      `✅ Sinds je vorige bezoek van de afwijkingenlijst af: ${resolved.join(', ')}.`));
-  }
-
-  // Huidige stand opslaan als "gezien" voor de volgende keer.
-  localStorage.setItem('worklistSeen', JSON.stringify({
-    generatedAt: WORKLIST.generatedAt || null,
-    deltas: Object.fromEntries(WORKLIST.items.map((i) => [i.iso3, i.delta])),
-  }));
-}
-
-/** Actualiteitsoverzicht (punt 7): NL-bijwerkdatum vs recentste bron-update. */
-function renderAges() {
-  const root = $('#worklist-result');
-  const status = $('#worklist-status');
-  root.innerHTML = '';
-  if (!AGES?.items) { status.textContent = 'Nog geen actualiteitsgegevens (de snapshot met bron-datums moet nog draaien).'; return; }
-  status.textContent = `Bijgewerkt op ${new Date(AGES.generatedAt).toLocaleString('nl-NL')} · NL-datum vs recentste bron-update per land.`;
-
-  const region = $('#worklist-region').value;
-  const onlyWatch = $('#worklist-watch')?.checked;
-  const items = AGES.items
-    .filter((i) => !region || countryRegion(i.iso3) === region)
-    .filter((i) => !onlyWatch || WATCHLIST.has(i.iso3));
-  const fmt = (s) => (s ? new Date(s).toLocaleDateString('nl-NL') : '—');
-
-  const table = el('table', { class: 'summary-table' });
-  table.append(el('thead', {}, el('tr', {},
-    el('th', {}, 'Land'), el('th', {}, 'NL bijgewerkt'), el('th', {}, 'Recentste bron'),
-    el('th', {}, 'Achterstand'), el('th', {}, 'NL-leeftijd'))));
-  const tbody = el('tbody');
-  items.forEach((i) => {
-    const flag = countryFlagByIso3(i.iso3);
-    const landBtn = el('button', { type: 'button', class: 'btn-link worklist-country' }, `${flag ? flag + ' ' : ''}${i.nl}`);
-    landBtn.addEventListener('click', () => {
-      openCompareFor(COUNTRIES.find((c) => c.iso3 === i.iso3));
-    });
-
-    // Achterstand: bron recenter dan NL. Rood ≥ 60 dagen, oranje ≥ 21.
-    let behind;
-    if (i.behindDays == null) behind = el('span', { class: 'muted' }, '—');
-    else if (i.behindDays <= 0) behind = el('span', { class: 'delta same' }, 'NL is bij');
-    else {
-      const cls = i.behindDays >= 60 ? 'stricter' : i.behindDays >= 21 ? 'looser' : 'same';
-      behind = el('span', { class: `delta ${cls}` }, `+${i.behindDays} dgn`);
-    }
-    const ageCls = i.nlAgeDays != null && i.nlAgeDays > 365 ? 'muted warn-age' : 'muted';
-    tbody.append(el('tr', {},
-      el('td', {}, colorSquare(i.nlColor || 'none', 'mini'), ' ', landBtn),
-      el('td', { class: 'muted' }, fmt(i.nlDate)),
-      el('td', { class: 'muted' }, i.latestForeign ? `${fmt(i.latestForeign)} · ${i.nForeign} bron${i.nForeign === 1 ? '' : 'nen'}` : '—'),
-      el('td', {}, behind),
-      el('td', { class: ageCls }, i.nlAgeDays != null ? `${i.nlAgeDays} dgn` : '—')));
-  });
-  table.append(tbody);
-  root.append(el('p', { class: 'hint', style: 'margin-top:0' },
-    'Achterstand = dagen dat de recentste buitenlandse bron ná NederlandWereldwijd is bijgewerkt. Oranje ≥ 21 dagen, rood ≥ 60 dagen.'),
-    table);
-}
-
-// ==========================================================================
-// VOLGLIJST-balk, deel-link, export/import en bundel-ochtendbriefing (feature 2)
-// ==========================================================================
-function renderWatchBar() {
-  const bar = $('#watch-bar');
-  if (!bar) return;
-  bar.hidden = false;
-  bar.innerHTML = '';
-  const items = watchlistItems();
-  const left = el('div', { class: 'watch-left' }, el('strong', {}, `👁 Volglijst (${items.length})`));
-  if (!items.length) {
-    left.append(el('span', { class: 'hint', style: 'margin:0 0 0 10px' }, 'leeg — gebruik "👁 Volgen" bij een land, of importeer een gedeelde lijst →'));
-  } else {
-    const chips = el('span', { class: 'watch-chips' });
-    items.forEach((c) => {
-      const chip = el('button', { type: 'button', class: 'watch-chip', title: 'Open ' + c.nl }, `${countryFlag(c.iso2)} ${c.nl}`);
-      chip.addEventListener('click', () => openCompareFor(c));
-      const x = el('span', { class: 'watch-chip-x', title: 'Van volglijst halen' }, '×');
-      x.addEventListener('click', (e) => { e.stopPropagation(); toggleWatch(c.iso3); });
-      chip.append(' ', x);
-      chips.append(chip);
-    });
-    left.append(chips);
-  }
-  const actions = el('div', { class: 'watch-actions' });
-  if (items.length) {
-    const brief = el('button', { type: 'button', class: 'btn' }, '🗓 Ochtendbriefing');
-    brief.addEventListener('click', openWatchlistBriefing);
-    const share = el('button', { type: 'button', class: 'btn' }, '🔗 Deel lijst');
-    share.addEventListener('click', () => shareWatchlist(share));
-    const exp = el('button', { type: 'button', class: 'btn' }, '⬇ Export');
-    exp.addEventListener('click', exportWatchlist);
-    actions.append(brief, share, exp);
-  }
-  const imp = el('label', { class: 'btn', style: 'cursor:pointer' }, '⬆ Import',
-    el('input', { type: 'file', accept: '.json,application/json', hidden: true, onchange: importWatchlist }));
-  actions.append(imp);
-  bar.append(left, actions);
-}
-
-function shareWatchlist(btn) {
-  const url = `${location.origin}${location.pathname}?tab=worklist&volglijst=${[...WATCHLIST].join(',')}`;
+// ---- Delen, exporteren, importeren, briefing -------------------------------
+function shareFavorites(btn) {
+  const url = `${location.origin}${location.pathname}?tab=favorieten&favorieten=${[...FAVORITES].join(',')}`;
   navigator.clipboard.writeText(url).then(() => {
     const orig = btn.textContent; btn.textContent = '✓ Link gekopieerd';
     setTimeout(() => { btn.textContent = orig; }, 2000);
   }).catch(() => { prompt('Kopieer de deellink:', url); });
 }
 
-function exportWatchlist() {
-  const blob = new Blob([JSON.stringify({ watchlist: [...WATCHLIST], exportedAt: new Date().toISOString() }, null, 2)], { type: 'application/json' });
-  const a = el('a', { href: URL.createObjectURL(blob), download: 'reisadviezen-volglijst.json' });
+function exportFavorites() {
+  const blob = new Blob([JSON.stringify({ watchlist: [...FAVORITES], exportedAt: new Date().toISOString() }, null, 2)], { type: 'application/json' });
+  const a = el('a', { href: URL.createObjectURL(blob), download: 'reisadviezen-favorieten.json' });
   document.body.append(a); a.click(); a.remove(); URL.revokeObjectURL(a.href);
 }
 
-function importWatchlist(e) {
+function importFavorites(e) {
   const file = e.target.files?.[0];
   if (!file) return;
   const reader = new FileReader();
   reader.onload = () => {
     try {
       const d = JSON.parse(reader.result);
-      const ids = (Array.isArray(d) ? d : d.watchlist || []).filter((iso) => COUNTRIES.some((c) => c.iso3 === iso));
+      // 'watchlist' is de sleutel uit oudere exports — die blijven werken.
+      const ids = (Array.isArray(d) ? d : d.favorieten || d.watchlist || []).filter((iso) => COUNTRIES.some((c) => c.iso3 === iso));
       if (!ids.length) throw new Error('geen geldige landen');
-      WATCHLIST = new Set(ids);
-      saveWatchlist();
-      updateWatchUI();
-      renderWorklistView();
-    } catch { alert('Kon de volglijst niet lezen (verwacht een geëxporteerd volglijst-bestand).'); }
+      FAVORITES = new Set(ids);
+      saveFavorites();
+      updateFavoriteUI();
+    } catch { alert('Kon het bestand niet lezen (verwacht een geëxporteerde favorietenlijst).'); }
     e.target.value = '';
   };
   reader.readAsText(file);
 }
 
-/** Laadt een gedeelde volglijst uit ?volglijst=ISO,ISO (vervangt de huidige). */
-function loadWatchlistFromUrl() {
-  const raw = new URLSearchParams(location.search).get('volglijst');
+/** Laadt een gedeelde lijst uit ?favorieten=ISO,ISO (vervangt de huidige).
+ *  ?volglijst= blijft werken zodat oude deellinks niet breken. */
+function loadFavoritesFromUrl() {
+  const sp = new URLSearchParams(location.search);
+  const raw = sp.get('favorieten') ?? sp.get('volglijst');
   if (raw == null) return;
   const ids = raw.split(',').map((s) => s.trim().toUpperCase()).filter((iso) => COUNTRIES.some((c) => c.iso3 === iso));
-  if (ids.length) { WATCHLIST = new Set(ids); saveWatchlist(); }
+  if (ids.length) { FAVORITES = new Set(ids); saveFavorites(); }
 }
 
-function openWatchlistBriefing() {
-  const items = watchlistItems();
+function openFavoritesBriefing() {
+  const items = favoriteItems();
   if (!items.length) return;
   activateTab('compare');
   const root = $('#compare-result');
   root.innerHTML = '';
   $('#compare-status').textContent = '';
-  updateUrl({ briefing: 'watchlist', land: null, vs: null }, true);
-  root.append(renderWatchlistBriefing(items));
+  updateUrl({ briefing: 'favorieten', land: null, landen: null }, true);
+  root.append(renderFavoritesBriefing(items));
   window.scrollTo({ top: 0 });
 }
 
-/** Bundel-ochtendbriefing over de hele volglijst, uit offline data (snel + printbaar). */
-function renderWatchlistBriefing(items) {
+/** Bundel-ochtendbriefing over alle favorieten, uit offline data (snel + printbaar). */
+function renderFavoritesBriefing(items) {
   const wrap = el('div', { class: 'briefing' });
-  const back = el('button', { type: 'button', class: 'btn' }, '← Terug naar werklijst');
-  back.addEventListener('click', () => { updateUrl({ briefing: null }, true); activateTab('worklist'); });
+  const back = el('button', { type: 'button', class: 'btn' }, '← Terug naar favorieten');
+  back.addEventListener('click', () => { updateUrl({ briefing: null }, true); activateTab('favorieten'); });
   const printB = el('button', { type: 'button', class: 'btn', onclick: () => window.print() }, '🖨 Print');
   wrap.append(el('div', { class: 'briefing-actions' }, back, printB));
   wrap.append(el('div', { class: 'briefing-head' },
-    el('h2', {}, `🗓 Ochtendbriefing — volglijst (${items.length} landen)`),
+    el('h2', {}, `🗓 Ochtendbriefing — favorieten (${items.length} landen)`),
     el('p', { class: 'muted' }, `${new Date().toLocaleString('nl-NL')} · samengesteld uit de dagelijkse snapshot`)));
-
   const divMap = new Map((WORKLIST?.items || []).map((i) => [i.iso3, i]));
   const ageMap = new Map((AGES?.items || []).map((i) => [i.iso3, i]));
   const wk = daysAgo(7);
@@ -3184,7 +3159,7 @@ function renderChanges(sourceFilter, from, to) {
 
   const items = (RECENT_CHANGES || []).filter(
     (c) => (!sourceFilter || c.source === sourceFilter) && inPeriod(c.date)
-      && (!onlyWatch || WATCHLIST.has(c.iso3)) && countryMatch(c.iso3, c.countryNl)
+      && (!onlyWatch || FAVORITES.has(c.iso3)) && countryMatch(c.iso3, c.countryNl)
   );
 
   // Door de bron zelf gemelde updatedatums in de periode — ook voor updates
@@ -3195,7 +3170,7 @@ function renderChanges(sourceFilter, from, to) {
   const srcMeta = new Map((CFG.SOURCES || []).map((s) => [s.id, s]));
   const reported = [];
   for (const [iso3, perSource] of Object.entries(SOURCE_DATES || {})) {
-    if (onlyWatch && !WATCHLIST.has(iso3)) continue;
+    if (onlyWatch && !FAVORITES.has(iso3)) continue;
     if (!countryMatch(iso3, null)) continue;
     for (const [sid, date] of Object.entries(perSource)) {
       if (sourceFilter && sid !== sourceFilter) continue;

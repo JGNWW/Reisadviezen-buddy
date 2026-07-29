@@ -24,7 +24,7 @@
     </div>
     <nav class="tabs" role="tablist">
       <button class="tab active" data-view="compare" role="tab">Vergelijken</button>
-      <button class="tab" data-view="worklist" role="tab">Werklijst</button>
+      <button class="tab" data-view="favorieten" role="tab">Favorieten</button>
       <button class="tab" data-view="gaps" role="tab">Wat ontbreekt?</button>
       <button class="tab" data-view="search" role="tab">Zoeken op thema/woord</button>
       <button class="tab" data-view="datescan" role="tab">Datumscanner</button>
@@ -52,7 +52,7 @@
             <div class="combo">
               <input id="country-input" autocomplete="off" role="combobox"
                      aria-expanded="false" aria-controls="country-listbox" aria-autocomplete="list"
-                     placeholder="Bijv. Ethiopië, VS, Oekraine…" />
+                     placeholder="Typ een land, of kies een groep…" />
               <ul id="country-listbox" class="combo-list" role="listbox" hidden></ul>
             </div>
             <datalist id="country-list"></datalist>
@@ -63,19 +63,6 @@
         <p id="compare-fetchnote" class="hint" style="flex:1 1 100%;order:2;margin:-6px 0 8px">
           Er wordt niets opgehaald tot je op <strong>Vergelijken</strong> klikt — landen toevoegen of weghalen kost dus geen wachttijd.
         </p>
-        <details id="compare-groups" class="compare-groups">
-          <summary>Groepen &amp; volglijst</summary>
-          <div class="bar-row" style="gap:10px;flex-wrap:wrap;align-items:end;margin:10px 0 0">
-            <div class="field">
-              <label for="group-select">Opgeslagen groep</label>
-              <select id="group-select"><option value="">— kies een groep —</option></select>
-            </div>
-            <button id="group-load" type="button" class="btn">Laden</button>
-            <button id="group-save" type="button" class="btn">💾 Bewaren als groep…</button>
-            <button id="group-delete" type="button" class="btn" title="Verwijder de geselecteerde groep">🗑</button>
-            <button id="group-from-watch" type="button" class="btn" title="Neem je volglijst over als selectie">Volglijst overnemen</button>
-          </div>
-        </details>
         <div class="field field-sources">
           <label>Vergelijk met <span class="src-hint">(bronlanden — voeg toe of verwijder)</span></label>
           <div class="source-picker">
@@ -132,34 +119,38 @@
       </div>
     </section>
 
-    <!-- ================= WERKLIJST ================= -->
-    <section id="view-worklist" class="view">
-      <div id="watch-bar" class="watch-bar" hidden></div>
-      <div class="bar-row">
-        <div id="worklist-mode" class="seg" role="group" aria-label="Werklijst-weergave">
-          <button type="button" data-mode="divergentie" class="on">Divergentie</button>
-          <button type="button" data-mode="actualiteit">Actualiteit</button>
+    <!-- ================= FAVORIETEN ================= -->
+    <section id="view-favorieten" class="view">
+      <div class="fav-head">
+        <div>
+          <h2 class="fav-title">Mijn favorieten <span id="fav-count" class="fav-count"></span></h2>
+          <p class="hint" style="margin:2px 0 0">Klik een land om het te openen, of vink er meerdere aan en vergelijk ze in één keer.</p>
         </div>
-        <label class="check-inline"><input type="checkbox" id="worklist-watch" /> Alleen mijn volglijst</label>
-      </div>
-      <div class="panel controls">
-        <div class="field grow">
-          <p id="worklist-intro" style="margin:0">Waar wijkt het <strong>Nederlandse</strong> reisadvies af van de <strong>internationale consensus</strong> (mediaan van de buitenlandse bronnen, laatste snapshot)? Gesorteerd op grootte van de afwijking — de "kijk hier eerst"-lijst. Alleen landen met minstens 3 betrouwbaar beoordeelde bronnen tellen mee; een afwijking is niet per se fout, maar wel het bekijken waard.</p>
-        </div>
-        <div class="field" id="worklist-region-wrap">
-          <label for="worklist-region">Regio</label>
-          <select id="worklist-region"><option value="">Alle regio's</option></select>
-        </div>
-        <div class="field" id="worklist-filter-wrap">
-          <label for="worklist-filter">Toon</label>
-          <select id="worklist-filter">
-            <option value="diff" selected>Alleen afwijkingen</option>
-            <option value="all">Alle landen</option>
-          </select>
+        <div class="fav-actions">
+          <label class="fav-sort" for="fav-sort">Sorteer
+            <select id="fav-sort">
+              <option value="alfabet" selected>Alfabetisch</option>
+              <option value="regio">Regio</option>
+              <option value="afwijking">Afwijking t.o.v. de internationale consensus</option>
+              <option value="achterstand">Achterstand op buitenlandse bronnen</option>
+            </select>
+          </label>
+          <button id="fav-compare" type="button" class="btn primary" disabled>Vergelijk geselecteerde landen →</button>
         </div>
       </div>
-      <div id="worklist-status" class="status"></div>
-      <div id="worklist-result"></div>
+      <div class="bar-row" id="fav-tools">
+        <button id="fav-all" type="button" class="btn-link">Alles selecteren</button>
+        <button id="fav-none" type="button" class="btn-link">Niets selecteren</button>
+        <span class="fav-spacer"></span>
+        <button id="fav-briefing" type="button" class="btn">🗓 Ochtendbriefing</button>
+        <button id="fav-share" type="button" class="btn">🔗 Deel lijst</button>
+        <button id="fav-export" type="button" class="btn">⬇ Export</button>
+        <label class="btn" style="cursor:pointer">⬆ Import
+          <input id="fav-import" type="file" accept=".json,application/json" hidden />
+        </label>
+      </div>
+      <div id="fav-status" class="status"></div>
+      <div id="fav-grid" class="favgrid"></div>
     </section>
 
     <!-- ================= DATUMSCANNER ================= -->
@@ -218,7 +209,7 @@
         </div>
         <div class="field">
           <label>&nbsp;</label>
-          <label class="check-inline"><input type="checkbox" id="changes-watch" /> Alleen volglijst</label>
+          <label class="check-inline"><input type="checkbox" id="changes-watch" /> Alleen favorieten</label>
         </div>
         <button id="changes-csv" type="button" class="btn" title="Download de getoonde wijzigingen als CSV (opent in Excel).">⬇ Download CSV</button>
       </div>

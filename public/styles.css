@@ -402,7 +402,6 @@ input:focus, select:focus { outline: 2px solid var(--link); outline-offset: 0; b
 .delta.same { background: #e3f0e3; color: #2f6d2f; }
 .delta.stricter { background: #fdecea; color: var(--rood); }
 .delta.looser { background: #fdf0e2; color: #a85400; }
-.worklist-country { font-weight: 600; font-size: 14.5px; padding: 0; }
 
 .change-row.kind-update { border-left-color: var(--link); }
 .change-row.kind-bulk { border-left-color: #949494; background: #f6f8fa; }
@@ -486,6 +485,31 @@ input:focus, select:focus { outline: 2px solid var(--link); outline-offset: 0; b
 /* ---- Land-combobox (vlaggen, aliassen, typefout-suggesties) ---- */
 .combo { position: relative; }
 .combo input { width: 100%; }
+.combo-bulk { font-weight: 600; color: var(--nl-blue); }
+.combo-icon { width: 16px; display: inline-block; text-align: center; opacity: .8; }
+.combo-count { margin-left: auto; font-size: 12px; font-weight: 400; color: var(--muted); }
+.combo-star { color: #e8a400; margin-left: 4px; }
+.combo-manage { font-size: 12px; font-weight: 400; text-transform: none; letter-spacing: 0; }
+.chip-sep { width: 1px; height: 22px; background: var(--border); margin: 0 4px; display: inline-block; }
+.chip-save { padding: 6px 12px; font-size: 13px; background: #fff; border: 1px solid var(--border); color: var(--nl-blue); }
+
+/* ---- Wat er recent veranderde (uitklapper boven de thema-vergelijking) ---- */
+.changes-block {
+  border: 1px solid var(--update-border); background: var(--update-bg);
+  padding: 10px 14px; margin: 18px 0 0;
+}
+.changes-block > summary { cursor: pointer; font-size: 14.5px; color: var(--update-text); }
+.changes-who { color: var(--muted); font-weight: 400; font-size: 13px; }
+.changes-src { border-top: 1px solid var(--update-border); margin-top: 10px; padding-top: 9px; }
+.changes-src-head { display: flex; align-items: baseline; gap: 10px; font-weight: 600; font-size: 13.5px; color: var(--nl-blue); }
+.changes-src-link { margin-left: auto; font-size: 12.5px; font-weight: 400; }
+.changes-item { display: flex; gap: 10px; margin-top: 6px; }
+.changes-date { font-size: 12px; color: var(--muted); white-space: nowrap; flex: 0 0 76px; }
+.changes-heading { display: block; font-size: 12px; font-weight: 600; color: var(--muted); }
+/* De 340px-limiet komt van de smalle tabelkolom; hier is er volle breedte. */
+.changes-item .wijziging-quote { max-width: none; background: #fff; }
+.changes-item > div { flex: 1 1 auto; min-width: 0; }
+
 .combo-list {
   position: absolute; top: calc(100% + 2px); left: 0; right: 0; z-index: 30;
   margin: 0; padding: 0; list-style: none; background: #fff;
@@ -518,8 +542,6 @@ input:focus, select:focus { outline: 2px solid var(--link); outline-offset: 0; b
 
 /* ---- Werklijst: NIEUW-badge + citaten ---- */
 .new-badge { background: var(--rood); color: #fff; font-size: 10px; font-weight: 700; padding: 2px 6px; letter-spacing: .04em; vertical-align: 2px; }
-.worklist-quotes { font-size: 13.5px; }
-.worklist-quote { margin: 4px 0; }
 
 /* ---- Text-Fragment-deeplinks (toon passage op de bronpagina) ---- */
 .frag-link { font-size: 12px; margin-left: 8px; white-space: nowrap; font-weight: 400; }
@@ -609,24 +631,43 @@ input:focus, select:focus { outline: 2px solid var(--link); outline-offset: 0; b
 .briefing-color { display: flex; flex-direction: column; gap: 3px; }
 .briefing-color-lbl { font-size: 12px; color: var(--muted); }
 
-/* ---- Twee landen vergelijken + volglijst (features 1 & 2) ---- */
+/* ---- Favorieten: sterknop bij een land, tabblad met de lijst ---- */
 .result-head-actions { display: flex; gap: 8px; flex: 0 0 auto; flex-wrap: wrap; justify-content: flex-end; }
-.watch-btn { background: #fff; border: 1px solid var(--nl-blue); color: var(--nl-blue); }
-.watch-btn.on { background: var(--nl-blue); color: #fff; }
+.fav-btn { background: #fff; border: 1px solid var(--nl-blue); color: var(--nl-blue); display: inline-flex; align-items: center; gap: 6px; }
+.fav-btn .star { color: #e8a400; font-size: 16px; line-height: 1; }
+.fav-btn.on { background: #fff8e6; border-color: #e8a400; color: #7a5400; }
 .check-inline { display: inline-flex; align-items: center; gap: 6px; font-size: 13.5px; color: var(--text); text-transform: none; letter-spacing: 0; font-weight: 400; }
 .check-inline input { min-width: auto; width: auto; }
 
-.watch-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
-  background: var(--hero); border: 1px solid #bcd8ef; padding: 10px 14px; margin: 0 0 14px; }
-.watch-left { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.watch-chips { display: flex; flex-wrap: wrap; gap: 6px; }
-.watch-chip { display: inline-flex; align-items: center; gap: 4px; background: #fff; border: 1px solid #bcd8ef;
-  color: var(--nl-blue); padding: 4px 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
-.watch-chip:hover { border-color: var(--link); }
-.watch-chip-x { color: var(--muted); font-size: 15px; line-height: 1; padding: 0 2px; }
-.watch-chip-x:hover { color: var(--rood); }
-.watch-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-.watch-actions .btn { padding: 8px 12px; font-size: 13px; background: #fff; border: 1px solid var(--border); }
+.fav-head { display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin: 0 0 12px; }
+.fav-title { margin: 0; font-size: 22px; font-weight: 600; color: var(--nl-blue); }
+.fav-count { font-weight: 400; font-size: 16px; color: var(--muted); }
+.fav-actions { margin-left: auto; display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
+.fav-sort { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--muted); }
+.fav-sort select { min-width: auto; padding: 7px 9px; font-size: 13.5px; }
+.fav-spacer { margin-left: auto; }
+#fav-tools .btn { padding: 8px 12px; font-size: 13px; background: #fff; border: 1px solid var(--border); }
+
+.favgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; }
+.favcard {
+  display: flex; align-items: center; gap: 9px;
+  border: 1px solid var(--border); background: #fff; padding: 8px 10px;
+}
+.favcard.sel { border-color: var(--link); background: #f2f8fd; box-shadow: inset 3px 0 0 var(--link); }
+.favbox {
+  width: 16px; height: 16px; flex: 0 0 auto; cursor: pointer;
+  border: 1px solid var(--muted); background: #fff; color: #fff;
+  display: inline-flex; align-items: center; justify-content: center; font-size: 12px; line-height: 1;
+}
+.favcard.sel .favbox { background: var(--link); border-color: var(--link); }
+.favname {
+  flex: 1 1 auto; text-align: left; background: none; border: none; cursor: pointer;
+  color: var(--nl-blue); font-weight: 600; font-size: 14.5px; padding: 0; font-family: inherit;
+}
+.favname:hover { text-decoration: underline; }
+.favnote { font-size: 11.5px; color: var(--muted); white-space: nowrap; }
+.favstar { background: none; border: none; cursor: pointer; color: #e8a400; font-size: 15px; line-height: 1; padding: 0 2px; }
+.favstar:hover { color: var(--rood); }
 
 /* ---- Vlag-afbeeldingen (flagify) ----------------------------------------
    Emoji-vlaggen renderen op Windows als kale letters; de flagify-laag in
