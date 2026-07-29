@@ -6,12 +6,19 @@ name: Browser-snapshots (DK/NO/CH)
 # en als vangnet naar worker/data/latest/ geschreven — de Worker serveert die
 # snapshots wanneer live ophalen faalt of niets oplevert.
 #
-# Dagelijks om 02:00 Europe/Amsterdam + handmatig met een optionele landenlijst
-# voor gerichte verversing. GitHub-cron kent alleen UTC en geen zomertijd, dus
-# we plannen zowel 00:00 als 01:00 UTC en laat een guard-job (hieronder) alleen
-# de run doorgaan wiens cron-regel bij het huidige seizoen hoort — zo klopt het
-# tijdstip het hele jaar, ongeacht zomer-/wintertijd, én blijft het werken als
-# GitHub de run (zoals gebruikelijk) uren te laat start.
+# 's Nachts + handmatig met een optionele landenlijst voor gerichte verversing.
+#
+# Er staan bewust twee cronregels (00:00 en 01:00 UTC). Eerder koos een
+# guard-job er één van, zodat het precies 02:00 Amsterdam bleef ongeacht
+# zomer-/wintertijd. Dat werkte niet: GitHub start geplande runs uren te laat
+# én de concurrency-group annuleert er dan één van — in de praktijk juist
+# degene die de guard wilde hebben, waardoor de capture nooit draaide (0
+# Noorse snapshots over 226 landen, weken achtereen).
+#
+# Daarom nu geen guard meer: beide runs gaan door. De concurrency-group
+# serialiseert ze en een tweede capture op dezelfde dag is onschadelijk — hij
+# schrijft alleen als de inhoud verandert. Liever twee keer draaien dan nul
+# keer.
 on:
   schedule:
     - cron: '0 0 * * *' # 02:00 Amsterdam tijdens zomertijd (CEST = UTC+2)
@@ -38,44 +45,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  # DST-proof tijdvenster: alleen doorgaan als het in Amsterdam 02:00 is
-  # (of bij een handmatige/push-run). Zo vuurt de geplande run precies
-  # één keer per dag om 02:00 lokale tijd, ondanks de twee UTC-cronregels.
-  guard:
-    runs-on: ubuntu-latest
-    outputs:
-      run: ${{ steps.check.outputs.run }}
-    steps:
-      - id: check
-        run: |
-          # Kies op de cron-regel die deze run startte, NIET op de klok van dit
-          # moment: GitHub start geplande runs op "best effort" en loopt in de
-          # praktijk uren achter. Een test op "is het nu 02:00 in Amsterdam?"
-          # sloeg daardoor élke geplande run over (waargenomen starttijden:
-          # 03:39 en 04:32 UTC, oftewel 05:39 en 06:32 in Amsterdam) — de
-          # browser-captures voor DK/NO/CH hebben zo nooit gedraaid.
-          # Zomertijd (CEST, +0200): 02:00 lokaal = 00:00 UTC -> cron '0 0 * * *'
-          # Wintertijd (CET,  +0100): 02:00 lokaal = 01:00 UTC -> cron '0 1 * * *'
-          if [ "${{ github.event_name }}" != "schedule" ]; then
-            echo "run=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          if [ "$(TZ='Europe/Amsterdam' date +%z)" = "+0200" ]; then
-            WANT='0 0 * * *'
-          else
-            WANT='0 1 * * *'
-          fi
-          if [ "${{ github.event.schedule }}" = "$WANT" ]; then
-            echo "run=true" >> "$GITHUB_OUTPUT"
-            echo "Cron '${{ github.event.schedule }}' hoort bij 02:00 Amsterdam — doorgaan."
-          else
-            echo "run=false" >> "$GITHUB_OUTPUT"
-            echo "Cron '${{ github.event.schedule }}' is de andere tijdzone-variant (nu geldt '$WANT') — overslaan."
-          fi
-
   capture:
-    needs: guard
-    if: needs.guard.outputs.run == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 120
     defaults:
