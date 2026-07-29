@@ -442,24 +442,11 @@ input:focus, select:focus { outline: 2px solid var(--link); outline-offset: 0; b
 .btn-link { background: none; border: none; color: var(--link); font-size: 13px; font-weight: 600; padding: 4px 0; cursor: pointer; }
 .btn-link:hover { text-decoration: underline; }
 
-/* ---- Subtabs (binnen Wat ontbreekt) ---- */
-.subtabs { display: flex; gap: 2px; margin-bottom: 16px; border-bottom: 1px solid var(--border); }
-.subtab { background: #fff; border: 1px solid var(--border); border-bottom: none; border-radius: 0; padding: 9px 16px; font-size: 14px; cursor: pointer; color: var(--link); margin-bottom: -1px; }
-.subtab.active { background: var(--nl-blue); border-color: var(--nl-blue); color: #fff; font-weight: 600; }
-.gap-panel { display: none; }
-.gap-panel.active { display: block; }
-.gap-body { padding: 4px 18px 14px; border-top: 1px solid var(--border-soft); }
-
-/* ---- Landen-chips (meerdere landen / trends) ---- */
+/* ---- Landen-chips ---- */
 .chip-list { display: flex; flex-wrap: wrap; gap: 8px; margin: -6px 0 14px; }
 .chip { display: inline-flex; align-items: center; gap: 6px; background: var(--hero); color: var(--nl-blue); border-radius: 0; padding: 6px 8px 6px 14px; font-size: 13.5px; font-weight: 500; }
 .chip-remove { background: none; border: none; color: var(--nl-blue); font-size: 16px; line-height: 1; cursor: pointer; padding: 2px 6px; border-radius: 50%; }
 .chip-remove:hover { background: rgba(21,66,115,.15); }
-
-/* ---- Gap-trend balkjes ---- */
-.gap-bar-wrap { position: relative; background: #eef1f4; border-radius: 0; height: 22px; width: 200px; max-width: 100%; overflow: hidden; }
-.gap-bar { position: absolute; inset: 0 auto 0 0; background: var(--oranje); opacity: .35; border-radius: 0; }
-.gap-bar-wrap span { position: relative; z-index: 1; font-size: 12.5px; font-weight: 600; padding: 0 8px; line-height: 22px; display: block; }
 
 /* ---- Print / PDF: compacte samenvatting (zonder matrix en interactie) ---- */
 .print-note { display: none; }
