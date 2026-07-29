@@ -40,12 +40,26 @@ export async function resolveMapUrl(slug) {
   let html = null;
   try { html = await getText(url); } catch { html = await getViaReader(url, 'html'); }
   if (!html) return null;
-  const root = parse(html);
-  let src = root.querySelectorAll('img')
+  return mapUrlFrom(html);
+}
+
+/**
+ * Zoekt de kaart-URL in de pagina-HTML. Twee vormen komen voor:
+ *   - de losse volle kaart onder /fileadmin/.../Reiseinfos_Karten/, met de
+ *     Duitse landnaam én een datum in de bestandsnaam
+ *     ("Algerien_Reisewarnstufen_30062026.png") — die is niet te construeren;
+ *   - de door TYPO3 verkleinde variant (csm_Reisewarnstufen…/csm_Einzelansicht…).
+ * De volle kaart heeft voorrang: die is scherper en wordt ook door de
+ * map-colors CI gebruikt om het regionale maximum af te leiden.
+ */
+function mapUrlFrom(html) {
+  const abs = (src) => (src.startsWith('http') ? src : `${SITE}${src.startsWith('/') ? '' : '/'}${src}`);
+  const vol = String(html || '').match(/["'(]([^"'()\s]*Reiseinfos_Karten\/[^"'()\s]+\.(?:png|jpe?g|svg))/i);
+  if (vol) return abs(vol[1]);
+  const klein = parse(String(html || '')).querySelectorAll('img')
     .map((im) => im.getAttribute('src') || '')
-    .find((s) => /csm_(reisewarnstufen|einzelansicht)/i.test(s) && /\.(png|jpe?g)(\?|$)/i.test(s)) || null;
-  if (src && src.startsWith('/')) src = SITE + src;
-  return src;
+    .find((s) => /csm_(reisewarnstufen|einzelansicht)/i.test(s) && /\.(png|jpe?g)(\?|$)/i.test(s));
+  return klein ? abs(klein) : null;
 }
 
 export async function getAdvisory(slug) {
@@ -63,6 +77,7 @@ export async function getAdvisory(slug) {
   // Sicherheitsstufe-box (landelijk niveau + (regional)-kwalificatie). De
   // stufe-waarde staat als SIBLING naast de .country-security-div, dus we
   // nemen een ruwe pagina-slice vanaf de box i.p.v. alleen de div-inhoud.
+  const mapUrl = mapUrlFrom(html);
   const iBox = html.indexOf('country-security');
   const boxText = iBox >= 0 ? html.slice(iBox, iBox + 4000) : html.slice(0, 20000);
 
@@ -125,7 +140,8 @@ export async function getAdvisory(slug) {
     regions: assessment.regions,
     confidence: assessment.confidence,
     assessmentStatus: assessment.assessmentStatus,
-    hasMap: false,
+    hasMap: !!mapUrl,
+    mapUrl,
     themes,
     fullText: themes.map((t) => t.text).join('\n'),
   };
