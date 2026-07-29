@@ -152,10 +152,6 @@ input:focus, select:focus { outline: 2px solid var(--link); outline-offset: 0; b
 .colors-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-bottom: 22px; }
 .color-card { padding: 16px; }
 .color-card h3 { margin: 0 0 10px; font-size: 14px; text-transform: uppercase; letter-spacing: .03em; color: var(--muted); }
-.color-badge {
-  display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 0;
-  font-weight: 700; color: #fff; font-size: 15px;
-}
 .dot { width: 14px; height: 14px; border-radius: 50%; display: inline-block; border: 1px solid rgba(0,0,0,.2); }
 .c-groen { background: var(--groen); } .c-geel { background: var(--geel); color: #4a3d00; }
 .c-oranje { background: var(--oranje); } .c-rood { background: var(--rood); }
@@ -369,7 +365,41 @@ input:focus, select:focus { outline: 2px solid var(--link); outline-offset: 0; b
 .divergence.none { background: #eaf4ea; border-color: #b3d3b3; }
 .divergence h3 { margin: 0 0 10px; font-size: 16px; }
 .consensus-line { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; font-size: 14px; }
-.consensus-line .color-badge { font-size: 13px; padding: 3px 10px; }
+
+/* ---- Consensus: verdeling over de kleurcodes met twee wijzers ----
+   Vier even brede vakken vormen de schaal; het midden van vak n ligt op
+   (n − 0,5)/4 van de breedte, waar de wijzers op gepositioneerd worden. */
+.consensus { background: #fff; border: 1px solid var(--border); padding: 12px 14px; margin: 0 0 14px; max-width: 620px; }
+.consensus h3 { margin: 0 0 10px; font-size: 14.5px; color: var(--nl-blue); }
+.cons-pins { position: relative; height: 24px; }
+.cons-pins.under { height: 26px; margin-top: 7px; }
+.cons-pin {
+  position: absolute; transform: translateX(-50%); white-space: nowrap;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  font-size: 12px; font-weight: 700; color: var(--nl-blue); line-height: 1;
+}
+.cons-pin::after {
+  content: ""; width: 0; height: 0;
+  border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 6px solid var(--nl-blue);
+}
+.cons-pins.under .cons-pin { flex-direction: column-reverse; }
+.cons-pins.under .cons-pin::after { border-top: none; border-bottom: 6px solid var(--muted); margin-bottom: 3px; }
+.cons-pin.world { color: var(--muted); }
+.cons-lbl { display: flex; align-items: center; gap: 5px; }
+.nww-mark { display: block; flex: 0 0 auto; }
+.cons-cells, .cons-labels { display: flex; gap: 3px; }
+.cons-cell {
+  flex: 1 1 0; height: 28px; display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border-soft); font-weight: 700; font-size: 14px;
+  font-variant-numeric: tabular-nums; color: var(--text);
+}
+.cons-cell.c-groen { background: #d7ecc6; }
+.cons-cell.c-geel { background: #fbf3ba; }
+.cons-cell.c-oranje { background: #f8ddb8; }
+.cons-cell.c-rood { background: #f3c0c0; }
+.cons-labels { margin-top: 3px; }
+.cons-labels span { flex: 1 1 0; text-align: center; font-size: 10.5px; text-transform: uppercase; letter-spacing: .03em; color: var(--muted); }
+.cons-note { margin: 11px 0 0; font-size: 13px; color: var(--muted); }
 
 /* ---- Recente wijzigingen ---- */
 .change-date { font-size: 13px; text-transform: uppercase; letter-spacing: .03em; color: var(--muted); margin: 20px 0 8px; }
@@ -464,7 +494,7 @@ input:focus, select:focus { outline: 2px solid var(--link); outline-offset: 0; b
   body { font-size: 12px; }
   .section-title, .theme-head-row { font-size: 14px; margin-top: 16px; }
   .summary-table th, .summary-table td { padding: 5px 8px; font-size: 11px; }
-  .sq, .color-badge, .delta { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .sq, .cons-cell, .delta { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   a { color: #000; text-decoration: none; }
   .divergence, .callout, .panel { break-inside: avoid; }
 }
@@ -756,6 +786,13 @@ h2 .flag-img { width: 30px; height: 22px; vertical-align: -3px; border-radius: 3
 .exp-matrix.compact th.wide { min-width: 150px; }
 .exp-matrix.compact td.exp-diff { text-align: left; }
 .exp-ccbox { font-weight: 700; text-align: center; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.exp-matrix th.exp-dist, .exp-matrix td.exp-dist { padding: 2px 4px; white-space: nowrap; }
+.exp-dcell {
+  display: inline-block; min-width: 15px; padding: 0 2px; margin-right: 1px; text-align: center;
+  border: 1px solid #ccc; font-weight: 700; font-size: 9px;
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
+.exp-dcell.none { background: #eef1f4; color: #666; font-weight: 400; }
 
 /* ---- Vergelijken: landenselectie, overzichtsmatrix, tabs, uitdraaibalk ---- */
 .compare-groups { flex: 1 1 100%; order: 2; margin: 0 0 10px; }
@@ -777,6 +814,24 @@ h2 .flag-img { width: 30px; height: 22px; vertical-align: -3px; border-radius: 3
 .overview-matrix td.ov-cc.c-rood { background: #f3c0c0; }
 .overview-matrix td.ov-cc.c-none { color: var(--muted); font-weight: 400; }
 .overview-matrix .ov-reg { font-size: 9px; vertical-align: super; margin-left: 1px; }
+.overview-matrix th.ov-dist, .overview-matrix td.ov-dist { padding: 3px 6px; }
+
+/* Vijf telvakjes: hoeveel bronnen hanteren welke kleurcode. Zelfde stijl als
+   de matrixcellen, maar smal genoeg voor één kolom. */
+.dist-cells { display: inline-flex; gap: 2px; }
+.dist-cell {
+  width: 21px; height: 18px; display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border-soft); font-size: 11px; font-weight: 700;
+  font-variant-numeric: tabular-nums; color: var(--text);
+}
+.dist-cell.c-groen { background: #d7ecc6; }
+.dist-cell.c-geel { background: #fbf3ba; }
+.dist-cell.c-oranje { background: #f8ddb8; }
+.dist-cell.c-rood { background: #f3c0c0; }
+.dist-cell.zero { color: #a8b3bd; font-weight: 400; }
+.dist-cell.none { background: #eef1f4; color: var(--muted); font-weight: 400; }
+.dist-cells.legend { vertical-align: -4px; }
+.dist-cells.legend .dist-cell { width: 13px; height: 12px; font-size: 0; }
 
 .versus-block { border: 1px solid var(--border); padding: 10px 14px; margin-bottom: 22px; background: #fbfcfd; }
 .versus-block > summary { font-weight: 600; color: var(--nl-blue); cursor: pointer; }

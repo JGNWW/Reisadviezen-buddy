@@ -107,6 +107,54 @@
   }
 
   /**
+   * Telling per kleurcode over een rij broncellen: hoeveel bronnen hanteren
+   * welke kleur. Alles wat geen kleurcode oplevert — de bron publiceert er geen,
+   * we konden hem niet vaststellen, of hij was niet op te halen — valt onder
+   * `geen`, zodat de vijf getallen altijd optellen tot het aantal bronnen.
+   */
+  function distribution(cells) {
+    const out = { groen: 0, geel: 0, oranje: 0, rood: 0, geen: 0 };
+    for (const c of cells || []) {
+      if (c && c.status === 'ok' && c.color && out[c.color] != null) out[c.color]++;
+      else out.geen++;
+    }
+    return out;
+  }
+
+  /** Niveau van een cel (1–4), of null als de bron geen kleurcode geeft. */
+  function cellLevel(c) {
+    if (!c || c.status !== 'ok') return null;
+    return c.level != null ? c.level : (COLOR_LEVEL[c.color] || null);
+  }
+
+  /**
+   * Mediaan van de bronnen die wél een niveau geven; null als niemand dat doet.
+   * Bij een even aantal het gemiddelde van de twee middelste, afgerond — dat
+   * houdt de uitkomst op de vier-punts-schaal.
+   */
+  function medianLevel(cells) {
+    const levels = (cells || []).map(cellLevel).filter((l) => l != null).sort((a, b) => a - b);
+    if (!levels.length) return null;
+    const mid = Math.floor(levels.length / 2);
+    return levels.length % 2 ? levels[mid] : Math.round((levels[mid - 1] + levels[mid]) / 2);
+  }
+
+  /** Hoeveel bronnen zijn strenger, milder of gelijk aan NederlandWereldwijd. */
+  function versusNl(cells, nlLevel) {
+    const res = { strenger: 0, milder: 0, gelijk: 0, beoordeeld: 0 };
+    for (const c of cells || []) {
+      const lvl = cellLevel(c);
+      if (lvl == null) continue;
+      res.beoordeeld++;
+      if (nlLevel == null) continue;
+      if (lvl > nlLevel) res.strenger++;
+      else if (lvl < nlLevel) res.milder++;
+      else res.gelijk++;
+    }
+    return res;
+  }
+
+  /**
    * Blad/pagina 1: landen × bronnen met kleurcodes, plus per land de grootste
    * afwijking. Levert ook de telling per kleurcode voor het voorblad.
    */
@@ -134,6 +182,10 @@
         country: c.name,
         nl: { color: c.nl?.color || null, level: nlLevel, status: c.nl?.color ? 'ok' : 'na', regional: !!c.nl?.regional, short: 'NL', label: 'NederlandWereldwijd' },
         cells,
+        // Hoeveel bronnen hanteren welke kleurcode — op het scherm en in de PDF
+        // één smalle kolom met vijf vakjes, in Excel vijf sorteerbare kolommen.
+        dist: distribution(cells),
+        median: medianLevel(cells),
         deviation: deviationLabel(nlLevel, cells),
         date: c.nl?.date || '—',
       };
@@ -237,6 +289,7 @@
   const API = {
     COLOR_LABELS, COLOR_LEVEL, GEEN_KLEURCODE,
     colorText, cellMark, clipSentences, deviationLabel,
+    distribution, cellLevel, medianLevel, versusNl,
     overviewMatrix, longRows, divergenceRows, provenanceRows, herkomst,
   };
 

@@ -1436,17 +1436,89 @@ function jumpToMatrixCell(targetId) {
 
 const colorSquare = (color, cls = '') => el('span', { class: `sq c-${color || 'none'}${cls ? ' ' + cls : ''}` });
 
-/** Inline gekleurde pil (bijv. voor de internationale-consensusregel). */
-function colorBadge(color, opts = {}) {
-  const { uncertain, explanation } = opts;
-  if (uncertain) {
-    return el('span', {
-      class: 'color-badge c-uncertain',
-      title: explanation || 'Niveau kon niet betrouwbaar worden vastgesteld — geen gok gedaan.',
-    }, colorSquare('onzeker'), 'Onzeker');
+/**
+ * Beeldmerk van NederlandWereldwijd, als vector zodat het scherp blijft op elk
+ * formaat en meeprint in de PDF. Nagetekend, geen officieel bestand: is het
+ * echte logo beschikbaar, dan hoeft alleen deze functie te wijzigen.
+ */
+function nwwMark(size = 15) {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', '0 0 64 64');
+  svg.setAttribute('width', String(size));
+  svg.setAttribute('height', String(size));
+  svg.setAttribute('role', 'img');
+  svg.setAttribute('aria-label', 'NederlandWereldwijd');
+  svg.setAttribute('class', 'nww-mark');
+  // Onder ±20 px vallen de dunne lijnen weg; dan een eenvoudiger tekening.
+  const klein = size < 20;
+  svg.innerHTML = '<rect width="64" height="64" fill="#0b78c4"/>'
+    + `<g fill="none" stroke="#fff" stroke-width="${klein ? 4.5 : 3}" stroke-linecap="round">`
+    + `<circle cx="32" cy="32" r="${klein ? 21 : 21.5}"/>`
+    + `<ellipse cx="32" cy="32" rx="10.5" ry="${klein ? 21 : 21.5}"/><path d="M11 32 H53"/>`
+    + (klein ? '' : '<path d="M21.5 22 L32 32 L42.5 45"/>')
+    + '</g><g fill="#fff">'
+    + (klein
+      ? '<circle cx="32" cy="11" r="6.5"/><circle cx="21" cy="22" r="5.5"/><circle cx="43" cy="45" r="5.5"/>'
+      : '<circle cx="32" cy="10.5" r="5.4"/><circle cx="21.5" cy="22" r="4.8"/><circle cx="42.5" cy="45" r="4.8"/>'
+        + '<circle cx="32" cy="32" r="3.4"/><circle cx="53" cy="32" r="3.6"/><circle cx="14" cy="41" r="3.4"/>')
+    + '</g>';
+  return svg;
+}
+
+/**
+ * Waar staat Nederland ten opzichte van de rest? Vier even brede vakjes met
+ * daarin hoeveel bronnen die kleurcode hanteren; daarboven een wijzer bij de
+ * Nederlandse kleur, eronder een wijzer bij de mediaan. Verdeling en consensus
+ * in één beeld — vandaar dat de losse regel "Landen zijn het eens over de
+ * kleurcode" hier niet meer nodig is.
+ */
+function renderConsensusBlock(nlColor, okSources) {
+  const cells = okSources.map((s) => ({
+    status: s.assessmentStatus === 'uncertain' ? 'uncertain' : s.assessmentStatus === 'none' ? 'none' : 'ok',
+    color: s.color || null,
+    level: s.level != null ? s.level : null,
+  }));
+  const dist = ExportModel.distribution(cells);
+  const mediaan = ExportModel.medianLevel(cells);
+  if (mediaan == null) return null; // geen enkele bron geeft een kleurcode
+  const nlLevel = COLOR_LEVEL[nlColor] || null;
+  const vs = ExportModel.versusNl(cells, nlLevel);
+  // Vier gelijke vakken; het midden van vak n ligt op (n - 0.5) / 4.
+  const pos = (lvl) => `${((lvl - 0.5) / 4) * 100}%`;
+
+  const wrap = el('div', { class: 'consensus' });
+  wrap.append(el('h3', {}, 'Waar staat Nederland ten opzichte van de rest?'));
+
+  const boven = el('div', { class: 'cons-pins' });
+  if (nlLevel) {
+    boven.append(el('span', { class: 'cons-pin', style: `left:${pos(nlLevel)}` },
+      el('span', { class: 'cons-lbl' }, nwwMark(15), 'NederlandWereldwijd')));
   }
-  if (!color) return el('span', { class: 'empty-col' }, 'geen kleurcode');
-  return el('span', { class: `color-badge c-${color}` }, colorSquare(color), COLOR_LABELS[color] || color);
+  wrap.append(boven);
+
+  const rij = el('div', { class: 'cons-cells' });
+  const labels = el('div', { class: 'cons-labels' });
+  ['groen', 'geel', 'oranje', 'rood'].forEach((k) => {
+    rij.append(el('span', { class: `cons-cell c-${k}`, title: `${dist[k]} bron${dist[k] === 1 ? '' : 'nen'} op ${k}` }, String(dist[k])));
+    labels.append(el('span', {}, k));
+  });
+  wrap.append(rij, labels);
+
+  const onder = el('div', { class: 'cons-pins under' });
+  onder.append(el('span', { class: 'cons-pin world', style: `left:${pos(mediaan)}` },
+    el('span', { class: 'cons-lbl' }, '🌍 Mediaan')));
+  wrap.append(onder);
+
+  const zin = [];
+  if (nlLevel) {
+    zin.push(el('strong', {}, String(vs.strenger)), ` bron${vs.strenger === 1 ? '' : 'nen'} ${vs.strenger === 1 ? 'is' : 'zijn'} strenger dan Nederland, `,
+      el('strong', {}, String(vs.milder)), ' milder, ', el('strong', {}, String(vs.gelijk)), ` ${vs.gelijk === 1 ? 'zit' : 'zitten'} gelijk.`);
+  } else {
+    zin.push('NederlandWereldwijd geeft voor dit land geen kleurcode, dus er valt niets te vergelijken.');
+  }
+  if (dist.geen) zin.push(` ${dist.geen} bron${dist.geen === 1 ? '' : 'nen'} ${dist.geen === 1 ? 'geeft' : 'geven'} geen kleurcode of ${dist.geen === 1 ? 'was' : 'waren'} niet op te halen.`);
+  wrap.append(el('p', { class: 'cons-note' }, zin));
+  return wrap;
 }
 
 /**
@@ -2131,26 +2203,13 @@ function renderComparison(staticData, foreign, root) {
   const spread = levels.length ? Math.max(...levels) - Math.min(...levels) : 0;
 
   const divWrap = el('div', { class: 'divergence ' + (spread >= 2 ? 'high' : distinctColors.size > 1 ? 'some' : 'none') });
-  divWrap.append(el('h3', {}, spread >= 2 ? '⚠️ Landen verschillen sterk in kleurcode'
-    : distinctColors.size > 1 ? 'Landen verschillen licht in kleurcode' : 'Landen zijn het eens over de kleurcode'));
 
-  // ---- Internationale consensus (mediaan van de betrouwbaar beoordeelde
-  // buitenlandse bronnen, NL zelf telt hier niet mee) ----
-  const consensusLevels = okSources
-    .filter((s) => s.level != null && s.assessmentStatus !== 'uncertain')
-    .map((s) => s.level)
-    .sort((a, b) => a - b);
-  if (consensusLevels.length) {
-    const mid = Math.floor(consensusLevels.length / 2);
-    const consensusLevel = consensusLevels.length % 2
-      ? consensusLevels[mid]
-      : Math.round((consensusLevels[mid - 1] + consensusLevels[mid]) / 2);
-    const consensusColor = LEVEL_COLORS[consensusLevel];
-    divWrap.append(el('p', { class: 'consensus-line' },
-      '🌍 Internationale consensus: ',
-      colorBadge(consensusColor),
-      ` (mediaan van ${consensusLevels.length} bron${consensusLevels.length === 1 ? '' : 'nen'}, NL niet meegeteld)`));
-  }
+  // Verdeling over de kleurcodes + de mediaan, met Nederland ernaast. Dit
+  // verving de losse kop ("Landen zijn het eens over de kleurcode") en de
+  // consensusregel met het gekleurde blokje: die informatie staat nu in de
+  // vakjes zelf, en het blokje viel weg tegen de gekleurde achtergrond.
+  const cons = renderConsensusBlock(nlColor, okSources);
+  if (cons) divWrap.append(cons);
 
   const chipRow = el('div', { class: 'chip-row' });
   chips.forEach((c) => chipRow.append(el('span', { class: 'div-chip' },
@@ -3468,6 +3527,14 @@ const CC_HEX = { groen: '#d7ecc6', geel: '#fbf3ba', oranje: '#f8ddb8', rood: '#f
 const SRC_SHORT = { uk: 'VK', us: 'VS', ca: 'CA', ie: 'IE', fr: 'FR', au: 'AU', es: 'ES', de: 'DE', nz: 'NZ', dk: 'DK', jp: 'JP', it: 'IT', fi: 'FI', kr: 'KR', no: 'NO', at: 'AT', ch: 'CH' };
 const cleanText = (s) => String(s || '').replace(/\s+/g, ' ').trim();
 const shortFor = (id) => SRC_SHORT[id] || id.toUpperCase();
+/** Kolomletter uit een 0-index (0→A, 26→AA) — met 17 bronnen loopt de
+ *  overzichtstabel voorbij Z, waar String.fromCharCode zou ontsporen. */
+function colName(n) {
+  let out = '';
+  n += 1;
+  while (n > 0) { const m = (n - 1) % 26; out = String.fromCharCode(65 + m) + out; n = (n - m - 1) / 26; }
+  return out;
+}
 
 // Wat gaat er mee in de uitdraai? Twee onafhankelijke vinkjes, bewaard zodat
 // een redacteur ze niet elke sessie opnieuw hoeft te zetten.
@@ -3601,6 +3668,20 @@ function filteredThemeContent(nl, foreign, { hidden, word } = {}) {
   return out;
 }
 
+/** Rij van vijf telvakjes (groen · geel · oranje · rood · geen), in dezelfde
+ *  stijl als de matrixcellen. Compact genoeg voor één tabelkolom. */
+function distCells(dist, cls = 'tiny') {
+  const wrap = el('span', {
+    class: `dist-cells ${cls}`,
+    title: `${dist.groen}× groen · ${dist.geel}× geel · ${dist.oranje}× oranje · ${dist.rood}× rood · `
+      + `${dist.geen} zonder kleurcode of niet opgehaald`,
+  });
+  ['groen', 'geel', 'oranje', 'rood'].forEach((k) => wrap.append(
+    el('span', { class: `dist-cell c-${k}${dist[k] ? '' : ' zero'}` }, String(dist[k]))));
+  wrap.append(el('span', { class: 'dist-cell none' }, String(dist.geen)));
+  return wrap;
+}
+
 // ---- Overzicht op het scherm: landen × bronnen ----------------------------
 /**
  * De kleurcodematrix boven de landentabs. Toont per land het niveaucijfer per
@@ -3618,6 +3699,7 @@ function renderOverviewBlock(shown) {
   const table = el('table', { class: 'overview-matrix' });
   const head = el('tr', {}, el('th', { class: 'ov-land' }, 'Land'), el('th', { title: 'NederlandWereldwijd' }, 'NL'));
   ds.sources.forEach((s) => head.append(el('th', { title: s.label }, s.short)));
+  head.append(el('th', { class: 'ov-dist' }, 'Verdeling'));
   head.append(el('th', { class: 'ov-dev' }, 'Grootste afwijking t.o.v. NL'));
   table.append(el('thead', {}, head));
 
@@ -3642,6 +3724,7 @@ function renderOverviewBlock(shown) {
     tbody.append(el('tr', { class: r.iso3 === COMPARE_ACTIVE ? 'on' : '' },
       el('td', { class: 'ov-land' }, open),
       cell(r.nl), ...r.cells.map(cell),
+      el('td', { class: 'ov-dist' }, distCells(r.dist)),
       el('td', { class: 'ov-dev' }, r.deviation)));
   });
   table.append(tbody);
@@ -3650,7 +3733,10 @@ function renderOverviewBlock(shown) {
   const telling = ['groen', 'geel', 'oranje', 'rood'].filter((k) => tally[k])
     .map((k) => `${tally[k]}× ${COLOR_LABELS[k].toLowerCase()}`).join(' · ');
   wrap.append(el('p', { class: 'hint', style: 'margin:8px 0 0' },
-    'Cijfer = niveau 1–4 · ▲ = een gebied binnen het land is zwaarder dan het landelijke niveau · — = de bron publiceert geen kleurcode · ? = niet vast te stellen · · = deze keer niet opgehaald.',
+    'Cijfer = niveau 1–4 · ▲ = een gebied binnen het land is zwaarder dan het landelijke niveau · — = de bron publiceert geen kleurcode · ? = niet vast te stellen · · = deze keer niet opgehaald. ',
+    'Verdeling = hoeveel bronnen die kleurcode hanteren, altijd in de volgorde ',
+    distCells({ groen: 0, geel: 0, oranje: 0, rood: 0, geen: 0 }, 'tiny legend'),
+    ' groen · geel · oranje · rood · geen.',
     telling ? ` NederlandWereldwijd: ${telling}.` : ''));
   return wrap;
 }
@@ -3751,19 +3837,25 @@ function buildExportXlsx(ds) {
   // ---- Blad "Overzicht": landen × bronnen, breed en leesbaar ----
   if (EXPORT_OPTS.colors) {
     const { header, body } = ExportModel.overviewMatrix(ds);
+    // In Excel juist wél vijf losse kolommen: daar wil je op kunnen filteren,
+    // sorteren en draaien — op het scherm en in de PDF zijn het vijf vakjes.
+    const kop = [...header.slice(0, -2), 'Groen', 'Geel', 'Oranje', 'Rood', 'Geen kleurcode', ...header.slice(-2)];
     const s = {
       name: 'Overzicht', freeze: 2, autofilter: 2,
-      cols: [26, 16, ...ds.sources.map(() => 16), 40, 14],
-      merges: [`A1:${String.fromCharCode(65 + header.length - 1)}1`], rows: [],
+      cols: [26, 16, ...ds.sources.map(() => 16), 9, 9, 9, 9, 15, 40, 14],
+      merges: [`A1:${colName(kop.length - 1)}1`], rows: [],
     };
     s.rows.push([{ v: `Reisadviezen — vergelijking van ${ds.countries.length} land${ds.countries.length === 1 ? '' : 'en'} · ${stamp}`, t: 'title' }]);
-    s.rows.push(header.map((h) => ({ v: h, t: 'header' })));
+    s.rows.push(kop.map((h) => ({ v: h, t: 'header' })));
     const cc = (c) => {
       const txt = ExportModel.colorText(c) + (c.regional ? ' ▲' : '');
       return c.status === 'ok' && c.color ? { v: txt, t: CC_STYLE[c.color] } : { v: txt, t: 'plain' };
     };
     for (const r of body) {
       s.rows.push([{ v: r.country, t: 'country' }, cc(r.nl), ...r.cells.map(cc),
+        { v: r.dist.groen, t: 'cc_groen' }, { v: r.dist.geel, t: 'cc_geel' },
+        { v: r.dist.oranje, t: 'cc_oranje' }, { v: r.dist.rood, t: 'cc_rood' },
+        { v: r.dist.geen, t: 'num' },
         { v: r.deviation, t: 'text' }, { v: r.date, t: 'num' }]);
     }
     sheets.push(s);
@@ -3909,6 +4001,7 @@ function buildExportPdf(ds) {
     const tbl = el('table', { class: 'exp-matrix compact' });
     const head = el('tr', {}, el('th', { class: 'exp-land' }, 'Land'), el('th', {}, 'NL'));
     ds.sources.forEach((s) => head.append(el('th', { title: s.label }, s.short)));
+    head.append(el('th', { class: 'exp-dist' }, 'Verdeling'));
     head.append(el('th', { class: 'wide' }, 'Grootste afwijking t.o.v. NL'));
     tbl.append(head);
     const cc = (c) => el('td', {
@@ -3916,12 +4009,21 @@ function buildExportPdf(ds) {
       style: c.status === 'ok' && c.color ? `background:${CC_HEX[c.color]}` : '',
       title: ExportModel.colorText(c),
     }, ExportModel.cellMark(c) + (c.regional ? '▲' : ''));
+    const expDist = (d) => {
+      const td = el('td', { class: 'exp-dist' });
+      ['groen', 'geel', 'oranje', 'rood'].forEach((k) => td.append(
+        el('span', { class: 'exp-dcell', style: `background:${CC_HEX[k]}` }, String(d[k]))));
+      td.append(el('span', { class: 'exp-dcell none' }, String(d.geen)));
+      return td;
+    };
     body.forEach((r) => tbl.append(el('tr', {},
       el('td', { class: 'exp-country' }, r.country), cc(r.nl), ...r.cells.map(cc),
-      el('td', { class: 'exp-diff' }, r.deviation))));
+      expDist(r.dist), el('td', { class: 'exp-diff' }, r.deviation))));
     mx.push(tbl);
     mx.push(el('p', { class: 'exp-legend' },
-      '— = de bron publiceert geen kleurcode voor dit land · ? = niet betrouwbaar vast te stellen · · = deze keer niet opgehaald. De bronnen staan voluit op het voorblad.'));
+      '— = de bron publiceert geen kleurcode voor dit land · ? = niet betrouwbaar vast te stellen · · = deze keer niet opgehaald. '
+      + 'Verdeling = hoeveel bronnen die kleurcode hanteren, in de volgorde groen · geel · oranje · rood · geen. '
+      + 'De bronnen staan voluit op het voorblad.'));
     page('land', ...mx);
   }
 

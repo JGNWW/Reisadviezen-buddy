@@ -63,6 +63,15 @@ test('overviewMatrix: kop, cellen en telling per kleurcode', () => {
   assert.deepEqual(tally, { groen: 0, geel: 2, oranje: 0, rood: 0, onbekend: 0 });
 });
 
+test('overviewMatrix: elke rij draagt de verdeling en de mediaan', () => {
+  const { body } = M.overviewMatrix(ds());
+  // Jordanië: VK geel, DE oranje, KR oranje, CH geel → 2× geel, 2× oranje.
+  assert.deepEqual(body[0].dist, { groen: 0, geel: 2, oranje: 2, rood: 0, geen: 0 });
+  assert.equal(body[0].median, 3); // 2,2,3,3 → afgerond 3
+  // El Salvador: VK geen kleurcode, CH niet opgehaald.
+  assert.deepEqual(body[1].dist, { groen: 1, geel: 0, oranje: 1, rood: 0, geen: 2 });
+});
+
 test('overviewMatrix: grootste afwijking noemt de strengste bronnen', () => {
   const { body } = M.overviewMatrix(ds());
   assert.equal(body[0].deviation, 'DE, KR strenger');
@@ -142,6 +151,56 @@ test('provenanceRows: telt live, snapshot en niet-opgehaald per bron', () => {
   assert.equal(uk.live, 2);
   assert.equal(uk.geenKleurcode, 1);
   assert.equal(uk.bijgewerkt, '27-07-2026');
+});
+
+// ---- Verdeling, mediaan en de vergelijking met NederlandWereldwijd --------
+const cellen = () => [
+  { status: 'ok', color: 'geel', level: 2 },
+  { status: 'ok', color: 'geel', level: 2 },
+  { status: 'ok', color: 'oranje', level: 3 },
+  { status: 'ok', color: 'rood', level: 4 },
+  { status: 'none' },
+  { status: 'na' },
+  { status: 'uncertain' },
+];
+
+test('distribution: telt per kleur, de rest valt onder "geen"', () => {
+  assert.deepEqual(M.distribution(cellen()), { groen: 0, geel: 2, oranje: 1, rood: 1, geen: 3 });
+});
+
+test('distribution: de vijf getallen tellen op tot het aantal bronnen', () => {
+  const cells = cellen();
+  const d = M.distribution(cells);
+  assert.equal(d.groen + d.geel + d.oranje + d.rood + d.geen, cells.length);
+  assert.deepEqual(M.distribution([]), { groen: 0, geel: 0, oranje: 0, rood: 0, geen: 0 });
+});
+
+test('distribution: kleur zonder "ok"-status telt niet mee als kleur', () => {
+  // Een onzekere inschatting mag niet als harde kleurcode meetellen.
+  assert.deepEqual(M.distribution([{ status: 'uncertain', color: 'rood', level: 4 }]),
+    { groen: 0, geel: 0, oranje: 0, rood: 0, geen: 1 });
+});
+
+test('medianLevel: middelste niveau, alleen over bronnen mét een kleurcode', () => {
+  assert.equal(M.medianLevel(cellen()), 3); // 2,2,3,4 → gemiddelde van 2 en 3, afgerond
+  assert.equal(M.medianLevel([{ status: 'ok', color: 'geel', level: 2 }]), 2);
+  assert.equal(M.medianLevel([{ status: 'none' }, { status: 'na' }]), null);
+  assert.equal(M.medianLevel([]), null);
+});
+
+test('medianLevel: leidt het niveau af uit de kleur als het veld ontbreekt', () => {
+  assert.equal(M.medianLevel([{ status: 'ok', color: 'oranje' }, { status: 'ok', color: 'oranje' }]), 3);
+});
+
+test('versusNl: telt strenger, milder en gelijk', () => {
+  assert.deepEqual(M.versusNl(cellen(), 2), { strenger: 2, milder: 0, gelijk: 2, beoordeeld: 4 });
+  assert.deepEqual(M.versusNl(cellen(), 4), { strenger: 0, milder: 3, gelijk: 1, beoordeeld: 4 });
+});
+
+test('versusNl: zonder Nederlandse kleurcode alleen tellen, niet vergelijken', () => {
+  const r = M.versusNl(cellen(), null);
+  assert.equal(r.beoordeeld, 4);
+  assert.deepEqual([r.strenger, r.milder, r.gelijk], [0, 0, 0]);
 });
 
 test('clipSentences: kapt op een zinsgrens, niet midden in een woord', () => {
