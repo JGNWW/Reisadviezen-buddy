@@ -2504,7 +2504,9 @@ function renderRecentChangesBlock(changesBySource, okSources) {
       `“${q}” — bekijk in matrix ↓`);
   };
 
-  // Groepeerkeuze; blijft staan voor het volgende land.
+  // Groepeerkeuze; blijft staan voor het volgende land. Wisselen vervangt
+  // alléén dit blok — het hele scherm hertekenen zou de uitklapper dichtslaan,
+  // precies op het moment dat je erin aan het kijken bent.
   const seg = el('span', { class: 'seg' });
   [['bron', 'Bron'], ['categorie', 'Categorie']].forEach(([val, label]) => {
     const b = el('button', { type: 'button', class: CHANGES_GROUPBY === val ? 'on' : '' }, label);
@@ -2512,7 +2514,9 @@ function renderRecentChangesBlock(changesBySource, okSources) {
       if (CHANGES_GROUPBY === val) return;
       CHANGES_GROUPBY = val;
       localStorage.setItem('changesGroupBy', val);
-      renderCompareView();
+      const vers = renderRecentChangesBlock(changesBySource, okSources);
+      vers.open = wrap.open;
+      wrap.replaceWith(vers);
     });
     seg.append(b);
   });

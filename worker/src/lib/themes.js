@@ -28,7 +28,7 @@ export const THEMES = [
       'travel advisory', 'exercise increased caution', 'exercise normal', 'reconsider travel',
       'do not travel',
       // de/da/fr/es
-      'sicherheit', 'sicherheitshinweis', 'aktuelles',
+      'actueel', 'sicherheit', 'sicherheitshinweis', 'aktuelles',
       'sikkerhed', 'generel anbefaling', 'sikkerhedsrisici', 'ekstra forsigtig',
       'trekking', 'hiking', 'wanderungen',
       'securite', 'derniere minute',
@@ -50,7 +50,7 @@ export const THEMES = [
     group: 'Veiligheid & risico’s',
     keywords: [
       'criminaliteit', 'zakkenroller', 'beroving', 'diefstal', 'oplichting', 'fraude',
-      'crime', 'theft', 'scam', 'robbery', 'pickpocket', 'mugging',
+      'crime', 'cybercrime', 'cybersecurity', 'theft', 'scam', 'robbery', 'pickpocket', 'mugging',
       'kriminalitat', 'kriminalitet', 'criminalite', 'delincuencia', 'robo',
       '犯罪', '窃盗', '強盗', '詐欺', 'スリ',
       'criminalita', 'ordine pubblico', 'rikollisuus',
@@ -106,17 +106,34 @@ export const THEMES = [
     id: 'natuurgeweld',
     label: 'Natuurgeweld & klimaat',
     group: 'Veiligheid & risico’s',
+    // Natuurbranden staan bewust in elke brontaal: elke bron noemt ze anders
+    // (wildfire/bushfire/Waldbrand/feux de forêt/incendi boschivi/skovbrand/
+    // metsäpalo/skogbrann/山火事/산불) en zonder die woorden belandden ze in
+    // willekeurige andere categorieën. Hetzelfde geldt voor hittegolven en
+    // aardverschuivingen, die de laatste jaren juist vaker voorkomen.
     keywords: [
-      'natuurgeweld', 'aardbeving', 'overstroming', 'orkaan', 'cycloon', 'vulkaan', 'tsunami',
-      'bosbrand', 'extreme weer', 'klimaat', 'natural disaster', 'earthquake', 'flood',
-      'hurricane', 'cyclone', 'volcano', 'wildfire', 'extreme weather', 'weather', 'monsoon',
+      'natuurgeweld', 'natuurbrand', 'bosbrand', 'aardbeving', 'overstroming', 'orkaan',
+      'cycloon', 'vulkaan', 'tsunami', 'aardverschuiving', 'hittegolf', 'noodweer',
+      'extreme weer', 'klimaat',
+      'natural disaster', 'natural hazard', 'earthquake', 'flood', 'hurricane', 'cyclone',
+      'typhoon', 'volcano', 'wildfire', 'wild fire', 'bushfire', 'bush fire', 'forest fire',
+      'landslide', 'heat wave',
+      'heatwave', 'extreme weather', 'weather', 'monsoon', 'drought', 'avalanche',
       'erdbeben', 'klima', 'naturkatastrophen', 'uberschwemmung', 'wirbelsturm',
-      'naturkatastrofer', 'jordskælv', 'jordskaelv',
-      'intemperies', 'seisme', 'catastrophes naturelles', 'inondation',
-      'terremoto', 'huracan', 'inundacion', 'desastres naturales',
-      '地震', '洪水', '自然災害', 'モンスーン', 'サイクロン',
-      'calamita', 'rischi ambientali', 'luonnonolot', 'luonnonkatastrofit',
-      '자연재해', '날씨',
+      'waldbrand', 'buschbrand', 'hitzewelle', 'erdrutsch', 'lawine', 'unwetter', 'umwelt',
+      'naturkatastrofer', 'jordskælv', 'jordskaelv', 'oversvommelse', 'skovbrand',
+      'hedebolge', 'jordskjelv', 'skogbrann', 'naturbrann', 'naturbrand', 'flom', 'snoskred',
+      'intemperies', 'seisme', 'catastrophes naturelles', 'risques naturels', 'inondation',
+      'feux de foret', 'feu de foret', 'incendie', 'canicule', 'glissement de terrain',
+      'ouragan',
+      'terremoto', 'huracan', 'inundacion', 'desastres naturales', 'incendio', 'incendi',
+      'ola de calor', 'deslizamiento',
+      'calamita', 'rischi ambientali', 'eventi naturali', 'sisma', 'alluvione', 'inondazione',
+      'ondata di calore', 'frana',
+      'luonnonolot', 'luonnonkatastrofit', 'maanjaristys', 'tulva', 'metsapalo', 'helleaalto',
+      '地震', '洪水', '自然災害', '台風', '津波', '火山', '山火事', '熱波', '土砂災害',
+      'モンスーン', 'サイクロン',
+      '자연재해', '날씨', '지진', '홍수', '태풍', '산불', '화산', '폭염', '산사태',
     ],
   },
   {
@@ -139,6 +156,7 @@ export const THEMES = [
     group: 'Praktisch & juridisch',
     keywords: [
       'wetten en gebruiken', 'wetten', 'lokale wetgeving', 'drugs', 'alcohol', 'lhbtiq', 'lgbt',
+      'lgbtq', 'lgbtqia', '2slgbt', 'lhbti',
       'religie', 'ramadan', 'kleding', 'fotograferen', 'zeden', 'laws and cultural differences',
       'local laws', 'customs', 'personal id', 'dress', 'illegal drugs', 'criminal penalties',
       'gay and lesbian',
@@ -173,8 +191,9 @@ export const THEMES = [
     group: 'Praktisch & juridisch',
     keywords: [
       'inreis', 'visum', 'paspoort', 'documenten', 'grenscontrole', 'douane', 'inreisregels',
+      'bagageregels', 'bagage', 'baggage', 'luggage',
       'entry requirements', 'entry', 'visa', 'passport', 'border control', 'customs rules',
-      'einreise', 'reisedokumente', 'aufenthalt', 'einfuhrbestimmungen', 'zoll',
+      'einreise', 'reisedokumente', 'aufenthalt', 'einfuhrbestimmungen', 'zoll', 'einfuhr', 'ausfuhr',
       'indrejse', 'ophold',
       'entree', 'sejour', 'formalites',
       'documentacion', 'visado', 'aduanas',
@@ -210,7 +229,7 @@ export const THEMES = [
     group: 'Praktisch & juridisch',
     keywords: [
       'noodsituatie', 'in geval van nood', 'hulp', 'alarmnummer', 'ambassade', 'consulaat',
-      'crisis', 'emergency', 'getting help', 'consular', 'embassy', 'assistance',
+      'crisis', 'emergency', 'getting help', 'help abroad', 'consular', 'embassy', 'assistance',
       'krisenvorsorge', 'danskerlisten', 'urgence', 'ambassade', 'embajada', 'telefonos',
       '緊急時', '連絡先', '大使館',
       'ambasciata', 'suurlahetysto', 'yhteystiedot',
@@ -224,11 +243,15 @@ export function themeById(id) {
   return THEME_BY_ID.get(id) || null;
 }
 
+// Kleine letters, diakrieten eraf (Kriminalität ~ kriminalitat). De NFC aan het
+// eind is niet cosmetisch: NFD hakt Koreaanse lettergrepen in losse jamo, en
+// dan is 치안 opeens vier tekens waar geen enkel trefwoord meer op past.
 const norm = (s) =>
   (s || '')
     .toLowerCase()
     .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '');
+    .replace(/[̀-ͯ]/g, '')
+    .normalize('NFC');
 
 /**
  * Classificeert een kop (en optioneel wat tekst) naar een canoniek thema.
@@ -236,6 +259,38 @@ const norm = (s) =>
  *
  * De kop weegt zwaar; de tekst wordt alleen gebruikt als tiebreak.
  */
+/**
+ * Bouwt de match-regel voor één trefwoord.
+ *
+ * Een kale substring is precies wat je wilt bij samenstellingen — Duits, Deens
+ * en Fins plakken alles aan elkaar, dus "katastroph" moet "Naturkatastrophen"
+ * vangen en "waldbrand" moet "Waldbrandgefahr" vangen. Maar bij korte
+ * trefwoorden levert diezelfde substring toevalstreffers op: "hiv" in het
+ * Italiaanse "incendi boschivi" (bosbranden werden zo als gezondheid
+ * geclassificeerd), "road" in "abroad", "war" in "Warnings and insurance".
+ *
+ * Vandaar de tweedeling:
+ *  - trefwoord van 6+ tekens → gewone substring; samenstellingen blijven werken;
+ *  - korter → alleen op woordbegin, verbuiging erachter mag ("flood" vangt
+ *    "flooding", "taxi" vangt "taxis", maar "road" vangt "abroad" niet meer).
+ * Voor scripts zonder woordgrenzen (Japans, Koreaans, Chinees) bestaat dat
+ * onderscheid niet; daar is het altijd een substring-match.
+ */
+const CJK = /[\u3040-\u30ff\u3400-\u9fff\uac00-\ud7af]/;
+const LOSSE_WOORD_TOT = 6;
+const matchers = new Map();
+function matcher(k) {
+  let re = matchers.get(k);
+  if (!re) {
+    const esc = k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    re = CJK.test(k) || k.length >= LOSSE_WOORD_TOT
+      ? new RegExp(esc)
+      : new RegExp(`(^|[^\\p{L}])${esc}`, 'u');
+    matchers.set(k, re);
+  }
+  return re;
+}
+
 export function classifyTheme(heading, text = '') {
   const h = norm(heading);
   const t = norm(text).slice(0, 600);
@@ -245,9 +300,9 @@ export function classifyTheme(heading, text = '') {
   for (const theme of THEMES) {
     let score = 0;
     for (const kw of theme.keywords) {
-      const k = norm(kw);
-      if (h.includes(k)) score += 10 + k.length / 10; // kop-match weegt zwaar
-      else if (t.includes(k)) score += 1;
+      const re = matcher(norm(kw));
+      if (re.test(h)) score += 10 + norm(kw).length / 10; // kop-match weegt zwaar
+      else if (re.test(t)) score += 1;
     }
     if (score > bestScore) {
       bestScore = score;
