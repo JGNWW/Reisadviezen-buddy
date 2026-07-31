@@ -1482,7 +1482,10 @@ function resolveRecentChanges(iso3, okSources, cmp) {
     deduped.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
     const capped = deduped.slice(0, MAX_CHANGE_ITEMS);
     capped.forEach((it) => {
+      // Het thema waar de gewijzigde zin nu onder valt: bepaalt zowel de
+      // sprong naar de juiste matrixcel als de categorie waarop je groepeert.
       const themeId = findThemeId(s.source, it.original);
+      it.themeId = themeId || null;
       it.targetId = themeId ? matrixCellId(s.source, themeId) : null;
     });
     out.set(s.source, capped);
@@ -2473,7 +2476,13 @@ function renderComparison(staticData, foreign, root) {
  * "Laatste wijziging"-kolom in de tabel erboven, maar hier op één plek bij
  * elkaar zodat je niet kolom voor kolom hoeft te kijken. Dichtgeklapt kost het
  * één regel; de kop noemt meteen welke bronnen iets veranderd hebben.
+ *
+ * Groeperen kan op bron ("wie heeft er iets gedaan?") of op categorie
+ * ("waaraan is er gesleuteld?") — die tweede vraag is bij vier bronnen
+ * meestal de eerste die je stelt.
  */
+let CHANGES_GROUPBY = localStorage.getItem('changesGroupBy') === 'categorie' ? 'categorie' : 'bron';
+
 function renderRecentChangesBlock(changesBySource, okSources) {
   const perSource = okSources
     .map((s) => ({ s, items: changesBySource?.get(s.source) || [] }))
@@ -2489,21 +2498,65 @@ function renderRecentChangesBlock(changesBySource, okSources) {
     el('span', { class: 'changes-who' }, ' — ' + perSource.map((x) => `${x.s.flag || ''} ${SRC_SHORT[x.s.source] || x.s.source.toUpperCase()}`).join(' · '))));
 
   const fmt = (d) => { const x = new Date(d); return isNaN(x) ? String(d).slice(0, 10) : x.toLocaleDateString('nl-NL'); };
+  const quote = (it) => {
+    const q = it.sentence.length > 260 ? it.sentence.slice(0, 260).replace(/\s+\S*$/, '') + '…' : it.sentence;
+    return el('button', { type: 'button', class: 'wijziging-quote', onclick: () => jumpToMatrixCell(it.targetId) },
+      `“${q}” — bekijk in matrix ↓`);
+  };
+
+  // Groepeerkeuze; blijft staan voor het volgende land.
+  const seg = el('span', { class: 'seg' });
+  [['bron', 'Bron'], ['categorie', 'Categorie']].forEach(([val, label]) => {
+    const b = el('button', { type: 'button', class: CHANGES_GROUPBY === val ? 'on' : '' }, label);
+    b.addEventListener('click', () => {
+      if (CHANGES_GROUPBY === val) return;
+      CHANGES_GROUPBY = val;
+      localStorage.setItem('changesGroupBy', val);
+      renderCompareView();
+    });
+    seg.append(b);
+  });
+  wrap.append(el('div', { class: 'changes-toolbar' }, el('span', { class: 'hint', style: 'margin:0' }, 'Groepeer op:'), seg));
+
+  if (CHANGES_GROUPBY === 'categorie') {
+    // Per categorie: welke bronnen hebben er iets aan veranderd?
+    const perThema = new Map();
+    perSource.forEach(({ s, items }) => items.forEach((it) => {
+      const key = it.themeId || '_onbekend';
+      if (!perThema.has(key)) perThema.set(key, []);
+      perThema.get(key).push({ s, it });
+    }));
+    // Vaste themavolgorde; "onbekend" onderaan.
+    const keys = [...perThema.keys()].sort((a, b) =>
+      (a === '_onbekend' ? 99 : THEME_ORDER.get(a) ?? 98) - (b === '_onbekend' ? 99 : THEME_ORDER.get(b) ?? 98));
+    keys.forEach((key) => {
+      const rijen = perThema.get(key);
+      const bronnen = [...new Set(rijen.map((r) => SRC_SHORT[r.s.source] || r.s.source.toUpperCase()))];
+      const box = el('div', { class: 'changes-src' });
+      box.append(el('div', { class: 'changes-src-head' },
+        key === '_onbekend' ? 'Niet in een categorie te plaatsen' : (THEME_BY_ID.get(key)?.label || key),
+        el('span', { class: 'changes-src-note' }, `${rijen.length} wijziging${rijen.length === 1 ? '' : 'en'} · ${bronnen.join(', ')}`)));
+      rijen.forEach(({ s, it }) => box.append(el('div', { class: 'changes-item' },
+        el('span', { class: 'changes-date' }, fmt(it.date)),
+        el('div', {},
+          el('span', { class: 'changes-heading' }, `${s.flag || ''} ${s.sourceLabel}${it.heading ? ` · ${it.heading}` : ''}`),
+          quote(it)))));
+      wrap.append(box);
+    });
+    return wrap;
+  }
+
   perSource.forEach(({ s, items }) => {
     const box = el('div', { class: 'changes-src' });
     box.append(el('div', { class: 'changes-src-head' },
       `${s.flag || ''} ${s.sourceLabel}`,
       el('a', { href: s.url, target: '_blank', rel: 'noopener', class: 'changes-src-link' }, 'origineel →')));
-    items.forEach((it) => {
-      const q = it.sentence.length > 260 ? it.sentence.slice(0, 260).replace(/\s+\S*$/, '') + '…' : it.sentence;
-      const row = el('div', { class: 'changes-item' },
-        el('span', { class: 'changes-date' }, fmt(it.date)),
-        el('div', {},
-          it.heading ? el('span', { class: 'changes-heading' }, it.heading) : null,
-          el('button', { type: 'button', class: 'wijziging-quote', onclick: () => jumpToMatrixCell(it.targetId) },
-            `“${q}” — bekijk in matrix ↓`)));
-      box.append(row);
-    });
+    items.forEach((it) => box.append(el('div', { class: 'changes-item' },
+      el('span', { class: 'changes-date' }, fmt(it.date)),
+      el('div', {},
+        it.heading ? el('span', { class: 'changes-heading' }, it.heading) : null,
+        it.themeId ? el('span', { class: 'cat-tag' }, THEME_BY_ID.get(it.themeId)?.label || it.themeId) : null,
+        quote(it)))));
     wrap.append(box);
   });
   return wrap;
@@ -3302,6 +3355,20 @@ async function buildChanges() {
   const filterSel = $('#changes-filter');
   (CFG.SOURCES || []).forEach((s) => filterSel.append(el('option', { value: s.id }, `${s.flag || ''} ${s.label}`)));
 
+  // Categorie-filter: dezelfde canonieke thema's als in de vergelijking,
+  // gegroepeerd zoals themes.json ze indeelt.
+  const catSel = $('#changes-category');
+  if (catSel && catSel.options.length === 1) {
+    const perGroep = new Map();
+    THEMES_META.forEach((t) => { if (!perGroep.has(t.group)) perGroep.set(t.group, []); perGroep.get(t.group).push(t); });
+    for (const [groep, items] of perGroep) {
+      const og = el('optgroup', { label: groep });
+      items.forEach((t) => og.append(el('option', { value: t.id }, t.label)));
+      catSel.append(og);
+    }
+    catSel.append(el('option', { value: '_onbekend' }, 'Categorie onbekend'));
+  }
+
   // Land-filter (waaróver het advies gaat): een datalist met alle landnamen
   // voor autocomplete; de daadwerkelijke filtering (substring, diacriet-loos)
   // gebeurt in renderChanges zodat ook los typen ("ethio") werkt.
@@ -3330,6 +3397,7 @@ async function buildChanges() {
   filterSel.addEventListener('change', rerender);
   $('#changes-watch').addEventListener('change', rerender);
   $('#changes-country').addEventListener('input', rerender);
+  $('#changes-category').addEventListener('change', rerender);
 
   // CSV-export van de op dat moment getoonde selectie (puntkomma's + BOM
   // zodat Nederlandstalig Excel het bestand direct goed opent).
@@ -3368,9 +3436,21 @@ function renderChanges(sourceFilter, from, to) {
     return !!c && (norm(c.nl).includes(cq) || norm(c.en).includes(cq));
   };
 
+  // Categorie-filter: een wijziging telt mee zodra één van de gewijzigde
+  // secties in die categorie valt — een sectie kan er in meerdere vallen.
+  const cat = $('#changes-category')?.value || '';
+  const sectieCats = (sec) => (sec?.themeIds || []).filter((id) => THEME_BY_ID.has(id));
+  const inCategory = (c) => {
+    if (!cat) return true;
+    const secties = c.sections || [];
+    if (cat === '_onbekend') return !secties.length || secties.every((s) => !sectieCats(s).length);
+    return secties.some((s) => sectieCats(s).includes(cat));
+  };
+
   const items = (RECENT_CHANGES || []).filter(
     (c) => (!sourceFilter || c.source === sourceFilter) && inPeriod(c.date)
       && (!onlyWatch || FAVORITES.has(c.iso3)) && countryMatch(c.iso3, c.countryNl)
+      && inCategory(c)
   );
 
   // Door de bron zelf gemelde updatedatums in de periode — ook voor updates
@@ -3434,6 +3514,20 @@ function renderChanges(sourceFilter, from, to) {
       el('span', { class: 'change-kind' }, CHANGE_KIND_LABEL[c.kind] || c.kind),
       who,
       el('p', { class: 'change-desc' }, c.description));
+
+    // Waar gíng de wijziging over? De categorieën van alle gewijzigde secties,
+    // ontdubbeld. Ouder dan de invoering van dit veld: geen gok, maar een
+    // eerlijk "categorie onbekend".
+    if (c.sections?.length) {
+      const ids = [...new Set(c.sections.flatMap((s) => sectieCats(s)))];
+      const tags = el('div', { class: 'change-cats' });
+      if (ids.length) {
+        ids.forEach((id) => tags.append(el('span', { class: 'cat-tag' }, THEME_BY_ID.get(id).label)));
+      } else {
+        tags.append(el('span', { class: 'cat-tag unknown', title: 'Deze wijziging is vastgelegd voordat de categorie werd meegeschreven.' }, 'categorie onbekend'));
+      }
+      row.append(tags);
+    }
     if (c.countryNl) row.querySelector('.change-country').addEventListener('click', () => {
       openCompareFor(resolveCountry(c.countryNl));
     });
@@ -3458,6 +3552,7 @@ function renderChanges(sourceFilter, from, to) {
         const box = el('div', { class: 'change-section' });
         box.append(el('h5', {},
           s.heading,
+          ...sectieCats(s).map((id) => el('span', { class: 'cat-tag' }, THEME_BY_ID.get(id).label)),
           s.isNew ? el('span', { class: 'sec-tag new' }, 'nieuwe sectie') : null,
           s.removed ? el('span', { class: 'sec-tag removed' }, 'sectie vervallen') : null));
         const shown = s.addedNl || s.added || [];

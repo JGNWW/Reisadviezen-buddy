@@ -162,12 +162,17 @@ const validHeading = (h) => h && h.length <= 140 && !CODE_HEADING.test(h);
  * tussen de varianten.
  */
 function groupSections(adv) {
-  const groups = new Map(); // headingKey -> { heading, sentences: Map<hash, zin> }
+  const groups = new Map(); // headingKey -> { heading, themes: Set, sentences: Map<hash, zin> }
   for (const t of adv.themes || []) {
     if (!t.heading || !t.text || !validHeading(t.heading)) continue;
     const key = headingKey(t.heading);
     let g = groups.get(key);
-    if (!g) { g = { heading: t.heading, sentences: new Map() }; groups.set(key, g); }
+    if (!g) { g = { heading: t.heading, themes: new Set(), sentences: new Map() }; groups.set(key, g); }
+    // Het advies draagt de thema-indeling al; die nemen we mee zodat je later
+    // op categorie kunt filteren ("is er iets aan natuurgeweld veranderd?").
+    // Meerdere thema's per sectie kán: koppen worden op genormaliseerde naam
+    // samengevoegd en een bron kan er verschillende onderwerpen onder hangen.
+    if (t.themeId) g.themes.add(t.themeId);
     for (const s of sentences(t.text)) g.sentences.set(hash(s), s);
   }
   return groups;
@@ -198,7 +203,7 @@ function diffContent(oldFp, adv) {
       if (g.sentences.size) {
         totalAdded += g.sentences.size;
         changed.push({
-          heading: g.heading, isNew: true, removedCount: 0,
+          heading: g.heading, themeIds: [...g.themes], isNew: true, removedCount: 0,
           added: [...g.sentences.values()].slice(0, MAX_ADDED_PER_SECTION).map((s) => s.slice(0, MAX_SENTENCE_LEN)),
         });
       }
@@ -210,7 +215,7 @@ function diffContent(oldFp, adv) {
       totalAdded += added.length;
       totalRemoved += removedCount;
       changed.push({
-        heading: g.heading, isNew: false, removedCount,
+        heading: g.heading, themeIds: [...g.themes], isNew: false, removedCount,
         added: added.slice(0, MAX_ADDED_PER_SECTION).map((s) => s.slice(0, MAX_SENTENCE_LEN)),
       });
     }
