@@ -20,6 +20,7 @@
 export const THEMES = [
   {
     id: 'veiligheid-algemeen',
+    icon: '🛡️',
     label: 'Actuele veiligheidssituatie',
     group: 'Veiligheid & risico’s',
     keywords: [
@@ -46,6 +47,7 @@ export const THEMES = [
   },
   {
     id: 'criminaliteit',
+    icon: '🚨',
     label: 'Criminaliteit',
     group: 'Veiligheid & risico’s',
     keywords: [
@@ -59,6 +61,7 @@ export const THEMES = [
   },
   {
     id: 'terrorisme',
+    icon: '💥',
     label: 'Terrorisme',
     group: 'Veiligheid & risico’s',
     keywords: [
@@ -71,6 +74,7 @@ export const THEMES = [
   },
   {
     id: 'ontvoering',
+    icon: '⛓️',
     label: 'Ontvoering',
     group: 'Veiligheid & risico’s',
     keywords: [
@@ -81,6 +85,7 @@ export const THEMES = [
   },
   {
     id: 'demonstraties-politiek',
+    icon: '📢',
     label: 'Demonstraties & politieke situatie',
     group: 'Veiligheid & risico’s',
     keywords: [
@@ -93,6 +98,7 @@ export const THEMES = [
   },
   {
     id: 'conflict-grens',
+    icon: '⚔️',
     label: 'Conflict, grens- en regionale risico’s',
     group: 'Veiligheid & risico’s',
     keywords: [
@@ -104,6 +110,7 @@ export const THEMES = [
   },
   {
     id: 'natuurgeweld',
+    icon: '🌪️',
     label: 'Natuurgeweld & klimaat',
     group: 'Veiligheid & risico’s',
     // Natuurbranden staan bewust in elke brontaal: elke bron noemt ze anders
@@ -138,6 +145,7 @@ export const THEMES = [
   },
   {
     id: 'verkeer-vervoer',
+    icon: '🚗',
     label: 'Verkeer & vervoer',
     group: 'Veiligheid & risico’s',
     keywords: [
@@ -152,6 +160,7 @@ export const THEMES = [
   },
   {
     id: 'wetten-gebruiken',
+    icon: '⚖️',
     label: 'Wetten, gebruiken & lokale regels',
     group: 'Praktisch & juridisch',
     keywords: [
@@ -168,6 +177,7 @@ export const THEMES = [
   },
   {
     id: 'gezondheid',
+    icon: '🩺',
     label: 'Gezondheid & medische zorg',
     group: 'Praktisch & juridisch',
     keywords: [
@@ -187,6 +197,7 @@ export const THEMES = [
   },
   {
     id: 'inreis-documenten',
+    icon: '🛂',
     label: 'Inreis, visum & documenten',
     group: 'Praktisch & juridisch',
     keywords: [
@@ -205,6 +216,7 @@ export const THEMES = [
   },
   {
     id: 'geld',
+    icon: '💶',
     label: 'Geld & betalen',
     group: 'Praktisch & juridisch',
     keywords: [
@@ -216,6 +228,7 @@ export const THEMES = [
   },
   {
     id: 'verzekering',
+    icon: '📄',
     label: 'Verzekeringen',
     group: 'Praktisch & juridisch',
     keywords: [
@@ -225,6 +238,7 @@ export const THEMES = [
   },
   {
     id: 'nood-hulp',
+    icon: '🆘',
     label: 'Noodsituatie & hulp',
     group: 'Praktisch & juridisch',
     keywords: [

@@ -527,6 +527,14 @@ let THEMES_META = [];
 let THEME_ORDER = new Map();
 let THEME_BY_ID = new Map();
 
+// Icoontje bij een thema. Staat in de taxonomie zelf (themes.json), zodat
+// scherm, pdf en excel hetzelfde plaatje pakken. Draait themes.json nog van
+// vóór de icoontjes, dan valt het stil terug op niets — een lege span in
+// plaats van een vraagteken.
+const GEEN_CAT_ICON = '🗂️';
+const themeIcon = (id) => (id === '_other' || id === '_onbekend' ? GEEN_CAT_ICON : THEME_BY_ID.get(id)?.icon || '');
+const iconEl = (id) => el('span', { class: 'cat-ico', 'aria-hidden': 'true' }, themeIcon(id));
+
 // Gangbare benamingen die niet (of net anders) in de officiële namen zitten.
 const COUNTRY_ALIASES = {
   vs: 'USA', usa: 'USA', amerika: 'USA', 'verenigde staten': 'USA',
@@ -2422,7 +2430,8 @@ function renderComparison(staticData, foreign, root) {
   themeChips.append(el('span', { class: 'hint', style: 'margin:0 4px 0 0' }, 'Thema’s:'));
   cmp.themes.forEach((t) => {
     const on = !HIDDEN_THEMES.has(t.theme.id);
-    const chip = el('button', { type: 'button', class: 'theme-chip' + (on ? ' on' : ''), 'aria-pressed': String(on) }, t.theme.label);
+    const chip = el('button', { type: 'button', class: 'theme-chip' + (on ? ' on' : ''), 'aria-pressed': String(on) },
+      iconEl(t.theme.id), t.theme.label);
     chip.addEventListener('click', () => {
       if (HIDDEN_THEMES.has(t.theme.id)) HIDDEN_THEMES.delete(t.theme.id); else HIDDEN_THEMES.add(t.theme.id);
       saveHiddenThemes();
@@ -2538,7 +2547,8 @@ function renderRecentChangesBlock(changesBySource, okSources) {
       const bronnen = [...new Set(rijen.map((r) => SRC_SHORT[r.s.source] || r.s.source.toUpperCase()))];
       const box = el('div', { class: 'changes-src' });
       box.append(el('div', { class: 'changes-src-head' },
-        key === '_onbekend' ? 'Niet in een categorie te plaatsen' : (THEME_BY_ID.get(key)?.label || key),
+        el('span', { class: 'cat-name' }, iconEl(key),
+          key === '_onbekend' ? 'Niet in een categorie te plaatsen' : (THEME_BY_ID.get(key)?.label || key)),
         el('span', { class: 'changes-src-note' }, `${rijen.length} wijziging${rijen.length === 1 ? '' : 'en'} · ${bronnen.join(', ')}`)));
       rijen.forEach(({ s, it }) => box.append(el('div', { class: 'changes-item' },
         el('span', { class: 'changes-date' }, fmt(it.date)),
@@ -2559,7 +2569,7 @@ function renderRecentChangesBlock(changesBySource, okSources) {
       el('span', { class: 'changes-date' }, fmt(it.date)),
       el('div', {},
         it.heading ? el('span', { class: 'changes-heading' }, it.heading) : null,
-        it.themeId ? el('span', { class: 'cat-tag' }, THEME_BY_ID.get(it.themeId)?.label || it.themeId) : null,
+        it.themeId ? el('span', { class: 'cat-tag' }, iconEl(it.themeId), THEME_BY_ID.get(it.themeId)?.label || it.themeId) : null,
         quote(it)))));
     wrap.append(box);
   });
@@ -2666,7 +2676,7 @@ function renderMatrix(cmp, nl, okSources, changesBySource = null) {
       if (!nlBlocks && fBlocks.every((b) => !b)) return;
     }
     const anyContent = re ? true : (t.nlHasIt || t.foreignHasIt);
-    grid.append(el('div', { class: 'cell rowlabel' }, t.theme.label));
+    grid.append(el('div', { class: 'cell rowlabel' }, iconEl(t.theme.id), t.theme.label));
     grid.append(cellFor(nlBlocks, false, anyContent, re, nl.url));
     fBlocks.forEach((b, i) => {
       const cellId = matrixCellId(okSources[i].source, t.theme.id);
@@ -3367,7 +3377,7 @@ async function buildChanges() {
     THEMES_META.forEach((t) => { if (!perGroep.has(t.group)) perGroep.set(t.group, []); perGroep.get(t.group).push(t); });
     for (const [groep, items] of perGroep) {
       const og = el('optgroup', { label: groep });
-      items.forEach((t) => og.append(el('option', { value: t.id }, t.label)));
+      items.forEach((t) => og.append(el('option', { value: t.id }, `${t.icon ? t.icon + ' ' : ''}${t.label}`)));
       catSel.append(og);
     }
     catSel.append(el('option', { value: '_onbekend' }, 'Categorie onbekend'));
@@ -3526,7 +3536,7 @@ function renderChanges(sourceFilter, from, to) {
       const ids = [...new Set(c.sections.flatMap((s) => sectieCats(s)))];
       const tags = el('div', { class: 'change-cats' });
       if (ids.length) {
-        ids.forEach((id) => tags.append(el('span', { class: 'cat-tag' }, THEME_BY_ID.get(id).label)));
+        ids.forEach((id) => tags.append(el('span', { class: 'cat-tag' }, iconEl(id), THEME_BY_ID.get(id).label)));
       } else {
         tags.append(el('span', { class: 'cat-tag unknown', title: 'Deze wijziging is vastgelegd voordat de categorie werd meegeschreven.' }, 'categorie onbekend'));
       }
@@ -3556,7 +3566,7 @@ function renderChanges(sourceFilter, from, to) {
         const box = el('div', { class: 'change-section' });
         box.append(el('h5', {},
           s.heading,
-          ...sectieCats(s).map((id) => el('span', { class: 'cat-tag' }, THEME_BY_ID.get(id).label)),
+          ...sectieCats(s).map((id) => el('span', { class: 'cat-tag' }, iconEl(id), THEME_BY_ID.get(id).label)),
           s.isNew ? el('span', { class: 'sec-tag new' }, 'nieuwe sectie') : null,
           s.removed ? el('span', { class: 'sec-tag removed' }, 'sectie vervallen') : null));
         const shown = s.addedNl || s.added || [];

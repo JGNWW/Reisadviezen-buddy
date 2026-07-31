@@ -148,7 +148,7 @@ async function main() {
   await writeFile(join(DATA, 'countries.json'), JSON.stringify(countries));
   await writeFile(
     join(DATA, 'themes.json'),
-    JSON.stringify(THEMES.map((t) => ({ id: t.id, label: t.label, group: t.group })))
+    JSON.stringify(THEMES.map((t) => ({ id: t.id, icon: t.icon, label: t.label, group: t.group })))
   );
 
   const list = await nlSource.listAdvisories();
