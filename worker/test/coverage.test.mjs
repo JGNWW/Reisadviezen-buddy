@@ -1,7 +1,7 @@
 /**
  * Thema-dekkingstest: bewaakt dat de trefwoord-classificatie voldoende
  * secties van elke bron een thema geeft. Elk niet-geclassificeerd blok
- * belandt in "Overige / niet ingedeeld" en staat dan in de matrix naast
+ * belandt in "Overig" en staat dan in de matrix naast
  * níks — dus dalende dekking (bijv. door een nieuwe kopstructuur bij een
  * bron, of een sneuvelend trefwoord) hoort CI te breken.
  *

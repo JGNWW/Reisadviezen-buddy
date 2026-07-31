@@ -531,8 +531,13 @@ let THEME_BY_ID = new Map();
 // scherm, pdf en excel hetzelfde plaatje pakken. Draait themes.json nog van
 // vóór de icoontjes, dan valt het stil terug op niets — een lege span in
 // plaats van een vraagteken.
-const GEEN_CAT_ICON = '🗂️';
-const themeIcon = (id) => (id === '_other' || id === '_onbekend' ? GEEN_CAT_ICON : THEME_BY_ID.get(id)?.icon || '');
+// Twee verschillende "rest"-bakjes, dus twee verschillende plaatjes: 'Overig'
+// is advies dat er wél staat maar in geen enkel thema valt, '_onbekend' is een
+// wijziging waarvan we de categorie niet weten. Hetzelfde icoon voor allebei
+// suggereert dat het hetzelfde is.
+const OVERIG_ICON = '🧩';
+const ONBEKEND_ICON = '🗂️';
+const themeIcon = (id) => (id === '_other' ? OVERIG_ICON : id === '_onbekend' ? ONBEKEND_ICON : THEME_BY_ID.get(id)?.icon || '');
 const iconEl = (id) => el('span', { class: 'cat-ico', 'aria-hidden': 'true' }, themeIcon(id));
 
 // Gangbare benamingen die niet (of net anders) in de officiële namen zitten.
@@ -1401,7 +1406,7 @@ function buildComparison(nl, foreignSources) {
 
   const themes = [];
   for (const id of ordered) {
-    const meta = id === '_other' ? { id, label: 'Overige / niet ingedeeld', group: 'Overig' } : THEME_BY_ID.get(id);
+    const meta = id === '_other' ? { id, label: 'Overig', group: 'Overig' } : THEME_BY_ID.get(id);
     const nlBlocks = nlIdx.get(id) || [];
     const foreign = {};
     let foreignHasIt = false;

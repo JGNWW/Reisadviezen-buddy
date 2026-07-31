@@ -40,7 +40,7 @@ export function buildThemeComparison(nl, foreignList) {
   for (const id of ordered) {
     const theme =
       id === '_other'
-        ? { id: '_other', label: 'Overige / niet ingedeeld', group: 'Overig' }
+        ? { id: '_other', label: 'Overig', group: 'Overig' }
         : themeById(id);
     const nlBlocks = nlIdx.get(id) || [];
     const foreign = {};
