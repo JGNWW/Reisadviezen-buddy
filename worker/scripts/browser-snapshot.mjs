@@ -36,6 +36,11 @@ const SOURCES = {
     url: (m) => `https://um.dk/rejse-og-ophold/rejse-til-udlandet/rejsevejledninger/${m}`,
     // SPA: wachten tot de app echt inhoud heeft neergezet.
     readyText: /rejsevejledning|sikkerhed|indrejse/i,
+    // Denemarken publiceert lang niet voor elk land een advies; voor ruim
+    // negentig landen staat er een geldige pagina met "Vi har ingen
+    // rejsevejledning for X". Dat is een antwoord, geen storing — het hoort
+    // niet als mislukte ophaling geteld te worden en er valt niets te wachten.
+    noAdvisoryText: /vi har ingen rejsevejledning/i,
   },
   no: {
     label: 'Noorwegen (Utenriksdept.)', flag: '🇳🇴', lang: 'no',
@@ -134,6 +139,7 @@ async function captureOne(page, sid, iso, mapping) {
   // dan heeft wachten geen zin en stoppen we meteen.
   const vroeg = await page.evaluate(() => `${document.title} ${document.body.innerText || ''}`.slice(0, 400)).catch(() => '');
   if (BLOCKED.test(vroeg)) return { ok: false, reason: 'botcheck', monster: `«vroeg» ${vroeg.slice(0, 220)}` };
+  if (cfg.noAdvisoryText && cfg.noAdvisoryText.test(vroeg)) return { ok: false, reason: 'bron publiceert hier geen advies' };
   try {
     await page.waitForFunction(
       (re) => new RegExp(re, 'i').test(document.body.innerText || ''),
@@ -192,7 +198,7 @@ async function main() {
   });
   const page = await ctx.newPage();
 
-  const stats = { saved: 0, kept: 0, blocked: 0, nomapping: 0 };
+  const stats = { saved: 0, kept: 0, blocked: 0, nomapping: 0, geenadvies: 0 };
   // Hooguit twee uitsnedes per bron: genoeg om te zien wat er misgaat, zonder
   // het logboek vol te zetten met 226 keer hetzelfde.
   const getoond = new Map();
@@ -208,7 +214,8 @@ async function main() {
       try {
         const r = await captureOne(page, sid, iso, mapping);
         if (!r.ok) {
-          stats[r.reason === 'botcheck' ? 'blocked' : 'kept']++;
+          stats[r.reason === 'botcheck' ? 'blocked'
+            : r.reason.startsWith('bron publiceert') ? 'geenadvies' : 'kept']++;
           console.log(`  ${iso}/${sid}: overslaan (${r.reason}) — vorige snapshot blijft`);
           const n = getoond.get(sid) || 0;
           if (r.monster && n < 2) { getoond.set(sid, n + 1); console.log(`      wat er stond: ${r.monster}`); }
@@ -237,7 +244,7 @@ async function main() {
   }
 
   await browser.close();
-  console.log(`\nBrowser-snapshot klaar: ${stats.saved} opgeslagen, ${stats.kept} behouden/gefaald, ${stats.blocked} botcheck, ${stats.nomapping} zonder mapping.`);
+  console.log(`\nBrowser-snapshot klaar: ${stats.saved} opgeslagen, ${stats.kept} behouden/gefaald, ${stats.blocked} botcheck, ${stats.geenadvies} bron heeft hier geen advies, ${stats.nomapping} zonder mapping.`);
 }
 
 main().catch((e) => { console.error(e); process.exit(1); });
