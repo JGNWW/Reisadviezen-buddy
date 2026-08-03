@@ -53,7 +53,13 @@ const SOURCES = {
     url: (m) => `https://www.eda.admin.ch/eda/de/home/laender-reise-information/${m}`,
     readyText: /reisehinweise|einschätzung|sicherheitslage|grundsätzliche/i,
     // Herken de generieke overzichtspagina zodat we die niet als advies opslaan.
-    genericText: /allgemeine reiseinformationen|reisehinweise kurz erklärt/i,
+    //
+    // "Auswahl Länder und Territorien" staat er bewust bij: dát is de pagina
+    // waar de directe URL sinds de verhuizing op uitkomt — de landenkiezer met
+    // 203 zoekresultaten. Zonder die term sloeg de zelfherstel-stap hieronder
+    // nooit aan en werd elke Zwitserse capture afgekeurd als "te weinig tekst
+    // (552)", steeds datzelfde getal.
+    genericText: /allgemeine reiseinformationen|reisehinweise kurz erklärt|auswahl länder und territorien|suchergebnisse/i,
     // Zelfherstel: op de index de link vinden die het land noemt.
     indexUrl: 'https://www.eda.admin.ch/eda/de/home/laender-reise-information.html',
   },
@@ -100,6 +106,7 @@ async function captureOne(page, sid, iso, mapping) {
   // Zelfherstel bij URL-drift (EDA): landde de directe URL op de generieke
   // overzichtspagina, zoek dan op de index de link die dit land noemt en
   // navigeer daarheen. De landnaam (Duits) staat in de mapping-slug.
+  let zelfherstel = null; // reden waarom de zelfherstel-stap niets opleverde
   if (cfg.genericText && cfg.indexUrl) {
     const bodyNow = await page.evaluate(() => document.body.innerText).catch(() => '');
     if (cfg.genericText.test(bodyNow)) {
@@ -113,7 +120,8 @@ async function captureOne(page, sid, iso, mapping) {
           return a ? a.href : null;
         }, slug);
         if (href) { url = href; await page.goto(href, { waitUntil: 'domcontentloaded', timeout: 45000 }); }
-      } catch { /* index-zoektocht faalde — checks hieronder vangen het op */ }
+        else zelfherstel = `geen link gevonden voor "${slug}" op de index`;
+      } catch (e) { zelfherstel = `index-zoektocht faalde: ${String(e.message).slice(0, 50)}`; }
     }
   }
   // SPA's en botchecks hebben even nodig; wacht tot het "klaar"-signaal in de
@@ -137,7 +145,7 @@ async function captureOne(page, sid, iso, mapping) {
   const { sections, title, fullText } = await extractSections(page);
   // Uitsnede meesturen: bij een afgekeurde capture is "te weinig tekst" alleen
   // een getal, en dan is niet te zien wát er dan wél stond.
-  const monster = `«${title}» ${fullText.slice(0, 220)}`;
+  const monster = `«${title}»${zelfherstel ? ` [zelfherstel: ${zelfherstel}]` : ''} ${fullText.slice(0, 200)}`;
   if (BLOCKED.test(fullText) || BLOCKED.test(title)) return { ok: false, reason: 'botcheck', monster };
   if (cfg.genericText && cfg.genericText.test(fullText) && !cfg.readyText.test(fullText.replace(cfg.genericText, ''))) {
     return { ok: false, reason: 'generieke pagina (geen landadvies)', monster };
