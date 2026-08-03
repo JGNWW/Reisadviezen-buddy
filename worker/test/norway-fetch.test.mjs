@@ -9,10 +9,13 @@
  * landbestanden in het snapshot-vangnet (0%, tegen 32-100% voor de andere
  * bronnen) en verdween uit de vergelijking zodra live ophalen faalde.
  *
- * De adapter probeert drie routes achter elkaar: rechtstreeks (met volledige
- * browser-headers, en intern de CORS-proxy als vangnet), dan de reader, dan de
- * reader met browser-engine die de JS-challenge uitvoert. Elke route wordt op
- * de wachtkamer gecontroleerd — een HTTP 200 zegt hier niets.
+ * De adapter probeert vier routes achter elkaar: rechtstreeks (met volledige
+ * browser-headers, en intern de CORS-proxy als vangnet), de reader, de reader
+ * via een Noorse proxy, en tot slot die proxy mét browser-engine. Elke route
+ * wordt op de wachtkamer gecontroleerd — een HTTP 200 zegt hier niets.
+ *
+ * Die derde route is de enige die niet vanaf een datacenter-IP komt, en dat is
+ * precies waar de Cloudflare-wachtkamer op selecteert.
  *
  * Er wordt niet echt over het netwerk opgehaald: globalThis.fetch wordt gemockt
  * zodat we per poging kunnen bepalen wat er terugkomt — wachtkamer of echte
@@ -53,7 +56,9 @@ function netwerkGeeft(plan) {
   globalThis.fetch = async (url, opts = {}) => {
     const h = opts.headers || {};
     const viaReader = String(url).includes('r.jina.ai');
-    const route = !viaReader ? 'direct' : h['X-Engine'] === 'browser' ? 'reader+browser' : 'reader';
+    const proxy = h['x-proxy'] ? '+proxy' : '';
+    const route = !viaReader ? 'direct'
+      : (h['X-Engine'] === 'browser' ? 'reader+browser' : 'reader') + proxy;
     calls.push({ url: String(url), route });
     const out = plan(calls.length, route);
     if (out instanceof Error) throw out;
@@ -89,12 +94,19 @@ test('rechtstreeks geblokkeerd → de reader mag het proberen', async () => {
   assert.deepEqual(calls.map((c) => c.route), ['direct', 'reader']);
 });
 
-test('pas de browser-engine komt erdoor', async () => {
+test('pas de Noorse proxy komt erdoor', async () => {
   const calls = netwerkGeeft((n) => (n < 3 ? CHALLENGE : PAGINA));
   const adv = await getAdvisory(EGY);
-  assert.ok(adv, 'advies verwacht na de browser-poging');
+  assert.ok(adv, 'advies verwacht via de proxy-poging');
   assert.ok(adv.themes.length >= 2);
-  assert.deepEqual(calls.map((c) => c.route), ['direct', 'reader', 'reader+browser']);
+  assert.deepEqual(calls.map((c) => c.route), ['direct', 'reader', 'reader+proxy']);
+});
+
+test('de proxy-routes vragen om een Noors uitgaand IP', async () => {
+  const calls = netwerkGeeft(() => CHALLENGE);
+  await assert.rejects(getAdvisory(EGY));
+  const metProxy = calls.filter((c) => c.route.includes('proxy'));
+  assert.equal(metProxy.length, 2, 'twee proxy-pogingen verwacht');
 });
 
 test('alle routes geblokkeerd → werpt (i.p.v. stil null, dat las als "geen advies")', async () => {
@@ -103,11 +115,12 @@ test('alle routes geblokkeerd → werpt (i.p.v. stil null, dat las als "geen adv
 });
 
 test('de foutmelding noemt per route wat er misging', async () => {
-  netwerkGeeft((n, route) => (route === 'reader+browser' ? 401 : CHALLENGE));
+  netwerkGeeft((n, route) => (route.includes('browser') ? 401 : CHALLENGE));
   await assert.rejects(getAdvisory(EGY), (e) => {
     assert.match(e.message, /direct: botcheck/);
     assert.match(e.message, /reader: botcheck/);
-    assert.match(e.message, /reader\+browser: .*401/);
+    assert.match(e.message, /reader\+proxy: botcheck/);
+    assert.match(e.message, /reader\+browser\+proxy: .*401/);
     return true;
   });
 });

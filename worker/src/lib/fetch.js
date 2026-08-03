@@ -86,9 +86,14 @@ let READER_KEY = null;
 export function setReaderKey(key) { READER_KEY = key || null; }
 
 export async function getViaReader(url, opts = {}) {
-  const { format = 'html', browser = false, timeout = 30, waitFor = null } =
+  const { format = 'html', browser = false, timeout = 30, waitFor = null, proxy = null } =
     typeof opts === 'string' ? { format: opts } : opts;
   const headers = { 'User-Agent': UA, 'X-Return-Format': format, 'X-Timeout': String(timeout) };
+  // Landcode voor de proxy van de reader ('no', of 'auto' voor zelf kiezen).
+  // Nodig bij bronnen die datacenter-IP's weigeren: de reader haalt de pagina
+  // dan op vanuit dat land in plaats van vanuit zijn eigen datacenter. De
+  // dienst noemt dit "proxy allocation" en vereist een key.
+  if (proxy) headers['x-proxy'] = proxy;
   if (browser) headers['X-Engine'] = 'browser'; // rendert JavaScript-SPA's
   // Wacht tot deze selector er staat voordat de pagina wordt vastgelegd. Nodig
   // bij een Cloudflare-wachtkamer: die stuurt na een paar seconden zelf door

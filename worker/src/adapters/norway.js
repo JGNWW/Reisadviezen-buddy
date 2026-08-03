@@ -75,10 +75,14 @@ async function fetchPage(url) {
   const pogingen = [
     ['direct', () => getTextWithHeaders(url, BROWSER_HEADERS)],
     ['reader', () => getViaReader(url, 'html')],
-    // De wachtkamer stuurt na een paar seconden zelf door. Wachten op de h1 van
-    // het artikel geeft die omleiding de tijd; zonder dat legt de reader de
-    // wachtkamer vast en lijkt het alsof de challenge niet te passeren is.
-    ['reader+browser', () => getViaReader(url, { format: 'html', browser: true, timeout: 60, waitFor: 'article h1, main h1' })],
+    // De doorslaggevende laag. Alle voorgaande pogingen komen vanaf een
+    // datacenter-IP en krijgen daarom de Cloudflare-wachtkamer — gemeten voor
+    // een kale fetch, de CORS-proxy, de reader, de reader met browser-engine,
+    // een headless-shell én een volledige Chromium. Met een Noorse proxy haalt
+    // de reader de pagina op vanuit Noorwegen, en dat is precies het verschil
+    // waar die wachtkamer op selecteert.
+    ['reader+proxy', () => getViaReader(url, { format: 'html', timeout: 45, proxy: 'no' })],
+    ['reader+browser+proxy', () => getViaReader(url, { format: 'html', browser: true, timeout: 60, proxy: 'no', waitFor: 'article h1, main h1' })],
   ];
   const waarom = [];
   for (const [naam, poging] of pogingen) {
