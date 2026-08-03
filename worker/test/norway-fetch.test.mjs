@@ -9,9 +9,14 @@
  * landbestanden in het snapshot-vangnet (0%, tegen 32-100% voor de andere
  * bronnen) en verdween uit de vergelijking zodra live ophalen faalde.
  *
+ * De adapter probeert drie routes achter elkaar: rechtstreeks (met volledige
+ * browser-headers, en intern de CORS-proxy als vangnet), dan de reader, dan de
+ * reader met browser-engine die de JS-challenge uitvoert. Elke route wordt op
+ * de wachtkamer gecontroleerd — een HTTP 200 zegt hier niets.
+ *
  * Er wordt niet echt over het netwerk opgehaald: globalThis.fetch wordt gemockt
- * (de reader draait op r.jina.ai) zodat we per poging kunnen bepalen wat er
- * terugkomt — wachtkamer of echte pagina.
+ * zodat we per poging kunnen bepalen wat er terugkomt — wachtkamer of echte
+ * pagina.
  *
  * Draaien: cd worker && node --test test/norway-fetch.test.mjs
  */
@@ -38,13 +43,19 @@ const PAGINA = `<html><body><article>
 <p>Oppdatert: 14.05.2026</p>
 </article></body></html>`;
 
-/** Mockt de reader; `plan` levert per aanroep een body (of gooit). */
-function readerReturns(plan) {
+/**
+ * Mockt het netwerk; `plan(n, route)` levert per aanroep een body (of een
+ * statuscode om te laten falen). `route` is 'direct', 'reader' of
+ * 'reader+browser', zodat een test kan vastleggen wélke route aan de beurt was.
+ */
+function netwerkGeeft(plan) {
   const calls = [];
   globalThis.fetch = async (url, opts = {}) => {
-    const browser = (opts.headers || {})['X-Engine'] === 'browser';
-    calls.push({ url: String(url), browser });
-    const out = plan(calls.length, browser);
+    const h = opts.headers || {};
+    const viaReader = String(url).includes('r.jina.ai');
+    const route = !viaReader ? 'direct' : h['X-Engine'] === 'browser' ? 'reader+browser' : 'reader';
+    calls.push({ url: String(url), route });
+    const out = plan(calls.length, route);
     if (out instanceof Error) throw out;
     if (typeof out === 'number') return { ok: false, status: out, text: async () => '' };
     return { ok: true, status: 200, text: async () => out };
@@ -60,38 +71,49 @@ test('looksBlocked herkent de Cloudflare-wachtkamer, niet een echt advies', () =
   assert.equal(looksBlocked(''), false);
 });
 
-test('gewone pagina → advies met thema\'s (geen browser-poging nodig)', async () => {
-  const calls = readerReturns(() => PAGINA);
+test('rechtstreeks al goed → advies met thema\'s, reader wordt niet gebruikt', async () => {
+  const calls = netwerkGeeft(() => PAGINA);
   const adv = await getAdvisory(EGY);
   assert.ok(adv, 'advies verwacht');
   assert.ok(adv.themes.length >= 2, `>=2 thema's verwacht, kreeg ${adv.themes?.length}`);
   assert.equal(adv.source, 'no');
   assert.equal(adv.lastModified, '2026-05-14');
   assert.equal(calls.length, 1);
-  assert.equal(calls[0].browser, false);
+  assert.equal(calls[0].route, 'direct');
 });
 
-test('botcheck → tweede poging met de browser-engine, die het advies wél krijgt', async () => {
-  const calls = readerReturns((n) => (n === 1 ? CHALLENGE : PAGINA));
+test('rechtstreeks geblokkeerd → de reader mag het proberen', async () => {
+  const calls = netwerkGeeft((n) => (n === 1 ? CHALLENGE : PAGINA));
+  const adv = await getAdvisory(EGY);
+  assert.ok(adv, 'advies verwacht via de reader');
+  assert.deepEqual(calls.map((c) => c.route), ['direct', 'reader']);
+});
+
+test('pas de browser-engine komt erdoor', async () => {
+  const calls = netwerkGeeft((n) => (n < 3 ? CHALLENGE : PAGINA));
   const adv = await getAdvisory(EGY);
   assert.ok(adv, 'advies verwacht na de browser-poging');
   assert.ok(adv.themes.length >= 2);
-  assert.equal(calls.length, 2);
-  assert.equal(calls[1].browser, true, 'tweede poging moet X-Engine: browser sturen');
+  assert.deepEqual(calls.map((c) => c.route), ['direct', 'reader', 'reader+browser']);
 });
 
-test('botcheck blijft staan → werpt (i.p.v. stil null, dat las als "geen advies")', async () => {
-  readerReturns(() => CHALLENGE);
+test('alle routes geblokkeerd → werpt (i.p.v. stil null, dat las als "geen advies")', async () => {
+  netwerkGeeft(() => CHALLENGE);
   await assert.rejects(getAdvisory(EGY), /botcheck/i);
 });
 
-test('browser-engine niet beschikbaar (401, geen reader-key) → werpt alsnog netjes', async () => {
-  readerReturns((n) => (n === 1 ? CHALLENGE : 401));
-  await assert.rejects(getAdvisory(EGY), /botcheck/i);
+test('de foutmelding noemt per route wat er misging', async () => {
+  netwerkGeeft((n, route) => (route === 'reader+browser' ? 401 : CHALLENGE));
+  await assert.rejects(getAdvisory(EGY), (e) => {
+    assert.match(e.message, /direct: botcheck/);
+    assert.match(e.message, /reader: botcheck/);
+    assert.match(e.message, /reader\+browser: .*401/);
+    return true;
+  });
 });
 
 test('zonder of met kapotte mapping → null, zonder ook maar te fetchen', async () => {
-  const calls = readerReturns(() => PAGINA);
+  const calls = netwerkGeeft(() => PAGINA);
   assert.equal(await getAdvisory(''), null);
   assert.equal(await getAdvisory('alleen-slug-zonder-id'), null);
   assert.equal(calls.length, 0);

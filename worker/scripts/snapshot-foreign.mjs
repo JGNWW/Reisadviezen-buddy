@@ -652,6 +652,13 @@ async function main() {
       const pct = Math.round((t.failed / t.tried) * 100);
       console.log(`  ${sid}: ${t.failed}/${t.tried} mislukt (${pct}%)${t.reason ? ` — eerste oorzaak: ${t.reason}` : ''}`);
     }
+    // Een bron die állemaal faalt, levert nul snapshots en verdwijnt dus
+    // geruisloos uit de vergelijking — de run zelf blijft groen. Als
+    // waarschuwing komt het wél boven aan de Actions-samenvatting te staan,
+    // zodat het niet weer maanden onopgemerkt blijft zoals bij Noorwegen.
+    for (const [sid, t] of zorgelijk.filter(([, x]) => x.failed === x.tried)) {
+      console.log(`::warning title=Bron ${sid} levert niets::${t.failed}/${t.tried} ophalingen mislukt${t.reason ? ` — ${t.reason}` : ''}`);
+    }
   }
 }
 

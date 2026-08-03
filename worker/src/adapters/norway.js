@@ -12,7 +12,7 @@
  * Kriminalitet, …).
  */
 import { parse } from 'node-html-parser';
-import { getViaReader } from '../lib/fetch.js';
+import { getViaReader, getTextWithHeaders } from '../lib/fetch.js';
 import { htmlToText, splitByHeadings, absolutiseLinks } from '../lib/html.js';
 import { classifyTheme } from '../lib/themes.js';
 import { analyzeAdvisory } from '../analysis/analysis-engine.js';
@@ -40,21 +40,54 @@ const BOTCHECK = /just a moment|cf-chl|performing security verification|verifyin
 /** Is dit een botcheck-/challenge-pagina in plaats van het advies zelf? */
 export const looksBlocked = (html) => BOTCHECK.test(String(html || ''));
 
+// Volledige browser-header-set. Cloudflare kijkt niet alleen naar het IP: een
+// verzoek zonder Sec-Fetch-* en sec-ch-ua ziet er hoe dan ook uit als een bot.
+// Dit maakt het IP niet beter, maar het haalt de tweede reden om te blokkeren
+// weg — en dat is wat we zelf in de hand hebben.
+const BROWSER_HEADERS = {
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+  Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+  'Accept-Language': 'nb-NO,nb;q=0.9,no;q=0.8,en;q=0.7',
+  'Sec-Fetch-Dest': 'document',
+  'Sec-Fetch-Mode': 'navigate',
+  'Sec-Fetch-Site': 'none',
+  'Sec-Fetch-User': '?1',
+  'Upgrade-Insecure-Requests': '1',
+};
+
 /**
- * Haalt de pagina op via de reader. Staat Cloudflare ervoor, dan nog één
- * poging met de browser-engine (die voert de JS-challenge wél uit). Blijft de
- * wachtkamer staan, dan werpen we — een stille null is hier misleidend: de
- * aanroeper (Worker/snapshot-CI) moet dit als mislukking behandelen, niet als
- * "dit land heeft geen advies".
+ * Ophalen in lagen, want er is geen enkele route die het altijd doet.
+ *
+ * 1. rechtstreeks, met een volledige browser-header-set. `getTextWithHeaders`
+ *    valt intern terug op de CORS-proxy (een Worker-secret) als die er is —
+ *    dat is meteen de enige laag die vanaf een ander IP kan uitkomen.
+ * 2. de reader zonder engine: die haalt zelf op, dus met zijn eigen IP.
+ * 3. de reader mét browser-engine: die voert de JS-challenge daadwerkelijk uit.
+ *    Vereist een reader-key; zonder key geeft de dienst 401.
+ *
+ * Elke laag wordt op de wachtkamer gecontroleerd, want die komt met HTTP 200
+ * terug — een geslaagde fetch zegt hier dus niets. Lukt geen enkele laag, dan
+ * werpen we mét vermelding van wat er per laag misging: een stille null las
+ * als "dit land heeft geen advies", en zo bleef Noorwegen maandenlang
+ * onopgemerkt leeg.
  */
 async function fetchPage(url) {
-  const html = await getViaReader(url, 'html');
-  if (!looksBlocked(html)) return html;
-  try {
-    const viaBrowser = await getViaReader(url, { format: 'html', browser: true, timeout: 45 });
-    if (!looksBlocked(viaBrowser)) return viaBrowser;
-  } catch { /* browser-engine niet beschikbaar (bijv. geen reader-key) */ }
-  throw new Error(`norway: Cloudflare-botcheck op ${url}`);
+  const pogingen = [
+    ['direct', () => getTextWithHeaders(url, BROWSER_HEADERS)],
+    ['reader', () => getViaReader(url, 'html')],
+    ['reader+browser', () => getViaReader(url, { format: 'html', browser: true, timeout: 45 })],
+  ];
+  const waarom = [];
+  for (const [naam, poging] of pogingen) {
+    try {
+      const html = await poging();
+      if (html && !looksBlocked(html)) return html;
+      waarom.push(`${naam}: ${html ? 'botcheck' : 'leeg'}`);
+    } catch (e) {
+      waarom.push(`${naam}: ${String(e?.message || e).slice(0, 60)}`);
+    }
+  }
+  throw new Error(`norway: Cloudflare-botcheck op ${url} (${waarom.join('; ')})`);
 }
 
 export async function getAdvisory(slugId) {
