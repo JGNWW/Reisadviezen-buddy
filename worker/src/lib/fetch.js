@@ -101,6 +101,14 @@ export async function getViaReader(url, opts = {}) {
   if (waitFor) headers['X-Wait-For-Selector'] = waitFor;
   if (READER_KEY) headers.Authorization = `Bearer ${READER_KEY}`;
   const res = await fetch(`https://r.jina.ai/${url}`, { headers });
-  if (!res.ok) throw new Error(`reader ${res.status} ${url}`);
+  if (!res.ok) {
+    // De reden meesturen, niet alleen de code. Een 402 op de ene bron terwijl
+    // een andere bron gewoon werkt, zegt zonder tekst niets — met tekst staat
+    // er of het om saldo, om een niet-geactiveerde functie of om iets anders
+    // gaat, en dat scheelt een deploycyclus om erachter te komen.
+    let reden = '';
+    try { reden = (await res.text()).replace(/\s+/g, ' ').slice(0, 160); } catch { /* body niet leesbaar */ }
+    throw new Error(`reader ${res.status} ${url}${reden ? ` — ${reden}` : ''}`);
+  }
   return res.text();
 }

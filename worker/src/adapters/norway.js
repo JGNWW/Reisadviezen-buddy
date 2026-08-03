@@ -91,7 +91,7 @@ async function fetchPage(url) {
       if (html && !looksBlocked(html)) return html;
       waarom.push(`${naam}: ${html ? 'botcheck' : 'leeg'}`);
     } catch (e) {
-      waarom.push(`${naam}: ${String(e?.message || e).slice(0, 60)}`);
+      waarom.push(`${naam}: ${String(e?.message || e).slice(0, 200)}`);
     }
   }
   throw new Error(`norway: Cloudflare-botcheck op ${url} (${waarom.join('; ')})`);
