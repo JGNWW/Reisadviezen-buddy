@@ -260,7 +260,7 @@ async function captureOne(page, sid, iso, mapping) {
  * beeld welk land wanneer is bijgewerkt — precies wat Recente wijzigingen nodig
  * heeft. Faalt het, dan weten we dat ook, en kost het één regel logboek.
  */
-async function peilNoorseRss() {
+async function peilNoorseRss(page = null) {
   const feeds = [
     ['aktuelt (gefilterd)', 'https://www.regjeringen.no/no/aktuelt/rss/id2581966/?documenttype=reiseinformasjon&ownerid=833&term='],
     ['aktuelt (ongefilterd)', 'https://www.regjeringen.no/no/aktuelt/rss/id2581966/'],
@@ -283,11 +283,26 @@ async function peilNoorseRss() {
       console.log(`RSS ${naam}: fout — ${String(e.message).slice(0, 60)}`);
     }
   }
+  // Laatste variant: de feed niet met een kaal verzoek maar mét de browser
+  // ophalen. Alle kale verzoeken krijgen de challenge — ook via Feedly,
+  // rss2json, allorigins en de jina-reader, want die draaien zelf ook in een
+  // datacenter. Een browser voert de challenge tenminste uit. Voor de
+  // adviespagina's hielp dat niet; dit is één URL, dus het kost bijna niets om
+  // vast te stellen of de feed zich anders gedraagt.
+  if (!page) return;
+  try {
+    await page.goto(feeds[0][1], { waitUntil: 'domcontentloaded', timeout: 45000 });
+    await page.waitForTimeout(6000);
+    const tekst = await page.evaluate(() => document.documentElement.innerText || '').catch(() => '');
+    const items = (tekst.match(/reiseinformasjon/gi) || []).length;
+    console.log(`RSS via browser: ${tekst.length} tekens · ${items}× "reiseinformasjon" · begin: ${tekst.slice(0, 90).replace(/\s+/g, ' ')}`);
+  } catch (e) {
+    console.log(`RSS via browser: fout — ${String(e.message).slice(0, 70)}`);
+  }
 }
 
 async function main() {
   mkdirSync(LATEST_DIR, { recursive: true });
-  await peilNoorseRss();
   const only = (process.env.COUNTRIES || '').split(',').map((s) => s.trim().toUpperCase()).filter(Boolean);
   const isoList = Object.keys(countries).filter((k) => /^[A-Z]{3}$/.test(k))
     .filter((iso) => !only.length || only.includes(iso));
@@ -321,6 +336,7 @@ async function main() {
   });
   console.log(`browserversie: ${browser.version()}`);
   const page = await ctx.newPage();
+  await peilNoorseRss(page);
 
   const stats = { saved: 0, kept: 0, blocked: 0, nomapping: 0, geenadvies: 0, overgeslagen: 0 };
   const opRij = new Map(); // sid -> { reden, n }
