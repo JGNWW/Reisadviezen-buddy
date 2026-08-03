@@ -75,7 +75,10 @@ async function fetchPage(url) {
   const pogingen = [
     ['direct', () => getTextWithHeaders(url, BROWSER_HEADERS)],
     ['reader', () => getViaReader(url, 'html')],
-    ['reader+browser', () => getViaReader(url, { format: 'html', browser: true, timeout: 45 })],
+    // De wachtkamer stuurt na een paar seconden zelf door. Wachten op de h1 van
+    // het artikel geeft die omleiding de tijd; zonder dat legt de reader de
+    // wachtkamer vast en lijkt het alsof de challenge niet te passeren is.
+    ['reader+browser', () => getViaReader(url, { format: 'html', browser: true, timeout: 60, waitFor: 'article h1, main h1' })],
   ];
   const waarom = [];
   for (const [naam, poging] of pogingen) {

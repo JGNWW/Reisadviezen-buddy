@@ -86,9 +86,14 @@ let READER_KEY = null;
 export function setReaderKey(key) { READER_KEY = key || null; }
 
 export async function getViaReader(url, opts = {}) {
-  const { format = 'html', browser = false, timeout = 30 } = typeof opts === 'string' ? { format: opts } : opts;
+  const { format = 'html', browser = false, timeout = 30, waitFor = null } =
+    typeof opts === 'string' ? { format: opts } : opts;
   const headers = { 'User-Agent': UA, 'X-Return-Format': format, 'X-Timeout': String(timeout) };
   if (browser) headers['X-Engine'] = 'browser'; // rendert JavaScript-SPA's
+  // Wacht tot deze selector er staat voordat de pagina wordt vastgelegd. Nodig
+  // bij een Cloudflare-wachtkamer: die stuurt na een paar seconden zelf door
+  // naar de echte pagina, maar zonder wachten legt de reader de wachtkamer vast.
+  if (waitFor) headers['X-Wait-For-Selector'] = waitFor;
   if (READER_KEY) headers.Authorization = `Bearer ${READER_KEY}`;
   const res = await fetch(`https://r.jina.ai/${url}`, { headers });
   if (!res.ok) throw new Error(`reader ${res.status} ${url}`);
