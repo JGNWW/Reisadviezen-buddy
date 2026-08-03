@@ -63,6 +63,11 @@ const SOURCES = {
 const BLOCKED = /just a moment|performing security verification|attention required|access denied|cf-chl|verifying you are|robot/i;
 const MIN_TEXT = 1200; // minder tekst dan dit is geen echt reisadvies
 
+// De Cloudflare-wachtkamer zet zijn tekst in een iframe. document.body.innerText
+// ziet daardoor alleen het omhulsel eromheen — vandaar dat een geblokkeerde
+// Noorse pagina steeds als "te weinig tekst (265)" langskwam in plaats van als
+// botcheck. De <title> ("Just a moment...") verraadt hem wél.
+
 /** Kopstructuur uit de gerenderde DOM → secties voor de analyse-engine. */
 async function extractSections(page) {
   return page.evaluate(() => {
@@ -79,7 +84,11 @@ async function extractSections(page) {
       text = text.replace(/\s+/g, ' ').trim();
       if (text.length > 30) secs.push({ heading: (h.innerText || '').replace(/\s+/g, ' ').trim().slice(0, 140), text });
     }
-    return { sections: secs, fullText: (root.innerText || '').replace(/\s+/g, ' ').trim() };
+    return {
+      sections: secs,
+      title: document.title || '',
+      fullText: (root.innerText || '').replace(/\s+/g, ' ').trim(),
+    };
   });
 }
 
@@ -109,6 +118,14 @@ async function captureOne(page, sid, iso, mapping) {
   }
   // SPA's en botchecks hebben even nodig; wacht tot het "klaar"-signaal in de
   // paginatekst staat (max ~20s), anders geven we op.
+  //
+  // Die 20 seconden zijn de duurste regel van dit script: juist bij een pagina
+  // die tóch niets oplevert wordt de wachttijd altijd vólgemaakt. Bij 226
+  // landen maal drie bronnen liep de run daardoor over de 120 minuten
+  // job-timeout heen. Staat er na een korte eerste blik een harde blokkade,
+  // dan heeft wachten geen zin en stoppen we meteen.
+  const vroeg = await page.evaluate(() => `${document.title} ${document.body.innerText || ''}`.slice(0, 400)).catch(() => '');
+  if (BLOCKED.test(vroeg)) return { ok: false, reason: 'botcheck', monster: `«vroeg» ${vroeg.slice(0, 220)}` };
   try {
     await page.waitForFunction(
       (re) => new RegExp(re, 'i').test(document.body.innerText || ''),
@@ -117,12 +134,15 @@ async function captureOne(page, sid, iso, mapping) {
   } catch { /* readyText niet gezien — checks hieronder beslissen */ }
   await page.waitForTimeout(1500);
 
-  const { sections, fullText } = await extractSections(page);
-  if (BLOCKED.test(fullText)) return { ok: false, reason: 'botcheck' };
+  const { sections, title, fullText } = await extractSections(page);
+  // Uitsnede meesturen: bij een afgekeurde capture is "te weinig tekst" alleen
+  // een getal, en dan is niet te zien wát er dan wél stond.
+  const monster = `«${title}» ${fullText.slice(0, 220)}`;
+  if (BLOCKED.test(fullText) || BLOCKED.test(title)) return { ok: false, reason: 'botcheck', monster };
   if (cfg.genericText && cfg.genericText.test(fullText) && !cfg.readyText.test(fullText.replace(cfg.genericText, ''))) {
-    return { ok: false, reason: 'generieke pagina (geen landadvies)' };
+    return { ok: false, reason: 'generieke pagina (geen landadvies)', monster };
   }
-  if (fullText.length < MIN_TEXT) return { ok: false, reason: `te weinig tekst (${fullText.length})` };
+  if (fullText.length < MIN_TEXT) return { ok: false, reason: `te weinig tekst (${fullText.length})`, monster };
 
   const themes = sections.map((s) => ({
     category: s.heading, heading: s.heading,
@@ -165,6 +185,9 @@ async function main() {
   const page = await ctx.newPage();
 
   const stats = { saved: 0, kept: 0, blocked: 0, nomapping: 0 };
+  // Hooguit twee uitsnedes per bron: genoeg om te zien wat er misgaat, zonder
+  // het logboek vol te zetten met 226 keer hetzelfde.
+  const getoond = new Map();
   for (const iso of isoList) {
     const rec = countries[iso];
     const file = path.join(LATEST_DIR, `${iso}.json`);
@@ -179,6 +202,8 @@ async function main() {
         if (!r.ok) {
           stats[r.reason === 'botcheck' ? 'blocked' : 'kept']++;
           console.log(`  ${iso}/${sid}: overslaan (${r.reason}) — vorige snapshot blijft`);
+          const n = getoond.get(sid) || 0;
+          if (r.monster && n < 2) { getoond.set(sid, n + 1); console.log(`      wat er stond: ${r.monster}`); }
           continue;
         }
         // Verdedigingslinie: een capture zonder niveau mag een eerdere mét

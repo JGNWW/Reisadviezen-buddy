@@ -78,7 +78,12 @@ jobs:
           # dispatch: gekozen lijst · push (proefrun): Golfstaten · cron: alles
           COUNTRIES: ${{ github.event_name == 'push' && 'BHR,IRQ,JOR,KWT,OMN,QAT,SAU,ARE' || inputs.countries }}
 
+      # always(): de capture-stap kán afgekapt worden door de job-timeout, en
+      # dan sloeg deze stap over — waarmee álles wat wél gelukt was alsnog
+      # weggegooid werd. Het script schrijft per land weg, dus wat er staat is
+      # bruikbaar; committen hoort dus ook door te gaan bij een afbreking.
       - name: Wijzigingen committen
+        if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
