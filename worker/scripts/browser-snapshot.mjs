@@ -118,14 +118,28 @@ async function captureOne(page, sid, iso, mapping) {
       const slug = String(mapping).split('/')[0]; // bijv. "irak"
       try {
         await page.goto(cfg.indexUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
-        await page.waitForTimeout(1500);
-        const href = await page.evaluate((s) => {
-          const a = [...document.querySelectorAll('a[href]')].find((x) =>
-            /reisehinweise/i.test(x.getAttribute('href') || '') && new RegExp(s.replace(/[^a-z]/gi, ''), 'i').test((x.getAttribute('href') || '').replace(/[^a-z]/gi, '')));
-          return a ? a.href : null;
+        // De landenlijst is een glossarium dat zijn resultaten nalaadt; een
+        // vaste 1,5 seconde was soms te kort. Wachten tot er echt links staan.
+        await page.waitForFunction(
+          () => document.querySelectorAll('a[href*="laender-reise-information"]').length > 30,
+          null, { timeout: 15000 },
+        ).catch(() => {});
+        const vondst = await page.evaluate((s) => {
+          const links = [...document.querySelectorAll('a[href]')]
+            .map((x) => x.getAttribute('href') || '')
+            .filter((h) => /laender-reise-information|reisehinweise/i.test(h));
+          const kaal = (t) => t.toLowerCase().replace(/[^a-z0-9]/g, '');
+          const doel = kaal(s);
+          const hit = links.find((h) => kaal(h).includes(doel))
+            || links.find((h) => doel.length > 5 && kaal(h).includes(doel.slice(0, 6)));
+          return { hit, aantal: links.length, voorbeeld: links.slice(0, 4) };
         }, slug);
-        if (href) { url = href; await page.goto(href, { waitUntil: 'domcontentloaded', timeout: 45000 }); }
-        else zelfherstel = `geen link gevonden voor "${slug}" op de index`;
+        if (vondst.hit) {
+          url = new URL(vondst.hit, cfg.indexUrl).href;
+          await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 });
+        } else {
+          zelfherstel = `geen link voor "${slug}" · ${vondst.aantal} landlinks op de index · bijv. ${(vondst.voorbeeld || []).join(' | ') || '(geen)'}`;
+        }
       } catch (e) { zelfherstel = `index-zoektocht faalde: ${String(e.message).slice(0, 50)}`; }
     }
   }
