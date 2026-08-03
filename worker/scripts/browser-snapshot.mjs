@@ -44,10 +44,12 @@ const SOURCES = {
   },
   no: {
     label: 'Noorwegen (Utenriksdept.)', flag: '🇳🇴', lang: 'no',
-    // Cloudflare stuurt na een paar seconden zelf door — áls hij je doorlaat.
-    // Alleen hier wachten we die kans af; bij de andere bronnen betekent een
-    // blokkade meteen stoppen, want daar valt niets af te wachten.
-    challengeWait: 25000,
+    // Gemeten en afgesloten: met de volledige Chromium én 25 seconden geduld
+    // bleef de challenge staan (in het Deens zelfs, zie BLOCKED hieronder).
+    // Wachten kost 25 seconden per land — over 226 landen anderhalf uur — en
+    // levert niets op. Vandaar 0. De mogelijkheid blijft staan zodat het met
+    // één getal opnieuw te beproeven is als regjeringen.no ooit soepeler wordt.
+    challengeWait: 0,
     // mapping = "slug/nummer" → …/reiseinfo_{slug}/id{nummer}/ (zie norway.js)
     url: (m) => `https://www.regjeringen.no/no/tema/utenrikssaker/reiseinformasjon/velg-land/reiseinfo_${m.split('/')[0]}/id${m.split('/')[1] || ''}/`,
     readyText: /utenriksdepartementet|reiseinformasjon|innreise/i,
@@ -117,6 +119,16 @@ async function extractSections(page) {
 
 const ACCEPT_LANG = { dk: 'da-DK,da;q=0.9', no: 'nb-NO,nb;q=0.9,no;q=0.8', ch: 'de-CH,de;q=0.9' };
 
+// Bronnen waarvan we tijdens déze run hebben vastgesteld dat de index niets
+// oplevert; dan hoeft de zelfherstel-stap niet bij elk volgend land opnieuw.
+const indexLeeg = new Set();
+
+// Hoeveel keer dezelfde fout op rij voordat we een bron voor de rest van de run
+// laten rusten. Dat een bron helemaal plat ligt, weet je na tien landen net zo
+// goed als na tweehonderd — en de tijd die je erin steekt gaat af van de
+// bronnen die het wél doen. Precies hierdoor liep de nachtrun in zijn timeout.
+const OPGEVEN_NA = 10;
+
 async function captureOne(page, sid, iso, mapping) {
   const cfg = SOURCES[sid];
   await page.setExtraHTTPHeaders({ 'Accept-Language': ACCEPT_LANG[sid] || 'en-US,en;q=0.9' });
@@ -127,7 +139,7 @@ async function captureOne(page, sid, iso, mapping) {
   // overzichtspagina, zoek dan op de index de link die dit land noemt en
   // navigeer daarheen. De landnaam (Duits) staat in de mapping-slug.
   let zelfherstel = null; // reden waarom de zelfherstel-stap niets opleverde
-  if (cfg.genericText && cfg.indexUrl) {
+  if (cfg.genericText && cfg.indexUrl && !indexLeeg.has(sid)) {
     const bodyNow = await page.evaluate(() => document.body.innerText).catch(() => '');
     if (cfg.genericText.test(bodyNow)) {
       const slug = String(mapping).split('/')[0]; // bijv. "irak"
@@ -163,6 +175,12 @@ async function captureOne(page, sid, iso, mapping) {
           await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 });
         } else {
           zelfherstel = `geen link voor "${slug}" · ${vondst.aantal} landlinks van ${vondst.totaal} links totaal · steekproef: ${(vondst.steekproef || []).join(' | ') || '(geen)'}`;
+          // Staan er überhaupt geen landlinks, dan ligt het niet aan dít land
+          // en heeft het geen zin om de index nog 225 keer te bezoeken.
+          if (!vondst.aantal) {
+            indexLeeg.add(sid);
+            console.log(`  ${sid}: de index levert geen landlinks — zelfherstel voor de rest van deze run overgeslagen`);
+          }
         }
       } catch (e) { zelfherstel = `index-zoektocht faalde: ${String(e.message).slice(0, 50)}`; }
     }
@@ -304,7 +322,9 @@ async function main() {
   console.log(`browserversie: ${browser.version()}`);
   const page = await ctx.newPage();
 
-  const stats = { saved: 0, kept: 0, blocked: 0, nomapping: 0, geenadvies: 0 };
+  const stats = { saved: 0, kept: 0, blocked: 0, nomapping: 0, geenadvies: 0, overgeslagen: 0 };
+  const opRij = new Map(); // sid -> { reden, n }
+  const opgegeven = new Set();
   // Hooguit twee uitsnedes per bron: genoeg om te zien wat er misgaat, zonder
   // het logboek vol te zetten met 226 keer hetzelfde.
   const getoond = new Map();
@@ -317,6 +337,7 @@ async function main() {
     for (const sid of Object.keys(SOURCES)) {
       const mapping = rec.sources?.[sid];
       if (!mapping) { stats.nomapping++; continue; }
+      if (opgegeven.has(sid)) { stats.overgeslagen++; continue; }
       try {
         const r = await captureOne(page, sid, iso, mapping);
         if (!r.ok) {
@@ -325,6 +346,15 @@ async function main() {
           console.log(`  ${iso}/${sid}: overslaan (${r.reason}) — vorige snapshot blijft`);
           const n = getoond.get(sid) || 0;
           if (r.monster && n < 2) { getoond.set(sid, n + 1); console.log(`      wat er stond: ${r.monster}`); }
+          // Steeds dezelfde reden? Dan is het de bron, niet het land.
+          const rij = opRij.get(sid);
+          if (rij && rij.reden === r.reason) rij.n++;
+          else opRij.set(sid, { reden: r.reason, n: 1 });
+          const nu = opRij.get(sid);
+          if (nu.n >= OPGEVEN_NA && r.reason !== 'bron publiceert hier geen advies') {
+            opgegeven.add(sid);
+            console.log(`  ${sid}: ${nu.n}× achter elkaar "${r.reason}" — rest van deze run overgeslagen`);
+          }
           continue;
         }
         // Verdedigingslinie: een capture zonder niveau mag een eerdere mét
@@ -339,6 +369,7 @@ async function main() {
         latest.fetchedAt[sid] = today;
         changed = true;
         stats.saved++;
+        opRij.delete(sid); // hij doet het weer
         console.log(`  ${iso}/${sid}: ${r.adv.color || 'onzeker'}${r.adv.level ? ` (${r.adv.level})` : ''} · ${r.adv.themes.length} secties`);
       } catch (e) {
         stats.kept++;
@@ -350,7 +381,12 @@ async function main() {
   }
 
   await browser.close();
-  console.log(`\nBrowser-snapshot klaar: ${stats.saved} opgeslagen, ${stats.kept} behouden/gefaald, ${stats.blocked} botcheck, ${stats.geenadvies} bron heeft hier geen advies, ${stats.nomapping} zonder mapping.`);
+  console.log(`\nBrowser-snapshot klaar: ${stats.saved} opgeslagen, ${stats.kept} behouden/gefaald, ${stats.blocked} botcheck, ${stats.geenadvies} bron heeft hier geen advies, ${stats.nomapping} zonder mapping, ${stats.overgeslagen} overgeslagen na opgeven.`);
+  if (opgegeven.size) {
+    for (const sid of opgegeven) {
+      console.log(`::warning title=Bron ${sid} opgegeven::${OPGEVEN_NA}× achter elkaar "${opRij.get(sid)?.reden}" — deze bron leverde deze run niets op`);
+    }
+  }
 }
 
 main().catch((e) => { console.error(e); process.exit(1); });
