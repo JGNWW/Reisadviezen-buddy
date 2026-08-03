@@ -130,6 +130,9 @@ export const THEMES = [
       'waldbrand', 'buschbrand', 'hitzewelle', 'erdrutsch', 'lawine', 'unwetter', 'umwelt',
       'naturkatastrofer', 'jordskælv', 'jordskaelv', 'oversvommelse', 'skovbrand',
       'hedebolge', 'jordskjelv', 'skogbrann', 'naturbrann', 'naturbrand', 'flom', 'snoskred',
+      // Uit de Noorse reisadvies-RSS: zo schrijft Utenriksdepartementet het.
+      // De matcher haalt æ/ø/å niet weg, dus staan beide spellingen erin.
+      'syklon', 'naturhendels', 'naturforhold', 'ekstremvær', 'ekstremvaer',
       'intemperies', 'seisme', 'catastrophes naturelles', 'risques naturels', 'inondation',
       'feux de foret', 'feu de foret', 'incendie', 'canicule', 'glissement de terrain',
       'ouragan',
