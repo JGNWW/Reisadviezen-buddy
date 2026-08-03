@@ -44,6 +44,10 @@ const SOURCES = {
   },
   no: {
     label: 'Noorwegen (Utenriksdept.)', flag: '🇳🇴', lang: 'no',
+    // Cloudflare stuurt na een paar seconden zelf door — áls hij je doorlaat.
+    // Alleen hier wachten we die kans af; bij de andere bronnen betekent een
+    // blokkade meteen stoppen, want daar valt niets af te wachten.
+    challengeWait: 25000,
     // mapping = "slug/nummer" → …/reiseinfo_{slug}/id{nummer}/ (zie norway.js)
     url: (m) => `https://www.regjeringen.no/no/tema/utenrikssaker/reiseinformasjon/velg-land/reiseinfo_${m.split('/')[0]}/id${m.split('/')[1] || ''}/`,
     readyText: /utenriksdepartementet|reiseinformasjon|innreise/i,
@@ -151,7 +155,14 @@ async function captureOne(page, sid, iso, mapping) {
   // landen maal drie bronnen liep de run daardoor over de 120 minuten
   // job-timeout heen. Staat er na een korte eerste blik een harde blokkade,
   // dan heeft wachten geen zin en stoppen we meteen.
-  const vroeg = await page.evaluate(() => `${document.title} ${document.body.innerText || ''}`.slice(0, 400)).catch(() => '');
+  let vroeg = await page.evaluate(() => `${document.title} ${document.body.innerText || ''}`.slice(0, 400)).catch(() => '');
+  if (BLOCKED.test(vroeg) && cfg.challengeWait) {
+    await page.waitForFunction(
+      (re) => !new RegExp(re, 'i').test(`${document.title} ${document.body.innerText || ''}`.slice(0, 400)),
+      BLOCKED.source, { timeout: cfg.challengeWait, polling: 1000 },
+    ).catch(() => {});
+    vroeg = await page.evaluate(() => `${document.title} ${document.body.innerText || ''}`.slice(0, 400)).catch(() => '');
+  }
   if (BLOCKED.test(vroeg)) return { ok: false, reason: 'botcheck', monster: `«vroeg» ${vroeg.slice(0, 220)}` };
   if (cfg.noAdvisoryText && cfg.noAdvisoryText.test(vroeg)) return { ok: false, reason: 'bron publiceert hier geen advies' };
   try {
@@ -204,12 +215,29 @@ async function main() {
     .filter((iso) => !only.length || only.includes(iso));
   const today = new Date().toISOString().slice(0, 10);
 
-  const browser = await chromium.launch({ args: ['--no-sandbox'] });
+  // channel 'chromium' start de volledige Chromium met de nieuwe headless-modus.
+  // Zonder die optie pakt Playwright chrome-headless-shell: een uitgeklede
+  // build die zich op tientallen punten anders gedraagt dan een echte browser
+  // en door Cloudflare als zodanig herkend wordt. Lukt de volledige build niet
+  // (niet geïnstalleerd), dan gewoon de standaard — dan werkt de rest nog.
+  let browser;
+  try {
+    browser = await chromium.launch({ channel: 'chromium', args: ['--no-sandbox'] });
+    console.log('browser: volledige Chromium (channel chromium)');
+  } catch (e) {
+    browser = await chromium.launch({ args: ['--no-sandbox'] });
+    console.log(`browser: standaard headless — volledige build niet beschikbaar (${String(e.message).slice(0, 60)})`);
+  }
+  // De useragent moet bij de binary passen. Er stond Chrome/126 terwijl de
+  // runner inmiddels 151 draait; zo'n verschil tussen wat je zegt te zijn en
+  // wat je bent, is zelf een botsignaal.
+  const versie = (browser.version() || '').match(/(\d+)/)?.[1] || '131';
   const ctx = await browser.newContext({
-    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
+    userAgent: `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${versie}.0.0.0 Safari/537.36`,
     locale: 'da-DK',
     viewport: { width: 1280, height: 900 },
   });
+  console.log(`browserversie: ${browser.version()}`);
   const page = await ctx.newPage();
 
   const stats = { saved: 0, kept: 0, blocked: 0, nomapping: 0, geenadvies: 0 };
