@@ -228,8 +228,48 @@ async function captureOne(page, sid, iso, mapping) {
   };
 }
 
+/**
+ * Eenmalige peiling: is de Noorse reisadvies-RSS vanaf déze machine te halen?
+ *
+ * regjeringen.no blokkeert datacenter-IP's op de adviespagina's zelf, maar het
+ * blijkt pad-uitzonderingen te hebben: /no/rss/Rss/ komt wél langs de
+ * Cloudflare-check (al geeft dat endpoint een lege feed terug). De echte
+ * reisadvies-feed staat op /no/aktuelt/rss/ en is vanaf een Anthropic-IP 403,
+ * ook als je je netjes als feedlezer meldt. Een GitHub-runner is een ander IP
+ * en dat pad is daar nog nooit geprobeerd.
+ *
+ * Levert het items op, dan hebben we zonder één adviespagina te openen wél in
+ * beeld welk land wanneer is bijgewerkt — precies wat Recente wijzigingen nodig
+ * heeft. Faalt het, dan weten we dat ook, en kost het één regel logboek.
+ */
+async function peilNoorseRss() {
+  const feeds = [
+    ['aktuelt (gefilterd)', 'https://www.regjeringen.no/no/aktuelt/rss/id2581966/?documenttype=reiseinformasjon&ownerid=833&term='],
+    ['aktuelt (ongefilterd)', 'https://www.regjeringen.no/no/aktuelt/rss/id2581966/'],
+    ['gewhitelist pad', 'https://www.regjeringen.no/no/rss/Rss/id2581966/?documenttype=reiseinformasjon&ownerid=833&term='],
+  ];
+  for (const [naam, url] of feeds) {
+    try {
+      const res = await fetch(url, {
+        headers: {
+          'User-Agent': 'ReisadviezenBuddy/1.0 (+https://github.com/JGNWW/Reisadviezen-buddy)',
+          Accept: 'application/rss+xml, application/xml;q=0.9',
+        },
+      });
+      const tekst = await res.text();
+      const items = (tekst.match(/<item>/g) || []).length;
+      const eerste = (tekst.match(/<item>[\s\S]*?<title>([^<]*)<\/title>/) || [])[1] || '';
+      const datum = (tekst.match(/<item>[\s\S]*?<pubDate>([^<]*)<\/pubDate>/) || [])[1] || '';
+      console.log(`RSS ${naam}: ${res.status} · ${tekst.length} bytes · ${items} items${eerste ? ` · eerste: "${eerste.slice(0, 60)}" (${datum})` : ''}`);
+    } catch (e) {
+      console.log(`RSS ${naam}: fout — ${String(e.message).slice(0, 60)}`);
+    }
+  }
+}
+
 async function main() {
   mkdirSync(LATEST_DIR, { recursive: true });
+  await peilNoorseRss();
   const only = (process.env.COUNTRIES || '').split(',').map((s) => s.trim().toUpperCase()).filter(Boolean);
   const isoList = Object.keys(countries).filter((k) => /^[A-Z]{3}$/.test(k))
     .filter((iso) => !only.length || only.includes(iso));
