@@ -75,7 +75,15 @@ const SOURCES = {
 };
 
 // Signalen dat we op een botcheck/lege pagina zitten — nooit opslaan.
-const BLOCKED = /just a moment|performing security verification|attention required|access denied|cf-chl|verifying you are|robot/i;
+//
+// Let op de taalonafhankelijke termen. De Engelse zinnen alleen volstonden
+// niet: Cloudflare vertaalt zijn wachtkamer mee met de browsertaal, en met een
+// Deense locale kwam er "Et øjeblik ... Udfører sikkerhedsverificering" terug.
+// Dat matchte nergens op, waardoor een blokkade als "te weinig tekst" werd
+// geteld en de teller "0 botcheck" liet zien terwijl álles geblokkeerd was.
+// "Ray ID" en "cf-chl" staan er in elke taal, en de challenge-pagina heeft
+// altijd een element met id "challenge-".
+const BLOCKED = /just a moment|performing security verification|attention required|access denied|cf-chl|verifying you are|robot|ray id|sikkerhedsverificering|sikkerhetsverifisering|sicherheitsüberprüfung|verifica di sicurezza|un momento|et øjeblik|ett ögonblick|einen moment/i;
 const MIN_TEXT = 1200; // minder tekst dan dit is geen echt reisadvies
 
 // De Cloudflare-wachtkamer zet zijn tekst in een iframe. document.body.innerText
@@ -107,8 +115,11 @@ async function extractSections(page) {
   });
 }
 
+const ACCEPT_LANG = { dk: 'da-DK,da;q=0.9', no: 'nb-NO,nb;q=0.9,no;q=0.8', ch: 'de-CH,de;q=0.9' };
+
 async function captureOne(page, sid, iso, mapping) {
   const cfg = SOURCES[sid];
+  await page.setExtraHTTPHeaders({ 'Accept-Language': ACCEPT_LANG[sid] || 'en-US,en;q=0.9' });
   let url = cfg.url(mapping);
   await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 });
 
@@ -136,13 +147,22 @@ async function captureOne(page, sid, iso, mapping) {
           const doel = kaal(s);
           const hit = links.find((h) => kaal(h).includes(doel))
             || links.find((h) => doel.length > 5 && kaal(h).includes(doel.slice(0, 6)));
-          return { hit, aantal: links.length, voorbeeld: links.slice(0, 4) };
+          const alle = [...document.querySelectorAll('a[href]')].map((x) => x.getAttribute('href') || '');
+          return {
+            hit,
+            aantal: links.length,
+            voorbeeld: links.slice(0, 4),
+            // Nul landlinks op een pagina met 203 zoekresultaten betekent dat
+            // ze geen gewone <a> zijn. Laat zien wat er dan wél staat.
+            totaal: alle.length,
+            steekproef: alle.filter((h) => h && !h.startsWith('#')).slice(0, 6),
+          };
         }, slug);
         if (vondst.hit) {
           url = new URL(vondst.hit, cfg.indexUrl).href;
           await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 });
         } else {
-          zelfherstel = `geen link voor "${slug}" · ${vondst.aantal} landlinks op de index · bijv. ${(vondst.voorbeeld || []).join(' | ') || '(geen)'}`;
+          zelfherstel = `geen link voor "${slug}" · ${vondst.aantal} landlinks van ${vondst.totaal} links totaal · steekproef: ${(vondst.steekproef || []).join(' | ') || '(geen)'}`;
         }
       } catch (e) { zelfherstel = `index-zoektocht faalde: ${String(e.message).slice(0, 50)}`; }
     }
@@ -234,7 +254,11 @@ async function main() {
   const versie = (browser.version() || '').match(/(\d+)/)?.[1] || '131';
   const ctx = await browser.newContext({
     userAgent: `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${versie}.0.0.0 Safari/537.36`,
-    locale: 'da-DK',
+    // Nederlands als neutrale grondtaal; per bron wordt de juiste
+    // Accept-Language hieronder gezet. Eerder stond hier voor álle drie de
+    // bronnen 'da-DK', dus vroeg de capture een Noorse en een Zwitserse pagina
+    // in het Deens op.
+    locale: 'nl-NL',
     viewport: { width: 1280, height: 900 },
   });
   console.log(`browserversie: ${browser.version()}`);
