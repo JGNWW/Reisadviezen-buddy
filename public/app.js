@@ -495,6 +495,65 @@ async function loadContext(iso3, slot) {
 
 // ---- Tekst-helpers --------------------------------------------------------
 const norm = (s) => (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+/**
+ * Vertaalvlaggetjes bij één zoekfragment onder "Wat zegt elke bron over…".
+ *
+ * Dezelfde werking als bij de themavergelijking: 🇳🇱 zet dit fragment om naar
+ * het Nederlands, 🇬🇧 naar het Engels, en nogmaals klikken zet de brontekst
+ * terug. Bewust per fragment — bij zeventien bronnen zou een knop per kaart
+ * alsnog tientallen vertaalverzoeken tegelijk afvuren, en juist dat was de
+ * oorzaak van de haperingen waarom de globale taalkeuze eruit is gegaan.
+ *
+ * De treffer wordt na het vertalen opnieuw gemarkeerd waar dat kan: de
+ * gezochte term staat er soms letterlijk in (dezelfde taal), soms niet meer
+ * (dan blijft de tekst gewoon onopgemaakt).
+ */
+function snippetVertaalKnoppen(m, kopEl, tekstEl) {
+  const origKop = m.heading || '';
+  let taal = 'orig';
+  const knop = (vlag, naam, titel) =>
+    el('button', { class: 'snip-flag', type: 'button', 'aria-label': titel, title: titel }, vlag);
+  const nlBtn = knop('🇳🇱', 'nl', 'Vertaal dit fragment naar het Nederlands');
+  const enBtn = knop('🇬🇧', 'en', 'Vertaal dit fragment naar het Engels (English)');
+  const setActive = () => {
+    nlBtn.classList.toggle('active', taal === 'nl');
+    enBtn.classList.toggle('active', taal === 'en');
+  };
+
+  // De kop bestaat uit tekst + eventueel de "toon op bronpagina"-link; alleen
+  // het eerste tekstknooppunt vervangen, anders verdwijnt die link.
+  const zetKop = (t) => {
+    const eerste = [...kopEl.childNodes].find((n) => n.nodeType === 3);
+    if (eerste) eerste.nodeValue = t; else kopEl.prepend(document.createTextNode(t));
+  };
+  const zetTekst = (t) => { tekstEl.innerHTML = highlight(t, m.variant); };
+
+  const terug = () => { taal = 'orig'; zetKop(origKop); tekstEl.innerHTML = m.html; setActive(); };
+
+  async function naar(lang, btn) {
+    if (taal === lang) { terug(); return; }
+    if (!getProxy()) return; // zonder proxy geen live vertaling
+    btn.classList.add('loading');
+    nlBtn.disabled = enBtn.disabled = true;
+    try {
+      const [tTekst, tKop] = await Promise.all([
+        translateText(m.snippet, lang, 'auto'),
+        origKop ? translateText(origKop, lang, 'auto') : Promise.resolve(''),
+      ]);
+      taal = lang;
+      if (tKop) zetKop(tKop);
+      zetTekst(tTekst || m.snippet);
+      setActive();
+    } finally {
+      btn.classList.remove('loading');
+      nlBtn.disabled = enBtn.disabled = false;
+    }
+  }
+  nlBtn.addEventListener('click', () => naar('nl', nlBtn));
+  enBtn.addEventListener('click', () => naar('en', enBtn));
+  return el('span', { class: 'snip-flags topic-flags' }, nlBtn, enBtn);
+}
+
 function snippetAround(text, term, radius = 160) {
   if (!text) return '';
   const idx = text.toLowerCase().indexOf(term.toLowerCase());
@@ -2061,14 +2120,19 @@ function renderTopicSearch(nl, okSources) {
             const ov = variantList.find((vv) => low.includes(vv));
             if (ov) frag = { text: b.text, term: ov, url: b.url };
           }
-          matches.push({ heading: hit.heading, html: highlight(snippetAround(hit.text, hit.variant), hit.variant), frag });
+          // Naast de opgemaakte HTML ook de kale tekst bewaren: die is nodig
+          // om dit fragment te kunnen vertalen (en om de treffer daarna
+          // opnieuw te markeren).
+          const kaal = snippetAround(hit.text, hit.variant);
+          matches.push({ heading: hit.heading, snippet: kaal, variant: hit.variant, html: highlight(kaal, hit.variant), frag });
         }
       }
       return matches;
     };
 
     const cards = el('div', { class: 'topic-cards' });
-    const renderCard = (label, url, matches) => {
+    // `foreign` false voor de NL-kaart: daar valt niets te vertalen.
+    const renderCard = (label, url, matches, foreign = true) => {
       const card = el('div', { class: 'topic-card' + (matches.length ? '' : ' no-mention') });
       card.append(el('h4', {}, label, ' ',
         matches.length
@@ -2076,20 +2140,29 @@ function renderTopicSearch(nl, okSources) {
           : el('span', { class: 'no-mention-tag' }, `noemt "${terms.join(', ')}" niet`)));
       matches.slice(0, 5).forEach((m) => {
         const fragHref = m.frag ? fragmentUrl(m.frag.url || url, m.frag.text, m.frag.term) : null;
-        card.append(el('div', { class: 'topic-match' },
-          el('div', { class: 'block-cat' }, m.heading || '',
-            fragHref ? el('a', {
-              href: fragHref, target: '_blank', rel: 'noopener', class: 'frag-link',
-              title: 'Opent de bronpagina met deze passage geel gemarkeerd (Edge/Chrome).',
-            }, '🔗 toon op bronpagina') : null),
-          el('p', { class: 'snippet', html: m.html })));
+        const kop = el('div', { class: 'block-cat' }, m.heading || '',
+          fragHref ? el('a', {
+            href: fragHref, target: '_blank', rel: 'noopener', class: 'frag-link',
+            title: 'Opent de bronpagina met deze passage geel gemarkeerd (Edge/Chrome).',
+          }, '🔗 toon op bronpagina') : null);
+        const tekst = el('p', { class: 'snippet', html: m.html });
+        const rij = el('div', { class: 'topic-match' }, kop, tekst);
+
+        // Vertaalvlaggetjes per fragment, net als in de themavergelijking:
+        // 🇳🇱 naar het Nederlands, 🇬🇧 naar het Engels, nogmaals klikken zet de
+        // brontekst terug. Per fragment en niet per kaart, want dat is de
+        // hoeveelheid waar je hem daadwerkelijk om vraagt.
+        if (foreign && m.snippet) {
+          rij.append(snippetVertaalKnoppen(m, kop, tekst));
+        }
+        card.append(rij);
       });
       if (matches.length > 5) card.append(el('p', { class: 'hint', style: 'margin:4px 0 0' }, `+ ${matches.length - 5} meer passage(s) — zie het origineel.`));
       if (url) card.append(el('p', { style: 'margin:6px 0 0' }, el('a', { href: url, target: '_blank', rel: 'noopener' }, 'origineel →')));
       cards.append(card);
     };
 
-    renderCard('🇳🇱 NederlandWereldwijd', nl.url, findMatches(nl.themes));
+    renderCard('🇳🇱 NederlandWereldwijd', nl.url, findMatches(nl.themes), false);
     okSources.forEach((s) => renderCard(`${s.flag || ''} ${s.sourceLabel}`, s.url, findMatches(s.themes)));
     result.append(cards);
   });
