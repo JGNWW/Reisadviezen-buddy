@@ -1663,6 +1663,21 @@ function renderConsensusBlock(nlColor, okSources) {
     el('span', { class: 'cons-lbl' }, '🌍 Mediaan')));
   wrap.append(onder);
 
+  // De pijlpunten staan vast op het midden van hun vak; alleen de labels
+  // mogen opschuiven als ze anders buiten het kader vallen. "Nederland-
+  // Wereldwijd" is bijna drie keer zo breed als "Mediaan", en toen label en
+  // pijl nog één blok waren, duwde dat brede label de pijl uit het midden —
+  // waardoor twee wijzers op dezelfde kleur niet naar elkaar wezen.
+  requestAnimationFrame(() => {
+    const kader = wrap.getBoundingClientRect();
+    wrap.querySelectorAll('.cons-lbl').forEach((lbl) => {
+      lbl.style.transform = 'translateX(-50%)';
+      const r = lbl.getBoundingClientRect();
+      const teVer = Math.max(0, kader.left + 2 - r.left) - Math.max(0, r.right - (kader.right - 2));
+      if (teVer) lbl.style.transform = `translateX(calc(-50% + ${Math.round(teVer)}px))`;
+    });
+  });
+
   const zin = [];
   if (nlLevel) {
     zin.push(el('strong', {}, String(vs.strenger)), ` bron${vs.strenger === 1 ? '' : 'nen'} ${vs.strenger === 1 ? 'is' : 'zijn'} strenger dan Nederland, `,

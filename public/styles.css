@@ -373,19 +373,29 @@ input:focus, select:focus { outline: 2px solid var(--link); outline-offset: 0; b
 .consensus h3 { margin: 0 0 10px; font-size: 14.5px; color: var(--nl-blue); }
 .cons-pins { position: relative; height: 24px; }
 .cons-pins.under { height: 26px; margin-top: 7px; }
+/* De wijzer is een punt zonder breedte op het midden van zijn vak. Het label
+   hangt er los aan en mag opzij schuiven als het anders buiten het kader valt;
+   de pijlpunt blijft staan. Zaten ze in één blok, dan trok een breed label
+   (NederlandWereldwijd) de pijl uit het midden en wezen twee wijzers op
+   dezelfde kleur langs elkaar heen. */
 .cons-pin {
-  position: absolute; transform: translateX(-50%); white-space: nowrap;
-  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  position: absolute; top: 0; width: 0; height: 100%;
   font-size: 12px; font-weight: 700; color: var(--nl-blue); line-height: 1;
 }
 .cons-pin::after {
-  content: ""; width: 0; height: 0;
+  content: ""; position: absolute; left: 50%; transform: translateX(-50%);
+  bottom: 0; width: 0; height: 0;
   border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 6px solid var(--nl-blue);
 }
-.cons-pins.under .cons-pin { flex-direction: column-reverse; }
-.cons-pins.under .cons-pin::after { border-top: none; border-bottom: 6px solid var(--muted); margin-bottom: 3px; }
+.cons-pins.under .cons-pin::after {
+  bottom: auto; top: 3px; border-top: none; border-bottom: 6px solid var(--muted);
+}
 .cons-pin.world { color: var(--muted); }
-.cons-lbl { display: flex; align-items: center; gap: 5px; }
+.cons-lbl {
+  position: absolute; left: 50%; transform: translateX(-50%); bottom: 9px;
+  display: flex; align-items: center; gap: 5px; white-space: nowrap;
+}
+.cons-pins.under .cons-lbl { bottom: auto; top: 12px; }
 .nww-mark { display: block; flex: 0 0 auto; }
 .cons-cells, .cons-labels { display: flex; gap: 3px; }
 .cons-cell {
