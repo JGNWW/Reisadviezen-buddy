@@ -3902,8 +3902,17 @@ $('#search-form').addEventListener('submit', async (e) => {
 
 function renderCountryResult(r, term) {
   const details = el('details', { class: 'panel result-country' });
+  // Vlag in plaats van een kleurbolletje: in een lijst van landen herken je een
+  // land sneller aan zijn vlag dan aan een kleur die ook nog eens hetzelfde is
+  // voor alle groene adviezen. De kleurcode blijft in de tooltip staan, en
+  // buitenlandse rijen dragen hun bronvlag al in de naam.
+  const iso2 = COUNTRIES.find((x) => x.iso3 === r.iso3)?.iso2;
+  const merk = iso2
+    ? flagImgFor(countryFlag(iso2))
+    : (r.color ? el('span', { class: `dot c-${r.color}` }) : null);
+  if (merk && r.color) merk.title = COLOR_LABELS[r.color];
   details.append(el('summary', {},
-    el('span', {}, r.color ? el('span', { class: `dot c-${r.color}`, title: COLOR_LABELS[r.color] }) : '', ' ' + r.name),
+    el('span', { class: 'result-name' }, merk, ' ' + r.name),
     el('span', { class: 'count-pill', style: 'margin-left:auto' }, `${r.matchCount}×`),
     el('a', { href: r.url, target: '_blank', rel: 'noopener', style: 'margin-left:10px;font-weight:400;font-size:13px', onclick: (ev) => ev.stopPropagation() }, 'origineel →')));
   if (r.inSummary && r.summarySnippet) details.append(el('div', { class: 'match' },
