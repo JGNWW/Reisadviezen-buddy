@@ -108,6 +108,24 @@ function flagImgFor(emoji) {
   return img;
 }
 
+/**
+ * Landmerk voor een resultaatrij: de vlag van het land, met het kleurbolletje
+ * als terugval.
+ *
+ * In een lijst van landen herken je een land sneller aan zijn vlag dan aan een
+ * bolletje dat voor elk groen advies precies hetzelfde is. De kleurcode gaat
+ * niet verloren: die blijft als tooltip beschikbaar.
+ *
+ * Landen zonder iso2 in de landendata houden het bolletje — dan is er geen
+ * vlagafbeelding en is een bolletje beter dan een kapot icoontje.
+ */
+function landMerk(iso3, color) {
+  const iso2 = COUNTRIES.find((x) => x.iso3 === iso3)?.iso2;
+  const merk = iso2 ? flagImgFor(countryFlag(iso2)) : (color ? el('span', { class: `dot c-${color}` }) : null);
+  if (merk && color) merk.title = COLOR_LABELS[color];
+  return merk;
+}
+
 function flagifyNode(node) {
   if (node.nodeType === Node.TEXT_NODE) {
     const parts = node.nodeValue.split(FLAG_SPLIT);
@@ -3902,17 +3920,10 @@ $('#search-form').addEventListener('submit', async (e) => {
 
 function renderCountryResult(r, term) {
   const details = el('details', { class: 'panel result-country' });
-  // Vlag in plaats van een kleurbolletje: in een lijst van landen herken je een
-  // land sneller aan zijn vlag dan aan een kleur die ook nog eens hetzelfde is
-  // voor alle groene adviezen. De kleurcode blijft in de tooltip staan, en
-  // buitenlandse rijen dragen hun bronvlag al in de naam.
-  const iso2 = COUNTRIES.find((x) => x.iso3 === r.iso3)?.iso2;
-  const merk = iso2
-    ? flagImgFor(countryFlag(iso2))
-    : (r.color ? el('span', { class: `dot c-${r.color}` }) : null);
-  if (merk && r.color) merk.title = COLOR_LABELS[r.color];
+  // Buitenlandse rijen dragen hun bronvlag al in de naam en hebben geen iso3
+  // van een land in deze zin; landMerk valt daar vanzelf terug.
   details.append(el('summary', {},
-    el('span', { class: 'result-name' }, merk, ' ' + r.name),
+    el('span', { class: 'result-name' }, landMerk(r.iso3, r.color), ' ' + r.name),
     el('span', { class: 'count-pill', style: 'margin-left:auto' }, `${r.matchCount}×`),
     el('a', { href: r.url, target: '_blank', rel: 'noopener', style: 'margin-left:10px;font-weight:400;font-size:13px', onclick: (ev) => ev.stopPropagation() }, 'origineel →')));
   if (r.inSummary && r.summarySnippet) details.append(el('div', { class: 'match' },
@@ -4022,7 +4033,7 @@ function renderDateScan(countries, today, root) {
   countries.forEach((c) => {
     const details = el('details', { class: 'panel result-country' });
     details.append(el('summary', {},
-      el('span', {}, c.color ? el('span', { class: `dot c-${c.color}` }) : '', ' ' + c.name),
+      el('span', { class: 'result-name' }, landMerk(c.iso3, c.color), ' ' + c.name),
       el('span', { class: 'count-pill', style: 'margin-left:auto' }, `oudste: ${fmtDate(c.oldest)}`),
       el('a', { href: c.url, target: '_blank', rel: 'noopener', style: 'margin-left:10px;font-weight:400;font-size:13px', onclick: (e) => e.stopPropagation() }, 'origineel →')));
     c.hits.forEach((h) => details.append(el('div', { class: 'match' },
