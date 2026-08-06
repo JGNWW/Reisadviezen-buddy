@@ -1,10 +1,6933 @@
 {
-  "generatedAt": "2026-08-06T08:17:24.255Z",
+  "generatedAt": "2026-08-06T08:47:52.425Z",
   "sources": {
+    "fr": {
+      "naam": "Frankrijk (France Diplomatie)",
+      "gecontroleerd": 197,
+      "kapot": [
+        {
+          "iso3": "NRU",
+          "land": "Nauru",
+          "en": "Nauru",
+          "id": "nauru",
+          "status": 404,
+          "titel": "Page non trouvée | France Diplomatie",
+          "fout": null
+        },
+        {
+          "iso3": "KIR",
+          "land": "Kiribati",
+          "en": "Kiribati",
+          "id": "kiribati",
+          "status": 404,
+          "titel": "Page non trouvée | France Diplomatie",
+          "fout": null
+        },
+        {
+          "iso3": "LIE",
+          "land": "Liechtenstein",
+          "en": "Liechtenstein",
+          "id": "liechtenstein",
+          "status": 404,
+          "titel": "Page non trouvée | France Diplomatie",
+          "fout": null
+        },
+        {
+          "iso3": "TUV",
+          "land": "Tuvalu",
+          "en": "Tuvalu",
+          "id": "tuvalu",
+          "status": 404,
+          "titel": "Page non trouvée | France Diplomatie",
+          "fout": null
+        },
+        {
+          "iso3": "NIU",
+          "land": "Niue",
+          "en": "Niue",
+          "id": "niue",
+          "status": 404,
+          "titel": "Page non trouvée | France Diplomatie",
+          "fout": null
+        },
+        {
+          "iso3": "FSM",
+          "land": "Micronesië",
+          "en": "Micronesia, Federated States of",
+          "id": "etats-federes-de-micronesie",
+          "status": 404,
+          "titel": "Page non trouvée | France Diplomatie",
+          "fout": null
+        },
+        {
+          "iso3": "MHL",
+          "land": "Marshalleilanden",
+          "en": "Marshall Islands",
+          "id": "iles-marshall",
+          "status": 404,
+          "titel": "Page non trouvée | France Diplomatie",
+          "fout": null
+        }
+      ],
+      "ongekoppeldAantal": 29,
+      "ongekoppeld": [
+        {
+          "iso3": "MSR",
+          "land": "Montserrat",
+          "en": "Montserrat"
+        },
+        {
+          "iso3": "REU",
+          "land": "Réunion",
+          "en": "Réunion"
+        },
+        {
+          "iso3": "GRL",
+          "land": "Groenland",
+          "en": "Greenland"
+        },
+        {
+          "iso3": "AIA",
+          "land": "Anguilla",
+          "en": "Anguilla"
+        },
+        {
+          "iso3": "VGB",
+          "land": "Britse Maagdeneilanden",
+          "en": "Virgin Islands (British)"
+        },
+        {
+          "iso3": "SXM",
+          "land": "Sint Maarten",
+          "en": "Sint Maarten (Dutch part)"
+        },
+        {
+          "iso3": "MTQ",
+          "land": "Martinique",
+          "en": "Martinique"
+        },
+        {
+          "iso3": "ASM",
+          "land": "Amerikaans-Samoa",
+          "en": "American Samoa"
+        },
+        {
+          "iso3": "PCN",
+          "land": "Pitcairneilanden",
+          "en": "Pitcairn"
+        },
+        {
+          "iso3": "WLF",
+          "land": "Wallis en Futuna",
+          "en": "Wallis and Futuna"
+        },
+        {
+          "iso3": "NCL",
+          "land": "Nieuw-Caledonië",
+          "en": "New Caledonia"
+        },
+        {
+          "iso3": "PRI",
+          "land": "Puerto Rico",
+          "en": "Puerto Rico"
+        },
+        {
+          "iso3": "CYM",
+          "land": "Kaaimaneilanden",
+          "en": "Cayman Islands"
+        },
+        {
+          "iso3": "BQ-SA",
+          "land": "Saba",
+          "en": "Saba"
+        },
+        {
+          "iso3": "BQ-SE",
+          "land": "Sint Eustatius",
+          "en": "Sint Eustatius"
+        },
+        {
+          "iso3": "SJM",
+          "land": "Spitsbergen (Svalbard)",
+          "en": "Svalbard and Jan Mayen"
+        },
+        {
+          "iso3": "GUF",
+          "land": "Frans-Guyana",
+          "en": "French Guiana"
+        },
+        {
+          "iso3": "VIR",
+          "land": "Amerikaanse Maagdeneilanden",
+          "en": "Virgin Islands (U.S.)"
+        },
+        {
+          "iso3": "MAC",
+          "land": "Macau SAR",
+          "en": "Macao"
+        },
+        {
+          "iso3": "HKG",
+          "land": "Hongkong SAR",
+          "en": "Hong Kong"
+        },
+        {
+          "iso3": "TKL",
+          "land": "Tokelau-eilanden",
+          "en": "Tokelau"
+        },
+        {
+          "iso3": "ABW",
+          "land": "Aruba",
+          "en": "Aruba"
+        },
+        {
+          "iso3": "BQ-BO",
+          "land": "Bonaire",
+          "en": "Bonaire"
+        },
+        {
+          "iso3": "CUW",
+          "land": "Curaçao",
+          "en": "Curaçao"
+        },
+        {
+          "iso3": "GLP",
+          "land": "Guadeloupe",
+          "en": "Guadeloupe"
+        },
+        {
+          "iso3": "PYF",
+          "land": "Frans-Polynesië",
+          "en": "French Polynesia"
+        },
+        {
+          "iso3": "TCA",
+          "land": "Turks- en Caicoseilanden",
+          "en": "Turks and Caicos Islands"
+        },
+        {
+          "iso3": "FRO",
+          "land": "Faeröer",
+          "en": "Faroe Islands"
+        },
+        {
+          "iso3": "FRA",
+          "land": "Frankrijk",
+          "en": "France"
+        }
+      ]
+    },
+    "es": {
+      "naam": "Spanje (Exteriores)",
+      "gecontroleerd": 226,
+      "kapot": [],
+      "ongekoppeldAantal": 0,
+      "ongekoppeld": []
+    },
+    "at": {
+      "naam": "Oostenrijk (BMEIA)",
+      "gecontroleerd": 197,
+      "kapot": [],
+      "ongekoppeldAantal": 0,
+      "ongekoppeld": []
+    },
+    "fi": {
+      "naam": "Finland (Ulkoministeriö)",
+      "gecontroleerd": 153,
+      "kapot": [
+        {
+          "iso3": "SVN",
+          "land": "Slovenië",
+          "en": "Slovenia",
+          "id": "SI",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "CZE",
+          "land": "Tsjechië",
+          "en": "Czechia",
+          "id": "CZ",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "MWI",
+          "land": "Malawi",
+          "en": "Malawi",
+          "id": "MW",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "HND",
+          "land": "Honduras",
+          "en": "Honduras",
+          "id": "HN",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "BLR",
+          "land": "Belarus (Wit-Rusland)",
+          "en": "Belarus",
+          "id": "BY",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "KAZ",
+          "land": "Kazachstan",
+          "en": "Kazakhstan",
+          "id": "KZ",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "ROU",
+          "land": "Roemenië",
+          "en": "Romania",
+          "id": "RO",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "SSD",
+          "land": "Zuid-Sudan",
+          "en": "South Sudan",
+          "id": "SS",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "AUT",
+          "land": "Oostenrijk",
+          "en": "Austria",
+          "id": "AT",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "JAM",
+          "land": "Jamaica",
+          "en": "Jamaica",
+          "id": "JM",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "MMR",
+          "land": "Myanmar",
+          "en": "Myanmar",
+          "id": "MM",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "PRK",
+          "land": "Noord-Korea",
+          "en": "Korea, Democratic People's Republic of",
+          "id": "KP",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "MYS",
+          "land": "Maleisië",
+          "en": "Malaysia",
+          "id": "MY",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "TWN",
+          "land": "Taiwan",
+          "en": "Taiwan, Province of China",
+          "id": "TW",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "SEN",
+          "land": "Senegal",
+          "en": "Senegal",
+          "id": "SN",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "BDI",
+          "land": "Burundi",
+          "en": "Burundi",
+          "id": "BI",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "NAM",
+          "land": "Namibië",
+          "en": "Namibia",
+          "id": "NA",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "MDG",
+          "land": "Madagaskar",
+          "en": "Madagascar",
+          "id": "MG",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "IND",
+          "land": "India",
+          "en": "India",
+          "id": "IN",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "ERI",
+          "land": "Eritrea",
+          "en": "Eritrea",
+          "id": "ER",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "SWE",
+          "land": "Zweden",
+          "en": "Sweden",
+          "id": "SE",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "AFG",
+          "land": "Afghanistan",
+          "en": "Afghanistan",
+          "id": "AF",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "ISL",
+          "land": "IJsland",
+          "en": "Iceland",
+          "id": "IS",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "BGR",
+          "land": "Bulgarije",
+          "en": "Bulgaria",
+          "id": "BG",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "BEL",
+          "land": "België",
+          "en": "Belgium",
+          "id": "BE",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "YEM",
+          "land": "Jemen",
+          "en": "Yemen",
+          "id": "YE",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "EST",
+          "land": "Estland",
+          "en": "Estonia",
+          "id": "EE",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "LTU",
+          "land": "Litouwen",
+          "en": "Lithuania",
+          "id": "LT",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "ITA",
+          "land": "Italië",
+          "en": "Italy",
+          "id": "IT",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "CHE",
+          "land": "Zwitserland",
+          "en": "Switzerland",
+          "id": "CH",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "IRL",
+          "land": "Ierland",
+          "en": "Ireland",
+          "id": "IE",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "DNK",
+          "land": "Denemarken",
+          "en": "Denmark",
+          "id": "DK",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "MOZ",
+          "land": "Mozambique",
+          "en": "Mozambique",
+          "id": "MZ",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "GMB",
+          "land": "Gambia",
+          "en": "Gambia",
+          "id": "GM",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "SLV",
+          "land": "El Salvador",
+          "en": "El Salvador",
+          "id": "SV",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "ISR",
+          "land": "Israël",
+          "en": "Israel",
+          "id": "IL",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "LIE",
+          "land": "Liechtenstein",
+          "en": "Liechtenstein",
+          "id": "LI",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "RWA",
+          "land": "Rwanda",
+          "en": "Rwanda",
+          "id": "RW",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "ZMB",
+          "land": "Zambia",
+          "en": "Zambia",
+          "id": "ZM",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "MKD",
+          "land": "Noord-Macedonië",
+          "en": "North Macedonia",
+          "id": "MK",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "AUS",
+          "land": "Australië",
+          "en": "Australia",
+          "id": "AU",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "GBR",
+          "land": "Verenigd Koninkrijk",
+          "en": "United Kingdom of Great Britain and Northern Ireland",
+          "id": "GB",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "KOR",
+          "land": "Zuid-Korea",
+          "en": "Korea, Republic of",
+          "id": "KR",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "BTN",
+          "land": "Bhutan",
+          "en": "Bhutan",
+          "id": "BT",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "GRC",
+          "land": "Griekenland",
+          "en": "Greece",
+          "id": "GR",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "CHN",
+          "land": "China",
+          "en": "China",
+          "id": "CN",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "PAK",
+          "land": "Pakistan",
+          "en": "Pakistan",
+          "id": "PK",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "PSE",
+          "land": "Palestijnse Gebieden",
+          "en": "Palestine, State of",
+          "id": "PS",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "BIH",
+          "land": "Bosnië en Herzegovina",
+          "en": "Bosnia and Herzegovina",
+          "id": "BA",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "RUS",
+          "land": "Rusland",
+          "en": "Russian Federation",
+          "id": "RU",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "MAC",
+          "land": "Macau SAR",
+          "en": "Macao",
+          "id": "MO",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "HKG",
+          "land": "Hongkong SAR",
+          "en": "Hong Kong",
+          "id": "HK",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "UGA",
+          "land": "Uganda",
+          "en": "Uganda",
+          "id": "UG",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "DZA",
+          "land": "Algerije",
+          "en": "Algeria",
+          "id": "DZ",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "AGO",
+          "land": "Angola",
+          "en": "Angola",
+          "id": "AO",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "ARG",
+          "land": "Argentinië",
+          "en": "Argentina",
+          "id": "AR",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "BRA",
+          "land": "Brazilië",
+          "en": "Brazil",
+          "id": "BR",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "KHM",
+          "land": "Cambodja",
+          "en": "Cambodia",
+          "id": "KH",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "CAN",
+          "land": "Canada",
+          "en": "Canada",
+          "id": "CA",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "CYP",
+          "land": "Cyprus",
+          "en": "Cyprus",
+          "id": "CY",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "GTM",
+          "land": "Guatemala",
+          "en": "Guatemala",
+          "id": "GT",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "CIV",
+          "land": "Ivoorkust",
+          "en": "Côte d'Ivoire",
+          "id": "CI",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "JPN",
+          "land": "Japan",
+          "en": "Japan",
+          "id": "JP",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "KGZ",
+          "land": "Kirgizië",
+          "en": "Kyrgyzstan",
+          "id": "KG",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "BLZ",
+          "land": "Belize",
+          "en": "Belize",
+          "id": "BZ",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "MAR",
+          "land": "Marokko",
+          "en": "Morocco",
+          "id": "MA",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "MDA",
+          "land": "Moldavië",
+          "en": "Moldova, Republic of",
+          "id": "MD",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "MNG",
+          "land": "Mongolië",
+          "en": "Mongolia",
+          "id": "MN",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "NZL",
+          "land": "Nieuw-Zeeland",
+          "en": "New Zealand",
+          "id": "NZ",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "UKR",
+          "land": "Oekraïne",
+          "en": "Ukraine",
+          "id": "UA",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "UZB",
+          "land": "Oezbekistan",
+          "en": "Uzbekistan",
+          "id": "UZ",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "PRY",
+          "land": "Paraguay",
+          "en": "Paraguay",
+          "id": "PY",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "SOM",
+          "land": "Somalië",
+          "en": "Somalia",
+          "id": "SO",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "SDN",
+          "land": "Sudan",
+          "en": "Sudan",
+          "id": "SD",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "TJK",
+          "land": "Tadzjikistan",
+          "en": "Tajikistan",
+          "id": "TJ",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "TUN",
+          "land": "Tunesië",
+          "en": "Tunisia",
+          "id": "TN",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "URY",
+          "land": "Uruguay",
+          "en": "Uruguay",
+          "id": "UY",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "NIC",
+          "land": "Nicaragua",
+          "en": "Nicaragua",
+          "id": "NI",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "MUS",
+          "land": "Mauritius",
+          "en": "Mauritius",
+          "id": "MU",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "LUX",
+          "land": "Luxemburg",
+          "en": "Luxembourg",
+          "id": "LU",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "SYC",
+          "land": "Seychellen",
+          "en": "Seychelles",
+          "id": "SC",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "CUB",
+          "land": "Cuba",
+          "en": "Cuba",
+          "id": "CU",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "COL",
+          "land": "Colombia",
+          "en": "Colombia",
+          "id": "CO",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "GEO",
+          "land": "Georgië",
+          "en": "Georgia",
+          "id": "GE",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "IRQ",
+          "land": "Irak",
+          "en": "Iraq",
+          "id": "IQ",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "ARE",
+          "land": "Verenigde Arabische Emiraten",
+          "en": "United Arab Emirates",
+          "id": "AE",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "SAU",
+          "land": "Saoedi-Arabië",
+          "en": "Saudi Arabia",
+          "id": "SA",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "KWT",
+          "land": "Koeweit",
+          "en": "Kuwait",
+          "id": "KW",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "QAT",
+          "land": "Qatar",
+          "en": "Qatar",
+          "id": "QA",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "BHR",
+          "land": "Bahrein",
+          "en": "Bahrain",
+          "id": "BH",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "OMN",
+          "land": "Oman",
+          "en": "Oman",
+          "id": "OM",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "COD",
+          "land": "Congo, Democratische Republiek",
+          "en": "Congo, Democratic Republic of the",
+          "id": "CD",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "SYR",
+          "land": "Syrië",
+          "en": "Syrian Arab Republic",
+          "id": "SY",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "TLS",
+          "land": "Oost-Timor",
+          "en": "Timor-Leste",
+          "id": "TL",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "BGD",
+          "land": "Bangladesh",
+          "en": "Bangladesh",
+          "id": "BD",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "LBN",
+          "land": "Libanon",
+          "en": "Lebanon",
+          "id": "LB",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "LAO",
+          "land": "Laos",
+          "en": "Lao People's Democratic Republic",
+          "id": "LA",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "JOR",
+          "land": "Jordanië",
+          "en": "Jordan",
+          "id": "JO",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "DOM",
+          "land": "Dominicaanse Republiek",
+          "en": "Dominican Republic",
+          "id": "DO",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "PAN",
+          "land": "Panama",
+          "en": "Panama",
+          "id": "PA",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "CRI",
+          "land": "Costa Rica",
+          "en": "Costa Rica",
+          "id": "CR",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "MEX",
+          "land": "Mexico",
+          "en": "Mexico",
+          "id": "MX",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "FJI",
+          "land": "Fiji",
+          "en": "Fiji",
+          "id": "FJ",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "PNG",
+          "land": "Papoea-Nieuw-Guinea",
+          "en": "Papua New Guinea",
+          "id": "PG",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "MLT",
+          "land": "Malta",
+          "en": "Malta",
+          "id": "MT",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "ALB",
+          "land": "Albanië",
+          "en": "Albania",
+          "id": "AL",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "TZA",
+          "land": "Tanzania",
+          "en": "Tanzania, United Republic of",
+          "id": "TZ",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "PER",
+          "land": "Peru",
+          "en": "Peru",
+          "id": "PE",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "MDV",
+          "land": "Maldiven",
+          "en": "Maldives",
+          "id": "MV",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "PHL",
+          "land": "Filipijnen",
+          "en": "Philippines",
+          "id": "PH",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "DJI",
+          "land": "Djibouti",
+          "en": "Djibouti",
+          "id": "DJ",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "EGY",
+          "land": "Egypte",
+          "en": "Egypt",
+          "id": "EG",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "MNE",
+          "land": "Montenegro",
+          "en": "Montenegro",
+          "id": "ME",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "CHL",
+          "land": "Chili",
+          "en": "Chile",
+          "id": "CL",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "IRN",
+          "land": "Iran",
+          "en": "Iran, Islamic Republic of",
+          "id": "IR",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "ECU",
+          "land": "Ecuador",
+          "en": "Ecuador",
+          "id": "EC",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "LVA",
+          "land": "Letland",
+          "en": "Latvia",
+          "id": "LV",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "KEN",
+          "land": "Kenia",
+          "en": "Kenya",
+          "id": "KE",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "LBY",
+          "land": "Libië",
+          "en": "Libya",
+          "id": "LY",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "SGP",
+          "land": "Singapore",
+          "en": "Singapore",
+          "id": "SG",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "ZWE",
+          "land": "Zimbabwe",
+          "en": "Zimbabwe",
+          "id": "ZW",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "BWA",
+          "land": "Botswana",
+          "en": "Botswana",
+          "id": "BW",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "ETH",
+          "land": "Ethiopië",
+          "en": "Ethiopia",
+          "id": "ET",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "MCO",
+          "land": "Monaco",
+          "en": "Monaco",
+          "id": "MC",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "NOR",
+          "land": "Noorwegen",
+          "en": "Norway",
+          "id": "NO",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "TUR",
+          "land": "Turkije",
+          "en": "Türkiye",
+          "id": "TR",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "VNM",
+          "land": "Vietnam",
+          "en": "Viet Nam",
+          "id": "VN",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "VEN",
+          "land": "Venezuela",
+          "en": "Venezuela, Bolivarian Republic of",
+          "id": "VE",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "AZE",
+          "land": "Azerbeidzjan",
+          "en": "Azerbaijan",
+          "id": "AZ",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "NGA",
+          "land": "Nigeria",
+          "en": "Nigeria",
+          "id": "NG",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "CPV",
+          "land": "Kaapverdië",
+          "en": "Cabo Verde",
+          "id": "CV",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "LKA",
+          "land": "Sri Lanka",
+          "en": "Sri Lanka",
+          "id": "LK",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "TKM",
+          "land": "Turkmenistan",
+          "en": "Turkmenistan",
+          "id": "TM",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "ZAF",
+          "land": "Zuid-Afrika",
+          "en": "South Africa",
+          "id": "ZA",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "AND",
+          "land": "Andorra",
+          "en": "Andorra",
+          "id": "AD",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "SWZ",
+          "land": "Eswatini (Swaziland)",
+          "en": "Eswatini",
+          "id": "SZ",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "LSO",
+          "land": "Lesotho",
+          "en": "Lesotho",
+          "id": "LS",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "USA",
+          "land": "Verenigde Staten van Amerika",
+          "en": "United States of America",
+          "id": "US",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "THA",
+          "land": "Thailand",
+          "en": "Thailand",
+          "id": "TH",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "FRA",
+          "land": "Frankrijk",
+          "en": "France",
+          "id": "FR",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "ESP",
+          "land": "Spanje",
+          "en": "Spain",
+          "id": "ES",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "BRN",
+          "land": "Brunei Darussalam",
+          "en": "Brunei Darussalam",
+          "id": "BN",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "BOL",
+          "land": "Bolivia",
+          "en": "Bolivia, Plurinational State of",
+          "id": "BO",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "IDN",
+          "land": "Indonesië",
+          "en": "Indonesia",
+          "id": "ID",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        },
+        {
+          "iso3": "ARM",
+          "land": "Armenië",
+          "en": "Armenia",
+          "id": "AM",
+          "status": 429,
+          "titel": "",
+          "fout": "blijft geweigerd (snelheidslimiet)"
+        }
+      ],
+      "ongekoppeldAantal": 0,
+      "ongekoppeld": []
+    },
     "it": {
       "naam": "Italië (Viaggiare Sicuri)",
       "gecontroleerd": 213,
       "kapot": [],
+      "ongekoppeldAantal": 0,
+      "ongekoppeld": []
+    },
+    "kr": {
+      "naam": "Zuid-Korea (MOFA)",
+      "gecontroleerd": 197,
+      "kapot": [],
+      "ongekoppeldAantal": 0,
+      "ongekoppeld": []
+    },
+    "jp": {
+      "naam": "Japan (MOFA)",
+      "gecontroleerd": 199,
+      "kapot": [],
+      "ongekoppeldAantal": 0,
+      "ongekoppeld": []
+    },
+    "au": {
+      "naam": "Australië (Smartraveller)",
+      "gecontroleerd": 220,
+      "kapot": [
+        {
+          "iso3": "NPL",
+          "land": "Nepal",
+          "en": "Nepal",
+          "id": "asia/nepal",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "MSR",
+          "land": "Montserrat",
+          "en": "Montserrat",
+          "id": "americas/montserrat",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "DEU",
+          "land": "Duitsland",
+          "en": "Germany",
+          "id": "europe/germany",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "REU",
+          "land": "Réunion",
+          "en": "Réunion",
+          "id": "africa/reunion",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "SRB",
+          "land": "Servië",
+          "en": "Serbia",
+          "id": "europe/serbia",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "GRL",
+          "land": "Groenland",
+          "en": "Greenland",
+          "id": "americas/greenland",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "AIA",
+          "land": "Anguilla",
+          "en": "Anguilla",
+          "id": "americas/anguilla",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "LCA",
+          "land": "Saint Lucia",
+          "en": "Saint Lucia",
+          "id": "americas/saint-lucia",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "PRT",
+          "land": "Portugal",
+          "en": "Portugal",
+          "id": "europe/portugal",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "HUN",
+          "land": "Hongarije",
+          "en": "Hungary",
+          "id": "europe/hungary",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "POL",
+          "land": "Polen",
+          "en": "Poland",
+          "id": "europe/poland",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "SVK",
+          "land": "Slowakije",
+          "en": "Slovakia",
+          "id": "europe/slovakia",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "HRV",
+          "land": "Kroatië",
+          "en": "Croatia",
+          "id": "europe/croatia",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "SVN",
+          "land": "Slovenië",
+          "en": "Slovenia",
+          "id": "europe/slovenia",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "CZE",
+          "land": "Tsjechië",
+          "en": "Czechia",
+          "id": "europe/czech-republic",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "ATG",
+          "land": "Antigua en Barbuda",
+          "en": "Antigua and Barbuda",
+          "id": "americas/antigua-and-barbuda",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "MWI",
+          "land": "Malawi",
+          "en": "Malawi",
+          "id": "africa/malawi",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "GAB",
+          "land": "Gabon",
+          "en": "Gabon",
+          "id": "africa/gabon",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "VGB",
+          "land": "Britse Maagdeneilanden",
+          "en": "Virgin Islands (British)",
+          "id": "americas/virgin-islands-british",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "GRD",
+          "land": "Grenada",
+          "en": "Grenada",
+          "id": "americas/grenada",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "HND",
+          "land": "Honduras",
+          "en": "Honduras",
+          "id": "americas/honduras",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "CMR",
+          "land": "Kameroen",
+          "en": "Cameroon",
+          "id": "africa/cameroon",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "BLR",
+          "land": "Belarus (Wit-Rusland)",
+          "en": "Belarus",
+          "id": "europe/belarus",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "DMA",
+          "land": "Dominica",
+          "en": "Dominica",
+          "id": "americas/dominica",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "KAZ",
+          "land": "Kazachstan",
+          "en": "Kazakhstan",
+          "id": "asia/kazakhstan",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "ROU",
+          "land": "Roemenië",
+          "en": "Romania",
+          "id": "europe/romania",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "VCT",
+          "land": "Saint Vincent en de Grenadines",
+          "en": "Saint Vincent and the Grenadines",
+          "id": "americas/saint-vincent-and-the-grenadines",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "GUY",
+          "land": "Guyana",
+          "en": "Guyana",
+          "id": "americas/guyana",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "SSD",
+          "land": "Zuid-Sudan",
+          "en": "South Sudan",
+          "id": "africa/south-sudan",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "AUT",
+          "land": "Oostenrijk",
+          "en": "Austria",
+          "id": "europe/austria",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "JAM",
+          "land": "Jamaica",
+          "en": "Jamaica",
+          "id": "americas/jamaica",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "MMR",
+          "land": "Myanmar",
+          "en": "Myanmar",
+          "id": "asia/myanmar",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "PRK",
+          "land": "Noord-Korea",
+          "en": "Korea, Democratic People's Republic of",
+          "id": "asia/north-korea",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "SXM",
+          "land": "Sint Maarten",
+          "en": "Sint Maarten (Dutch part)",
+          "id": "americas/sint-maarten-dutch-part",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "MYS",
+          "land": "Maleisië",
+          "en": "Malaysia",
+          "id": "asia/malaysia",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "VUT",
+          "land": "Vanuatu",
+          "en": "Vanuatu",
+          "id": "pacific/vanuatu",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "SEN",
+          "land": "Senegal",
+          "en": "Senegal",
+          "id": "africa/senegal",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "BDI",
+          "land": "Burundi",
+          "en": "Burundi",
+          "id": "africa/burundi",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "NRU",
+          "land": "Nauru",
+          "en": "Nauru",
+          "id": "pacific/nauru",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "NAM",
+          "land": "Namibië",
+          "en": "Namibia",
+          "id": "africa/namibia",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "MDG",
+          "land": "Madagaskar",
+          "en": "Madagascar",
+          "id": "africa/madagascar",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "IND",
+          "land": "India",
+          "en": "India",
+          "id": "asia/india",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "BFA",
+          "land": "Burkina Faso",
+          "en": "Burkina Faso",
+          "id": "africa/burkina-faso",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "ERI",
+          "land": "Eritrea",
+          "en": "Eritrea",
+          "id": "africa/eritrea",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "SWE",
+          "land": "Zweden",
+          "en": "Sweden",
+          "id": "europe/sweden",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "AFG",
+          "land": "Afghanistan",
+          "en": "Afghanistan",
+          "id": "asia/afghanistan",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "MTQ",
+          "land": "Martinique",
+          "en": "Martinique",
+          "id": "americas/martinique",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "ASM",
+          "land": "Amerikaans-Samoa",
+          "en": "American Samoa",
+          "id": "pacific/american-samoa",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "PCN",
+          "land": "Pitcairneilanden",
+          "en": "Pitcairn",
+          "id": "pacific/pitcairn",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "KIR",
+          "land": "Kiribati",
+          "en": "Kiribati",
+          "id": "pacific/kiribati",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "TON",
+          "land": "Tonga",
+          "en": "Tonga",
+          "id": "pacific/tonga",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "WLF",
+          "land": "Wallis en Futuna",
+          "en": "Wallis and Futuna",
+          "id": "pacific/wallis-and-futuna",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "NCL",
+          "land": "Nieuw-Caledonië",
+          "en": "New Caledonia",
+          "id": "pacific/new-caledonia",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "COK",
+          "land": "Cookeilanden",
+          "en": "Cook Islands",
+          "id": "pacific/cook-islands",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "ISL",
+          "land": "IJsland",
+          "en": "Iceland",
+          "id": "europe/iceland",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "PRI",
+          "land": "Puerto Rico",
+          "en": "Puerto Rico",
+          "id": "americas/puerto-rico",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "BGR",
+          "land": "Bulgarije",
+          "en": "Bulgaria",
+          "id": "europe/bulgaria",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "BEL",
+          "land": "België",
+          "en": "Belgium",
+          "id": "europe/belgium",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "CYM",
+          "land": "Kaaimaneilanden",
+          "en": "Cayman Islands",
+          "id": "americas/cayman-islands",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "YEM",
+          "land": "Jemen",
+          "en": "Yemen",
+          "id": "middle-east/yemen",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "EST",
+          "land": "Estland",
+          "en": "Estonia",
+          "id": "europe/estonia",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "LTU",
+          "land": "Litouwen",
+          "en": "Lithuania",
+          "id": "europe/lithuania",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "ITA",
+          "land": "Italië",
+          "en": "Italy",
+          "id": "europe/italy",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "CHE",
+          "land": "Zwitserland",
+          "en": "Switzerland",
+          "id": "europe/switzerland",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "IRL",
+          "land": "Ierland",
+          "en": "Ireland",
+          "id": "europe/ireland",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "DNK",
+          "land": "Denemarken",
+          "en": "Denmark",
+          "id": "europe/denmark",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "SJM",
+          "land": "Spitsbergen (Svalbard)",
+          "en": "Svalbard and Jan Mayen",
+          "id": "europe/svalbard-and-jan-mayen",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "COM",
+          "land": "Comoren",
+          "en": "Comoros",
+          "id": "africa/comoros",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "MOZ",
+          "land": "Mozambique",
+          "en": "Mozambique",
+          "id": "africa/mozambique",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "FIN",
+          "land": "Finland",
+          "en": "Finland",
+          "id": "europe/finland",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "GMB",
+          "land": "Gambia",
+          "en": "Gambia",
+          "id": "africa/gambia",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "SLV",
+          "land": "El Salvador",
+          "en": "El Salvador",
+          "id": "americas/el-salvador",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "ISR",
+          "land": "Israël",
+          "en": "Israel",
+          "id": "middle-east/israel",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "MRT",
+          "land": "Mauritanië",
+          "en": "Mauritania",
+          "id": "africa/mauritania",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "LIE",
+          "land": "Liechtenstein",
+          "en": "Liechtenstein",
+          "id": "europe/liechtenstein",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "RWA",
+          "land": "Rwanda",
+          "en": "Rwanda",
+          "id": "africa/rwanda",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "ZMB",
+          "land": "Zambia",
+          "en": "Zambia",
+          "id": "africa/zambia",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "MKD",
+          "land": "Noord-Macedonië",
+          "en": "North Macedonia",
+          "id": "europe/north-macedonia",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "AUS",
+          "land": "Australië",
+          "en": "Australia",
+          "id": "pacific/australia",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "GUF",
+          "land": "Frans-Guyana",
+          "en": "French Guiana",
+          "id": "americas/french-guiana",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "GBR",
+          "land": "Verenigd Koninkrijk",
+          "en": "United Kingdom of Great Britain and Northern Ireland",
+          "id": "europe/united-kingdom",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "KOR",
+          "land": "Zuid-Korea",
+          "en": "Korea, Republic of",
+          "id": "asia/south-korea",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "BTN",
+          "land": "Bhutan",
+          "en": "Bhutan",
+          "id": "asia/bhutan",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "GRC",
+          "land": "Griekenland",
+          "en": "Greece",
+          "id": "europe/greece",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "CHN",
+          "land": "China",
+          "en": "China",
+          "id": "asia/china",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "PAK",
+          "land": "Pakistan",
+          "en": "Pakistan",
+          "id": "asia/pakistan",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "PSE",
+          "land": "Palestijnse Gebieden",
+          "en": "Palestine, State of",
+          "id": "middle-east/palestine-state-of",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "BIH",
+          "land": "Bosnië en Herzegovina",
+          "en": "Bosnia and Herzegovina",
+          "id": "europe/bosnia-and-herzegovina",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "SMR",
+          "land": "San Marino",
+          "en": "San Marino",
+          "id": "europe/san-marino",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "RUS",
+          "land": "Rusland",
+          "en": "Russian Federation",
+          "id": "europe/russia",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "GNB",
+          "land": "Guinee-Bissau",
+          "en": "Guinea-Bissau",
+          "id": "africa/guinea-bissau",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "GNQ",
+          "land": "Equatoriaal-Guinea",
+          "en": "Equatorial Guinea",
+          "id": "africa/equatorial-guinea",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "VIR",
+          "land": "Amerikaanse Maagdeneilanden",
+          "en": "Virgin Islands (U.S.)",
+          "id": "americas/virgin-islands-u-s",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "BHS",
+          "land": "Bahama's",
+          "en": "Bahamas",
+          "id": "americas/bahamas",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "MAC",
+          "land": "Macau SAR",
+          "en": "Macao",
+          "id": "asia/macao",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "HKG",
+          "land": "Hongkong SAR",
+          "en": "Hong Kong",
+          "id": "asia/hong-kong",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "UGA",
+          "land": "Uganda",
+          "en": "Uganda",
+          "id": "africa/uganda",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "DZA",
+          "land": "Algerije",
+          "en": "Algeria",
+          "id": "africa/algeria",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "AGO",
+          "land": "Angola",
+          "en": "Angola",
+          "id": "africa/angola",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "ARG",
+          "land": "Argentinië",
+          "en": "Argentina",
+          "id": "americas/argentina",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "BRB",
+          "land": "Barbados",
+          "en": "Barbados",
+          "id": "americas/barbados",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "BRA",
+          "land": "Brazilië",
+          "en": "Brazil",
+          "id": "americas/brazil",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "KHM",
+          "land": "Cambodja",
+          "en": "Cambodia",
+          "id": "asia/cambodia",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "CAN",
+          "land": "Canada",
+          "en": "Canada",
+          "id": "americas/canada",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "CAF",
+          "land": "Centraal-Afrikaanse Republiek",
+          "en": "Central African Republic",
+          "id": "africa/central-african-republic",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "CYP",
+          "land": "Cyprus",
+          "en": "Cyprus",
+          "id": "middle-east/cyprus",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "GTM",
+          "land": "Guatemala",
+          "en": "Guatemala",
+          "id": "americas/guatemala",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "GIN",
+          "land": "Guinee",
+          "en": "Guinea",
+          "id": "africa/guinea",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "HTI",
+          "land": "Haïti",
+          "en": "Haiti",
+          "id": "americas/haiti",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "CIV",
+          "land": "Ivoorkust",
+          "en": "Côte d'Ivoire",
+          "id": "africa/cote-d-ivoire",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "JPN",
+          "land": "Japan",
+          "en": "Japan",
+          "id": "asia/japan",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "KGZ",
+          "land": "Kirgizië",
+          "en": "Kyrgyzstan",
+          "id": "asia/kyrgyzstan",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "BLZ",
+          "land": "Belize",
+          "en": "Belize",
+          "id": "americas/belize",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "MLI",
+          "land": "Mali",
+          "en": "Mali",
+          "id": "africa/mali",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "MAR",
+          "land": "Marokko",
+          "en": "Morocco",
+          "id": "africa/morocco",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "MDA",
+          "land": "Moldavië",
+          "en": "Moldova, Republic of",
+          "id": "europe/moldova-republic-of",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "MNG",
+          "land": "Mongolië",
+          "en": "Mongolia",
+          "id": "asia/mongolia",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "TKL",
+          "land": "Tokelau-eilanden",
+          "en": "Tokelau",
+          "id": "pacific/tokelau",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "TUV",
+          "land": "Tuvalu",
+          "en": "Tuvalu",
+          "id": "pacific/tuvalu",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "NZL",
+          "land": "Nieuw-Zeeland",
+          "en": "New Zealand",
+          "id": "pacific/new-zealand",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "UKR",
+          "land": "Oekraïne",
+          "en": "Ukraine",
+          "id": "europe/ukraine",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "UZB",
+          "land": "Oezbekistan",
+          "en": "Uzbekistan",
+          "id": "asia/uzbekistan",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "PRY",
+          "land": "Paraguay",
+          "en": "Paraguay",
+          "id": "americas/paraguay",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "SLE",
+          "land": "Sierra Leone",
+          "en": "Sierra Leone",
+          "id": "africa/sierra-leone",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "SOM",
+          "land": "Somalië",
+          "en": "Somalia",
+          "id": "africa/somalia",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "SDN",
+          "land": "Sudan",
+          "en": "Sudan",
+          "id": "africa/sudan",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "TJK",
+          "land": "Tadzjikistan",
+          "en": "Tajikistan",
+          "id": "asia/tajikistan",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "TCD",
+          "land": "Tsjaad",
+          "en": "Chad",
+          "id": "africa/chad",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "TUN",
+          "land": "Tunesië",
+          "en": "Tunisia",
+          "id": "africa/tunisia",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "URY",
+          "land": "Uruguay",
+          "en": "Uruguay",
+          "id": "americas/uruguay",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "NIC",
+          "land": "Nicaragua",
+          "en": "Nicaragua",
+          "id": "americas/nicaragua",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "ABW",
+          "land": "Aruba",
+          "en": "Aruba",
+          "id": "americas/aruba",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "LBR",
+          "land": "Liberia",
+          "en": "Liberia",
+          "id": "africa/liberia",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "CUW",
+          "land": "Curaçao",
+          "en": "Curaçao",
+          "id": "americas/curacao",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "COG",
+          "land": "Congo, de Republiek",
+          "en": "Congo",
+          "id": "africa/congo",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "SUR",
+          "land": "Suriname",
+          "en": "Suriname",
+          "id": "americas/suriname",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "TGO",
+          "land": "Togo",
+          "en": "Togo",
+          "id": "africa/togo",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "GLP",
+          "land": "Guadeloupe",
+          "en": "Guadeloupe",
+          "id": "americas/guadeloupe",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "MUS",
+          "land": "Mauritius",
+          "en": "Mauritius",
+          "id": "africa/mauritius",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "PYF",
+          "land": "Frans-Polynesië",
+          "en": "French Polynesia",
+          "id": "pacific/french-polynesia",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "LUX",
+          "land": "Luxemburg",
+          "en": "Luxembourg",
+          "id": "europe/luxembourg",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "KNA",
+          "land": "Saint Kitts en Nevis",
+          "en": "Saint Kitts and Nevis",
+          "id": "americas/saint-kitts-and-nevis",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "SYC",
+          "land": "Seychellen",
+          "en": "Seychelles",
+          "id": "africa/seychelles",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "GHA",
+          "land": "Ghana",
+          "en": "Ghana",
+          "id": "africa/ghana",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "CUB",
+          "land": "Cuba",
+          "en": "Cuba",
+          "id": "americas/cuba",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "COL",
+          "land": "Colombia",
+          "en": "Colombia",
+          "id": "americas/colombia",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "GEO",
+          "land": "Georgië",
+          "en": "Georgia",
+          "id": "middle-east/georgia",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "IRQ",
+          "land": "Irak",
+          "en": "Iraq",
+          "id": "middle-east/iraq",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "ARE",
+          "land": "Verenigde Arabische Emiraten",
+          "en": "United Arab Emirates",
+          "id": "middle-east/united-arab-emirates",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "SAU",
+          "land": "Saoedi-Arabië",
+          "en": "Saudi Arabia",
+          "id": "middle-east/saudi-arabia",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "KWT",
+          "land": "Koeweit",
+          "en": "Kuwait",
+          "id": "middle-east/kuwait",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "QAT",
+          "land": "Qatar",
+          "en": "Qatar",
+          "id": "middle-east/qatar",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "BHR",
+          "land": "Bahrein",
+          "en": "Bahrain",
+          "id": "middle-east/bahrain",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "OMN",
+          "land": "Oman",
+          "en": "Oman",
+          "id": "middle-east/oman",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "COD",
+          "land": "Congo, Democratische Republiek",
+          "en": "Congo, Democratic Republic of the",
+          "id": "africa/congo-democratic-republic-of-the",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "SYR",
+          "land": "Syrië",
+          "en": "Syrian Arab Republic",
+          "id": "middle-east/syria",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "TLS",
+          "land": "Oost-Timor",
+          "en": "Timor-Leste",
+          "id": "asia/timor-leste",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "BGD",
+          "land": "Bangladesh",
+          "en": "Bangladesh",
+          "id": "asia/bangladesh",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "LBN",
+          "land": "Libanon",
+          "en": "Lebanon",
+          "id": "middle-east/lebanon",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "LAO",
+          "land": "Laos",
+          "en": "Lao People's Democratic Republic",
+          "id": "asia/laos",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "JOR",
+          "land": "Jordanië",
+          "en": "Jordan",
+          "id": "middle-east/jordan",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "TCA",
+          "land": "Turks- en Caicoseilanden",
+          "en": "Turks and Caicos Islands",
+          "id": "americas/turks-and-caicos-islands",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "DOM",
+          "land": "Dominicaanse Republiek",
+          "en": "Dominican Republic",
+          "id": "americas/dominican-republic",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "TTO",
+          "land": "Trinidad en Tobago",
+          "en": "Trinidad and Tobago",
+          "id": "americas/trinidad-and-tobago",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "PAN",
+          "land": "Panama",
+          "en": "Panama",
+          "id": "americas/panama",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "CRI",
+          "land": "Costa Rica",
+          "en": "Costa Rica",
+          "id": "americas/costa-rica",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "MEX",
+          "land": "Mexico",
+          "en": "Mexico",
+          "id": "americas/mexico",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "NIU",
+          "land": "Niue",
+          "en": "Niue",
+          "id": "pacific/niue",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "WSM",
+          "land": "Samoa",
+          "en": "Samoa",
+          "id": "pacific/samoa",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "FSM",
+          "land": "Micronesië",
+          "en": "Micronesia, Federated States of",
+          "id": "pacific/micronesia-federated-states-of",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "SLB",
+          "land": "Salomonseilanden",
+          "en": "Solomon Islands",
+          "id": "pacific/solomon-islands",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "FJI",
+          "land": "Fiji",
+          "en": "Fiji",
+          "id": "pacific/fiji",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "PLW",
+          "land": "Palau",
+          "en": "Palau",
+          "id": "pacific/palau",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "PNG",
+          "land": "Papoea-Nieuw-Guinea",
+          "en": "Papua New Guinea",
+          "id": "pacific/papua-new-guinea",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "MLT",
+          "land": "Malta",
+          "en": "Malta",
+          "id": "europe/malta",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "ALB",
+          "land": "Albanië",
+          "en": "Albania",
+          "id": "europe/albania",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "TZA",
+          "land": "Tanzania",
+          "en": "Tanzania, United Republic of",
+          "id": "africa/tanzania-united-republic-of",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "PER",
+          "land": "Peru",
+          "en": "Peru",
+          "id": "americas/peru",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "MHL",
+          "land": "Marshalleilanden",
+          "en": "Marshall Islands",
+          "id": "pacific/marshall-islands",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "MDV",
+          "land": "Maldiven",
+          "en": "Maldives",
+          "id": "asia/maldives",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "PHL",
+          "land": "Filipijnen",
+          "en": "Philippines",
+          "id": "asia/philippines",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "DJI",
+          "land": "Djibouti",
+          "en": "Djibouti",
+          "id": "africa/djibouti",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "EGY",
+          "land": "Egypte",
+          "en": "Egypt",
+          "id": "africa/egypt",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "MNE",
+          "land": "Montenegro",
+          "en": "Montenegro",
+          "id": "europe/montenegro",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "CHL",
+          "land": "Chili",
+          "en": "Chile",
+          "id": "americas/chile",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "IRN",
+          "land": "Iran",
+          "en": "Iran, Islamic Republic of",
+          "id": "asia/iran-islamic-republic-of",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "ECU",
+          "land": "Ecuador",
+          "en": "Ecuador",
+          "id": "americas/ecuador",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "STP",
+          "land": "Sao Tomé en Principe",
+          "en": "Sao Tome and Principe",
+          "id": "africa/sao-tome-and-principe",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "LVA",
+          "land": "Letland",
+          "en": "Latvia",
+          "id": "europe/latvia",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "KEN",
+          "land": "Kenia",
+          "en": "Kenya",
+          "id": "africa/kenya",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "LBY",
+          "land": "Libië",
+          "en": "Libya",
+          "id": "africa/libya",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "SGP",
+          "land": "Singapore",
+          "en": "Singapore",
+          "id": "asia/singapore",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "ZWE",
+          "land": "Zimbabwe",
+          "en": "Zimbabwe",
+          "id": "africa/zimbabwe",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "BWA",
+          "land": "Botswana",
+          "en": "Botswana",
+          "id": "africa/botswana",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "ETH",
+          "land": "Ethiopië",
+          "en": "Ethiopia",
+          "id": "africa/ethiopia",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "MCO",
+          "land": "Monaco",
+          "en": "Monaco",
+          "id": "europe/monaco",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "FRO",
+          "land": "Faeröer",
+          "en": "Faroe Islands",
+          "id": "europe/faroe-islands",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "NOR",
+          "land": "Noorwegen",
+          "en": "Norway",
+          "id": "europe/norway",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "TUR",
+          "land": "Turkije",
+          "en": "Türkiye",
+          "id": "middle-east/turkiye",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "VNM",
+          "land": "Vietnam",
+          "en": "Viet Nam",
+          "id": "asia/viet-nam",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "VEN",
+          "land": "Venezuela",
+          "en": "Venezuela, Bolivarian Republic of",
+          "id": "americas/venezuela-bolivarian-republic-of",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "AZE",
+          "land": "Azerbeidzjan",
+          "en": "Azerbaijan",
+          "id": "middle-east/azerbaijan",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "NGA",
+          "land": "Nigeria",
+          "en": "Nigeria",
+          "id": "africa/nigeria",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "CPV",
+          "land": "Kaapverdië",
+          "en": "Cabo Verde",
+          "id": "africa/cape-verde",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "LKA",
+          "land": "Sri Lanka",
+          "en": "Sri Lanka",
+          "id": "asia/sri-lanka",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "TKM",
+          "land": "Turkmenistan",
+          "en": "Turkmenistan",
+          "id": "asia/turkmenistan",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "BEN",
+          "land": "Benin",
+          "en": "Benin",
+          "id": "africa/benin",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "ZAF",
+          "land": "Zuid-Afrika",
+          "en": "South Africa",
+          "id": "africa/south-africa",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "AND",
+          "land": "Andorra",
+          "en": "Andorra",
+          "id": "europe/andorra",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "SWZ",
+          "land": "Eswatini (Swaziland)",
+          "en": "Eswatini",
+          "id": "africa/eswatini",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "LSO",
+          "land": "Lesotho",
+          "en": "Lesotho",
+          "id": "africa/lesotho",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "USA",
+          "land": "Verenigde Staten van Amerika",
+          "en": "United States of America",
+          "id": "americas/united-states-america",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "THA",
+          "land": "Thailand",
+          "en": "Thailand",
+          "id": "asia/thailand",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "NER",
+          "land": "Niger",
+          "en": "Niger",
+          "id": "africa/niger",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "FRA",
+          "land": "Frankrijk",
+          "en": "France",
+          "id": "europe/france",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "ESP",
+          "land": "Spanje",
+          "en": "Spain",
+          "id": "europe/spain",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "BRN",
+          "land": "Brunei Darussalam",
+          "en": "Brunei Darussalam",
+          "id": "asia/brunei",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "BOL",
+          "land": "Bolivia",
+          "en": "Bolivia, Plurinational State of",
+          "id": "americas/bolivia-plurinational-state-of",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "IDN",
+          "land": "Indonesië",
+          "en": "Indonesia",
+          "id": "asia/indonesia",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "ARM",
+          "land": "Armenië",
+          "en": "Armenia",
+          "id": "middle-east/armenia",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        }
+      ],
+      "ongekoppeldAantal": 6,
+      "ongekoppeld": [
+        {
+          "iso3": "TWN",
+          "land": "Taiwan",
+          "en": "Taiwan, Province of China"
+        },
+        {
+          "iso3": "BQ-SA",
+          "land": "Saba",
+          "en": "Saba"
+        },
+        {
+          "iso3": "BQ-SE",
+          "land": "Sint Eustatius",
+          "en": "Sint Eustatius"
+        },
+        {
+          "iso3": "BQ-BO",
+          "land": "Bonaire",
+          "en": "Bonaire"
+        },
+        {
+          "iso3": "XKX",
+          "land": "Kosovo",
+          "en": "Kosovo"
+        },
+        {
+          "iso3": "ATA",
+          "land": "Antarctica",
+          "en": "Antarctica"
+        }
+      ]
+    },
+    "ch": {
+      "naam": "Zwitserland (EDA)",
+      "gecontroleerd": 192,
+      "kapot": [
+        {
+          "iso3": "NPL",
+          "land": "Nepal",
+          "en": "Nepal",
+          "id": "nepal/reisehinweise-fuernepal.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "DEU",
+          "land": "Duitsland",
+          "en": "Germany",
+          "id": "deutschland/reisehinweise-fuerdeutschland.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "SRB",
+          "land": "Servië",
+          "en": "Serbia",
+          "id": "serbien/reisehinweise-fuerser-bien.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "LCA",
+          "land": "Saint Lucia",
+          "en": "Saint Lucia",
+          "id": "st-lucia/reisehinweise-fuerstlucia.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "PRT",
+          "land": "Portugal",
+          "en": "Portugal",
+          "id": "portugal/reisehinweise-fuerportugal.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "HUN",
+          "land": "Hongarije",
+          "en": "Hungary",
+          "id": "ungarn/reisehinweise-fuerungarn.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "POL",
+          "land": "Polen",
+          "en": "Poland",
+          "id": "polen/reisehinweise-fuerpolen.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "SVK",
+          "land": "Slowakije",
+          "en": "Slovakia",
+          "id": "slowakei/reisehinweise-fuerdieslowakei.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "HRV",
+          "land": "Kroatië",
+          "en": "Croatia",
+          "id": "kroatien/reisehinweise-fuerkroatien.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "SVN",
+          "land": "Slovenië",
+          "en": "Slovenia",
+          "id": "slowenien/reisehinweise-fuerslowenien.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "CZE",
+          "land": "Tsjechië",
+          "en": "Czechia",
+          "id": "tschechische-republik/reisehinweise-fuerdietschechischerepublik.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "ATG",
+          "land": "Antigua en Barbuda",
+          "en": "Antigua and Barbuda",
+          "id": "antigua-und-barbuda/reisehinweise-fuerantiguaundbarbuda.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "MWI",
+          "land": "Malawi",
+          "en": "Malawi",
+          "id": "malawi/reisehinweise-fuermalawi.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "GAB",
+          "land": "Gabon",
+          "en": "Gabon",
+          "id": "gabun/reisehinweise-fuergabun.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "GRD",
+          "land": "Grenada",
+          "en": "Grenada",
+          "id": "grenada/reisehinweise-fuergrenada.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "HND",
+          "land": "Honduras",
+          "en": "Honduras",
+          "id": "honduras/reisehinweise-fuerhonduras.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "CMR",
+          "land": "Kameroen",
+          "en": "Cameroon",
+          "id": "kamerun/reisehinweise-fuerkamerun.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "BLR",
+          "land": "Belarus (Wit-Rusland)",
+          "en": "Belarus",
+          "id": "belarus/reisehinweise-fuerbelarus.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "DMA",
+          "land": "Dominica",
+          "en": "Dominica",
+          "id": "dominica/reisehinweise-fuerdominica.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "KAZ",
+          "land": "Kazachstan",
+          "en": "Kazakhstan",
+          "id": "kasachstan/reisehinweise-fuerkasachstan.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "ROU",
+          "land": "Roemenië",
+          "en": "Romania",
+          "id": "rumaenien/reisehinweise-fuerrumaenien.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "VCT",
+          "land": "Saint Vincent en de Grenadines",
+          "en": "Saint Vincent and the Grenadines",
+          "id": "st-vincent-und-diegrenadinen/reisehinweise-fuerstvincentunddiegrenadinen.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "GUY",
+          "land": "Guyana",
+          "en": "Guyana",
+          "id": "guyana/reisehinweise-fuerguyana.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "SSD",
+          "land": "Zuid-Sudan",
+          "en": "South Sudan",
+          "id": "suedsudan/reisehinweise-fuerdensuedsudan.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "AUT",
+          "land": "Oostenrijk",
+          "en": "Austria",
+          "id": "oesterreich/reisehinweise-fueroesterreich.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "JAM",
+          "land": "Jamaica",
+          "en": "Jamaica",
+          "id": "jamaika/reisehinweise-fuerjamaika.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "MMR",
+          "land": "Myanmar",
+          "en": "Myanmar",
+          "id": "myanmar/reisehinweise-fuermyanmar.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "PRK",
+          "land": "Noord-Korea",
+          "en": "Korea, Democratic People's Republic of",
+          "id": "demokratische-volksrepublikkorea/reisehinweise-fuerdemokratischevolksrepublikkorea.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "MYS",
+          "land": "Maleisië",
+          "en": "Malaysia",
+          "id": "malaysia/reisehinweise-fuermalaysia.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "TWN",
+          "land": "Taiwan",
+          "en": "Taiwan, Province of China",
+          "id": "taiwan-taipei/reisehinweise-fuertaiwantaipei.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "VUT",
+          "land": "Vanuatu",
+          "en": "Vanuatu",
+          "id": "vanuatu/reisehinweise-fuervanuatu.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "SEN",
+          "land": "Senegal",
+          "en": "Senegal",
+          "id": "senegal/reisehinweise-fuersenegal.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "BDI",
+          "land": "Burundi",
+          "en": "Burundi",
+          "id": "burundi/reisehinweise-fuerburundi.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "NRU",
+          "land": "Nauru",
+          "en": "Nauru",
+          "id": "nauru/reisehinweise-fuernauru.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "NAM",
+          "land": "Namibië",
+          "en": "Namibia",
+          "id": "namibia/reisehinweise-fuernamibia.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "MDG",
+          "land": "Madagaskar",
+          "en": "Madagascar",
+          "id": "madagaskar/reisehinweise-fuermadagaskar.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "IND",
+          "land": "India",
+          "en": "India",
+          "id": "indien/reisehinweise-fuerindien.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "BFA",
+          "land": "Burkina Faso",
+          "en": "Burkina Faso",
+          "id": "burkina-faso/reisehinweise-fuerburkinafaso.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "ERI",
+          "land": "Eritrea",
+          "en": "Eritrea",
+          "id": "eritrea/reisehinweise-fuereritrea.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "SWE",
+          "land": "Zweden",
+          "en": "Sweden",
+          "id": "schweden/reisehinweise-fuerschweden.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "AFG",
+          "land": "Afghanistan",
+          "en": "Afghanistan",
+          "id": "afghanistan/reisehinweise-fuerafghanistan.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "KIR",
+          "land": "Kiribati",
+          "en": "Kiribati",
+          "id": "kiribati/reisehinweise-fuerkiribati.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "TON",
+          "land": "Tonga",
+          "en": "Tonga",
+          "id": "tonga/reisehinweise-fuertonga.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "COK",
+          "land": "Cookeilanden",
+          "en": "Cook Islands",
+          "id": "cookinseln/reisehinweise-fuerdiecookinseln.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "ISL",
+          "land": "IJsland",
+          "en": "Iceland",
+          "id": "island/reisehinweise-fuerisland.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "BGR",
+          "land": "Bulgarije",
+          "en": "Bulgaria",
+          "id": "bulgarien/reisehinweise-fuerbulgarien.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "BEL",
+          "land": "België",
+          "en": "Belgium",
+          "id": "belgien/reisehinweise-fuerbelgien.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "YEM",
+          "land": "Jemen",
+          "en": "Yemen",
+          "id": "jemen/reisehinweise-fuerje-men.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "EST",
+          "land": "Estland",
+          "en": "Estonia",
+          "id": "estland/reisehinweise-fuerestland.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "LTU",
+          "land": "Litouwen",
+          "en": "Lithuania",
+          "id": "litauen/reisehinweise-fuerlitauen.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "ITA",
+          "land": "Italië",
+          "en": "Italy",
+          "id": "italien/reisehinweise-fueritalien.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "IRL",
+          "land": "Ierland",
+          "en": "Ireland",
+          "id": "irland/reisehinweise-fuerirland.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "DNK",
+          "land": "Denemarken",
+          "en": "Denmark",
+          "id": "daenemark/reisehinweise-fuerdaenemark.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "COM",
+          "land": "Comoren",
+          "en": "Comoros",
+          "id": "komoren/reisehinweise-fuerdiekomoren.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "MOZ",
+          "land": "Mozambique",
+          "en": "Mozambique",
+          "id": "mosambik/reisehinweise-fuermosambik.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "FIN",
+          "land": "Finland",
+          "en": "Finland",
+          "id": "finnland/reisehinweise-fuerfinnland.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "GMB",
+          "land": "Gambia",
+          "en": "Gambia",
+          "id": "gambia/reisehinweise-fuergambia.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "SLV",
+          "land": "El Salvador",
+          "en": "El Salvador",
+          "id": "el-salvador/reisehinweise-fuerelsalvador.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "MRT",
+          "land": "Mauritanië",
+          "en": "Mauritania",
+          "id": "mauretanien/reisehinweise-fuermauretanien.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "LIE",
+          "land": "Liechtenstein",
+          "en": "Liechtenstein",
+          "id": "liechtenstein/reisehinweise-fuerliechtenstein.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "RWA",
+          "land": "Rwanda",
+          "en": "Rwanda",
+          "id": "ruanda/reisehinweise-fuerruanda.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "ZMB",
+          "land": "Zambia",
+          "en": "Zambia",
+          "id": "sambia/reisehinweise-fuersambia.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "AUS",
+          "land": "Australië",
+          "en": "Australia",
+          "id": "australien/reisehinweise-fueraustralien.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "GBR",
+          "land": "Verenigd Koninkrijk",
+          "en": "United Kingdom of Great Britain and Northern Ireland",
+          "id": "grossbritannien/reisehinweise-fuergrossbritannien.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "KOR",
+          "land": "Zuid-Korea",
+          "en": "Korea, Republic of",
+          "id": "republik-korea/reisehinweise-fuerdierepublikkorea.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "BTN",
+          "land": "Bhutan",
+          "en": "Bhutan",
+          "id": "bhutan/reisehinweise-fuerbhutan.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "GRC",
+          "land": "Griekenland",
+          "en": "Greece",
+          "id": "griechenland/reisehinweise-fuergriechenland.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "CHN",
+          "land": "China",
+          "en": "China",
+          "id": "china/reisehinweise-fuer-china.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "PAK",
+          "land": "Pakistan",
+          "en": "Pakistan",
+          "id": "pakistan/reisehinweise-fuerpakistan.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "BIH",
+          "land": "Bosnië en Herzegovina",
+          "en": "Bosnia and Herzegovina",
+          "id": "bosnien-und-herzegowina/reisehinweise-fuerbosnienundherzegowina.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "SMR",
+          "land": "San Marino",
+          "en": "San Marino",
+          "id": "san-marino/reisehinweise-fuersanmarino.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "RUS",
+          "land": "Rusland",
+          "en": "Russian Federation",
+          "id": "russland/reisehinweise-fuerrussland.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "GNB",
+          "land": "Guinee-Bissau",
+          "en": "Guinea-Bissau",
+          "id": "guinea-bissau/reisehinweise-fuerguinea-bissau.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "GNQ",
+          "land": "Equatoriaal-Guinea",
+          "en": "Equatorial Guinea",
+          "id": "aequatorialguinea/reisehinweise-fueraequatorialguinea.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "BHS",
+          "land": "Bahama's",
+          "en": "Bahamas",
+          "id": "bahamas/reisehinweise-fuerdiebahamas.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "UGA",
+          "land": "Uganda",
+          "en": "Uganda",
+          "id": "uganda/reisehinweise-fueruganda.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "DZA",
+          "land": "Algerije",
+          "en": "Algeria",
+          "id": "algerien/reisehinweise-fueralgerien.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "AGO",
+          "land": "Angola",
+          "en": "Angola",
+          "id": "angola/reisehinweise-fuerangola.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "ARG",
+          "land": "Argentinië",
+          "en": "Argentina",
+          "id": "argentinien/reisehinweise-fuerargentinien.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "BRB",
+          "land": "Barbados",
+          "en": "Barbados",
+          "id": "barbados/reisehinweise-fuerbarbados.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "BRA",
+          "land": "Brazilië",
+          "en": "Brazil",
+          "id": "brasilien/reisehinweise-fuerbrasilien.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "KHM",
+          "land": "Cambodja",
+          "en": "Cambodia",
+          "id": "kambodscha/reisehinweise-fuerkambodscha.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "CAN",
+          "land": "Canada",
+          "en": "Canada",
+          "id": "kanada/reisehinweise-fuerkanada.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "CAF",
+          "land": "Centraal-Afrikaanse Republiek",
+          "en": "Central African Republic",
+          "id": "zentralafrikanischerepublik/reisehinweise-fuerdiezentralafrikanischerepublik.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "CYP",
+          "land": "Cyprus",
+          "en": "Cyprus",
+          "id": "zypern/reisehinweise-fuerzypern.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "GTM",
+          "land": "Guatemala",
+          "en": "Guatemala",
+          "id": "guatemala/reisehinweise-fuerguatemala.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "GIN",
+          "land": "Guinee",
+          "en": "Guinea",
+          "id": "guinea/reisehinweise-fuerguinea.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "HTI",
+          "land": "Haïti",
+          "en": "Haiti",
+          "id": "haiti/reisehinweise-fuerhaiti.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "CIV",
+          "land": "Ivoorkust",
+          "en": "Côte d'Ivoire",
+          "id": "cote-d-ivoire/reisehinweise-fuercotedivoire.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "JPN",
+          "land": "Japan",
+          "en": "Japan",
+          "id": "japan/reisehinweise-fuerjapan.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "KGZ",
+          "land": "Kirgizië",
+          "en": "Kyrgyzstan",
+          "id": "kirgisistan/reisehinweise-fuerkirgisistan.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "BLZ",
+          "land": "Belize",
+          "en": "Belize",
+          "id": "belize/reisehinweise-fuerbelize.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "MLI",
+          "land": "Mali",
+          "en": "Mali",
+          "id": "mali/reisehinweise-fuermali.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "MAR",
+          "land": "Marokko",
+          "en": "Morocco",
+          "id": "marokko/reisehinweise-fuermarokko.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "MDA",
+          "land": "Moldavië",
+          "en": "Moldova, Republic of",
+          "id": "moldova/reisehinweise-fuermoldova.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "MNG",
+          "land": "Mongolië",
+          "en": "Mongolia",
+          "id": "mongolei/reisehinweise-fuerdiemongolei.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "TUV",
+          "land": "Tuvalu",
+          "en": "Tuvalu",
+          "id": "tuvalu/reisehinweise-fuertuvalu.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "NZL",
+          "land": "Nieuw-Zeeland",
+          "en": "New Zealand",
+          "id": "neuseeland/reisehinweise-fuerneuseeland.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "UKR",
+          "land": "Oekraïne",
+          "en": "Ukraine",
+          "id": "ukraine/reisehinweise-fuerdieukraine.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "UZB",
+          "land": "Oezbekistan",
+          "en": "Uzbekistan",
+          "id": "usbekistan/reisehinweise-fuerusbekistan.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "PRY",
+          "land": "Paraguay",
+          "en": "Paraguay",
+          "id": "paraguay/reisehinweise-fuerparaguay.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "SLE",
+          "land": "Sierra Leone",
+          "en": "Sierra Leone",
+          "id": "sierra-leone/reisehinweise-fuersierraleone.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "SOM",
+          "land": "Somalië",
+          "en": "Somalia",
+          "id": "somalia/reisehinweise-fuersomalia.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "SDN",
+          "land": "Sudan",
+          "en": "Sudan",
+          "id": "sudan/reisehinweise-fuerdensudan.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "TJK",
+          "land": "Tadzjikistan",
+          "en": "Tajikistan",
+          "id": "tadschikistan/reisehinweise-fuertadschikistan.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "TCD",
+          "land": "Tsjaad",
+          "en": "Chad",
+          "id": "tschad/reisehinweise-fuerdentschad.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "TUN",
+          "land": "Tunesië",
+          "en": "Tunisia",
+          "id": "tunesien/reisehinweise-fuertunesien.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "URY",
+          "land": "Uruguay",
+          "en": "Uruguay",
+          "id": "uruguay/reisehinweise-fueruruguay.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "NIC",
+          "land": "Nicaragua",
+          "en": "Nicaragua",
+          "id": "nicaragua/reisehinweise-fuernicaragua.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "LBR",
+          "land": "Liberia",
+          "en": "Liberia",
+          "id": "liberia/reisehinweise-fuerliberia.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "COG",
+          "land": "Congo, de Republiek",
+          "en": "Congo",
+          "id": "republik-kongo/reisehinweise-fuerdierepublikkongo.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "SUR",
+          "land": "Suriname",
+          "en": "Suriname",
+          "id": "suriname/reisehinweise-fuersuriname.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "TGO",
+          "land": "Togo",
+          "en": "Togo",
+          "id": "togo/reisehinweise-fuertogo.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "MUS",
+          "land": "Mauritius",
+          "en": "Mauritius",
+          "id": "mauritius/reisehinweise-fuermauritius.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "LUX",
+          "land": "Luxemburg",
+          "en": "Luxembourg",
+          "id": "luxemburg/reisehinweise-fuerluxemburg.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "KNA",
+          "land": "Saint Kitts en Nevis",
+          "en": "Saint Kitts and Nevis",
+          "id": "st-kitts-und-nevis/reisehinweise-fuerstkittsundnevis.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "SYC",
+          "land": "Seychellen",
+          "en": "Seychelles",
+          "id": "seychellen/reisehinweise-fuerdieseychellen.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "GHA",
+          "land": "Ghana",
+          "en": "Ghana",
+          "id": "ghana/reisehinweise-fuerghana.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "CUB",
+          "land": "Cuba",
+          "en": "Cuba",
+          "id": "kuba/reisehinweise-fuerkuba.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "COL",
+          "land": "Colombia",
+          "en": "Colombia",
+          "id": "kolumbien/reisehinweise-fuerkolumbien.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "GEO",
+          "land": "Georgië",
+          "en": "Georgia",
+          "id": "georgien/reisehinweise-fuergeorgien.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "IRQ",
+          "land": "Irak",
+          "en": "Iraq",
+          "id": "irak/reisehinweise-fuerdenirak.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "ARE",
+          "land": "Verenigde Arabische Emiraten",
+          "en": "United Arab Emirates",
+          "id": "vereinigte-arabischeemirate/reisehinweise-fuerdievereinigtenarabischeemirate.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "SAU",
+          "land": "Saoedi-Arabië",
+          "en": "Saudi Arabia",
+          "id": "saudi-arabien/reisehinweise-fuersaudiarabien.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "KWT",
+          "land": "Koeweit",
+          "en": "Kuwait",
+          "id": "kuwait/reisehinweise-fuerkuwait.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "QAT",
+          "land": "Qatar",
+          "en": "Qatar",
+          "id": "katar/reisehinweise-fuerkatar.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "BHR",
+          "land": "Bahrein",
+          "en": "Bahrain",
+          "id": "bahrain/reisehinweise-fuerbahrain.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "OMN",
+          "land": "Oman",
+          "en": "Oman",
+          "id": "oman/reisehinweise-fuer-oman.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "COD",
+          "land": "Congo, Democratische Republiek",
+          "en": "Congo, Democratic Republic of the",
+          "id": "demokratische-republik-kongo/reisehinweise-fuer-diedemokratischerepublikkongo.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "SYR",
+          "land": "Syrië",
+          "en": "Syrian Arab Republic",
+          "id": "syrien/reisehinweise-fuersyrien.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "TLS",
+          "land": "Oost-Timor",
+          "en": "Timor-Leste",
+          "id": "timor-leste/reisehinweise-fuertimor-leste.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "BGD",
+          "land": "Bangladesh",
+          "en": "Bangladesh",
+          "id": "bangladesch/reisehinweise-fuerbangladesch.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "LBN",
+          "land": "Libanon",
+          "en": "Lebanon",
+          "id": "libanon/reisehinweise-fuerlibanon.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "LAO",
+          "land": "Laos",
+          "en": "Lao People's Democratic Republic",
+          "id": "laos/reisehinweise-fuerlaos.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "JOR",
+          "land": "Jordanië",
+          "en": "Jordan",
+          "id": "jordanien/reisehinweise-fuerjordanien.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "DOM",
+          "land": "Dominicaanse Republiek",
+          "en": "Dominican Republic",
+          "id": "dominikanische-republik/reisehinweise-fuerdiedo-minikanischerepublik.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "TTO",
+          "land": "Trinidad en Tobago",
+          "en": "Trinidad and Tobago",
+          "id": "trinidad-und-tobago/reisehinweise-fuertrinidadundtobago.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "PAN",
+          "land": "Panama",
+          "en": "Panama",
+          "id": "panama/reisehinweise-fuerpanama.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "CRI",
+          "land": "Costa Rica",
+          "en": "Costa Rica",
+          "id": "costa-rica/reisehinweise-fuercostarica.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "MEX",
+          "land": "Mexico",
+          "en": "Mexico",
+          "id": "mexiko/reisehinweise-fuermexiko.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "WSM",
+          "land": "Samoa",
+          "en": "Samoa",
+          "id": "samoa/reisehinweise-fuersamoa.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "FSM",
+          "land": "Micronesië",
+          "en": "Micronesia, Federated States of",
+          "id": "mikronesien/reisehinweise-fuermikronesien.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "SLB",
+          "land": "Salomonseilanden",
+          "en": "Solomon Islands",
+          "id": "salomoninseln/reisehinweise-fuerdiesalomoninseln.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "FJI",
+          "land": "Fiji",
+          "en": "Fiji",
+          "id": "republik-fidschi/reisehinweise-fuerdiefidschi.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "PLW",
+          "land": "Palau",
+          "en": "Palau",
+          "id": "palau/reisehinweise-fuerpalau.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "PNG",
+          "land": "Papoea-Nieuw-Guinea",
+          "en": "Papua New Guinea",
+          "id": "papua-neuguinea/reisehinweise-fuerpapua-neuguinea.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "MLT",
+          "land": "Malta",
+          "en": "Malta",
+          "id": "malta/reisehinweise-fuermalta.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "ALB",
+          "land": "Albanië",
+          "en": "Albania",
+          "id": "albanien/reisehinweise-fueralbanien.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "TZA",
+          "land": "Tanzania",
+          "en": "Tanzania, United Republic of",
+          "id": "tansania/reisehinweise-fuertansania.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "PER",
+          "land": "Peru",
+          "en": "Peru",
+          "id": "peru/reisehinweise-fuerperu.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "MHL",
+          "land": "Marshalleilanden",
+          "en": "Marshall Islands",
+          "id": "marschallinseln/reisehinweise-fuerdiemarschallinseln.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "MDV",
+          "land": "Maldiven",
+          "en": "Maldives",
+          "id": "malediven/reisehinweise-fuerdiemalediven.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "PHL",
+          "land": "Filipijnen",
+          "en": "Philippines",
+          "id": "philippinen/reisehinweise-fuerdiephilippinen.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "XKX",
+          "land": "Kosovo",
+          "en": "Kosovo",
+          "id": "kosovo/reisehinweise-fuerkosovo.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "DJI",
+          "land": "Djibouti",
+          "en": "Djibouti",
+          "id": "dschibuti/reisehinweise-fuerdschibuti.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "EGY",
+          "land": "Egypte",
+          "en": "Egypt",
+          "id": "aegypten/reisehinweise-fueraegypten.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "MNE",
+          "land": "Montenegro",
+          "en": "Montenegro",
+          "id": "montenegro/reisehinweise-fuermontenegro.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "CHL",
+          "land": "Chili",
+          "en": "Chile",
+          "id": "chile/reisehinweise-fuerchile.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "IRN",
+          "land": "Iran",
+          "en": "Iran, Islamic Republic of",
+          "id": "iran/reisehinweise-fuerdeniran.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "ECU",
+          "land": "Ecuador",
+          "en": "Ecuador",
+          "id": "ecuador/reisehinweise-fuerecuador.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "STP",
+          "land": "Sao Tomé en Principe",
+          "en": "Sao Tome and Principe",
+          "id": "sao-tome-und-principe/reisehinweise-fuersaotomeundprincipe.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "LVA",
+          "land": "Letland",
+          "en": "Latvia",
+          "id": "lettland/reisehinweise-fuerlettland.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "KEN",
+          "land": "Kenia",
+          "en": "Kenya",
+          "id": "kenia/reisehinweise-fuerkenia.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "LBY",
+          "land": "Libië",
+          "en": "Libya",
+          "id": "libyen/reisehinweise-fuerlibyen.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "SGP",
+          "land": "Singapore",
+          "en": "Singapore",
+          "id": "singapur/reisehinweise-fuersingapur.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "ZWE",
+          "land": "Zimbabwe",
+          "en": "Zimbabwe",
+          "id": "simbabwe/reisehinweise-fuersimbabwe.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "BWA",
+          "land": "Botswana",
+          "en": "Botswana",
+          "id": "botsuana/reisehinweise-fuerbotsuana.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "ETH",
+          "land": "Ethiopië",
+          "en": "Ethiopia",
+          "id": "aethiopien/reisehinweise-fueraethiopien.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "MCO",
+          "land": "Monaco",
+          "en": "Monaco",
+          "id": "monaco/reisehinweise-fuermonaco.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "NOR",
+          "land": "Noorwegen",
+          "en": "Norway",
+          "id": "norwegen/reisehinweise-fuernorwegen.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "TUR",
+          "land": "Turkije",
+          "en": "Türkiye",
+          "id": "tuerkei/reisehinweise-fuerdietuerkei.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "VNM",
+          "land": "Vietnam",
+          "en": "Viet Nam",
+          "id": "vietnam/reisehinweise-fuervietnam.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "VEN",
+          "land": "Venezuela",
+          "en": "Venezuela, Bolivarian Republic of",
+          "id": "venezuela/reisehinweise-fuervenezuela.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "AZE",
+          "land": "Azerbeidzjan",
+          "en": "Azerbaijan",
+          "id": "aserbaidschan/reisehinweise-fueraserbaidschan.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "NGA",
+          "land": "Nigeria",
+          "en": "Nigeria",
+          "id": "nigeria/reisehinweise-fuernigeria.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "CPV",
+          "land": "Kaapverdië",
+          "en": "Cabo Verde",
+          "id": "kap-verde/reisehinweise-fuerkapverde.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "LKA",
+          "land": "Sri Lanka",
+          "en": "Sri Lanka",
+          "id": "sri-lanka/reisehinweise-fuersrilanka.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "TKM",
+          "land": "Turkmenistan",
+          "en": "Turkmenistan",
+          "id": "turkmenistan/reisehinweise-fuerturkmenistan.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "BEN",
+          "land": "Benin",
+          "en": "Benin",
+          "id": "benin/reisehinweise-fuerbenin.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "ZAF",
+          "land": "Zuid-Afrika",
+          "en": "South Africa",
+          "id": "suedafrika/reisehinweise-fuersuedafrika.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "AND",
+          "land": "Andorra",
+          "en": "Andorra",
+          "id": "andorra/reisehinweise-fuerandorra.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "SWZ",
+          "land": "Eswatini (Swaziland)",
+          "en": "Eswatini",
+          "id": "swasiland/reisehinweise-fuerswasiland.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "LSO",
+          "land": "Lesotho",
+          "en": "Lesotho",
+          "id": "lesotho/reisehinweise-fuerlesotho.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "USA",
+          "land": "Verenigde Staten van Amerika",
+          "en": "United States of America",
+          "id": "vereinigte-staaten/reisehinweise-fuerdievereinigtenstaaten.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "THA",
+          "land": "Thailand",
+          "en": "Thailand",
+          "id": "thailand/reisehinweise-fuerthailand.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "NER",
+          "land": "Niger",
+          "en": "Niger",
+          "id": "niger/reisehinweise-fuerniger.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "FRA",
+          "land": "Frankrijk",
+          "en": "France",
+          "id": "frankreich/reisehinweise-fuerfrankreich.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "ESP",
+          "land": "Spanje",
+          "en": "Spain",
+          "id": "spanien/reisehinweise-fuerspanien.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "BRN",
+          "land": "Brunei Darussalam",
+          "en": "Brunei Darussalam",
+          "id": "brunei-darussalam/reisehinweise-fuerbruneidarussalam.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "BOL",
+          "land": "Bolivia",
+          "en": "Bolivia, Plurinational State of",
+          "id": "bolivien/reisehinweise-fuerbolivien.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "IDN",
+          "land": "Indonesië",
+          "en": "Indonesia",
+          "id": "indonesien/reisehinweise-fuerindonesien.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        },
+        {
+          "iso3": "ARM",
+          "land": "Armenië",
+          "en": "Armenia",
+          "id": "armenien/reisehinweise-fuerarmenien.html",
+          "status": 403,
+          "titel": "Access Denied",
+          "fout": null
+        }
+      ],
+      "ongekoppeldAantal": 0,
+      "ongekoppeld": []
+    },
+    "no": {
+      "naam": "Noorwegen (Utenriksdept.)",
+      "gecontroleerd": 178,
+      "kapot": [
+        {
+          "iso3": "NPL",
+          "land": "Nepal",
+          "en": "Nepal",
+          "id": "nepal/2416354",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "DEU",
+          "land": "Duitsland",
+          "en": "Germany",
+          "id": "tyskland/2415120",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "SRB",
+          "land": "Servië",
+          "en": "Serbia",
+          "id": "serbia/2415119",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "LCA",
+          "land": "Saint Lucia",
+          "en": "Saint Lucia",
+          "id": "saintlucia/2428983",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "PRT",
+          "land": "Portugal",
+          "en": "Portugal",
+          "id": "portugal/2414892",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "HUN",
+          "land": "Hongarije",
+          "en": "Hungary",
+          "id": "ungarn/2424333",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "POL",
+          "land": "Polen",
+          "en": "Poland",
+          "id": "polen/2429019",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "SVK",
+          "land": "Slowakije",
+          "en": "Slovakia",
+          "id": "slovakia/2424323",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "HRV",
+          "land": "Kroatië",
+          "en": "Croatia",
+          "id": "kroatia/2417198",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "SVN",
+          "land": "Slovenië",
+          "en": "Slovenia",
+          "id": "slovenia/2415327",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "CZE",
+          "land": "Tsjechië",
+          "en": "Czechia",
+          "id": "tsjekkia/2416409",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "ATG",
+          "land": "Antigua en Barbuda",
+          "en": "Antigua and Barbuda",
+          "id": "antigua_barbuda/2428958",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "MWI",
+          "land": "Malawi",
+          "en": "Malawi",
+          "id": "malawi/2415982",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "GAB",
+          "land": "Gabon",
+          "en": "Gabon",
+          "id": "gabon/2416221",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "GRD",
+          "land": "Grenada",
+          "en": "Grenada",
+          "id": "grenada/2428980",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "HND",
+          "land": "Honduras",
+          "en": "Honduras",
+          "id": "honduras/2428569",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "CMR",
+          "land": "Kameroen",
+          "en": "Cameroon",
+          "id": "kamerun/2424175",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "KAZ",
+          "land": "Kazachstan",
+          "en": "Kazakhstan",
+          "id": "kasakhstan/2428578",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "ROU",
+          "land": "Roemenië",
+          "en": "Romania",
+          "id": "romania/2414864",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "VCT",
+          "land": "Saint Vincent en de Grenadines",
+          "en": "Saint Vincent and the Grenadines",
+          "id": "saintvincent/2428984",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "GUY",
+          "land": "Guyana",
+          "en": "Guyana",
+          "id": "guyana/2415199",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "SSD",
+          "land": "Zuid-Sudan",
+          "en": "South Sudan",
+          "id": "sorsudan/2429140",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "AUT",
+          "land": "Oostenrijk",
+          "en": "Austria",
+          "id": "osterrike/2414941",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "JAM",
+          "land": "Jamaica",
+          "en": "Jamaica",
+          "id": "jamaica/2428981",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "MMR",
+          "land": "Myanmar",
+          "en": "Myanmar",
+          "id": "myanmar/2417496",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "PRK",
+          "land": "Noord-Korea",
+          "en": "Korea, Democratic People's Republic of",
+          "id": "nordkorea/2429138",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "MYS",
+          "land": "Maleisië",
+          "en": "Malaysia",
+          "id": "malaysia/2415975",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "VUT",
+          "land": "Vanuatu",
+          "en": "Vanuatu",
+          "id": "vanuatu/2428998",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "SEN",
+          "land": "Senegal",
+          "en": "Senegal",
+          "id": "senegal/2414687",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "BDI",
+          "land": "Burundi",
+          "en": "Burundi",
+          "id": "burundi/2415929",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "NRU",
+          "land": "Nauru",
+          "en": "Nauru",
+          "id": "nauru/2428988",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "NAM",
+          "land": "Namibië",
+          "en": "Namibia",
+          "id": "namibia/2424510",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "MDG",
+          "land": "Madagaskar",
+          "en": "Madagascar",
+          "id": "madagaskar/2414947",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "IND",
+          "land": "India",
+          "en": "India",
+          "id": "india/2414743",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "BFA",
+          "land": "Burkina Faso",
+          "en": "Burkina Faso",
+          "id": "burkinafaso/2414675",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "ERI",
+          "land": "Eritrea",
+          "en": "Eritrea",
+          "id": "eritrea/2429020",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "SWE",
+          "land": "Zweden",
+          "en": "Sweden",
+          "id": "sverige/2416998",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "AFG",
+          "land": "Afghanistan",
+          "en": "Afghanistan",
+          "id": "afghanistan/2415875",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "KIR",
+          "land": "Kiribati",
+          "en": "Kiribati",
+          "id": "kiribati/2429127",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "TON",
+          "land": "Tonga",
+          "en": "Tonga",
+          "id": "tonga/2415548",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "COK",
+          "land": "Cookeilanden",
+          "en": "Cook Islands",
+          "id": "cookoyene/2415553",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "ISL",
+          "land": "IJsland",
+          "en": "Iceland",
+          "id": "island/2414936",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "BGR",
+          "land": "Bulgarije",
+          "en": "Bulgaria",
+          "id": "bulgaria/2416997",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "BEL",
+          "land": "België",
+          "en": "Belgium",
+          "id": "belgia/2414842",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "YEM",
+          "land": "Jemen",
+          "en": "Yemen",
+          "id": "jemen/2416418",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "EST",
+          "land": "Estland",
+          "en": "Estonia",
+          "id": "estland/2417117",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "LTU",
+          "land": "Litouwen",
+          "en": "Lithuania",
+          "id": "litauen/2417192",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "ITA",
+          "land": "Italië",
+          "en": "Italy",
+          "id": "italia/2416484",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "CHE",
+          "land": "Zwitserland",
+          "en": "Switzerland",
+          "id": "sveits/2416999",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "IRL",
+          "land": "Ierland",
+          "en": "Ireland",
+          "id": "irland/2428570",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "DNK",
+          "land": "Denemarken",
+          "en": "Denmark",
+          "id": "danmark/2415976",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "MOZ",
+          "land": "Mozambique",
+          "en": "Mozambique",
+          "id": "mosambik/2414919",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "FIN",
+          "land": "Finland",
+          "en": "Finland",
+          "id": "finland/2424334",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "GMB",
+          "land": "Gambia",
+          "en": "Gambia",
+          "id": "gambia/2414679",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "SLV",
+          "land": "El Salvador",
+          "en": "El Salvador",
+          "id": "elsalvador/2428564",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "ISR",
+          "land": "Israël",
+          "en": "Israel",
+          "id": "israel/2417120",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "MRT",
+          "land": "Mauritanië",
+          "en": "Mauritania",
+          "id": "mauritania/2429137",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "LIE",
+          "land": "Liechtenstein",
+          "en": "Liechtenstein",
+          "id": "liechtenstein/2415978",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "RWA",
+          "land": "Rwanda",
+          "en": "Rwanda",
+          "id": "rwanda/2415941",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "ZMB",
+          "land": "Zambia",
+          "en": "Zambia",
+          "id": "zambia/2429142",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "MKD",
+          "land": "Noord-Macedonië",
+          "en": "North Macedonia",
+          "id": "makedonia/2416995",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "AUS",
+          "land": "Australië",
+          "en": "Australia",
+          "id": "australia/2415524",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "GBR",
+          "land": "Verenigd Koninkrijk",
+          "en": "United Kingdom of Great Britain and Northern Ireland",
+          "id": "uk/2417495",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "KOR",
+          "land": "Zuid-Korea",
+          "en": "Korea, Republic of",
+          "id": "sorkorea/2416503",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "BTN",
+          "land": "Bhutan",
+          "en": "Bhutan",
+          "id": "bhutan/2414742",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "GRC",
+          "land": "Griekenland",
+          "en": "Greece",
+          "id": "hellas/2414955",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "CHN",
+          "land": "China",
+          "en": "China",
+          "id": "kina/2414833",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "PAK",
+          "land": "Pakistan",
+          "en": "Pakistan",
+          "id": "pakistan/2428616",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "BIH",
+          "land": "Bosnië en Herzegovina",
+          "en": "Bosnia and Herzegovina",
+          "id": "bosnia/2416500",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "SMR",
+          "land": "San Marino",
+          "en": "San Marino",
+          "id": "sanmarino/2429005",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "RUS",
+          "land": "Rusland",
+          "en": "Russian Federation",
+          "id": "russland/2416298",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "GNB",
+          "land": "Guinee-Bissau",
+          "en": "Guinea-Bissau",
+          "id": "guineabissau/2414888",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "GNQ",
+          "land": "Equatoriaal-Guinea",
+          "en": "Equatorial Guinea",
+          "id": "ekvatorialguinea/2416217",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "BHS",
+          "land": "Bahama's",
+          "en": "Bahamas",
+          "id": "bahamas/2428963",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "UGA",
+          "land": "Uganda",
+          "en": "Uganda",
+          "id": "uganda/2415945",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "DZA",
+          "land": "Algerije",
+          "en": "Algeria",
+          "id": "algerie/2414745",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "AGO",
+          "land": "Angola",
+          "en": "Angola",
+          "id": "angola/2415995",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "ARG",
+          "land": "Argentinië",
+          "en": "Argentina",
+          "id": "argentina/2415477",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "BRA",
+          "land": "Brazilië",
+          "en": "Brazil",
+          "id": "brasil/2415169",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "KHM",
+          "land": "Cambodja",
+          "en": "Cambodia",
+          "id": "kambodsja/2415096",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "CAN",
+          "land": "Canada",
+          "en": "Canada",
+          "id": "canada/2414944",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "CYP",
+          "land": "Cyprus",
+          "en": "Cyprus",
+          "id": "kypros/2414993",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "GTM",
+          "land": "Guatemala",
+          "en": "Guatemala",
+          "id": "guatemala/2428566",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "GIN",
+          "land": "Guinee",
+          "en": "Guinea",
+          "id": "guinea/2414683",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "HTI",
+          "land": "Haïti",
+          "en": "Haiti",
+          "id": "haiti/2415686",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "CIV",
+          "land": "Ivoorkust",
+          "en": "Côte d'Ivoire",
+          "id": "elfernbenskysten/2414708",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "JPN",
+          "land": "Japan",
+          "en": "Japan",
+          "id": "japan/2415973",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "KGZ",
+          "land": "Kirgizië",
+          "en": "Kyrgyzstan",
+          "id": "kirgisistan/2428584",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "MLI",
+          "land": "Mali",
+          "en": "Mali",
+          "id": "mali/2424320",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "MAR",
+          "land": "Marokko",
+          "en": "Morocco",
+          "id": "marokko/2424344",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "MDA",
+          "land": "Moldavië",
+          "en": "Moldova, Republic of",
+          "id": "moldova/2414862",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "MNG",
+          "land": "Mongolië",
+          "en": "Mongolia",
+          "id": "mongolia/2414841",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "TUV",
+          "land": "Tuvalu",
+          "en": "Tuvalu",
+          "id": "tuvalu/2415551",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "NZL",
+          "land": "Nieuw-Zeeland",
+          "en": "New Zealand",
+          "id": "newzealand/2415533",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "UKR",
+          "land": "Oekraïne",
+          "en": "Ukraine",
+          "id": "ukraina/2429141",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "UZB",
+          "land": "Oezbekistan",
+          "en": "Uzbekistan",
+          "id": "usbekistan/2416307",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "PRY",
+          "land": "Paraguay",
+          "en": "Paraguay",
+          "id": "paraguay/2415478",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "SLE",
+          "land": "Sierra Leone",
+          "en": "Sierra Leone",
+          "id": "sierraleone/2414706",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "SOM",
+          "land": "Somalië",
+          "en": "Somalia",
+          "id": "somalia/2429007",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "SDN",
+          "land": "Sudan",
+          "en": "Sudan",
+          "id": "sudan/2429022",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "TJK",
+          "land": "Tadzjikistan",
+          "en": "Tajikistan",
+          "id": "tadsjikistan/2428585",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "TCD",
+          "land": "Tsjaad",
+          "en": "Chad",
+          "id": "tsjad/2429023",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "TUN",
+          "land": "Tunesië",
+          "en": "Tunisia",
+          "id": "tunisia/2414832",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "URY",
+          "land": "Uruguay",
+          "en": "Uruguay",
+          "id": "uruguay/2415333",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "NIC",
+          "land": "Nicaragua",
+          "en": "Nicaragua",
+          "id": "nicaragua/2428567",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "LBR",
+          "land": "Liberia",
+          "en": "Liberia",
+          "id": "liberia/2414685",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "COG",
+          "land": "Congo, de Republiek",
+          "en": "Congo",
+          "id": "repkongo/2416225",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "SUR",
+          "land": "Suriname",
+          "en": "Suriname",
+          "id": "surinam/2415324",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "TGO",
+          "land": "Togo",
+          "en": "Togo",
+          "id": "togo/2424313",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "LUX",
+          "land": "Luxemburg",
+          "en": "Luxembourg",
+          "id": "luxembourg/2415570",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "KNA",
+          "land": "Saint Kitts en Nevis",
+          "en": "Saint Kitts and Nevis",
+          "id": "saintkitts/2428982",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "SYC",
+          "land": "Seychellen",
+          "en": "Seychelles",
+          "id": "seychellene/2414928",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "CUB",
+          "land": "Cuba",
+          "en": "Cuba",
+          "id": "cuba/2415595",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "COL",
+          "land": "Colombia",
+          "en": "Colombia",
+          "id": "colombia/2414850",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "GEO",
+          "land": "Georgië",
+          "en": "Georgia",
+          "id": "georgia/2428525",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "IRQ",
+          "land": "Irak",
+          "en": "Iraq",
+          "id": "irak/2428572",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "ARE",
+          "land": "Verenigde Arabische Emiraten",
+          "en": "United Arab Emirates",
+          "id": "emiratene/2428549",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "SAU",
+          "land": "Saoedi-Arabië",
+          "en": "Saudi Arabia",
+          "id": "saudiarabia/2416470",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "KWT",
+          "land": "Koeweit",
+          "en": "Kuwait",
+          "id": "kuwait/2428547",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "OMN",
+          "land": "Oman",
+          "en": "Oman",
+          "id": "oman/2424415",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "COD",
+          "land": "Congo, Democratische Republiek",
+          "en": "Congo, Democratic Republic of the",
+          "id": "drkongo/2416057",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "TLS",
+          "land": "Oost-Timor",
+          "en": "Timor-Leste",
+          "id": "osttimor/2415704",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "BGD",
+          "land": "Bangladesh",
+          "en": "Bangladesh",
+          "id": "bangladesh/2415564",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "LBN",
+          "land": "Libanon",
+          "en": "Lebanon",
+          "id": "libanon/2415116",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "LAO",
+          "land": "Laos",
+          "en": "Lao People's Democratic Republic",
+          "id": "laos/2424428",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "JOR",
+          "land": "Jordanië",
+          "en": "Jordan",
+          "id": "jordan/2428573",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "DOM",
+          "land": "Dominicaanse Republiek",
+          "en": "Dominican Republic",
+          "id": "dominikanske/2415685",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "TTO",
+          "land": "Trinidad en Tobago",
+          "en": "Trinidad and Tobago",
+          "id": "triogto/2428985",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "PAN",
+          "land": "Panama",
+          "en": "Panama",
+          "id": "panama/2428568",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "CRI",
+          "land": "Costa Rica",
+          "en": "Costa Rica",
+          "id": "costarica/2428563",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "MEX",
+          "land": "Mexico",
+          "en": "Mexico",
+          "id": "mexico/2416296",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "WSM",
+          "land": "Samoa",
+          "en": "Samoa",
+          "id": "samoa/2428993",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "FSM",
+          "land": "Micronesië",
+          "en": "Micronesia, Federated States of",
+          "id": "mikronesia/2428986",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "SLB",
+          "land": "Salomonseilanden",
+          "en": "Solomon Islands",
+          "id": "salomonoyene/2428990",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "FJI",
+          "land": "Fiji",
+          "en": "Fiji",
+          "id": "fiji/2415529",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "PLW",
+          "land": "Palau",
+          "en": "Palau",
+          "id": "palau/2428989",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "MLT",
+          "land": "Malta",
+          "en": "Malta",
+          "id": "malta/2416492",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "ALB",
+          "land": "Albanië",
+          "en": "Albania",
+          "id": "albania/2428601",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "TZA",
+          "land": "Tanzania",
+          "en": "Tanzania, United Republic of",
+          "id": "tanzania/2415554",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "PER",
+          "land": "Peru",
+          "en": "Peru",
+          "id": "peru/2414760",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "MHL",
+          "land": "Marshalleilanden",
+          "en": "Marshall Islands",
+          "id": "marshallislands/2429128",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "MDV",
+          "land": "Maldiven",
+          "en": "Maldives",
+          "id": "maldivene/2428949",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "PHL",
+          "land": "Filipijnen",
+          "en": "Philippines",
+          "id": "filippinene/2416248",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "XKX",
+          "land": "Kosovo",
+          "en": "Kosovo",
+          "id": "kosovo/2428615",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "DJI",
+          "land": "Djibouti",
+          "en": "Djibouti",
+          "id": "djibouti/2414710",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "EGY",
+          "land": "Egypte",
+          "en": "Egypt",
+          "id": "egypt/2415880",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "MNE",
+          "land": "Montenegro",
+          "en": "Montenegro",
+          "id": "montenegro/2416376",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "CHL",
+          "land": "Chili",
+          "en": "Chile",
+          "id": "chile/2414751",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "IRN",
+          "land": "Iran",
+          "en": "Iran, Islamic Republic of",
+          "id": "iran/2414831",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "ECU",
+          "land": "Ecuador",
+          "en": "Ecuador",
+          "id": "ecuador/2414757",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "STP",
+          "land": "Sao Tomé en Principe",
+          "en": "Sao Tome and Principe",
+          "id": "saotome/2416237",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "LVA",
+          "land": "Letland",
+          "en": "Latvia",
+          "id": "latvia/2414940",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "KEN",
+          "land": "Kenia",
+          "en": "Kenya",
+          "id": "kenya/2414927",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "LBY",
+          "land": "Libië",
+          "en": "Libya",
+          "id": "libya/2415885",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "SGP",
+          "land": "Singapore",
+          "en": "Singapore",
+          "id": "singapore/2416992",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "ZWE",
+          "land": "Zimbabwe",
+          "en": "Zimbabwe",
+          "id": "zimbabwe/2415585",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "BWA",
+          "land": "Botswana",
+          "en": "Botswana",
+          "id": "botswana/2416413",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "ETH",
+          "land": "Ethiopië",
+          "en": "Ethiopia",
+          "id": "etiopia/2414712",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "TUR",
+          "land": "Turkije",
+          "en": "Türkiye",
+          "id": "tyrkia/2414945",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "VNM",
+          "land": "Vietnam",
+          "en": "Viet Nam",
+          "id": "vietnam/2415578",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "VEN",
+          "land": "Venezuela",
+          "en": "Venezuela, Bolivarian Republic of",
+          "id": "venezuela/2414861",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "AZE",
+          "land": "Azerbeidzjan",
+          "en": "Azerbaijan",
+          "id": "aserbajdsjan/2428524",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "NGA",
+          "land": "Nigeria",
+          "en": "Nigeria",
+          "id": "nigeria/2414670",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "CPV",
+          "land": "Kaapverdië",
+          "en": "Cabo Verde",
+          "id": "kappverde/2414891",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "LKA",
+          "land": "Sri Lanka",
+          "en": "Sri Lanka",
+          "id": "srilanka/2424492",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "TKM",
+          "land": "Turkmenistan",
+          "en": "Turkmenistan",
+          "id": "turkmenistan/2428588",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "ZAF",
+          "land": "Zuid-Afrika",
+          "en": "South Africa",
+          "id": "sorafrika/2424513",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "SWZ",
+          "land": "Eswatini (Swaziland)",
+          "en": "Eswatini",
+          "id": "ewatini/2414925",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "LSO",
+          "land": "Lesotho",
+          "en": "Lesotho",
+          "id": "lesotho/2424507",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "USA",
+          "land": "Verenigde Staten van Amerika",
+          "en": "United States of America",
+          "id": "usa/2417194",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "THA",
+          "land": "Thailand",
+          "en": "Thailand",
+          "id": "thailand/2415097",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "NER",
+          "land": "Niger",
+          "en": "Niger",
+          "id": "niger/2424308",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "FRA",
+          "land": "Frankrijk",
+          "en": "France",
+          "id": "frankrike/2429004",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "ESP",
+          "land": "Spanje",
+          "en": "Spain",
+          "id": "spania/2416245",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "BRN",
+          "land": "Brunei Darussalam",
+          "en": "Brunei Darussalam",
+          "id": "brunei/2415974",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "BOL",
+          "land": "Bolivia",
+          "en": "Bolivia, Plurinational State of",
+          "id": "bolivia/2415332",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "IDN",
+          "land": "Indonesië",
+          "en": "Indonesia",
+          "id": "indonesia/2415692",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        },
+        {
+          "iso3": "ARM",
+          "land": "Armenië",
+          "en": "Armenia",
+          "id": "armenia/2416297",
+          "status": 403,
+          "titel": "Just a moment...",
+          "fout": null
+        }
+      ],
       "ongekoppeldAantal": 0,
       "ongekoppeld": []
     }
