@@ -70,12 +70,20 @@ export async function getAdvisory(pathRel) {
   // navigatie-zware intro-blok) en interpreteren met dezelfde classifier als
   // de crisis-snapshot (ch-classify.js) — één bron van waarheid voor CH.
   const grundSection = sections.find((s) => s.heading && /grunds[äa]tzliche einsch[äa]tzung/i.test(s.heading));
+  // Tweede vindplaats: het EDA zet het oordeel bij een deel van de landen
+  // onder "Aktuelles" in plaats van onder de Einschätzung (Jordanië wel,
+  // Irak niet). Zie ch-classify.js voor de voorzorgen daarbij.
+  const aktuellesSection = sections.find((s) => s.heading && /^\s*aktuelles\s*$/i.test(s.heading));
   const intro = sections.find((s) => !s.heading && s.text && /reisehinweise/i.test(s.text));
   const grundText = grundSection?.text || (intro ? intro.text.slice(-4000) : '');
   const fullText = themes.map((t) => t.text).join('\n') || grundText;
   if (!themes.length && !grundText) return null;
 
-  const a = assessChAdvisory(grundText, fullText);
+  // De mapping is "jordanien/reisehinweise-fuerjordanien.html"; het eerste deel
+  // is de Duitse landnaam, en die hebben we nodig om te controleren over wélk
+  // land de zin in Aktuelles gaat.
+  const landSlug = String(pathRel).split('/')[0];
+  const a = assessChAdvisory(grundText, fullText, aktuellesSection?.text || '', landSlug);
 
   // "Diese Reisehinweise … (Stand: 25.01.2026)" of vergelijkbare datering.
   const dm = html.match(/(?:Stand|aktualisiert am|publiziert am)[^0-9]{0,10}(\d{1,2})\.(\d{1,2})\.(\d{4})/i);

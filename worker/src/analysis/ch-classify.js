@@ -75,8 +75,44 @@ export function classifyChRegionalMax(fullText, national) {
  * @returns {null | {level, color, levelLabel, regionalMaxLevel, regionalColor,
  *   hasRegionalWarnings}}
  */
-export function assessChAdvisory(grundText, fullText) {
-  const level = classifyChNational(grundText);
+/**
+ * Landelijk niveau uit de "Aktuelles"-sectie.
+ *
+ * Het EDA is niet consequent in waar het zijn oordeel neerzet. Bij Irak staat
+ * het onder "Grundsätzliche Einschätzung"; bij Jordanië staat het als
+ * vetgedrukte eerste regel onder "Aktuelles" en blijft de Einschätzung leeg.
+ * Alleen op de eerste kop afgaan leverde daarom bij een deel van de landen
+ * "Onzeker" op terwijl het oordeel gewoon op de pagina stond.
+ *
+ * Twee voorzorgen, want "Aktuelles" is óók de plek voor regionaal nieuws:
+ *  - alleen de eerste zin telt (daar staat het oordeel, de rest is toelichting);
+ *  - noemt die zin een reisbestemming die niet dít land is, dan geldt hij niet.
+ *    "Von Reisen nach Israel wird abgeraten" op de Jordanië-pagina zou anders
+ *    Jordanië rood maken, en zo'n fout zie je niet: er staat gewoon een
+ *    plausibele kleur.
+ * Past de eerste zin op geen enkele formule, dan blijft het niveau leeg. Geen
+ * kleur is beter dan de verkeerde.
+ *
+ * @param {string} aktuellesText tekst van de Aktuelles-sectie
+ * @param {string} landSlug      Duitse landnaam uit de mapping (bijv. "jordanien")
+ */
+export function classifyChAktuelles(aktuellesText, landSlug) {
+  const t = norm(aktuellesText);
+  if (!t) return null;
+  const eerste = t.split(/\.\s/)[0] || t;
+  const bestemming = eerste.match(/\bnach\s+([a-zäöüß][a-zäöüß-]{2,})/);
+  if (bestemming && landSlug) {
+    const land = norm(landSlug).replace(/[^a-zäöüß]/g, '');
+    const genoemd = bestemming[1].replace(/[^a-zäöüß]/g, '');
+    if (land && !land.includes(genoemd) && !genoemd.includes(land)) return null;
+  }
+  return classifyChNational(eerste);
+}
+
+export function assessChAdvisory(grundText, fullText, aktuellesText = '', landSlug = '') {
+  // De Einschätzung gaat voor: dát is de plek waar het oordeel hoort te staan.
+  // Alleen als die niets oplevert, kijken we naar Aktuelles.
+  const level = classifyChNational(grundText) ?? classifyChAktuelles(aktuellesText, landSlug);
   if (level == null) return null;
   const regionalMaxLevel = classifyChRegionalMax(fullText || grundText, level);
   return {

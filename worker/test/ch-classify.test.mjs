@@ -7,7 +7,7 @@
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { classifyChNational, assessChAdvisory } from '../src/analysis/ch-classify.js';
+import { classifyChNational, classifyChAktuelles, assessChAdvisory } from '../src/analysis/ch-classify.js';
 
 test('rood (4): "Von Reisen … wird abgeraten" (Afghanistan, echte tekst)', () => {
   const g = 'Von Reisen nach Afghanistan und von Aufenthalten jeder Art wird abgeraten. Die Lage bleibt fragil und unbeständig.';
@@ -82,4 +82,61 @@ test('opsomming van beperkingen blijft oranje (gemeld: Koeweit)', () => {
   assert.equal(classifyChNational('Von touristischen, privaten und nicht notwendigen Reisen nach X wird abgeraten.'), 3);
   // Zonder beperking blijft het de zwaarste EDA-vorm.
   assert.equal(classifyChNational('Von Reisen nach X wird abgeraten.'), 4);
+});
+
+// ---------------------------------------------------------------------------
+// "Aktuelles" als tweede vindplaats.
+//
+// Het EDA zet zijn oordeel niet consequent op dezelfde plek: bij Irak staat het
+// onder "Grundsätzliche Einschätzung", bij Jordanië als vetgedrukte eerste
+// regel onder "Aktuelles". De tekst hieronder is die van de Jordanië-pagina.
+// ---------------------------------------------------------------------------
+const JOR_AKTUELLES = 'Von touristischen und nicht dringenden Reisen nach Jordanien wird abgeraten. '
+  + 'Die Lage im Nahen und Mittleren Osten ist weiterhin angespannt. Eine rasche Verschlechterung '
+  + 'der Sicherheitslage ist jederzeit möglich. Seit dem 8. Juli kam es an verschiedenen Orten in '
+  + 'der Region, darunter auch in Jordanien, zu Angriffen und militärischen Schlägen.';
+
+test('Aktuelles: oranje uit de eerste regel van de Jordanië-pagina', () => {
+  assert.equal(classifyChAktuelles(JOR_AKTUELLES, 'jordanien'), 3);
+});
+
+test('Aktuelles: een oordeel over een ánder land telt niet mee', () => {
+  // Zonder deze grens zou de Jordanië-pagina de kleurcode van Israël krijgen,
+  // en dat valt niet op: er staat gewoon een plausibele kleur.
+  assert.equal(classifyChAktuelles('Von Reisen nach Israel wird abgeraten.', 'jordanien'), null);
+  assert.equal(classifyChAktuelles('Von Reisen nach Israel wird abgeraten.', 'israel'), 4);
+});
+
+test('Aktuelles: alleen de eerste zin, de toelichting erna telt niet', () => {
+  const t = 'Die Lage ist ruhig. Von Reisen nach Beispielland wird abgeraten.';
+  assert.equal(classifyChAktuelles(t, 'beispielland'), null);
+});
+
+test('Aktuelles: nieuws zonder oordeelsformule levert niets op', () => {
+  assert.equal(classifyChAktuelles('Seit dem 8. Juli kam es zu Angriffen in der Region.', 'jordanien'), null);
+  assert.equal(classifyChAktuelles('', 'jordanien'), null);
+});
+
+test('Aktuelles: zinnen zonder "nach <land>" blijven gewoon gelden', () => {
+  assert.equal(classifyChAktuelles('Von Reisen in dieses Land wird abgeraten.', 'jordanien'), 4);
+});
+
+test('de Einschätzung gaat vóór Aktuelles', () => {
+  // Staat er een bruikbaar oordeel onder de Einschätzung, dan telt dat — ook
+  // als Aktuelles iets zwaarders meldt over de regio.
+  const a = assessChAdvisory(
+    'Irak kann grundsätzlich als sicher gelten.', 'Irak kann grundsätzlich als sicher gelten.',
+    'Von Reisen nach Irak wird abgeraten.', 'irak',
+  );
+  assert.equal(a.level, 1);
+});
+
+test('lege Einschätzung valt terug op Aktuelles', () => {
+  const a = assessChAdvisory('', JOR_AKTUELLES, JOR_AKTUELLES, 'jordanien');
+  assert.equal(a.level, 3);
+  assert.equal(a.color, 'oranje');
+});
+
+test('geen van beide bruikbaar → geen niveau, geen gok', () => {
+  assert.equal(assessChAdvisory('', 'Willkommen.', 'Die Lage ist angespannt.', 'jordanien'), null);
 });
