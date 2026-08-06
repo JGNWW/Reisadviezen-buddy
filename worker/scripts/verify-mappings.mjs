@@ -68,19 +68,56 @@ function suggest(slug, enName, validSet) {
   return best ? { slug: best, score: Math.round(score * 100) / 100 } : null;
 }
 
+/**
+ * Welk land past het best bij deze slug? Gebruikt voor de wederzijdse toets
+ * hierboven: past de slug beter bij een ánder land, dan is het geen gat maar
+ * een verwarring.
+ */
+function besteKandidaat(slug) {
+  let best = null, score = 0;
+  for (const [iso3, rec] of Object.entries(countries)) {
+    const s = dice(normalise(rec.en), String(slug).toLowerCase());
+    if (s > score) { score = s; best = iso3; }
+  }
+  return best;
+}
+
 async function checkAgainstSet(sid, extract, validSet) {
   const broken = [];
+  const ontbrekend = [];
   let checked = 0;
+  const gebruikt = new Set();
   for (const [iso3, rec] of Object.entries(countries)) {
     const id = extract(rec);
-    if (!id) continue;
+    if (!id) {
+      // Geen koppeling. Dat is vaak terecht (ireland.ie heeft geen pagina voor
+      // Aruba), maar niet altijd: Israël stond bij Ierland op null terwijl de
+      // pagina gewoon bestond, en Tsjechië, de Filipijnen en Iran ook. Zulke
+      // gaten vallen niet op — de bron ontbreekt dan gewoon in de vergelijking.
+      // Daarom hier de omgekeerde vraag: heeft de bron dit land wél?
+      const gok = suggest('', rec.en, validSet);
+      // Wederzijdse toets. Een eenzijdige gelijkenis is hier levensgevaarlijk:
+      // Gambia lijkt op "zambia" en de Amerikaanse Maagdeneilanden op
+      // "virgin-islands-uk". Zo'n suggestie overnemen levert het reisadvies van
+      // een ánder land op, en dat valt niet op — er staat gewoon een advies.
+      // Daarom telt een voorstel alleen als dit land óók de beste kandidaat is
+      // vóór die slug, van alle 226.
+      if (gok && gok.score >= 0.85 && besteKandidaat(gok.slug) === iso3) {
+        ontbrekend.push({ iso3, land: rec.nl, en: rec.en, suggestie: gok.slug, score: gok.score, bron: sid });
+      }
+      continue;
+    }
     checked++;
+    gebruikt.add(id);
     if (!validSet.has(id)) {
       const s = suggest(id, rec.en, validSet);
       broken.push({ iso3, land: rec.nl, en: rec.en, id, suggestie: s?.slug || null, score: s?.score || null, bron: sid });
     }
   }
-  return { checked, broken };
+  // Wat de bron aanbiedt en door niemand gebruikt wordt. Puur informatief: het
+  // gaat vaak om regio's en samenvoegingen die wij niet als land kennen.
+  const ongebruikt = [...validSet].filter((v) => !gebruikt.has(v));
+  return { checked, broken, ontbrekend, ongebruiktAantal: ongebruikt.length, ongebruikt: ongebruikt.slice(0, 40) };
 }
 
 async function main() {
@@ -119,17 +156,23 @@ async function main() {
   } catch (e) { result.sources.ie = { error: e.message }; }
 
   let totalBroken = 0;
+  let totalOntbrekend = 0;
   for (const [sid, r] of Object.entries(result.sources)) {
     if (r.error) { console.log(`⚠️ ${sid}: index niet op te halen (${r.error})`); continue; }
     totalBroken += r.broken.length;
-    console.log(`${r.broken.length ? '❌' : '✅'} ${sid}: ${r.checked} gecontroleerd, ${r.broken.length} kapot`);
+    totalOntbrekend += r.ontbrekend.length;
+    console.log(`${r.broken.length ? '❌' : '✅'} ${sid}: ${r.checked} gecontroleerd, ${r.broken.length} kapot, ${r.ontbrekend.length} ontbrekend, ${r.ongebruiktAantal} ongebruikt bij de bron`);
     for (const b of r.broken) {
-      console.log(`   ${b.iso3} (${b.land}): "${b.id}"${b.suggestie ? ` → suggestie: "${b.suggestie}"` : ''}`);
+      console.log(`   kapot     ${b.iso3} (${b.land}): "${b.id}"${b.suggestie ? ` → suggestie: "${b.suggestie}"` : ''}`);
+    }
+    for (const m of r.ontbrekend) {
+      console.log(`   ontbreekt ${m.iso3} (${m.land}): geen koppeling, bron heeft "${m.suggestie}" (${m.score})`);
     }
   }
   result.totalBroken = totalBroken;
+  result.totalOntbrekend = totalOntbrekend;
   writeFileSync(OUT, JSON.stringify(result, null, 2));
-  console.log(`\nRapport: ${OUT} (${totalBroken} kapotte koppeling(en)).`);
+  console.log(`\nRapport: ${OUT} (${totalBroken} kapotte, ${totalOntbrekend} ontbrekende koppeling(en)).`);
 }
 
 main().catch((e) => {

@@ -1,22 +1,68 @@
 {
-  "generatedAt": "2026-08-03T10:25:21.967Z",
+  "generatedAt": "2026-08-06T07:36:55.767Z",
   "sources": {
     "uk": {
-      "checked": 209,
-      "broken": []
+      "checked": 219,
+      "broken": [],
+      "ontbrekend": [],
+      "ongebruiktAantal": 12,
+      "ongebruikt": [
+        "palestine",
+        "netherlands",
+        "gibraltar",
+        "st-helena-ascension-and-tristan-da-cunha",
+        "western-sahara",
+        "falkland-islands",
+        "mayotte",
+        "st-pierre-and-miquelon",
+        "st-martin-and-st-barthelemy",
+        "bermuda",
+        "south-georgia-and-south-sandwich-islands",
+        "british-indian-ocean-territory"
+      ]
     },
     "de": {
       "checked": 198,
-      "broken": []
+      "broken": [],
+      "ontbrekend": [],
+      "ongebruiktAantal": 2,
+      "ongebruikt": [
+        "NLD",
+        "VAT"
+      ]
     },
     "ca": {
-      "checked": 219,
-      "broken": []
+      "checked": 220,
+      "broken": [],
+      "ontbrekend": [],
+      "ongebruiktAantal": 12,
+      "ongebruikt": [
+        "PT-20",
+        "BM",
+        "IC",
+        "FK",
+        "GI",
+        "GU",
+        "YT",
+        "NL",
+        "MP",
+        "BL",
+        "MF",
+        "PM"
+      ]
     },
     "ie": {
-      "checked": 193,
-      "broken": []
+      "checked": 210,
+      "broken": [],
+      "ontbrekend": [],
+      "ongebruiktAantal": 3,
+      "ongebruikt": [
+        "bermuda",
+        "mayotte",
+        "the-netherlands"
+      ]
     }
   },
-  "totalBroken": 0
+  "totalBroken": 0,
+  "totalOntbrekend": 0
 }

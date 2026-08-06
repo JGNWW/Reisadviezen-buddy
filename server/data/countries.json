@@ -508,14 +508,14 @@
     "region": "Americas",
     "subregion": "Latin America and the Caribbean",
     "sources": {
-      "uk": null,
+      "uk": "british-virgin-islands",
       "us": "british-virgin-islands",
       "ca": {
         "iso2": "VG",
         "id": 40000,
         "slug": "british-virgin-islands"
       },
-      "ie": null,
+      "ie": "virgin-islands-uk",
       "fr": "iles-vierges-britanniques",
       "au": {
         "continent": "americas",
@@ -927,7 +927,7 @@
     "region": "Americas",
     "subregion": "Latin America and the Caribbean",
     "sources": {
-      "uk": null,
+      "uk": "st-maarten",
       "us": "sint-maarten-dutch-part",
       "ca": {
         "iso2": "SX",
@@ -1370,7 +1370,7 @@
     "region": "Oceania",
     "subregion": "Polynesia",
     "sources": {
-      "uk": null,
+      "uk": "pitcairn-island",
       "us": "pitcairn",
       "ca": null,
       "ie": null,
@@ -1499,7 +1499,7 @@
     "region": "Oceania",
     "subregion": "Polynesia",
     "sources": {
-      "uk": null,
+      "uk": "cook-islands-tokelau-and-niue",
       "us": "cook-islands",
       "ca": {
         "iso2": "CK",
@@ -1859,7 +1859,7 @@
     "region": null,
     "subregion": null,
     "sources": {
-      "uk": null,
+      "uk": "bonaire-st-eustatius-saba",
       "us": "saba",
       "ca": {
         "iso2": "BQ",
@@ -1883,7 +1883,7 @@
     "region": null,
     "subregion": null,
     "sources": {
-      "uk": null,
+      "uk": "bonaire-st-eustatius-saba",
       "us": "sint-eustatius",
       "ca": {
         "iso2": "BQ",
@@ -2021,7 +2021,7 @@
         "id": 96000,
         "slug": "gambia-the"
       },
-      "ie": null,
+      "ie": "republic-of-the-gambia",
       "fr": "gambie",
       "au": {
         "continent": "africa",
@@ -2632,7 +2632,7 @@
         "id": 318000,
         "slug": "virgin-islands-u-s"
       },
-      "ie": null,
+      "ie": "virgin-islands-us",
       "fr": "iles-vierges-etats-unis",
       "au": {
         "continent": "americas",
@@ -2687,7 +2687,7 @@
         "id": 167000,
         "slug": "macao"
       },
-      "ie": null,
+      "ie": "china-hong-kong-macao",
       "fr": "macao",
       "au": {
         "continent": "asia",
@@ -2714,7 +2714,7 @@
         "id": 120000,
         "slug": "hong-kong"
       },
-      "ie": null,
+      "ie": "china-hong-kong-macao",
       "fr": "hong-kong",
       "au": {
         "continent": "asia",
@@ -3318,7 +3318,7 @@
     "region": "Oceania",
     "subregion": "Polynesia",
     "sources": {
-      "uk": null,
+      "uk": "cook-islands-tokelau-and-niue",
       "us": "tokelau",
       "ca": {
         "iso2": "TK",
@@ -3736,7 +3736,7 @@
     "region": null,
     "subregion": null,
     "sources": {
-      "uk": null,
+      "uk": "bonaire-st-eustatius-saba",
       "us": "bonaire",
       "ca": {
         "iso2": "BQ",
@@ -3906,7 +3906,7 @@
         "id": 110000,
         "slug": "guadeloupe"
       },
-      "ie": null,
+      "ie": "guadeloupe",
       "fr": "guadeloupe",
       "au": {
         "continent": "americas",
@@ -4736,7 +4736,7 @@
     "region": "Oceania",
     "subregion": "Polynesia",
     "sources": {
-      "uk": null,
+      "uk": "cook-islands-tokelau-and-niue",
       "us": "niue",
       "ca": {
         "iso2": "NU",
@@ -4798,7 +4798,7 @@
         "id": 186000,
         "slug": "micronesia-fsm"
       },
-      "ie": null,
+      "ie": "federated-states-of-micronesia",
       "fr": "micronesie-etats-federes-de",
       "au": {
         "continent": "pacific",
@@ -5128,7 +5128,11 @@
     "sources": {
       "uk": "kosovo",
       "us": "kosovo",
-      "ca": null,
+      "ca": {
+        "iso2": "XK",
+        "id": 154000,
+        "slug": "kosovo"
+      },
       "ie": "kosovo",
       "fr": "kosovo",
       "au": null,
@@ -5646,7 +5650,7 @@
     "region": null,
     "subregion": null,
     "sources": {
-      "uk": null,
+      "uk": "antarctica-british-antarctic-territory",
       "us": "antarctica",
       "ca": {
         "iso2": "AQ",
