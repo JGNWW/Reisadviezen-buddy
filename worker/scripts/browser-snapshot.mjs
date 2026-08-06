@@ -31,11 +31,29 @@ const LATEST_DIR = path.join(__dirname, '..', 'data', 'latest');
 
 // Per bron: URL uit de bestaande mapping, taal, en een "klaar"-signaal.
 const SOURCES = {
+  au: {
+    label: 'Australië (Smartraveller)', flag: '🇦🇺', lang: 'en',
+    // Australië hing als enige bron volledig aan één externe dienst: de
+    // adapter haalt Smartraveller via de reader op, zónder terugval. Valt die
+    // dienst weg — en dat gebeurde vandaag, met een uitgeput tegoed — dan is de
+    // bron in één klap weg. Een eigen capture geeft hem hetzelfde vangnet als
+    // Denemarken en Zwitserland al hadden.
+    //
+    // mapping = { continent, slug }
+    url: (m) => `https://www.smartraveller.gov.au/destinations/${m.continent}/${m.slug}`,
+    readyText: /advice level|do not travel|exercise (a )?high degree|travel advice/i,
+    // Een verkeerde slug geeft geen 404 maar een nette "niet gevonden"-pagina.
+    // Dat apart benoemen maakt van deze nachtrun meteen een mapping-controle:
+    // Australië en Zwitserland zijn met een kale fetch niet te controleren
+    // (403, ook vanaf een runner), maar met een echte browser wél.
+    notFoundText: /page not found|couldn't find that page|404/i,
+  },
   dk: {
     label: 'Denemarken (Udenrigsministeriet)', flag: '🇩🇰', lang: 'da',
     url: (m) => `https://um.dk/rejse-og-ophold/rejse-til-udlandet/rejsevejledninger/${m}`,
     // SPA: wachten tot de app echt inhoud heeft neergezet.
     readyText: /rejsevejledning|sikkerhed|indrejse/i,
+    notFoundText: /siden findes ikke/i,
     // Denemarken publiceert lang niet voor elk land een advies; voor ruim
     // negentig landen staat er een geldige pagina met "Vi har ingen
     // rejsevejledning for X". Dat is een antwoord, geen storing — het hoort
@@ -203,6 +221,9 @@ async function captureOne(page, sid, iso, mapping) {
   }
   if (BLOCKED.test(vroeg)) return { ok: false, reason: 'botcheck', monster: `«vroeg» ${vroeg.slice(0, 220)}` };
   if (cfg.noAdvisoryText && cfg.noAdvisoryText.test(vroeg)) return { ok: false, reason: 'bron publiceert hier geen advies' };
+  if (cfg.notFoundText && cfg.notFoundText.test(vroeg)) {
+    return { ok: false, reason: 'pagina bestaat niet — mapping klopt niet', monster: `«vroeg» ${vroeg.slice(0, 200)}` };
+  }
   try {
     await page.waitForFunction(
       (re) => new RegExp(re, 'i').test(document.body.innerText || ''),
@@ -378,7 +399,8 @@ async function main() {
   await peilNoorseRss(page);
   await peilZwitserland(page);
 
-  const stats = { saved: 0, kept: 0, blocked: 0, nomapping: 0, geenadvies: 0, overgeslagen: 0 };
+  const stats = { saved: 0, kept: 0, blocked: 0, nomapping: 0, geenadvies: 0, overgeslagen: 0, kapottemapping: 0 };
+  const kapotteMappings = [];
   const opRij = new Map(); // sid -> { reden, n }
   const opgegeven = new Set();
   // Hooguit twee uitsnedes per bron: genoeg om te zien wat er misgaat, zonder
@@ -392,13 +414,16 @@ async function main() {
 
     for (const sid of Object.keys(SOURCES)) {
       const mapping = rec.sources?.[sid];
-      if (!mapping) { stats.nomapping++; continue; }
+      // Australië koppelt met { continent, slug }; de rest met een string.
+      if (!mapping || (sid === 'au' && !(mapping.continent && mapping.slug))) { stats.nomapping++; continue; }
       if (opgegeven.has(sid)) { stats.overgeslagen++; continue; }
       try {
         const r = await captureOne(page, sid, iso, mapping);
         if (!r.ok) {
           stats[r.reason === 'botcheck' ? 'blocked'
-            : r.reason.startsWith('bron publiceert') ? 'geenadvies' : 'kept']++;
+            : r.reason.startsWith('bron publiceert') ? 'geenadvies'
+              : r.reason.startsWith('pagina bestaat niet') ? 'kapottemapping' : 'kept']++;
+          if (r.reason.startsWith('pagina bestaat niet')) kapotteMappings.push(`${sid}/${iso}`);
           console.log(`  ${iso}/${sid}: overslaan (${r.reason}) — vorige snapshot blijft`);
           const n = getoond.get(sid) || 0;
           if (r.monster && n < 2) { getoond.set(sid, n + 1); console.log(`      wat er stond: ${r.monster}`); }
@@ -437,7 +462,11 @@ async function main() {
   }
 
   await browser.close();
-  console.log(`\nBrowser-snapshot klaar: ${stats.saved} opgeslagen, ${stats.kept} behouden/gefaald, ${stats.blocked} botcheck, ${stats.geenadvies} bron heeft hier geen advies, ${stats.nomapping} zonder mapping, ${stats.overgeslagen} overgeslagen na opgeven.`);
+  console.log(`\nBrowser-snapshot klaar: ${stats.saved} opgeslagen, ${stats.kept} behouden/gefaald, ${stats.blocked} botcheck, ${stats.geenadvies} bron heeft hier geen advies, ${stats.nomapping} zonder mapping, ${stats.kapottemapping} kapotte mapping, ${stats.overgeslagen} overgeslagen na opgeven.`);
+  if (kapotteMappings.length) {
+    console.log(`\nMAPPINGS die niet bestaan (${kapotteMappings.length}): ${kapotteMappings.join(' ')}`);
+    console.log(`::warning title=Kapotte mappings::${kapotteMappings.length} land-bronkoppeling(en) wijzen naar een pagina die niet bestaat: ${kapotteMappings.slice(0, 30).join(' ')}`);
+  }
   if (opgegeven.size) {
     for (const sid of opgegeven) {
       console.log(`::warning title=Bron ${sid} opgegeven::${OPGEVEN_NA}× achter elkaar "${opRij.get(sid)?.reden}" — deze bron leverde deze run niets op`);

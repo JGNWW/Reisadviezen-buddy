@@ -1,4 +1,4 @@
-name: Browser-snapshots (DK/NO/CH)
+name: Browser-snapshots (AU/DK/NO/CH)
 
 # Bronnen die serverside niet op te halen zijn (um.dk = React-SPA met
 # vergrendelde API; regjeringen.no = Cloudflare-botcheck; eda.admin.ch =
@@ -89,7 +89,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add data/latest
           if ! git diff --cached --quiet; then
-            git commit -m "Browser-snapshots DK/NO/CH $(date -u +%Y-%m-%dT%H:%M)"
+            git commit -m "Browser-snapshots AU/DK/NO/CH $(date -u +%Y-%m-%dT%H:%M)"
             git pull --rebase origin main
             git push origin HEAD:main
           fi

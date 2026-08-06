@@ -32,6 +32,11 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.join(__dirname, '..', 'data', 'mapping-audit.json');
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
 const PAUZE = 250; // ms tussen verzoeken — hoffelijk naar de bronsites
+// Bronnen die bij dat tempo dichtklappen krijgen hun eigen pauze. um.fi gaf
+// 429 voor 153 landen op rij, ook mét de oplopende terugval — die bron wil
+// gewoon seconden tussen de verzoeken. Drie seconden × 226 landen is elf
+// minuten; dat past ruim binnen de 90 die de workflow heeft.
+const PAUZE_PER_BRON = { fi: 3000, es: 800, kr: 500 };
 
 const wacht = (ms) => new Promise((r) => setTimeout(r, ms));
 const titelVan = (html) => ((html.match(/<title>([\s\S]*?)<\/title>/i) || [])[1] || '').replace(/\s+/g, ' ').trim();
@@ -87,23 +92,12 @@ const BRONNEN = {
     url: (s) => `https://www.anzen.mofa.go.jp/info/pcinfectionspothazardinfo_${s}.html`,
     goed: (res, html) => res.ok && html.length > 5000,
   },
-  // Bronnen die datacenter-IP's weren. Ze staan hier omdat een runner een
-  // ander IP heeft dan een ontwikkelmachine; blijft het misgaan, dan zegt het
-  // rapport dát tenminste in plaats van niets.
-  au: {
-    naam: 'Australië (Smartraveller)',
-    id: (r) => (r.sources.au ? `${r.sources.au.continent}/${r.sources.au.slug}` : null),
-    // Smartraveller weigert datacenter-IP's ook op een runner; de adapter haalt
-    // daarom via de reader op en dat doet deze controle ook.
-    url: (s) => `https://r.jina.ai/https://www.smartraveller.gov.au/destinations/${s}`,
-    goed: (res, html) => res.ok && html.length > 3000 && !/just a moment|page not found/i.test(html.slice(0, 2000)),
-  },
-  ch: {
-    naam: 'Zwitserland (EDA)',
-    id: (r) => r.sources.ch,
-    url: (s) => `https://www.eda.admin.ch/eda/de/home/laender-reise-information/${s}`,
-    goed: (res, html) => res.ok && /reisehinweise|einsch[äa]tzung|aktuelles/i.test(html),
-  },
+  // Australië en Zwitserland staan hier bewust NIET meer in. Een kale fetch
+  // krijgt van beide een 403 — ook vanaf een runner — dus die controle leverde
+  // alleen ruis op (220 en 192 "kapotte" koppelingen die geen van alle kapot
+  // waren). Hun mappings worden nu gecontroleerd door de nachtelijke
+  // browser-capture, die met een echte browser wél binnenkomt en per land
+  // meldt wat eruit kwam.
   no: {
     naam: 'Noorwegen (Utenriksdept.)',
     id: (r) => r.sources.no,
@@ -146,7 +140,7 @@ async function controleer(sid) {
   const ongekoppeld = [];
   let gecontroleerd = 0;
   const lijst = Object.entries(countries);
-  const extraPauze = { ms: 0 };
+  const extraPauze = { ms: PAUZE_PER_BRON[sid] || 0 };
   for (const [iso3, rec] of lijst) {
     if (!rec.sources || !(sid in rec.sources)) continue;
     const id = b.id(rec);
