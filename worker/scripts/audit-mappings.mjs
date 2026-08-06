@@ -82,15 +82,57 @@ const BRONNEN = {
     url: (s) => `https://www.anzen.mofa.go.jp/info/pcinfectionspothazardinfo_${s}.html`,
     goed: (res, html) => res.ok && html.length > 5000,
   },
+  // Bronnen die datacenter-IP's weren. Ze staan hier omdat een runner een
+  // ander IP heeft dan een ontwikkelmachine; blijft het misgaan, dan zegt het
+  // rapport dát tenminste in plaats van niets.
+  au: {
+    naam: 'Australië (Smartraveller)',
+    id: (r) => (r.sources.au ? `${r.sources.au.continent}/${r.sources.au.slug}` : null),
+    // Smartraveller weigert datacenter-IP's ook op een runner; de adapter haalt
+    // daarom via de reader op en dat doet deze controle ook.
+    url: (s) => `https://r.jina.ai/https://www.smartraveller.gov.au/destinations/${s}`,
+    goed: (res, html) => res.ok && html.length > 3000 && !/just a moment|page not found/i.test(html.slice(0, 2000)),
+  },
+  ch: {
+    naam: 'Zwitserland (EDA)',
+    id: (r) => r.sources.ch,
+    url: (s) => `https://www.eda.admin.ch/eda/de/home/laender-reise-information/${s}`,
+    goed: (res, html) => res.ok && /reisehinweise|einsch[äa]tzung|aktuelles/i.test(html),
+  },
+  no: {
+    naam: 'Noorwegen (Utenriksdept.)',
+    id: (r) => r.sources.no,
+    url: (s) => {
+      const [slug, id] = String(s).split('/');
+      return `https://www.regjeringen.no/no/tema/utenrikssaker/reiseinformasjon/velg-land/reiseinfo_${slug}/id${id}/`;
+    },
+    goed: (res, html) => res.ok && !/just a moment|sikkerhedsverificering|ray id/i.test(html.slice(0, 3000)),
+  },
 };
 
-async function haal(url) {
-  try {
-    const res = await fetch(url, { headers: { 'User-Agent': UA, 'Accept-Language': 'en;q=0.8' }, redirect: 'follow' });
-    return { res, html: await res.text() };
-  } catch (e) {
-    return { res: { ok: false, status: 0 }, html: '', fout: String(e.message).slice(0, 60) };
+/**
+ * Ophalen met geduld bij een snelheidslimiet.
+ *
+ * um.fi ging bij 250 ms tussenpauze massaal 429 geven — 153 landen op rij, wat
+ * er in het rapport uitziet als evenzoveel kapotte koppelingen terwijl er niets
+ * mis is; exteriores.gob.es deed hetzelfde met een 503. Een 429 is een verzoek
+ * om rustiger te doen, dus dat doen we: even wachten, opnieuw proberen, en de
+ * pauze voor de rest van die bron verdubbelen.
+ */
+async function haal(url, extraPauze = { ms: 0 }) {
+  for (let poging = 0; poging < 3; poging++) {
+    try {
+      const res = await fetch(url, { headers: { 'User-Agent': UA, 'Accept-Language': 'en;q=0.8' }, redirect: 'follow' });
+      const html = await res.text();
+      if (res.status !== 429 && res.status !== 503) return { res, html };
+      extraPauze.ms = Math.min((extraPauze.ms || PAUZE) * 2, 4000);
+      await wacht(1500 * (poging + 1));
+    } catch (e) {
+      if (poging === 2) return { res: { ok: false, status: 0 }, html: '', fout: String(e.message).slice(0, 60) };
+      await wacht(800);
+    }
   }
+  return { res: { ok: false, status: 429 }, html: '', fout: 'blijft geweigerd (snelheidslimiet)' };
 }
 
 async function controleer(sid) {
@@ -99,18 +141,19 @@ async function controleer(sid) {
   const ongekoppeld = [];
   let gecontroleerd = 0;
   const lijst = Object.entries(countries);
+  const extraPauze = { ms: 0 };
   for (const [iso3, rec] of lijst) {
     if (!rec.sources || !(sid in rec.sources)) continue;
     const id = b.id(rec);
     if (!id) { ongekoppeld.push({ iso3, land: rec.nl, en: rec.en }); continue; }
     gecontroleerd++;
     const url = b.url(id);
-    const { res, html, fout } = await haal(url);
+    const { res, html, fout } = await haal(url, extraPauze);
     if (!b.goed(res, html)) {
       kapot.push({ iso3, land: rec.nl, en: rec.en, id, status: res.status, titel: titelVan(html).slice(0, 60), fout: fout || null });
       console.log(`   ✗ ${iso3} (${rec.nl}) "${id}" → ${res.status} ${titelVan(html).slice(0, 45)}`);
     }
-    await wacht(PAUZE);
+    await wacht(Math.max(PAUZE, extraPauze.ms));
   }
   return { naam: b.naam, gecontroleerd, kapot, ongekoppeldAantal: ongekoppeld.length, ongekoppeld };
 }

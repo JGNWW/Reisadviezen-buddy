@@ -47,6 +47,7 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         run: node scripts/audit-mappings.mjs
         continue-on-error: true
+        timeout-minutes: 90
 
       - name: Rapport committen
         run: |
