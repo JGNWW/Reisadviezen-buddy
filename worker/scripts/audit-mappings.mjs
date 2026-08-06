@@ -17,6 +17,11 @@
  *
  * Draaien:  cd worker && node scripts/audit-mappings.mjs [bron ...]
  * Rapport:  worker/data/mapping-audit.json
+ *
+ * In CI draait dit via de mapping-workflow, en bewust niet vanaf een
+ * ontwikkelmachine: um.fi en exteriores.gob.es gaan daar na een reeks
+ * verzoeken over op 429 en 503, en Smartraveller, eda.admin.ch en
+ * regjeringen.no weren zulke IP's helemaal.
  */
 import { writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';

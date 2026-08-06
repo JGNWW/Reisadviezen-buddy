@@ -9,6 +9,15 @@ on:
   schedule:
     - cron: '30 6 * * 1' # maandag 06:30 UTC
   workflow_dispatch:
+  # Bij wijziging van de diepe controle zelf: meteen draaien. Die controle
+  # moet vanaf een runner gebeuren — vanaf een ontwikkelmachine geven um.fi
+  # en exteriores.gob.es na een reeks verzoeken 429 en 503, en Australië,
+  # Zwitserland en Noorwegen weren datacenter-IP's helemaal. Het pad-filter
+  # houdt het bij wijzigingen aan het script; dat is zelden.
+  push:
+    branches: [main]
+    paths:
+      - 'worker/scripts/audit-mappings.mjs'
 
 permissions:
   contents: write
@@ -43,8 +52,8 @@ jobs:
       # snelheidslimieten (um.fi en exteriores.gob.es gaven 429 en 503 na een
       # reeks verzoeken); vanaf een runner gaat het wel. Alleen handmatig,
       # want het zijn ruim duizend verzoeken.
-      - name: Diepe controle per land (alleen handmatig)
-        if: github.event_name == 'workflow_dispatch'
+      - name: Diepe controle per land (niet bij de wekelijkse run)
+        if: github.event_name != 'schedule'
         run: node scripts/audit-mappings.mjs
         continue-on-error: true
         timeout-minutes: 90
@@ -53,7 +62,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/mapping-health.json
+          git add data/mapping-health.json data/mapping-audit.json
           if ! git diff --cached --quiet; then
             git commit -m "Mapping-gezondheid $(date -u +%Y-%m-%d)"
             git pull --rebase origin main
