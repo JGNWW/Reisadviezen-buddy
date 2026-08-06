@@ -403,7 +403,7 @@
         "id": 71000,
         "slug": "czechia"
       },
-      "ie": null,
+      "ie": "czech-republic",
       "fr": "tchequie",
       "au": {
         "continent": "europe",
@@ -738,7 +738,7 @@
         "id": 255000,
         "slug": "saint-vincent-the-grenadines"
       },
-      "ie": null,
+      "ie": "saint-vincent-and-the-grenadines",
       "fr": "saint-vincent-et-les-grenadines",
       "au": {
         "continent": "americas",
@@ -989,7 +989,7 @@
         "id": 284000,
         "slug": "taiwan"
       },
-      "ie": null,
+      "ie": "taiwan",
       "fr": "taiwan-province-de-chine",
       "au": null,
       "es": "Taiwán, Provincia de China",
@@ -2071,21 +2071,21 @@
     "subregion": "Western Asia",
     "sources": {
       "uk": "israel",
-      "us": "israel",
+      "us": "israel-west-bank-and-gaza",
       "ca": {
         "iso2": "IL",
         "id": 135000,
         "slug": "israel-and-palestine"
       },
-      "ie": null,
-      "fr": "israel",
+      "ie": "israel",
+      "fr": "israel-palestine",
       "au": {
         "continent": "middle-east",
         "slug": "israel"
       },
       "es": "Israel",
       "de": "ISR",
-      "nz": "israel",
+      "nz": "israel-and-the-occupied-palestinian-territories",
       "dk": "israel"
     }
   },
@@ -2464,7 +2464,7 @@
       "uk": "israel",
       "us": "israel-the-west-bank-and-gaza",
       "ca": null,
-      "ie": null,
+      "ie": "palestine",
       "fr": "palestine-etat-de",
       "au": {
         "continent": "middle-east",
@@ -4993,7 +4993,7 @@
         "id": 286000,
         "slug": "tanzania"
       },
-      "ie": null,
+      "ie": "tanzania",
       "fr": "tanzanie-republique-unie-de",
       "au": {
         "continent": "africa",
@@ -5105,7 +5105,7 @@
         "id": 239000,
         "slug": "philippines"
       },
-      "ie": null,
+      "ie": "philippines",
       "fr": "philippines",
       "au": {
         "continent": "asia",
@@ -5266,7 +5266,7 @@
         "id": 132000,
         "slug": "iran"
       },
-      "ie": null,
+      "ie": "iran",
       "fr": "iran-republique-islamique-d",
       "au": {
         "continent": "asia",
@@ -5705,7 +5705,7 @@
         "id": 313000,
         "slug": "venezuela"
       },
-      "ie": null,
+      "ie": "venezuela",
       "fr": "venezuela-republique-bolivarienne-du",
       "au": {
         "continent": "americas",
@@ -6181,7 +6181,7 @@
         "id": 33000,
         "slug": "bolivia"
       },
-      "ie": null,
+      "ie": "bolivia",
       "fr": "bolivie-etat-plurinational-de",
       "au": {
         "continent": "americas",
