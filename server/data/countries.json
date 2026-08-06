@@ -44,7 +44,7 @@
         "slug": "montserrat"
       },
       "ie": "montserrat",
-      "fr": "montserrat",
+      "fr": null,
       "au": {
         "continent": "americas",
         "slug": "montserrat"
@@ -99,7 +99,7 @@
         "slug": "reunion"
       },
       "ie": "reunion",
-      "fr": "reunion",
+      "fr": null,
       "au": {
         "continent": "africa",
         "slug": "reunion"
@@ -154,7 +154,7 @@
         "slug": "greenland"
       },
       "ie": "greenland",
-      "fr": "groenland",
+      "fr": null,
       "au": {
         "continent": "americas",
         "slug": "greenland"
@@ -181,7 +181,7 @@
         "slug": "anguilla"
       },
       "ie": "anguilla",
-      "fr": "anguilla",
+      "fr": null,
       "au": {
         "continent": "americas",
         "slug": "anguilla"
@@ -404,7 +404,7 @@
         "slug": "czechia"
       },
       "ie": "czech-republic",
-      "fr": "tchequie",
+      "fr": "republique-tcheque",
       "au": {
         "continent": "europe",
         "slug": "czech-republic"
@@ -412,7 +412,8 @@
       "es": "Chequia",
       "de": "CZE",
       "nz": "czech-republic",
-      "dk": "tjekkiet"
+      "dk": "tjekkiet",
+      "at": "tschechische-republik"
     }
   },
   "ATG": {
@@ -516,7 +517,7 @@
         "slug": "british-virgin-islands"
       },
       "ie": "virgin-islands-uk",
-      "fr": "iles-vierges-britanniques",
+      "fr": null,
       "au": {
         "continent": "americas",
         "slug": "virgin-islands-british"
@@ -767,7 +768,7 @@
         "slug": "guyana"
       },
       "ie": "guyana",
-      "fr": "guyane",
+      "fr": "guyana",
       "au": {
         "continent": "americas",
         "slug": "guyana"
@@ -935,7 +936,7 @@
         "slug": "sint-maarten"
       },
       "ie": null,
-      "fr": "sint-maarten-partie-neerlandaise",
+      "fr": null,
       "au": {
         "continent": "americas",
         "slug": "sint-maarten-dutch-part"
@@ -990,7 +991,7 @@
         "slug": "taiwan"
       },
       "ie": "taiwan",
-      "fr": "taiwan-province-de-chine",
+      "fr": "taiwan",
       "au": null,
       "es": "Taiwán, Provincia de China",
       "de": "TWN",
@@ -1323,7 +1324,7 @@
         "slug": "martinique"
       },
       "ie": "martinique",
-      "fr": "martinique",
+      "fr": null,
       "au": {
         "continent": "americas",
         "slug": "martinique"
@@ -1350,7 +1351,7 @@
         "slug": "american-samoa"
       },
       "ie": null,
-      "fr": "samoa-americaines",
+      "fr": null,
       "au": {
         "continent": "pacific",
         "slug": "american-samoa"
@@ -1374,7 +1375,7 @@
       "us": "pitcairn",
       "ca": null,
       "ie": null,
-      "fr": "pitcairn",
+      "fr": null,
       "au": {
         "continent": "pacific",
         "slug": "pitcairn"
@@ -1453,7 +1454,7 @@
       "us": "wallis-and-futuna",
       "ca": null,
       "ie": null,
-      "fr": "wallis-et-futuna",
+      "fr": null,
       "au": {
         "continent": "pacific",
         "slug": "wallis-and-futuna"
@@ -1480,7 +1481,7 @@
         "slug": "new-caledonia"
       },
       "ie": null,
-      "fr": "nouvelle-caledonie",
+      "fr": null,
       "au": {
         "continent": "pacific",
         "slug": "new-caledonia"
@@ -1562,7 +1563,7 @@
         "slug": "puerto-rico"
       },
       "ie": "puerto-rico",
-      "fr": "porto-rico",
+      "fr": null,
       "au": {
         "continent": "americas",
         "slug": "puerto-rico"
@@ -1645,7 +1646,7 @@
         "slug": "cayman-islands"
       },
       "ie": "cayman-islands",
-      "fr": "iles-caimans",
+      "fr": null,
       "au": {
         "continent": "americas",
         "slug": "cayman-islands"
@@ -1867,7 +1868,7 @@
         "slug": "bonaire"
       },
       "ie": null,
-      "fr": "saba",
+      "fr": null,
       "au": null,
       "es": "Sabá",
       "de": null,
@@ -1891,7 +1892,7 @@
         "slug": "bonaire"
       },
       "ie": null,
-      "fr": "saint-eustache",
+      "fr": null,
       "au": null,
       "es": "San Eustaquio",
       "de": null,
@@ -1911,7 +1912,7 @@
       "us": "svalbard-and-jan-mayen",
       "ca": null,
       "ie": null,
-      "fr": "svalbard-et-jan-mayen",
+      "fr": null,
       "au": {
         "continent": "europe",
         "slug": "svalbard-and-jan-mayen"
@@ -2274,7 +2275,7 @@
         "slug": "french-guiana"
       },
       "ie": "french-guiana",
-      "fr": "guyane-francaise",
+      "fr": null,
       "au": {
         "continent": "americas",
         "slug": "french-guiana"
@@ -2465,7 +2466,7 @@
       "us": "israel-the-west-bank-and-gaza",
       "ca": null,
       "ie": "palestine",
-      "fr": "palestine-etat-de",
+      "fr": "israel-palestine",
       "au": {
         "continent": "middle-east",
         "slug": "palestine-state-of"
@@ -2473,7 +2474,8 @@
       "es": "Palestina, Estado de",
       "de": "PSE",
       "nz": "palestine-state-of",
-      "dk": "palaestina"
+      "dk": "palaestina",
+      "at": "palaestina"
     }
   },
   "BIH": {
@@ -2577,7 +2579,7 @@
         "slug": "guinea-bissau"
       },
       "ie": "guinea-bissau",
-      "fr": "guinee-bissau",
+      "fr": "guinee-bissao",
       "au": {
         "continent": "africa",
         "slug": "guinea-bissau"
@@ -2633,7 +2635,7 @@
         "slug": "virgin-islands-u-s"
       },
       "ie": "virgin-islands-us",
-      "fr": "iles-vierges-etats-unis",
+      "fr": null,
       "au": {
         "continent": "americas",
         "slug": "virgin-islands-u-s"
@@ -2688,7 +2690,7 @@
         "slug": "macao"
       },
       "ie": "china-hong-kong-macao",
-      "fr": "macao",
+      "fr": null,
       "au": {
         "continent": "asia",
         "slug": "macao"
@@ -2715,7 +2717,7 @@
         "slug": "hong-kong"
       },
       "ie": "china-hong-kong-macao",
-      "fr": "hong-kong",
+      "fr": null,
       "au": {
         "continent": "asia",
         "slug": "hong-kong"
@@ -3158,7 +3160,7 @@
         "slug": "kyrgyzstan"
       },
       "ie": "kyrgyzstan",
-      "fr": "kirghizistan",
+      "fr": "kirghizstan",
       "au": {
         "continent": "asia",
         "slug": "kyrgyzstan"
@@ -3270,7 +3272,7 @@
         "slug": "moldova"
       },
       "ie": "moldova",
-      "fr": "moldavie-republique-de",
+      "fr": "moldavie",
       "au": {
         "continent": "europe",
         "slug": "moldova-republic-of"
@@ -3326,7 +3328,7 @@
         "slug": "tokelau"
       },
       "ie": null,
-      "fr": "tokelaou",
+      "fr": null,
       "au": {
         "continent": "pacific",
         "slug": "tokelau"
@@ -3717,7 +3719,7 @@
         "slug": "aruba"
       },
       "ie": null,
-      "fr": "aruba",
+      "fr": null,
       "au": {
         "continent": "americas",
         "slug": "aruba"
@@ -3744,7 +3746,7 @@
         "slug": "bonaire"
       },
       "ie": null,
-      "fr": "bonaire",
+      "fr": null,
       "au": null,
       "es": "Bonaire",
       "de": null,
@@ -3796,7 +3798,7 @@
         "slug": "curacao"
       },
       "ie": null,
-      "fr": "curacao",
+      "fr": null,
       "au": {
         "continent": "americas",
         "slug": "curacao"
@@ -3851,7 +3853,7 @@
         "slug": "suriname"
       },
       "ie": "suriname",
-      "fr": "surinam",
+      "fr": "suriname",
       "au": {
         "continent": "americas",
         "slug": "suriname"
@@ -3879,7 +3881,7 @@
         "slug": "togo"
       },
       "ie": "togo",
-      "fr": "aller",
+      "fr": "togo",
       "au": {
         "continent": "africa",
         "slug": "togo"
@@ -3907,7 +3909,7 @@
         "slug": "guadeloupe"
       },
       "ie": "guadeloupe",
-      "fr": "guadeloupe",
+      "fr": null,
       "au": {
         "continent": "americas",
         "slug": "guadeloupe"
@@ -3962,7 +3964,7 @@
         "slug": "french-polynesia"
       },
       "ie": null,
-      "fr": "polynesie-francaise",
+      "fr": null,
       "au": {
         "continent": "pacific",
         "slug": "french-polynesia"
@@ -4017,7 +4019,7 @@
         "slug": "saint-kitts-and-nevis"
       },
       "ie": "saint-kitts-and-nevis",
-      "fr": "saint-kitts-et-nevis",
+      "fr": "saint-christophe-et-nieves",
       "au": {
         "continent": "americas",
         "slug": "saint-kitts-and-nevis"
@@ -4381,7 +4383,7 @@
         "slug": "democratic-republic-of-congo-kinshasa"
       },
       "ie": "democratic-republic-of-congo",
-      "fr": "congo-republique-democratique-du",
+      "fr": "republique-democratique-du-congo",
       "au": {
         "continent": "africa",
         "slug": "congo-democratic-republic-of-the"
@@ -4409,7 +4411,7 @@
         "slug": "syria"
       },
       "ie": "syria",
-      "fr": "republique-arabe-syrienne",
+      "fr": "syrie",
       "au": {
         "continent": "middle-east",
         "slug": "syria"
@@ -4437,7 +4439,7 @@
         "slug": "timor-leste-east-timor"
       },
       "ie": "timor-leste",
-      "fr": "timor-leste",
+      "fr": "timor-oriental",
       "au": {
         "continent": "asia",
         "slug": "timor-leste"
@@ -4521,7 +4523,7 @@
         "slug": "laos"
       },
       "ie": "laos",
-      "fr": "republique-democratique-populaire-lao",
+      "fr": "laos",
       "au": {
         "continent": "asia",
         "slug": "laos"
@@ -4577,7 +4579,7 @@
         "slug": "turks-and-caicos-islands"
       },
       "ie": "turks-and-caicos-islands",
-      "fr": "iles-turques-et-caiques",
+      "fr": null,
       "au": {
         "continent": "americas",
         "slug": "turks-and-caicos-islands"
@@ -4744,7 +4746,7 @@
         "slug": "niue"
       },
       "ie": "niue",
-      "fr": "nioue",
+      "fr": "niue",
       "au": {
         "continent": "pacific",
         "slug": "niue"
@@ -4799,7 +4801,7 @@
         "slug": "micronesia-fsm"
       },
       "ie": "federated-states-of-micronesia",
-      "fr": "micronesie-etats-federes-de",
+      "fr": "etats-federes-de-micronesie",
       "au": {
         "continent": "pacific",
         "slug": "micronesia-federated-states-of"
@@ -4855,7 +4857,7 @@
         "slug": "fiji"
       },
       "ie": "fiji",
-      "fr": "fidji",
+      "fr": "iles-fidji",
       "au": {
         "continent": "pacific",
         "slug": "fiji"
@@ -4883,7 +4885,7 @@
         "slug": "palau"
       },
       "ie": "palau",
-      "fr": "palaos",
+      "fr": "republique-des-palaos",
       "au": {
         "continent": "pacific",
         "slug": "palau"
@@ -4994,7 +4996,7 @@
         "slug": "tanzania"
       },
       "ie": "tanzania",
-      "fr": "tanzanie-republique-unie-de",
+      "fr": "tanzanie",
       "au": {
         "continent": "africa",
         "slug": "tanzania-united-republic-of"
@@ -5271,7 +5273,7 @@
         "slug": "iran"
       },
       "ie": "iran",
-      "fr": "iran-republique-islamique-d",
+      "fr": "iran",
       "au": {
         "continent": "asia",
         "slug": "iran-islamic-republic-of"
@@ -5575,7 +5577,7 @@
       "us": "faroe-islands",
       "ca": null,
       "ie": "faroe-islands",
-      "fr": "iles-feroe",
+      "fr": null,
       "au": {
         "continent": "europe",
         "slug": "faroe-islands"
@@ -5710,7 +5712,7 @@
         "slug": "venezuela"
       },
       "ie": "venezuela",
-      "fr": "venezuela-republique-bolivarienne-du",
+      "fr": "venezuela",
       "au": {
         "continent": "americas",
         "slug": "venezuela-bolivarian-republic-of"
@@ -6026,7 +6028,8 @@
       "es": "Estados Unidos",
       "de": "USA",
       "nz": "united-states-of-america",
-      "dk": "usa"
+      "dk": "usa",
+      "at": "vereinigte-staaten"
     }
   },
   "THA": {
@@ -6102,7 +6105,7 @@
         "slug": "france"
       },
       "ie": "france",
-      "fr": "france",
+      "fr": null,
       "au": {
         "continent": "europe",
         "slug": "france"
@@ -6158,7 +6161,7 @@
         "slug": "brunei"
       },
       "ie": "brunei-darussalam",
-      "fr": "brunei-darussalam",
+      "fr": "brunei",
       "au": {
         "continent": "asia",
         "slug": "brunei"
@@ -6186,7 +6189,7 @@
         "slug": "bolivia"
       },
       "ie": "bolivia",
-      "fr": "bolivie-etat-plurinational-de",
+      "fr": "bolivie",
       "au": {
         "continent": "americas",
         "slug": "bolivia-plurinational-state-of"

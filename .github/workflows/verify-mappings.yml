@@ -38,6 +38,16 @@ jobs:
       - name: Koppelingen valideren tegen bron-indexen
         run: node scripts/verify-mappings.mjs
 
+      # Diepe controle voor de bronnen zonder index: die moeten per land
+      # bevraagd worden. Vanaf een ontwikkelmachine loopt dat stuk op
+      # snelheidslimieten (um.fi en exteriores.gob.es gaven 429 en 503 na een
+      # reeks verzoeken); vanaf een runner gaat het wel. Alleen handmatig,
+      # want het zijn ruim duizend verzoeken.
+      - name: Diepe controle per land (alleen handmatig)
+        if: github.event_name == 'workflow_dispatch'
+        run: node scripts/audit-mappings.mjs
+        continue-on-error: true
+
       - name: Rapport committen
         run: |
           git config user.name "github-actions[bot]"
