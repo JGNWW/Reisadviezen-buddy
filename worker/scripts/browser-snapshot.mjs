@@ -301,6 +301,45 @@ async function peilNoorseRss(page = null) {
   }
 }
 
+/**
+ * Eenmalige peiling van de Zwitserse paginastructuur.
+ *
+ * De EDA-pagina's komen binnen, maar er komt geen kleurcode uit: de tool leidt
+ * het landelijke niveau uitsluitend af uit de sectie "Grundsätzliche
+ * Einschätzung", en die lijkt er niet (meer) te staan. Zonder te weten welke
+ * koppen er wél zijn — en in welke sectie de beoordelingszin staat — is elke
+ * aanpassing giswerk.
+ *
+ * Let op wat we hier NIET doen: zomaar de "Aktuelles"-sectie lezen. Op de
+ * Jordanië-pagina staat een zin over Bahrein; wie die blind pakt, hangt
+ * Jordanië de kleurcode van Bahrein om. Daarom eerst kijken hoe het eruitziet.
+ */
+async function peilZwitserland(page) {
+  const proeven = [['JOR', 'jordanien/reisehinweise-fuerjordanien.html'], ['ARE', 'vereinigte-arabischeemirate/reisehinweise-vereinigtearabischeemirate.html']];
+  for (const [iso, mapping] of proeven) {
+    const url = SOURCES.ch.url(mapping);
+    try {
+      await page.setExtraHTTPHeaders({ 'Accept-Language': ACCEPT_LANG.ch });
+      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 });
+      await page.waitForTimeout(2500);
+      const d = await page.evaluate(() => {
+        const root = document.querySelector('main') || document.body;
+        const koppen = [...root.querySelectorAll('h1,h2,h3,h4')]
+          .map((h) => (h.innerText || '').replace(/\s+/g, ' ').trim()).filter(Boolean).slice(0, 14);
+        const tekst = (root.innerText || '').replace(/\s+/g, ' ');
+        // Waar staat de beoordelingszin, en wat staat eromheen?
+        const i = tekst.search(/wird abgeraten|als sicher gelten|aufmerksamkeit zu schenken/i);
+        return { url: location.href, koppen, lengte: tekst.length, rond: i >= 0 ? tekst.slice(Math.max(0, i - 180), i + 120) : '(formule niet gevonden)' };
+      });
+      console.log(`CH ${iso}: ${d.lengte} tekens · eind-URL ${d.url}`);
+      console.log(`  koppen: ${d.koppen.join(' | ')}`);
+      console.log(`  rond de formule: …${d.rond}…`);
+    } catch (e) {
+      console.log(`CH ${iso}: fout — ${String(e.message).slice(0, 80)}`);
+    }
+  }
+}
+
 async function main() {
   mkdirSync(LATEST_DIR, { recursive: true });
   const only = (process.env.COUNTRIES || '').split(',').map((s) => s.trim().toUpperCase()).filter(Boolean);
@@ -337,6 +376,7 @@ async function main() {
   console.log(`browserversie: ${browser.version()}`);
   const page = await ctx.newPage();
   await peilNoorseRss(page);
+  await peilZwitserland(page);
 
   const stats = { saved: 0, kept: 0, blocked: 0, nomapping: 0, geenadvies: 0, overgeslagen: 0 };
   const opRij = new Map(); // sid -> { reden, n }
