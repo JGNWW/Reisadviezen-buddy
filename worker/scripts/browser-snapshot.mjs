@@ -42,6 +42,10 @@ const SOURCES = {
     // mapping = { continent, slug }
     url: (m) => `https://www.smartraveller.gov.au/destinations/${m.continent}/${m.slug}`,
     readyText: /advice level|do not travel|exercise (a )?high degree|travel advice/i,
+    // Smartraveller laat een geweigerde verbinding lang openstaan; 45 seconden
+    // wachten per land is dan verspilling. Vijftien is genoeg om een pagina die
+    // wél komt binnen te halen.
+    gotoTimeout: 15000,
     // Een verkeerde slug geeft geen 404 maar een nette "niet gevonden"-pagina.
     // Dat apart benoemen maakt van deze nachtrun meteen een mapping-controle:
     // Australië en Zwitserland zijn met een kale fetch niet te controleren
@@ -147,11 +151,19 @@ const indexLeeg = new Set();
 // bronnen die het wél doen. Precies hierdoor liep de nachtrun in zijn timeout.
 const OPGEVEN_NA = 10;
 
+// Tijdbudget per bron. De rem hierboven telt mislúkkingen, maar een bron die
+// tergend langzaam sláágt glipt daar doorheen — en dat is precies wat de
+// nachtrun over zijn twee uur duwt. Smartraveller deed er in de proefrun ruim
+// een halfuur over acht landen over. Loopt een bron over dit budget heen, dan
+// gaat de rest van die bron deze run niet meer door en staat er een
+// waarschuwing bij; de andere bronnen houden zo hun tijd.
+const BUDGET_PER_BRON_MS = 20 * 60 * 1000;
+
 async function captureOne(page, sid, iso, mapping) {
   const cfg = SOURCES[sid];
   await page.setExtraHTTPHeaders({ 'Accept-Language': ACCEPT_LANG[sid] || 'en-US,en;q=0.9' });
   let url = cfg.url(mapping);
-  await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 });
+  await page.goto(url, { waitUntil: 'domcontentloaded', timeout: cfg.gotoTimeout || 45000 });
 
   // Zelfherstel bij URL-drift (EDA): landde de directe URL op de generieke
   // overzichtspagina, zoek dan op de index de link die dit land noemt en
@@ -190,7 +202,7 @@ async function captureOne(page, sid, iso, mapping) {
         }, slug);
         if (vondst.hit) {
           url = new URL(vondst.hit, cfg.indexUrl).href;
-          await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 });
+          await page.goto(url, { waitUntil: 'domcontentloaded', timeout: cfg.gotoTimeout || 45000 });
         } else {
           zelfherstel = `geen link voor "${slug}" · ${vondst.aantal} landlinks van ${vondst.totaal} links totaal · steekproef: ${(vondst.steekproef || []).join(' | ') || '(geen)'}`;
           // Staan er überhaupt geen landlinks, dan ligt het niet aan dít land
@@ -341,7 +353,7 @@ async function peilZwitserland(page) {
     const url = SOURCES.ch.url(mapping);
     try {
       await page.setExtraHTTPHeaders({ 'Accept-Language': ACCEPT_LANG.ch });
-      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 });
+      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: cfg.gotoTimeout || 45000 });
       await page.waitForTimeout(2500);
       const d = await page.evaluate(() => {
         const root = document.querySelector('main') || document.body;
@@ -400,6 +412,8 @@ async function main() {
   await peilZwitserland(page);
 
   const stats = { saved: 0, kept: 0, blocked: 0, nomapping: 0, geenadvies: 0, overgeslagen: 0, kapottemapping: 0 };
+  const bronStart = new Map(); // sid -> tijdstip van het eerste verzoek
+  const overtijd = new Set();
   const kapotteMappings = [];
   const opRij = new Map(); // sid -> { reden, n }
   const opgegeven = new Set();
@@ -416,7 +430,15 @@ async function main() {
       const mapping = rec.sources?.[sid];
       // Australië koppelt met { continent, slug }; de rest met een string.
       if (!mapping || (sid === 'au' && !(mapping.continent && mapping.slug))) { stats.nomapping++; continue; }
-      if (opgegeven.has(sid)) { stats.overgeslagen++; continue; }
+      if (opgegeven.has(sid) || overtijd.has(sid)) { stats.overgeslagen++; continue; }
+      if (!bronStart.has(sid)) bronStart.set(sid, Date.now());
+      if (Date.now() - bronStart.get(sid) > BUDGET_PER_BRON_MS) {
+        overtijd.add(sid);
+        stats.overgeslagen++;
+        console.log(`  ${sid}: tijdbudget van ${BUDGET_PER_BRON_MS / 60000} minuten op — rest van deze run overgeslagen`);
+        console.log(`::warning title=Bron ${sid} over tijd::Kostte meer dan ${BUDGET_PER_BRON_MS / 60000} minuten; de overige landen zijn deze run overgeslagen zodat de andere bronnen hun tijd houden`);
+        continue;
+      }
       try {
         const r = await captureOne(page, sid, iso, mapping);
         if (!r.ok) {
