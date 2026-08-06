@@ -160,6 +160,21 @@ async function controleer(sid) {
     }
     await wacht(Math.max(PAUZE, extraPauze.ms));
   }
+  // Faalt élke controle met dezelfde blokkade-status, dan is niet de mapping
+  // stuk maar de bron onbereikbaar. Dat onderscheid moet in het rapport staan:
+  // "220 kapot" voor Australië leest als 220 fouten om te repareren, terwijl
+  // er niets te repareren valt — Smartraveller weigert het IP gewoon.
+  const blokkades = new Set([401, 403, 429, 503, 0]);
+  const geblokkeerd = gecontroleerd > 5 && kapot.length === gecontroleerd
+    && kapot.every((k) => blokkades.has(k.status));
+  if (geblokkeerd) {
+    const status = kapot[0].status;
+    return {
+      naam: b.naam, gecontroleerd, kapot: [], onbereikbaar: true, status,
+      reden: `alle ${gecontroleerd} verzoeken kwamen terug met ${status} — de bron weigert dit IP, dus over de koppelingen zelf zegt deze run niets`,
+      ongekoppeldAantal: ongekoppeld.length, ongekoppeld,
+    };
+  }
   return { naam: b.naam, gecontroleerd, kapot, ongekoppeldAantal: ongekoppeld.length, ongekoppeld };
 }
 
@@ -171,7 +186,9 @@ async function main() {
     console.log(`\n=== ${sid} — ${BRONNEN[sid].naam} ===`);
     rapport.sources[sid] = await controleer(sid);
     const r = rapport.sources[sid];
-    console.log(`   ${r.gecontroleerd} gecontroleerd · ${r.kapot.length} kapot · ${r.ongekoppeldAantal} niet gekoppeld`);
+    console.log(r.onbereikbaar
+      ? `   ⚠️ onbereikbaar: ${r.reden}`
+      : `   ${r.gecontroleerd} gecontroleerd · ${r.kapot.length} kapot · ${r.ongekoppeldAantal} niet gekoppeld`);
     writeFileSync(OUT, JSON.stringify(rapport, null, 2)); // tussentijds bewaren
   }
   const totaal = Object.values(rapport.sources).reduce((n, r) => n + r.kapot.length, 0);
