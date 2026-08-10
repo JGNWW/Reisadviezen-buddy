@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-06T11:49:59.212Z",
+  "generatedAt": "2026-08-10T08:14:48.019Z",
   "sources": {
     "uk": {
       "checked": 219,
@@ -32,24 +32,7 @@
       ]
     },
     "ca": {
-      "checked": 220,
-      "broken": [],
-      "ontbrekend": [],
-      "ongebruiktAantal": 12,
-      "ongebruikt": [
-        "PT-20",
-        "BM",
-        "IC",
-        "FK",
-        "GI",
-        "GU",
-        "YT",
-        "NL",
-        "MP",
-        "BL",
-        "MF",
-        "PM"
-      ]
+      "error": "fetch failed"
     },
     "ie": {
       "checked": 210,
