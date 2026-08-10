@@ -101,6 +101,25 @@ export async function getViaReader(url, opts = {}) {
   if (waitFor) headers['X-Wait-For-Selector'] = waitFor;
   if (READER_KEY) headers.Authorization = `Bearer ${READER_KEY}`;
   const res = await fetch(`https://r.jina.ai/${url}`, { headers });
+
+  // Een key zónder saldo is slechter dan helemaal geen key: mét key antwoordt
+  // de reader 402 InsufficientBalance, zónder key krijg je gewoon de gratis
+  // anonieme laag. Precies dat overkwam Australië — 220 van de 220 ophalingen
+  // mislukten een week lang, terwijl dezelfde verzoeken zonder key hadden
+  // gewerkt. Bij een saldofout dus opnieuw proberen als anonieme bezoeker.
+  let herkansing = '';
+  if (res.status === 402 && headers.Authorization) {
+    const { Authorization, ...zonderKey } = headers;
+    const tweede = await fetch(`https://r.jina.ai/${url}`, { headers: zonderKey });
+    if (tweede.ok) return tweede.text();
+    // Lukt ook dat niet, dan blijft de saldofout de melding. De anonieme laag
+    // weigert niet elk IP even hartelijk — vanaf een IP met een slechte naam
+    // komt er 401 "bad IP reputation" terug — en dán zou de melding gaan over
+    // het IP terwijl er een leeg tegoed onder ligt. Die tweede uitkomst hoort
+    // er als aanvulling bij, niet in plaats van.
+    herkansing = ` · anonieme herkansing: ${tweede.status}`;
+  }
+
   if (!res.ok) {
     // De reden meesturen, niet alleen de code. Een 402 op de ene bron terwijl
     // een andere bron gewoon werkt, zegt zonder tekst niets — met tekst staat
@@ -108,7 +127,7 @@ export async function getViaReader(url, opts = {}) {
     // gaat, en dat scheelt een deploycyclus om erachter te komen.
     let reden = '';
     try { reden = (await res.text()).replace(/\s+/g, ' ').slice(0, 160); } catch { /* body niet leesbaar */ }
-    throw new Error(`reader ${res.status} ${url}${reden ? ` — ${reden}` : ''}`);
+    throw new Error(`reader ${res.status} ${url}${reden ? ` — ${reden}` : ''}${herkansing}`);
   }
   return res.text();
 }
