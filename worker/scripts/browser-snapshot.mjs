@@ -95,8 +95,24 @@ const SOURCES = {
     genericText: /allgemeine reiseinformationen|reisehinweise kurz erklärt|auswahl länder und territorien|suchergebnisse/i,
     // Zelfherstel: op de index de link vinden die het land noemt.
     indexUrl: 'https://www.eda.admin.ch/eda/de/home/laender-reise-information.html',
+    // Zoals bij Australië: eda.admin.ch is met een kale fetch niet te
+    // controleren (403, ook vanaf een runner), dus de mapping-controle moet
+    // hier gebeuren. Bewust eng geformuleerd — "nicht gefunden" alleen zou ook
+    // in een gewone adviestekst kunnen staan.
+    notFoundText: /seite nicht gefunden|fehler 404/i,
   },
 };
+
+// Volgorde waarin de bronnen aan bod komen. Australië staat bewust achteraan:
+// het is veruit de traagste, en het is hier een reserve in plaats van de enige
+// route — de adapter haalt Smartraveller normaal gewoon zelf op. Denemarken en
+// Zwitserland moeten het van déze capture hebben en gaan dus voor.
+// Deze lijst bepaalt wélke bronnen aan bod komen, dus een bron die hier
+// ontbreekt wordt stilzwijgend nooit opgehaald. Dat hoort meteen op te vallen.
+const VOLGORDE = ['dk', 'ch', 'no', 'au'];
+for (const sid of Object.keys(SOURCES)) {
+  if (!VOLGORDE.includes(sid)) throw new Error(`bron "${sid}" staat niet in VOLGORDE en zou nooit opgehaald worden`);
+}
 
 // Signalen dat we op een botcheck/lege pagina zitten — nooit opslaan.
 //
@@ -158,6 +174,36 @@ const OPGEVEN_NA = 10;
 // gaat de rest van die bron deze run niet meer door en staat er een
 // waarschuwing bij; de andere bronnen houden zo hun tijd.
 const BUDGET_PER_BRON_MS = 20 * 60 * 1000;
+
+// Harde noodrem om één landcapture heen.
+//
+// Elke navigatie en elke waitFor hieronder heeft zijn eigen tijdslimiet, maar
+// page.evaluate() kent er geen: blijft de renderer hangen, dan wacht dit script
+// eeuwig. Dat is precies wat er nachtenlang gebeurde — na één land viel het
+// logboek twee uur stil, waarna de job-timeout de hele run afkapte inclusief de
+// bronnen die nog aan de beurt moesten. De rem hierboven en het tijdbudget
+// helpen daar niets tegen: die worden pas tússen twee landen gelezen, en zover
+// kwam het nooit. Alles bij elkaar duurt een geslaagde capture hooguit een
+// halve minuut; anderhalve minuut is dus ruim, en wie erover gaat hangt.
+const WACHTHOND_MS = 90 * 1000;
+const VASTGELOPEN = /^vastgelopen na /;
+
+function metWachthond(taak, ms, wat) {
+  let t;
+  return Promise.race([
+    taak,
+    new Promise((_, af) => { t = setTimeout(() => af(new Error(`vastgelopen na ${ms / 1000}s (${wat})`)), ms); }),
+  ]).finally(() => clearTimeout(t));
+}
+
+// Een pagina die is vastgelopen blijft vastlopen; alleen een verse helpt. Het
+// sluiten breekt meteen de vastgelopen aanroep af die nog openstaat.
+async function verversPagina(ctx, oud) {
+  await oud.close().catch(() => {});
+  const nieuw = await ctx.newPage();
+  nieuw.setDefaultTimeout(30000);
+  return nieuw;
+}
 
 async function captureOne(page, sid, iso, mapping) {
   const cfg = SOURCES[sid];
@@ -279,100 +325,6 @@ async function captureOne(page, sid, iso, mapping) {
   };
 }
 
-/**
- * Eenmalige peiling: is de Noorse reisadvies-RSS vanaf déze machine te halen?
- *
- * regjeringen.no blokkeert datacenter-IP's op de adviespagina's zelf, maar het
- * blijkt pad-uitzonderingen te hebben: /no/rss/Rss/ komt wél langs de
- * Cloudflare-check (al geeft dat endpoint een lege feed terug). De echte
- * reisadvies-feed staat op /no/aktuelt/rss/ en is vanaf een Anthropic-IP 403,
- * ook als je je netjes als feedlezer meldt. Een GitHub-runner is een ander IP
- * en dat pad is daar nog nooit geprobeerd.
- *
- * Levert het items op, dan hebben we zonder één adviespagina te openen wél in
- * beeld welk land wanneer is bijgewerkt — precies wat Recente wijzigingen nodig
- * heeft. Faalt het, dan weten we dat ook, en kost het één regel logboek.
- */
-async function peilNoorseRss(page = null) {
-  const feeds = [
-    ['aktuelt (gefilterd)', 'https://www.regjeringen.no/no/aktuelt/rss/id2581966/?documenttype=reiseinformasjon&ownerid=833&term='],
-    ['aktuelt (ongefilterd)', 'https://www.regjeringen.no/no/aktuelt/rss/id2581966/'],
-    ['gewhitelist pad', 'https://www.regjeringen.no/no/rss/Rss/id2581966/?documenttype=reiseinformasjon&ownerid=833&term='],
-  ];
-  for (const [naam, url] of feeds) {
-    try {
-      const res = await fetch(url, {
-        headers: {
-          'User-Agent': 'ReisadviezenBuddy/1.0 (+https://github.com/JGNWW/Reisadviezen-buddy)',
-          Accept: 'application/rss+xml, application/xml;q=0.9',
-        },
-      });
-      const tekst = await res.text();
-      const items = (tekst.match(/<item>/g) || []).length;
-      const eerste = (tekst.match(/<item>[\s\S]*?<title>([^<]*)<\/title>/) || [])[1] || '';
-      const datum = (tekst.match(/<item>[\s\S]*?<pubDate>([^<]*)<\/pubDate>/) || [])[1] || '';
-      console.log(`RSS ${naam}: ${res.status} · ${tekst.length} bytes · ${items} items${eerste ? ` · eerste: "${eerste.slice(0, 60)}" (${datum})` : ''}`);
-    } catch (e) {
-      console.log(`RSS ${naam}: fout — ${String(e.message).slice(0, 60)}`);
-    }
-  }
-  // Laatste variant: de feed niet met een kaal verzoek maar mét de browser
-  // ophalen. Alle kale verzoeken krijgen de challenge — ook via Feedly,
-  // rss2json, allorigins en de jina-reader, want die draaien zelf ook in een
-  // datacenter. Een browser voert de challenge tenminste uit. Voor de
-  // adviespagina's hielp dat niet; dit is één URL, dus het kost bijna niets om
-  // vast te stellen of de feed zich anders gedraagt.
-  if (!page) return;
-  try {
-    await page.goto(feeds[0][1], { waitUntil: 'domcontentloaded', timeout: 45000 });
-    await page.waitForTimeout(6000);
-    const tekst = await page.evaluate(() => document.documentElement.innerText || '').catch(() => '');
-    const items = (tekst.match(/reiseinformasjon/gi) || []).length;
-    console.log(`RSS via browser: ${tekst.length} tekens · ${items}× "reiseinformasjon" · begin: ${tekst.slice(0, 90).replace(/\s+/g, ' ')}`);
-  } catch (e) {
-    console.log(`RSS via browser: fout — ${String(e.message).slice(0, 70)}`);
-  }
-}
-
-/**
- * Eenmalige peiling van de Zwitserse paginastructuur.
- *
- * De EDA-pagina's komen binnen, maar er komt geen kleurcode uit: de tool leidt
- * het landelijke niveau uitsluitend af uit de sectie "Grundsätzliche
- * Einschätzung", en die lijkt er niet (meer) te staan. Zonder te weten welke
- * koppen er wél zijn — en in welke sectie de beoordelingszin staat — is elke
- * aanpassing giswerk.
- *
- * Let op wat we hier NIET doen: zomaar de "Aktuelles"-sectie lezen. Op de
- * Jordanië-pagina staat een zin over Bahrein; wie die blind pakt, hangt
- * Jordanië de kleurcode van Bahrein om. Daarom eerst kijken hoe het eruitziet.
- */
-async function peilZwitserland(page) {
-  const proeven = [['JOR', 'jordanien/reisehinweise-fuerjordanien.html'], ['ARE', 'vereinigte-arabischeemirate/reisehinweise-vereinigtearabischeemirate.html']];
-  for (const [iso, mapping] of proeven) {
-    const url = SOURCES.ch.url(mapping);
-    try {
-      await page.setExtraHTTPHeaders({ 'Accept-Language': ACCEPT_LANG.ch });
-      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: cfg.gotoTimeout || 45000 });
-      await page.waitForTimeout(2500);
-      const d = await page.evaluate(() => {
-        const root = document.querySelector('main') || document.body;
-        const koppen = [...root.querySelectorAll('h1,h2,h3,h4')]
-          .map((h) => (h.innerText || '').replace(/\s+/g, ' ').trim()).filter(Boolean).slice(0, 14);
-        const tekst = (root.innerText || '').replace(/\s+/g, ' ');
-        // Waar staat de beoordelingszin, en wat staat eromheen?
-        const i = tekst.search(/wird abgeraten|als sicher gelten|aufmerksamkeit zu schenken/i);
-        return { url: location.href, koppen, lengte: tekst.length, rond: i >= 0 ? tekst.slice(Math.max(0, i - 180), i + 120) : '(formule niet gevonden)' };
-      });
-      console.log(`CH ${iso}: ${d.lengte} tekens · eind-URL ${d.url}`);
-      console.log(`  koppen: ${d.koppen.join(' | ')}`);
-      console.log(`  rond de formule: …${d.rond}…`);
-    } catch (e) {
-      console.log(`CH ${iso}: fout — ${String(e.message).slice(0, 80)}`);
-    }
-  }
-}
-
 async function main() {
   mkdirSync(LATEST_DIR, { recursive: true });
   const only = (process.env.COUNTRIES || '').split(',').map((s) => s.trim().toUpperCase()).filter(Boolean);
@@ -407,12 +359,16 @@ async function main() {
     viewport: { width: 1280, height: 900 },
   });
   console.log(`browserversie: ${browser.version()}`);
-  const page = await ctx.newPage();
-  await peilNoorseRss(page);
-  await peilZwitserland(page);
+  let page = await ctx.newPage();
+  page.setDefaultTimeout(30000);
 
   const stats = { saved: 0, kept: 0, blocked: 0, nomapping: 0, geenadvies: 0, overgeslagen: 0, kapottemapping: 0 };
-  const bronStart = new Map(); // sid -> tijdstip van het eerste verzoek
+  // Tijd die daadwerkelijk áán een bron is besteed. Eerder stond hier het
+  // tijdstip van het eerste verzoek en werd de klok sindsdien afgelezen — maar
+  // de bronnen komen om beurten aan bod, dus die klok liep voor alle vier
+  // tegelijk door. Twintig minuten na de start was dan niet één bron over zijn
+  // budget maar allemaal, ongeacht wie de tijd had opgesoupeerd.
+  const bronTijd = new Map(); // sid -> ms
   const overtijd = new Set();
   const kapotteMappings = [];
   const opRij = new Map(); // sid -> { reden, n }
@@ -426,65 +382,76 @@ async function main() {
     const latest = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : { iso3: iso, fetchedAt: {}, sources: {} };
     let changed = false;
 
-    for (const sid of Object.keys(SOURCES)) {
+    for (const sid of VOLGORDE) {
       const mapping = rec.sources?.[sid];
       // Australië koppelt met { continent, slug }; de rest met een string.
       if (!mapping || (sid === 'au' && !(mapping.continent && mapping.slug))) { stats.nomapping++; continue; }
       if (opgegeven.has(sid) || overtijd.has(sid)) { stats.overgeslagen++; continue; }
-      if (!bronStart.has(sid)) bronStart.set(sid, Date.now());
-      if (Date.now() - bronStart.get(sid) > BUDGET_PER_BRON_MS) {
+      if ((bronTijd.get(sid) || 0) > BUDGET_PER_BRON_MS) {
         overtijd.add(sid);
         stats.overgeslagen++;
         console.log(`  ${sid}: tijdbudget van ${BUDGET_PER_BRON_MS / 60000} minuten op — rest van deze run overgeslagen`);
         console.log(`::warning title=Bron ${sid} over tijd::Kostte meer dan ${BUDGET_PER_BRON_MS / 60000} minuten; de overige landen zijn deze run overgeslagen zodat de andere bronnen hun tijd houden`);
         continue;
       }
+      let r;
+      const begonnen = Date.now();
       try {
-        const r = await captureOne(page, sid, iso, mapping);
-        if (!r.ok) {
-          stats[r.reason === 'botcheck' ? 'blocked'
-            : r.reason.startsWith('bron publiceert') ? 'geenadvies'
-              : r.reason.startsWith('pagina bestaat niet') ? 'kapottemapping' : 'kept']++;
-          if (r.reason.startsWith('pagina bestaat niet')) kapotteMappings.push(`${sid}/${iso}`);
-          console.log(`  ${iso}/${sid}: overslaan (${r.reason}) — vorige snapshot blijft`);
-          const n = getoond.get(sid) || 0;
-          if (r.monster && n < 2) { getoond.set(sid, n + 1); console.log(`      wat er stond: ${r.monster}`); }
-          // Steeds dezelfde reden? Dan is het de bron, niet het land.
-          const rij = opRij.get(sid);
-          if (rij && rij.reden === r.reason) rij.n++;
-          else opRij.set(sid, { reden: r.reason, n: 1 });
-          const nu = opRij.get(sid);
-          if (nu.n >= OPGEVEN_NA && r.reason !== 'bron publiceert hier geen advies') {
-            opgegeven.add(sid);
-            console.log(`  ${sid}: ${nu.n}× achter elkaar "${r.reason}" — rest van deze run overgeslagen`);
-          }
-          continue;
-        }
-        // Verdedigingslinie: een capture zonder niveau mag een eerdere mét
-        // niveau nooit overschrijven (zelfde degraded-principe als snapshot-foreign).
-        const prev = latest.sources[sid];
-        if (prev && prev.level != null && r.adv.level == null) {
-          stats.kept++;
-          console.log(`  ${iso}/${sid}: nieuw=zonder niveau, oud=met — oude blijft`);
-          continue;
-        }
-        latest.sources[sid] = r.adv;
-        latest.fetchedAt[sid] = today;
-        changed = true;
-        stats.saved++;
-        opRij.delete(sid); // hij doet het weer
-        console.log(`  ${iso}/${sid}: ${r.adv.color || 'onzeker'}${r.adv.level ? ` (${r.adv.level})` : ''} · ${r.adv.themes.length} secties`);
+        r = await metWachthond(captureOne(page, sid, iso, mapping), WACHTHOND_MS, `${iso}/${sid}`);
       } catch (e) {
-        stats.kept++;
-        console.log(`  ${iso}/${sid}: fout (${String(e.message).slice(0, 60)}) — vorige blijft`);
+        r = { ok: false, reason: `fout: ${String(e.message).slice(0, 60)}`, vastgelopen: VASTGELOPEN.test(e.message) };
       }
-      await page.waitForTimeout(1200); // hoffelijk naar de bronsites
+      bronTijd.set(sid, (bronTijd.get(sid) || 0) + (Date.now() - begonnen));
+      // Een vastgelopen pagina blijft vastlopen; verder werken kan alleen met
+      // een verse.
+      if (r.vastgelopen) page = await verversPagina(ctx, page);
+
+      if (!r.ok) {
+        stats[r.reason === 'botcheck' ? 'blocked'
+          : r.reason.startsWith('bron publiceert') ? 'geenadvies'
+            : r.reason.startsWith('pagina bestaat niet') ? 'kapottemapping' : 'kept']++;
+        if (r.reason.startsWith('pagina bestaat niet')) kapotteMappings.push(`${sid}/${iso}`);
+        console.log(`  ${iso}/${sid}: overslaan (${r.reason}) — vorige snapshot blijft`);
+        const n = getoond.get(sid) || 0;
+        if (r.monster && n < 2) { getoond.set(sid, n + 1); console.log(`      wat er stond: ${r.monster}`); }
+        // Steeds dezelfde reden? Dan is het de bron, niet het land. Foutmeldingen
+        // verschillen per land in hun details, dus die tellen op hun soort — anders
+        // liep de teller nooit vol en bleef een bron die overal vastloopt de hele
+        // run doorploeteren.
+        const soort = r.reason.startsWith('fout:') ? 'fout' : r.reason;
+        const rij = opRij.get(sid);
+        if (rij && rij.reden === soort) rij.n++;
+        else opRij.set(sid, { reden: soort, n: 1 });
+        const nu = opRij.get(sid);
+        if (nu.n >= OPGEVEN_NA && soort !== 'bron publiceert hier geen advies') {
+          opgegeven.add(sid);
+          console.log(`  ${sid}: ${nu.n}× achter elkaar "${soort}" — rest van deze run overgeslagen`);
+        }
+        continue;
+      }
+      // Verdedigingslinie: een capture zonder niveau mag een eerdere mét
+      // niveau nooit overschrijven (zelfde degraded-principe als snapshot-foreign).
+      const prev = latest.sources[sid];
+      if (prev && prev.level != null && r.adv.level == null) {
+        stats.kept++;
+        console.log(`  ${iso}/${sid}: nieuw=zonder niveau, oud=met — oude blijft`);
+        continue;
+      }
+      latest.sources[sid] = r.adv;
+      latest.fetchedAt[sid] = today;
+      changed = true;
+      stats.saved++;
+      opRij.delete(sid); // hij doet het weer
+      console.log(`  ${iso}/${sid}: ${r.adv.color || 'onzeker'}${r.adv.level ? ` (${r.adv.level})` : ''} · ${r.adv.themes.length} secties`);
+      await page.waitForTimeout(1200).catch(() => {}); // hoffelijk naar de bronsites
     }
     if (changed) writeFileSync(file, JSON.stringify(latest));
   }
 
   await browser.close();
-  console.log(`\nBrowser-snapshot klaar: ${stats.saved} opgeslagen, ${stats.kept} behouden/gefaald, ${stats.blocked} botcheck, ${stats.geenadvies} bron heeft hier geen advies, ${stats.nomapping} zonder mapping, ${stats.kapottemapping} kapotte mapping, ${stats.overgeslagen} overgeslagen na opgeven.`);
+  console.log(`\nBrowser-snapshot klaar: ${stats.saved} opgeslagen, ${stats.kept} behouden/gefaald, ${stats.blocked} botcheck, ${stats.geenadvies} bron heeft hier geen advies, ${stats.nomapping} zonder mapping, ${stats.kapottemapping} kapotte mapping, ${stats.overgeslagen} overgeslagen (opgegeven of over tijd).`);
+  const besteed = [...bronTijd.entries()].map(([s, ms]) => `${s} ${Math.round(ms / 60000)}m`).join(' · ');
+  if (besteed) console.log(`Tijd per bron: ${besteed}`);
   if (kapotteMappings.length) {
     console.log(`\nMAPPINGS die niet bestaan (${kapotteMappings.length}): ${kapotteMappings.join(' ')}`);
     console.log(`::warning title=Kapotte mappings::${kapotteMappings.length} land-bronkoppeling(en) wijzen naar een pagina die niet bestaat: ${kapotteMappings.slice(0, 30).join(' ')}`);
