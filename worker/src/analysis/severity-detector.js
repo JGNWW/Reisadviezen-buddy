@@ -40,8 +40,13 @@ const PATTERNS = {
     P(/no (specific )?travel advisory/i, 1),
   ],
   fr: [
-    P(/formellement d[ée]conseill[ée]/i, 4),
-    P(/d[ée]conseill[ée] sauf raison imp[ée]rative/i, 3),
+    // Frankrijk verbuigt het deelwoord met het zelfstandig naamwoord: in de
+    // kop staat "Zones déconseillées sauf raison impérative", in lopende tekst
+    // "pays formellement déconseillé". Zonder ruimte voor die uitgang matchte
+    // de kop van de oranje zone niet, en viel die zone terug op de eerste
+    // formulering in de tekst eronder — die daar over een búúrland ging.
+    P(/formellement d[ée]conseill[ée]e?s?/i, 4),
+    P(/d[ée]conseill[ée]e?s? sauf raison imp[ée]rative/i, 3),
     P(/vigilance renforc[ée]e/i, 2),
     P(/vigilance normale/i, 1),
   ],

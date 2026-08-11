@@ -378,3 +378,61 @@ test('Duits: regionale Reisewarnung uit de tekst (grensgebied)', () => {
   assert.equal(a.regionalMaxLevel, 4);
   assert.ok(byKey(a, 'kambodscha'), keys(a).join('|'));
 });
+
+// ---- Gemeld geval: Saoedi-Arabië bij Frankrijk ------------------------------
+// De vergelijker liet voor Saoedi-Arabië alleen een rode regiostreep zien,
+// terwijl France Diplomatie er zowel een oranje als een rode zone heeft. De
+// oranje zone kreeg niveau 4 op grond van een zin die over Irák ging.
+
+test('Frankrijk: het niveau van een zonekop komt uit die kop, niet uit een buurland', () => {
+  const a = analyzeAdvisory({
+    lang: 'fr',
+    countryName: 'Arabie saoudite',
+    sections: [
+      // De echte pagina opent met dit kopje; het is bovendien de ankersectie,
+      // en het anker levert per definitie geen regionaam op. Zonder deze regel
+      // zou de rode zone het anker worden en helemaal geen vermelding geven.
+      { heading: 'Zones de vigilance', text: 'Dernière actualisation le 24/06/2026, information toujours valable à la date du jour.' },
+      {
+        heading: 'Zones formellement déconseillées (en rouge sur la carte sécuritaire)',
+        text: 'La zone frontalière d’une vingtaine de kilomètres de profondeur dans les provinces du Najran, d’Assir et du Djizan.',
+      },
+      {
+        heading: 'Zones déconseillées sauf raison impérative (en orange sur la carte sécuritaire)',
+        // De valstrik: "formellement déconseillé" slaat hier op Irak.
+        text: 'Les localités de Mouawiya et de Qatif. L’ensemble de la zone frontalière avec l’Irak. '
+          + 'Compte tenu de l’instabilité sécuritaire en Irak (pays formellement déconseillé), il est '
+          + 'recommandé de limiter les déplacements dans cette zone frontalière aux raisons impératives.',
+      },
+    ],
+  });
+  const niveaus = (a.regionalBreakdown || []).map((m) => m.level).sort();
+  assert.deepEqual(niveaus, [3, 4], `verwacht één oranje en één rode zone, kreeg ${JSON.stringify(niveaus)}`);
+  const oranje = (a.regionalBreakdown || []).find((m) => /orange/.test(m.region));
+  assert.equal(oranje.level, 3, 'de oranje zone hoort oranje te blijven');
+});
+
+test('de Franse formulering verbuigt mee met het zelfstandig naamwoord', () => {
+  // Enkelvoud in lopende tekst, meervoud in de kop.
+  assert.equal(findSeverity('pays formellement déconseillé', 'fr').level, 4);
+  assert.equal(findSeverity('Zones formellement déconseillées', 'fr').level, 4);
+  assert.equal(findSeverity('déconseillé sauf raison impérative', 'fr').level, 3);
+  assert.equal(findSeverity('Zones déconseillées sauf raison impérative', 'fr').level, 3);
+});
+
+test('een legendakopje is geen gebied', () => {
+  // Canada zet onderaan elke landpagina de vier trappen als kopjes neer. Die
+  // koppen bestaan uit niets anders dan de formulering zelf; zonder die
+  // controle kreeg élk land — tot Aruba en Andorra aan toe — een regionale 4.
+  const a = analyzeAdvisory({
+    lang: 'en',
+    countryName: 'Aruba',
+    sections: [
+      { heading: 'Aruba - Take normal security precautions', text: 'Take normal security precautions in Aruba.' },
+      { heading: 'Avoid all travel', text: 'Your safety and security are at great risk. If you are in the country, you should consider leaving.' },
+      { heading: 'Avoid non-essential travel', text: 'Your safety and security may be at risk.' },
+    ],
+  });
+  assert.ok(!a.regionalMaxLevel || a.regionalMaxLevel < 3,
+    `legenda mag geen regionale escalatie opleveren, kreeg ${a.regionalMaxLevel}`);
+});

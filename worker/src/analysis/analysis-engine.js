@@ -99,10 +99,33 @@ export function analyzeAdvisory({ sections = [], lang = 'en', structured = null,
   for (const { section, role, geo, structural, analyzed } of classified) {
     // a) Geografische kop + niveau-formulering in de sectie → regiokop-vermelding.
     if (geo) {
-      const sev = findSeverity(section.text, lang);
+      // Zegt de kop zélf welk niveau het is, dan telt die en niet de eerste
+      // formulering die verderop in de lopende tekst opduikt.
+      //
+      // Frankrijk zet de trap in de kop ("Zones déconseillées sauf raison
+      // impérative (en orange sur la carte)") en beschrijft in de tekst
+      // eronder waaróm een gebied erbij hoort. Bij Saoedi-Arabië staat daar
+      // over de Iraakse grensstreek: "Compte tenu de l'instabilité sécuritaire
+      // en Irak (pays formellement déconseillé)". Die zware formulering gaat
+      // over Irák, maar werd als het niveau van de Saoedische oranje zone
+      // gelezen — waardoor de oranje zone rood werd en de oranje kleur
+      // helemaal uit de uitsplitsing verdween.
+      // Wél alleen als de kop méér is dan de formulering zelf. Canada zet
+      // onderaan elke landpagina een legenda met de vier trappen als kopjes
+      // ("Avoid all travel"); dat is geen gebied maar een uitleg, en zonder
+      // deze controle kreeg élk land — Aruba, Andorra — een regionale 4.
+      const kopSevRuw = findSeverity(section.heading || '', lang);
+      const restLetters = kopSevRuw
+        ? String(section.heading).replace(kopSevRuw.phrase, ' ').replace(/[^\p{L}]+/gu, '')
+        : '';
+      const kopSev = restLetters.length >= 4 ? kopSevRuw : null;
+      const sev = kopSev || findSeverity(section.text, lang);
       // Vervoers-/tijdstip-advies is geen gebiedsadvies: "Do not travel ON
-      // overloaded buses / AT night" mag geen regiovermelding worden.
-      const modal = sev && /^\s*(on|at|during|after|alone|by|via)\b/i.test(section.text.slice(sev.index + sev.length));
+      // overloaded buses / AT night" mag geen regiovermelding worden. Dat
+      // speelt alleen in lopende tekst; een kop is nooit zo'n zin, en sev.index
+      // wijst dan bovendien in de kop in plaats van in de tekst.
+      const modal = !kopSev && sev
+        && /^\s*(on|at|during|after|alone|by|via)\b/i.test(section.text.slice(sev.index + sev.length));
       // Ruisbeheersing: een kop op de TitleCase-heuristiek alleen (zonder
       // expliciet geografisch scope-woord) telt uitsluitend bij zware
       // niveaus (3-4) — een los "exercise caution" in een sectie als
@@ -113,8 +136,12 @@ export function analyzeAdvisory({ sections = [], lang = 'en', structured = null,
           region: geo, normalizedRegion: geo, level: sev.level, color: LEVEL_COLOR[sev.level],
           confidence: 'high', assessmentStatus: 'ok', sourceHeading: section.heading,
           matchedPhrase: sev.phrase.trim(),
-          excerpt: section.text.slice(Math.max(0, sev.index - 100), sev.index + sev.length + 100).trim(),
-          extractionMethod: 'heading_plus_section_level',
+          // Bij een niveau uit de kop wijst sev.index in de kop; dan is het
+          // begin van de sectietekst het bruikbare fragment.
+          excerpt: kopSev
+            ? section.text.slice(0, 200).trim()
+            : section.text.slice(Math.max(0, sev.index - 100), sev.index + sev.length + 100).trim(),
+          extractionMethod: kopSev ? 'heading_level' : 'heading_plus_section_level',
         });
       }
     }
