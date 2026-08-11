@@ -428,7 +428,18 @@ export function interpretStructured(structured) {
     // met ruimte voor een omschrijving tussen "以外の" en "地域".
     // Naast "上記以外の…" bestaat ook de vorm met 除く ("met uitzondering van
     // bovenstaande"), die Oezbekistan gebruikt: "上記を除く地域".
-    const JA_RESTGEBIED = /(?:その他|それ以外|上記以外)の[^、。]{0,25}?地域|上記[^、。]{0,12}?除く[^、。]{0,12}?地域/;
+    // De 除く-vorm hoeft niet met 上記 te beginnen: Rusland schrijft
+    // "ウクライナとの国境周辺地域を除く地域（モスクワ市を含む）" — alle gebieden
+    // behálve de Oekraïense grensstreek, Moskou inbegrepen. Dat is net zo goed
+    // de landelijke ondergrens, en zonder deze vorm bleef Rusland groen terwijl
+    // MOFA voor de rest van het land afraadt te reizen.
+    // De 除く-vorm moet het hele gebiedslabel beslaan, dus op het eind ankeren.
+    // Rusland schrijft "ウクライナとの国境周辺地域を除く地域（モスクワ市を含む）" —
+    // alles behálve de Oekraïense grensstreek, Moskou inbegrepen: de landelijke
+    // ondergrens. Zonder anker matcht het ook een uitzondering binnen één
+    // provincie ("ティジ・ウズ県（山間部を除く地域…）" — Tizi Ouzou zonder het
+    // bergland), en dan wordt een deelgebied als landelijk niveau gelezen.
+    const JA_RESTGEBIED = /(?:その他|それ以外|上記以外)の[^、。]{0,25}?地域|を除く[^、。]{0,10}?地域(?:（[^）]*）)?\s*$/;
     const toNum = (d) => '１２３４'.includes(d) ? '１２３４'.indexOf(d) + 1 : Number(d);
     // MOFA's rangnummer is NIET onze schaal. Hun laagste trap is al een
     // waarschuwing — レベル1 「十分注意」 betekent "wees goed op uw hoede", niet

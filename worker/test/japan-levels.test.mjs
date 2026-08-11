@@ -145,3 +145,23 @@ test('de badge tilt het landelijke niveau niet op zodra er gebieden staan', () =
   assert.equal(r.level, 1, 'alleen regionaal → landelijk blijft groen');
   assert.equal(r.regionalMaxLevel, 4);
 });
+
+test('Rusland: "…を除く地域" is de landelijke ondergrens', () => {
+  // MOFA schrijft het restgebied hier niet als 上記以外 maar als "alle gebieden
+  // behalve de Oekraïense grensstreek (Moskou inbegrepen)".
+  const r = jp('【危険レベル】 ●ウクライナとの国境周辺地域 レベル4：退避してください。（退避勧告）（継続）'
+    + ' ●ウクライナとの国境周辺地域を除く地域（モスクワ市を含む） レベル3：渡航は止めてください。（渡航中止勧告）');
+  assert.equal(r.level, 4, 'レベル3 landelijk → onze rood');
+  assert.equal(r.regionalMaxLevel, 4);
+});
+
+test('een uitzondering bínnen één provincie is niet het restgebied', () => {
+  // Algerije: "ティジ・ウズ県（山間部を除く地域（県都を含む））" is de provincie
+  // Tizi Ouzou zónder het bergland — een deelgebied. Zou dat als landelijke
+  // ondergrens tellen, dan kreeg het land het niveau van die provincie.
+  const r = jp('【危険レベル】 ●リビアとの国境地帯 レベル４：退避してください。（継続）'
+    + ' ●ティジ・ウズ県（山間部を除く地域（県都ティジ・ウズ市を含む））、アイン・デフラ県 レベル２：不要不急の渡航は止めてください。'
+    + ' ●上記以外の地域 レベル１：十分注意してください。（継続）');
+  assert.equal(r.level, 2, 'het échte restgebied (上記以外) geeft レベル1 → geel');
+  assert.equal(r.regionalMaxLevel, 4);
+});

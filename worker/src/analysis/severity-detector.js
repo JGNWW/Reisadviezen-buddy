@@ -55,6 +55,12 @@ const PATTERNS = {
     // "se desaconseja viajar a X" (zonder 'salvo'-uitzondering) = niet reizen.
     P(/se desaconseja(n)? (viajar|el viaje|todo (el )?viaje)\b(?![^.]*salvo)/i, 4),
     P(/se recomienda (valorar )?no viajar\b(?!.*salvo)/i, 4),
+    // "Se desaconseja viajar al país SALVO CASO DE NECESIDAD" — dezelfde
+    // strekking als "all but essential travel", dus niveau 3. De 4-patronen
+    // hierboven sluiten "salvo" bewust uit, maar er stond niets tegenover:
+    // Libië opent zijn adviespagina met precies deze zin en kwam daardoor
+    // zónder niveau uit de ankersectie, en dus landelijk op groen.
+    P(/se desaconseja(n)? (?:viajar|el viaje|los viajes?|todo (?:el )?viaje)[^.]{0,60}?salvo[^.]{0,40}?(?:necesidad|imprescindible|ineludible|fuerza mayor|imperativ)/i, 3),
     P(/evitar (todo|cualquier) desplazamiento/i, 4),
     P(/no viajar salvo|salvo (por )?razones (ineludibles|de fuerza mayor)/i, 3),
     // "aplazar/posponer el viaje … salvo que sea necesario/imprescindible" of

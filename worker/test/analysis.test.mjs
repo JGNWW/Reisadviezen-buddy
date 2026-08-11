@@ -436,3 +436,21 @@ test('een legendakopje is geen gebied', () => {
   assert.ok(!a.regionalMaxLevel || a.regionalMaxLevel < 3,
     `legenda mag geen regionale escalatie opleveren, kreeg ${a.regionalMaxLevel}`);
 });
+
+test('Spanje: "salvo caso de necesidad" is een landelijk oordeel, geen uitzondering', () => {
+  // Libië opent zijn adviespagina met deze zin, in kapitalen. Er was wél een
+  // patroon voor "se desaconseja viajar" (niveau 4, mét uitsluiting van
+  // "salvo") maar niets voor de mildere vorm mét die uitzondering — de zin
+  // leverde dus géén niveau op, en het land bleef landelijk groen.
+  const s = findSeverity('SE DESACONSEJA VIAJAR AL PAÍS SALVO CASO DE NECESIDAD', 'es');
+  assert.equal(s.level, 3);
+  const k = classifySentence(
+    'A LA VISTA DE LOS PROBLEMAS DE SEGURIDAD EN LIBIA, SE DESACONSEJA VIAJAR AL PAÍS SALVO CASO DE NECESIDAD.',
+    'es', { countryName: 'Libia' },
+  );
+  assert.equal(k.kind, 'national-recommendation');
+});
+
+test('Spanje: zonder uitzondering blijft het niveau 4', () => {
+  assert.equal(findSeverity('Se desaconseja viajar a Libia', 'es').level, 4);
+});
