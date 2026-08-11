@@ -903,10 +903,13 @@ h2 .flag-img { width: 30px; height: 22px; vertical-align: -3px; border-radius: 3
 .exp-matrix.compact th:first-child, .exp-matrix.compact td:first-child { text-align: left; }
 .exp-matrix.compact th.wide { min-width: 150px; }
 .exp-matrix.compact td.exp-diff { text-align: left; }
-.exp-ccbox { font-weight: 700; text-align: center; vertical-align: top; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-/* Regiostreepje in de PDF-matrix — smaller dan op het scherm, want die tabel
-   staat al krap op één vel. */
-.exp-regiobalk { display: flex; gap: 1px; height: 4px; margin-top: 2px; }
+.exp-ccbox { font-weight: 700; text-align: center; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+/* Zelfde keuze als op het scherm: alleen cellen mét een streepje lijnen
+   onderaan uit, zodat "—", "?" en "·" in het midden blijven staan. */
+.exp-ccbox:has(.exp-regiobalk) { vertical-align: bottom; }
+/* Laag en ingesprongen, net als op het scherm — maar krapper, want deze tabel
+   staat al op één vel geperst. */
+.exp-regiobalk { display: flex; gap: 1px; height: 3px; margin: 0 3px; }
 .exp-regiobalk i { flex: 1 1 auto; display: block; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 .exp-matrix th.exp-dist, .exp-matrix td.exp-dist { padding: 2px 4px; white-space: nowrap; }
 .exp-dcell {
@@ -939,13 +942,15 @@ h2 .flag-img { width: 30px; height: 22px; vertical-align: -3px; border-radius: 3
    meer, dus hangt het driehoekje nu gewoon in het midden van het vakje. */
 .overview-matrix .ov-reg { font-size: 11px; vertical-align: baseline; margin: 0; }
 
-/* Regionale kleurcodes: een streepje in het vakje met de kleuren die alleen in
-   delen van het land gelden, zwaarste links. Verzadigde kleuren en niet de
-   celtinten: het streepje moet zich juist van de celachtergrond onderscheiden. */
 /* De cel draagt het niveau in kleur, niet in een cijfer — een cijfer náást de
    kleur leest als een tweede maat. Een minimumbreedte houdt de kolommen op
    maat nu er geen tekst meer in staat. */
 .overview-matrix td.ov-cc { min-width: 32px; }
+
+/* Alleen cellen mét een streepje lijnen onderaan uit. Zou dit op álle cellen
+   staan, dan zakten "—", "?" en "·" mee naar beneden terwijl die gewoon in het
+   midden horen. */
+.overview-matrix td.ov-cc:has(.ov-regiobalk) { vertical-align: bottom; }
 
 /* Wel leesbaar, niet zichtbaar: kleur is geen tekst, dus voor schermlezers en
    voor wie de tabel kopieert staat de kleurcode er in woorden bij. */
@@ -953,8 +958,16 @@ h2 .flag-img { width: 30px; height: 22px; vertical-align: -3px; border-radius: 3
   position: absolute; width: 1px; height: 1px; overflow: hidden;
   clip-path: inset(50%); white-space: nowrap;
 }
-/* Staat gecentreerd in het vakje: er is geen cijfer meer om onder te hangen. */
-.ov-regiobalk { display: flex; gap: 1px; height: 6px; }
+/* Regionale kleurcodes: een streepje onderin het vakje met de kleuren die
+   alleen in delen van het land gelden, zwaarste links. Verzadigde kleuren en
+   niet de celtinten, want het streepje moet zich juist van de celachtergrond
+   onderscheiden.
+   Laag én ingesprongen: midden in de cel ging het met de celkleur concurreren
+   terwijl het een aanvulling daarop is. De marge links en rechts houdt het
+   binnen zijn eigen vakje — zonder die marge lopen de streepjes van naast
+   elkaar liggende bronnen in elkaar over tot één band onder de rij, en dan is
+   niet meer te zien bij welke bron er een staat. */
+.ov-regiobalk { display: flex; gap: 1px; height: 4px; margin: 0 4px; }
 .ov-regiobalk i { flex: 1 1 auto; display: block; border: 1px solid rgba(0, 0, 0, .22); }
 .overview-matrix th.ov-dist, .overview-matrix td.ov-dist { padding: 3px 6px; }
 
