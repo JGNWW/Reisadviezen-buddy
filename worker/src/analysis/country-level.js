@@ -259,7 +259,13 @@ export function interpretStructured(structured) {
       });
     }
     // Alleen een "(regional)"-stufe zonder landelijke ondergrens → landelijk 1.
-    const onlyRegional = all.every((x) => /\(\s*regional\s*\)|gilt (in|für|entlang|im gebiet)|exklave|provinz|region|grenz/i.test(x.ctx));
+    // De context komt uit ruwe HTML, dus tussen "gilt" en het voorzetsel kunnen
+    // entiteiten en tags staan: Tsjaad heeft "gilt&nbsp;<strong>in der
+    // Hauptstadt N'Djamena". Met een harde spatie daar viel die vermelding
+    // buiten de regionaal-toets, werd de box niet als "alleen regionaal"
+    // gezien, en kreeg het land het zwaarste gebiedsniveau als landniveau —
+    // terwijl de badge er zelf "(regional)" bij zet.
+    const onlyRegional = all.every((x) => /\(\s*regional\s*\)|gilt(?:&nbsp;|\s|<[^>]*>)*(?:in|für|entlang|im gebiet)|exklave|provinz|region|grenz|hauptstadt/i.test(x.ctx));
     if (onlyRegional && /\(\s*regional\s*\)/i.test(text)) {
       return ok({
         level: 1, regionalMaxLevel: regionalMax, hasRegionalWarnings: true, confidence: 'medium',

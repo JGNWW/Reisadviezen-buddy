@@ -66,3 +66,17 @@ test('alleen een regionale stufe houdt het land landelijk groen', () => {
 test('zonder Sicherheitsstufe blijft het oordeel onzeker', () => {
   assert.equal(at('Stand 11.08.2026. Keine Angaben.').assessmentStatus, 'uncertain');
 });
+
+test('Tsjaad: "gilt in der Hauptstadt" telt ook als gebiedsvermelding', () => {
+  // De context komt uit ruwe HTML, dus tussen "gilt" en het voorzetsel staan
+  // entiteiten en tags. Met een harde spatie in het patroon viel deze
+  // vermelding buiten de regionaal-toets, werd de box niet als "alleen
+  // regionaal" gezien, en kreeg het land het zwaarste gebiedsniveau als
+  // landniveau — terwijl de badge er zelf "(regional)" bij zet.
+  const r = at('<a>Sicherheitsstufe&nbsp;4 (regional)</a> seit&nbsp;10.05.2024'
+    + ' <a>Sicherheitsstufe 4</a>&nbsp;(von 4) gilt für die Grenzregionen zu Libyen, Zentralafrika und dem Sudan.'
+    + ' <a>Sicherheitsstufe 3</a>&nbsp;(von 4) gilt&nbsp;<strong>in der Hauptstadt N’Djamena.</strong>');
+  assert.equal(r.level, 1, 'geen landelijke uitspraak → landelijk groen');
+  assert.equal(r.regionalMaxLevel, 4);
+  assert.equal(r.hasRegionalWarnings, true);
+});
