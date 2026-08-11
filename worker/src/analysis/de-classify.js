@@ -49,9 +49,24 @@ const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
  * knippen we per woord de uitgang af en laten we de rest vrij.
  */
 function landPattern(countryName) {
-  const woorden = norm(countryName).split(/[\s-]+/).filter((w) => w.length > 2);
-  if (!woorden.length) return null;
-  return woorden.map((w) => `${esc(w.replace(/(?:en|er|es|e|n|s)$/, ''))}\\w*`).join('[\\s-]+');
+  // De opendata-API zet er soms een gangbaardere naam tussen haakjes achter:
+  // "Demokratische Volksrepublik Korea (Nordkorea)". Beide vormen komen in de
+  // adviesteksten voor, en als één patroon met haakjes en al matcht geen van
+  // beide — Noord-Korea bleef daardoor groen terwijl er "Von Reisen in die
+  // Demokratische Volksrepublik Korea wird dringend abgeraten" stond.
+  const varianten = [];
+  const heel = norm(countryName);
+  const m = heel.match(/^(.*?)\s*\(([^)]+)\)\s*$/);
+  if (m) varianten.push(m[1], m[2]); else varianten.push(heel);
+
+  const alsPatroon = (naam) => {
+    const woorden = naam.split(/[\s-]+/).filter((w) => w.length > 2);
+    if (!woorden.length) return null;
+    return woorden.map((w) => `${esc(w.replace(/(?:en|er|es|e|n|s)$/, ''))}\\w*`).join('[\\s-]+');
+  };
+  const patronen = varianten.map(alsPatroon).filter(Boolean);
+  if (!patronen.length) return null;
+  return patronen.length === 1 ? patronen[0] : `(?:${patronen.join('|')})`;
 }
 
 // "wird [bijwoord]{0,2} abgeraten" — dringend/derzeit/weiterhin/daher/…
@@ -64,7 +79,14 @@ const HEEL_LAND = String.raw`(?:diese[ns]? land|das (?:gesamte |ganze )?land|das
 // definitie het deel van het land dat niet apart genoemd is. Achter
 // "Landesteile" volgt vaak de landnaam in de genitief ("Landesteile
 // Jordaniens"), dus daar is ruimte voor.
-const REST_LAND = String.raw`(?:die )?(?:anderen?|übrigen?|weiteren?) landesteile(?: \w+)?`;
+// Het AA wisselt daarbij van zelfstandig naamwoord: naast "Landesteile" staat
+// er net zo goed "alle übrigen Gebiete Äthiopiens". Zonder "Gebiete" bleef
+// Ethiopië landelijk groen terwijl de rest van het land wordt afgeraden.
+const REST_LAND = String.raw`(?:alle[nr]? |die )?(?:anderen?|übrigen?|weiteren?) (?:landesteile|gebiete)n?(?: \w+)?`;
+// Tussen het doel en "wird abgeraten" staat vaak nog een nevenschikking:
+// "Von Reisen in andere Landesteile Israels sowie nach Ost-Jerusalem wird
+// abgeraten." Zonder ruimte daarvoor viel juist de landelijke restformule weg.
+const NEVEN = String.raw`(?:\s*(?:,|sowie|und|so wie)[^.]{0,60}?)?`;
 
 /** Staat er "dringend"/"eindringlich" in de gevonden formule? */
 const isDringend = (zin) => /\b(dringend|eindringlich)\b/.test(zin);
@@ -92,19 +114,37 @@ export function classifyGermanNational(text, countryName = null) {
   const kandidaten = [
     // Volledige reizen, landelijk: kaal of met een landelijk doel.
     { re: new RegExp(String.raw`\bvon reisen ${WIRD}`), beperkt: false },
-    { re: new RegExp(String.raw`\bvon reisen ${doel} ${WIRD}`), beperkt: false },
+    { re: new RegExp(String.raw`\bvon reisen ${doel}${NEVEN} ${WIRD}`), beperkt: false },
     // Beperkte reizen (niet-noodzakelijk/toeristisch), landelijk.
     { re: new RegExp(String.raw`\bvon ${BEPERKT} reisen ${WIRD}`), beperkt: true },
-    { re: new RegExp(String.raw`\bvon ${BEPERKT} reisen ${doel} ${WIRD}`), beperkt: true },
+    { re: new RegExp(String.raw`\bvon ${BEPERKT} reisen ${doel}${NEVEN} ${WIRD}`), beperkt: true },
+    // De restformule verderop in de zin: "Von nicht notwendigen Reisen in die
+    // Regionen X und Y und in alle übrigen Gebiete Äthiopiens, mit Ausnahme
+    // der Hauptstadt Addis Abeba, wird abgeraten." Het landelijke deel staat
+    // achteraan, dus direct achter "Von Reisen" zoeken vindt het niet.
+    // 'auto': of het om beperkte reizen gaat, blijkt pas uit de gevonden zin.
+    { re: new RegExp(String.raw`\bvon (?:${BEPERKT} )?reisen[^.]{0,80}?\bin ${REST_LAND}[^.]{0,90}? ${WIRD}`), beperkt: 'auto' },
   ];
+
+  // Reiswaarschuwing voor het hele land, geformuleerd via de uitzonderingen:
+  // "Vor Reisen nach Burkina Faso - mit Ausnahme von Ouagadougou und
+  // Bobo-Dioulasso - wird gewarnt." De vlag uit de API noemt dat een
+  // Teilreisewarnung — technisch waar, twee steden vallen erbuiten — waardoor
+  // het land landelijk groen bleef terwijl er voor de rest van het grondgebied
+  // een reiswaarschuwing geldt. Een waarschuwing (gewarnt) is de zwaarste trap.
+  if (land && new RegExp(String.raw`\bvor reisen (?:in |nach )(?:den |die |das |der )?${land}[^.]{0,120}?wird (?:\w+ ){0,2}gewarnt`).test(t)) {
+    return 4;
+  }
 
   let hoogste = null;
   for (const { re, beperkt } of kandidaten) {
     const m = t.match(re);
     if (!m) continue;
     // Beperkte reizen blijven oranje; volledige reizen worden rood zodra het
-    // AA er "dringend" bij zet.
-    const niveau = !beperkt && isDringend(m[0]) ? 4 : 3;
+    // AA er "dringend" bij zet. Bij 'auto' staat de beperking ergens in de
+    // gevonden zin in plaats van in het patroon zelf.
+    const isBeperkt = beperkt === 'auto' ? new RegExp(BEPERKT).test(m[0]) : beperkt;
+    const niveau = !isBeperkt && isDringend(m[0]) ? 4 : 3;
     if (niveau > (hoogste ?? 0)) hoogste = niveau;
   }
   return hoogste;

@@ -98,3 +98,76 @@ test('beperkte reizen blijven oranje, ook mét "dringend"', () => {
   // lichtere maatregel dan "reis helemaal niet".
   assert.equal(classifyGermanNational('Von nicht notwendigen Reisen wird dringend abgeraten.'), 3);
 });
+
+// ---- Landen die landelijk groen bleven terwijl het AA anders zegt ----------
+// Gevonden bij het nalopen van de vergelijker: vijf landen stonden bij
+// Duitsland op groen terwijl er wel degelijk een landelijke formule stond. Elk
+// van de oorzaken hieronder apart.
+
+test('Burkina Faso: reiswaarschuwing voor het land, met de uitzonderingen benoemd', () => {
+  // Het AA draait de zin om: niet de gewaarschuwde gebieden worden opgesomd
+  // maar de twee steden die erbuiten vallen. De API noemt dat een
+  // Teilreisewarnung, en daarop bleef het land landelijk groen.
+  assert.equal(classifyGermanNational(
+    'Vor Reisen nach Burkina Faso - mit Ausnahme von Ouagadougou und Bobo-Dioulasso - wird gewarnt.',
+    'Burkina Faso',
+  ), 4);
+});
+
+test('een gewaarschuwd gebied binnen het land tilt het landniveau niet op', () => {
+  // De keerzijde van de regel hierboven: staat de naam van het land níét
+  // direct achter "Vor Reisen in/nach", dan gaat het over een gebied.
+  assert.equal(classifyGermanNational(
+    'Vor Reisen in die Sahelregion wird gewarnt.',
+    'Burkina Faso',
+  ), null);
+});
+
+test('Israël: de restformule met een nevenschikking ervoor', () => {
+  // "in andere Landesteile Israels sowie nach Ost-Jerusalem wird abgeraten" —
+  // tussen het landelijke doel en "wird abgeraten" staat nog een tweede doel.
+  assert.equal(classifyGermanNational(
+    'Vor Reisen in den Gazastreifen wird gewarnt. Von Reisen in andere Landesteile Israels sowie nach Ost-Jerusalem wird abgeraten.',
+    'Israel',
+  ), 3);
+});
+
+test('Noord-Korea: de naam met een alias tussen haakjes', () => {
+  // De API levert "Demokratische Volksrepublik Korea (Nordkorea)". Als één
+  // patroon mét haakjes matcht dat geen van beide schrijfwijzen.
+  assert.equal(classifyGermanNational(
+    'Von Reisen in die Demokratische Volksrepublik Korea wird dringend abgeraten.',
+    'Demokratische Volksrepublik Korea (Nordkorea)',
+  ), 4);
+  // En de korte vorm hoort net zo goed te werken.
+  assert.equal(classifyGermanNational(
+    'Von Reisen nach Nordkorea wird dringend abgeraten.',
+    'Demokratische Volksrepublik Korea (Nordkorea)',
+  ), 4);
+});
+
+test('Ethiopië: "übrige Gebiete" is dezelfde restcategorie als "Landesteile"', () => {
+  assert.equal(classifyGermanNational(
+    'Von nicht notwendigen Reisen in die Regionen Amhara und Tigray und in alle übrigen Gebiete Äthiopiens, mit Ausnahme der Hauptstadt Addis Abeba, wird abgeraten.',
+    'Äthiopien',
+  ), 3);
+});
+
+test('de restformule achteraan blijft oranje als het om beperkte reizen gaat', () => {
+  // Congo: "Von nicht notwendigen Reisen … in die übrigen Landesteile …".
+  // Het patroon dat die zin vindt begint vóór "nicht notwendigen", dus de
+  // beperking moet uit de gevonden zin zelf komen — anders zou "dringend"
+  // hem alsnog rood maken.
+  assert.equal(classifyGermanNational(
+    'Von nicht notwendigen Reisen in die übrigen Landesteile der Demokratischen Republik Kongo einschließlich der Hauptstadt Kinshasa wird dringend abgeraten.',
+    'Demokratische Republik Kongo',
+  ), 3);
+});
+
+test('een buurland in de restformule kleurt dit land niet op', () => {
+  // Op de pagina van Belarus staat een advies over de Russische Federatie.
+  assert.equal(classifyGermanNational(
+    'Von Reisen in die Russische Föderation wird abgeraten.',
+    'Belarus',
+  ), null);
+});
