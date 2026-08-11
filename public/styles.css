@@ -497,6 +497,9 @@ input:focus, select:focus { outline: 2px solid var(--link); outline-offset: 0; b
   .wijziging-quote, .wijziging-details { display: none !important; }
   /* De landenmatrix hoort wél bij de afdruk van het scherm. */
   .overview-matrix { -webkit-print-color-adjust: exact; print-color-adjust: exact; font-size: 10px; }
+  /* Het regiostreepje is puur kleur; zonder deze regel drukt een printer die
+     zuinig met achtergronden omgaat het als een lege balk af. */
+  .ov-regiobalk i { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .topbar { padding: 8px 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   main { max-width: none; padding: 6px 0 0; }
   .print-note { display: block; font-size: 10px; color: #555; margin: 0 0 10px; }
@@ -906,7 +909,11 @@ h2 .flag-img { width: 30px; height: 22px; vertical-align: -3px; border-radius: 3
 .exp-matrix.compact th:first-child, .exp-matrix.compact td:first-child { text-align: left; }
 .exp-matrix.compact th.wide { min-width: 150px; }
 .exp-matrix.compact td.exp-diff { text-align: left; }
-.exp-ccbox { font-weight: 700; text-align: center; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.exp-ccbox { font-weight: 700; text-align: center; vertical-align: top; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+/* Regiostreepje in de PDF-matrix — smaller dan op het scherm, want die tabel
+   staat al krap op één vel. */
+.exp-regiobalk { display: flex; gap: 1px; height: 4px; margin-top: 2px; }
+.exp-regiobalk i { flex: 1 1 auto; display: block; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 .exp-matrix th.exp-dist, .exp-matrix td.exp-dist { padding: 2px 4px; white-space: nowrap; }
 .exp-dcell {
   display: inline-block; min-width: 15px; padding: 0 2px; margin-right: 1px; text-align: center;
@@ -934,7 +941,27 @@ h2 .flag-img { width: 30px; height: 22px; vertical-align: -3px; border-radius: 3
 .overview-matrix td.ov-cc.c-oranje { background: #f8ddb8; }
 .overview-matrix td.ov-cc.c-rood { background: #f3c0c0; }
 .overview-matrix td.ov-cc.c-none { color: var(--muted); font-weight: 400; }
-.overview-matrix .ov-reg { font-size: 9px; vertical-align: super; margin-left: 1px; }
+/* Stond hoog als superscript tegen het niveaucijfer aan. Dat cijfer is er niet
+   meer, dus hangt het driehoekje nu gewoon in het midden van het vakje. */
+.overview-matrix .ov-reg { font-size: 11px; vertical-align: baseline; margin: 0; }
+
+/* Regionale kleurcodes: een streepje in het vakje met de kleuren die alleen in
+   delen van het land gelden, zwaarste links. Verzadigde kleuren en niet de
+   celtinten: het streepje moet zich juist van de celachtergrond onderscheiden. */
+/* De cel draagt het niveau in kleur, niet in een cijfer — een cijfer náást de
+   kleur leest als een tweede maat. Een minimumbreedte houdt de kolommen op
+   maat nu er geen tekst meer in staat. */
+.overview-matrix td.ov-cc { min-width: 32px; }
+
+/* Wel leesbaar, niet zichtbaar: kleur is geen tekst, dus voor schermlezers en
+   voor wie de tabel kopieert staat de kleurcode er in woorden bij. */
+.enkel-lezen {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip-path: inset(50%); white-space: nowrap;
+}
+/* Staat gecentreerd in het vakje: er is geen cijfer meer om onder te hangen. */
+.ov-regiobalk { display: flex; gap: 1px; height: 6px; }
+.ov-regiobalk i { flex: 1 1 auto; display: block; border: 1px solid rgba(0, 0, 0, .22); }
 .overview-matrix th.ov-dist, .overview-matrix td.ov-dist { padding: 3px 6px; }
 
 /* Vijf telvakjes: hoeveel bronnen hanteren welke kleurcode. Zelfde stijl als

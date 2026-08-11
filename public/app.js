@@ -192,6 +192,9 @@ function syncUrl(push = false) {
     tabland: sel.length > 1 && COMPARE_ACTIVE && COMPARE_ACTIVE !== sel[0] ? COMPARE_ACTIVE : null,
     vs: null,
     bronnen: cur === defaultSourceIds().join(',') ? null : cur,
+    // Alleen in de link zetten als hij aanstaat: een deellink hoort de
+    // weergave mee te nemen, maar de standaard hoort niet in de URL.
+    regio: REGIO_KLEUREN ? '1' : null,
     taal: null, // bestaat niet meer; wist hem uit oudere deellinks
   }, push);
 }
@@ -204,6 +207,10 @@ function initFromUrl() {
     const ids = bronnen.split(',').map((s) => s.trim()).filter((id) => allSourceIds().includes(id));
     if (ids.length) SELECTED_SOURCES = ids;
   }
+  // Een deellink mag de weergave meebrengen; wat er niet in staat, blijft de
+  // eigen (bewaarde) voorkeur.
+  const regio = sp.get('regio');
+  if (regio != null) REGIO_KLEUREN = regio === '1';
 }
 
 /** Past tab + land uit de URL toe (ná de UI-opbouw); start zo nodig de vergelijking. */
@@ -4056,6 +4063,10 @@ function renderDateScan(countries, today, root) {
 // ==========================================================================
 const CC_STYLE = { groen: 'cc_groen', geel: 'cc_geel', oranje: 'cc_oranje', rood: 'cc_rood' };
 const CC_HEX = { groen: '#d7ecc6', geel: '#fbf3ba', oranje: '#f8ddb8', rood: '#f3c0c0' };
+// Verzadigde kleurcodes (dezelfde als --groen/--geel/--oranje/--rood in de
+// stylesheet). Nodig in de PDF, waar geen CSS-variabelen beschikbaar zijn: het
+// regiostreepje moet zich van de lichte celtint kunnen onderscheiden.
+const CC_VOL = { groen: '#39870c', geel: '#f9c710', oranje: '#e17000', rood: '#d52b1e' };
 const SRC_SHORT = { uk: 'VK', us: 'VS', ca: 'CA', ie: 'IE', fr: 'FR', au: 'AU', es: 'ES', de: 'DE', nz: 'NZ', dk: 'DK', jp: 'JP', it: 'IT', fi: 'FI', kr: 'KR', no: 'NO', at: 'AT', ch: 'CH' };
 const cleanText = (s) => String(s || '').replace(/\s+/g, ' ').trim();
 const shortFor = (id) => SRC_SHORT[id] || id.toUpperCase();
@@ -4075,6 +4086,18 @@ let EXPORT_OPTS = (() => {
   catch { return { colors: true, text: true }; }
 })();
 const saveExportOpts = () => localStorage.setItem('exportOpts', JSON.stringify(EXPORT_OPTS));
+
+// Toont het overzicht bij meerdere landen ook de regionale kleurcodes?
+//
+// Een landelijke kleurcode verbergt regelmatig het zwaarste deel van het
+// advies: in een kwart van de bron-records ligt een gebied hoger dan het land,
+// en in 17% zelfs twee niveaus of meer. Duitsland zet Burkina Faso landelijk op
+// groen omdat de waarschuwing een Teilreisewarnung is — het regionale maximum
+// is 4. Het driehoekje verklapte dát er iets was, maar niet hoe zwaar.
+//
+// Standaard uit: wie het overzicht kent, moet het niet ineens anders zien.
+let REGIO_KLEUREN = localStorage.getItem('regioKleuren') === '1';
+const saveRegioKleuren = () => localStorage.setItem('regioKleuren', REGIO_KLEUREN ? '1' : '0');
 
 /** dd-mm-jjjj uit een ISO-datum of losse datumtekst; leeg blijft leeg. */
 function fmtDay(s) {
@@ -4200,6 +4223,21 @@ function filteredThemeContent(nl, foreign, { hidden, word } = {}) {
   return out;
 }
 
+/**
+ * Teken in een matrixcel — zonder het niveaucijfer.
+ *
+ * De celkleur zégt het niveau al; er dan óók nog een cijfer in zetten leest als
+ * een tweede, andere maat en dat verwart meer dan het verheldert. Wat géén
+ * kleur is houdt zijn teken wél: "de bron publiceert geen kleurcode" (—),
+ * "niet vast te stellen" (?) en "deze keer niet opgehaald" (·) zijn drie
+ * verschillende antwoorden, en aan een leeg vakje zie je niet welk van de drie
+ * het is.
+ */
+function ovMark(c) {
+  const teken = ExportModel.cellMark(c);
+  return /^\d+$/.test(teken) ? '' : teken;
+}
+
 /** Rij van vijf telvakjes (groen · geel · oranje · rood · geen), in dezelfde
  *  stijl als de matrixcellen. Compact genoeg voor één tabelkolom. */
 function distCells(dist, cls = 'tiny') {
@@ -4216,17 +4254,36 @@ function distCells(dist, cls = 'tiny') {
 
 // ---- Overzicht op het scherm: landen × bronnen ----------------------------
 /**
- * De kleurcodematrix boven de landentabs. Toont per land het niveaucijfer per
- * bron (▲ = een gebied is zwaarder dan het land) en de grootste afwijking
- * t.o.v. NederlandWereldwijd — precies dezelfde cijfers als de uitdraai.
+ * De kleurcodematrix boven de landentabs. Toont per land de kleurcode per bron
+ * en de grootste afwijking t.o.v. NederlandWereldwijd — dezelfde gegevens als
+ * de uitdraai.
+ *
+ * Het regionale beeld kan op twee manieren: standaard een ▲ dat verklapt dát
+ * een gebied zwaarder is, en met "Ook regionale kleurcodes" aan een streepje in
+ * het vakje met de kleuren die alleen in delen van het land gelden. Die twee
+ * sluiten elkaar uit — staat de streep er, dan voegt het driehoekje niets meer
+ * toe.
  */
 function renderOverviewBlock(shown) {
   const ds = buildDataset();
   const { body, tally } = ExportModel.overviewMatrix(ds);
   const wrap = el('div', { class: 'overview-block' });
+  const regioBox = el('input', { type: 'checkbox', id: 'ov-regio-aan' });
+  regioBox.checked = REGIO_KLEUREN;
+  regioBox.addEventListener('change', () => {
+    REGIO_KLEUREN = regioBox.checked;
+    saveRegioKleuren();
+    syncUrl();
+    renderCompareView();
+  });
   wrap.append(el('div', { class: 'theme-head-row' },
     el('h3', { class: 'section-title', style: 'flex:1;margin:0;border:none' },
-      `Overzicht — kleurcodes van ${shown.length} landen naast elkaar`)));
+      `Overzicht — kleurcodes van ${shown.length} landen naast elkaar`),
+    el('label', {
+      class: 'check-inline',
+      title: 'Toont in elk vakje de kleuren die alleen in delen van het land gelden. '
+        + 'Een landelijke kleurcode kan een zwaarder gebied verbergen.',
+    }, regioBox, ' Ook regionale kleurcodes')));
 
   const table = el('table', { class: 'overview-matrix' });
   const head = el('tr', {}, el('th', { class: 'ov-land' }, 'Land'), el('th', { title: 'NederlandWereldwijd' }, 'NL'));
@@ -4237,11 +4294,25 @@ function renderOverviewBlock(shown) {
 
   const tbody = el('tbody');
   const cell = (c) => {
+    const extras = REGIO_KLEUREN ? (c.extras || []) : [];
     const td = el('td', {
       class: 'ov-cc' + (c.status === 'ok' && c.color ? ` c-${c.color}` : ' c-none'),
-      title: `${c.label}: ${ExportModel.colorText(c)}${c.regional ? ' — een gebied is zwaarder dan het land' : ''}`,
-    }, ExportModel.cellMark(c));
-    if (c.regional) td.append(el('span', { class: 'ov-reg' }, '▲'));
+      title: `${c.label}: ${ExportModel.colorTextWithRegions(c)}`
+        + (c.regional ? ' — een gebied is zwaarder dan het land' : ''),
+    }, ovMark(c));
+    // Zonder cijfer draagt de cel alleen nog kleur, en kleur is geen tekst:
+    // voor een schermlezer (en voor wie de tabel kopieert) blijft de kleurcode
+    // hier in woorden staan.
+    if (!ovMark(c)) td.append(el('span', { class: 'enkel-lezen' }, ExportModel.colorTextWithRegions(c)));
+    // Staan de regionale kleuren aan, dan is het driehoekje overbodig: de
+    // streep zegt hetzelfde én hoeveel zwaarder. Staat de weergave uit, dan is
+    // het driehoekje het enige signaal en blijft het staan.
+    if (c.regional && !REGIO_KLEUREN) td.append(el('span', { class: 'ov-reg' }, '▲'));
+    if (extras.length) {
+      const balk = el('span', { class: 'ov-regiobalk' });
+      extras.forEach((k) => balk.append(el('i', { class: `c-${k}` })));
+      td.append(balk);
+    }
     return td;
   };
   body.forEach((r) => {
@@ -4265,7 +4336,11 @@ function renderOverviewBlock(shown) {
   const telling = ['groen', 'geel', 'oranje', 'rood'].filter((k) => tally[k])
     .map((k) => `${tally[k]}× ${COLOR_LABELS[k].toLowerCase()}`).join(' · ');
   wrap.append(el('p', { class: 'hint', style: 'margin:8px 0 0' },
-    'Cijfer = niveau 1–4 · ▲ = een gebied binnen het land is zwaarder dan het landelijke niveau · — = de bron publiceert geen kleurcode · ? = niet vast te stellen · · = deze keer niet opgehaald. ',
+    'De kleur van het vakje is de kleurcode van die bron · ',
+    REGIO_KLEUREN
+      ? 'de streep in het vakje toont de kleuren die alleen in delen van het land gelden, zwaarste links · '
+      : '▲ = een gebied binnen het land is zwaarder dan het landelijke niveau · ',
+    '— = de bron publiceert geen kleurcode · ? = niet vast te stellen · · = deze keer niet opgehaald. ',
     'Verdeling = hoeveel bronnen die kleurcode hanteren, altijd in de volgorde ',
     distCells({ groen: 0, geel: 0, oranje: 0, rood: 0, geen: 0 }, 'tiny legend'),
     ' groen · geel · oranje · rood · geen.',
@@ -4380,7 +4455,12 @@ function buildExportXlsx(ds) {
     s.rows.push([{ v: `Reisadviezen — vergelijking van ${ds.countries.length} land${ds.countries.length === 1 ? '' : 'en'} · ${stamp}`, t: 'title' }]);
     s.rows.push(kop.map((h) => ({ v: h, t: 'header' })));
     const cc = (c) => {
-      const txt = ExportModel.colorText(c) + (c.regional ? ' ▲' : '');
+      // Met de regionale weergave aan komen de kleuren voluit in de cel; het
+      // driehoekje is dan overbodig. Staat hij uit, dan blijft de uitdraai
+      // precies zoals hij was.
+      const txt = REGIO_KLEUREN
+        ? ExportModel.colorTextWithRegions(c)
+        : ExportModel.colorText(c) + (c.regional ? ' ▲' : '');
       return c.status === 'ok' && c.color ? { v: txt, t: CC_STYLE[c.color] } : { v: txt, t: 'plain' };
     };
     for (const r of body) {
@@ -4529,18 +4609,29 @@ function buildExportPdf(ds) {
     // ---- Kleurcodematrix ----
     const mx = [];
     mx.push(el('h2', { class: 'exp-h2' }, 'Kleurcodes per bron'));
-    mx.push(el('p', { class: 'exp-meta' }, 'Cijfer = niveau 1–4 · ▲ = een gebied binnen het land is zwaarder dan het landelijke niveau'));
+    mx.push(el('p', { class: 'exp-meta' }, REGIO_KLEUREN
+      ? 'De kleur van het vakje is de kleurcode van die bron · de streep erin toont de kleuren die alleen in delen van het land gelden, zwaarste links'
+      : 'De kleur van het vakje is de kleurcode van die bron · ▲ = een gebied binnen het land is zwaarder dan het landelijke niveau'));
     const tbl = el('table', { class: 'exp-matrix compact' });
     const head = el('tr', {}, el('th', { class: 'exp-land' }, 'Land'), el('th', {}, 'NL'));
     ds.sources.forEach((s) => head.append(el('th', { title: s.label }, s.short)));
     head.append(el('th', { class: 'exp-dist' }, 'Verdeling'));
     head.append(el('th', { class: 'wide' }, 'Grootste afwijking t.o.v. NL'));
     tbl.append(head);
-    const cc = (c) => el('td', {
-      class: 'exp-ccbox',
-      style: c.status === 'ok' && c.color ? `background:${CC_HEX[c.color]}` : '',
-      title: ExportModel.colorText(c),
-    }, ExportModel.cellMark(c) + (c.regional ? '▲' : ''));
+    const cc = (c) => {
+      const extras = REGIO_KLEUREN ? (c.extras || []) : [];
+      const td = el('td', {
+        class: 'exp-ccbox',
+        style: c.status === 'ok' && c.color ? `background:${CC_HEX[c.color]}` : '',
+        title: ExportModel.colorTextWithRegions(c),
+      }, ovMark(c) + (c.regional && !REGIO_KLEUREN ? '▲' : ''));
+      if (extras.length) {
+        const balk = el('span', { class: 'exp-regiobalk' });
+        extras.forEach((k) => balk.append(el('i', { style: `background:${CC_VOL[k]}` })));
+        td.append(balk);
+      }
+      return td;
+    };
     const expDist = (d) => {
       const td = el('td', { class: 'exp-dist' });
       ['groen', 'geel', 'oranje', 'rood'].forEach((k) => td.append(

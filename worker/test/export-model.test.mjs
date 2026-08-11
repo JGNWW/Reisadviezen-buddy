@@ -226,3 +226,45 @@ test('clipSentences: leeg blijft leeg', () => {
   assert.equal(M.clipSentences(''), '');
   assert.equal(M.clipSentences(null), '');
 });
+
+// ---- Regionale kleurcodes in het overzicht ---------------------------------
+// Achtergrond: een landelijke kleurcode verbergt regelmatig het zwaarste deel
+// van het advies. Op het scherm komt dat als een streepje onder het cijfer; in
+// Excel en PDF bestaat dat streepje niet, dus daar moet het in woorden.
+
+test('overviewMatrix: de regionale kleuren komen mee in de cel', () => {
+  const d = ds();
+  d.countries[0].sources[0].extras = ['rood', 'oranje'];
+  d.countries[0].nl.extras = ['oranje'];
+  const { body } = M.overviewMatrix(d);
+  assert.deepEqual(body[0].cells[0].extras, ['rood', 'oranje']);
+  assert.deepEqual(body[0].nl.extras, ['oranje']);
+  // Een bron zonder regionale afwijking hoort een lege lijst te houden, geen
+  // undefined — de weergave loopt er anders overheen.
+  assert.deepEqual(body[0].cells[2].extras, []);
+  assert.deepEqual(body[1].cells[3].extras, []); // status 'na'
+});
+
+test('colorTextWithRegions: noemt de regionale kleuren achter de landelijke', () => {
+  assert.equal(
+    M.colorTextWithRegions({ status: 'ok', color: 'geel', extras: ['rood', 'oranje'] }),
+    'Geel (ook regionaal: rood, oranje)',
+  );
+});
+
+test('colorTextWithRegions: zonder regio blijft het de kale kleurtekst', () => {
+  assert.equal(M.colorTextWithRegions({ status: 'ok', color: 'geel', extras: [] }), 'Geel');
+  assert.equal(M.colorTextWithRegions({ status: 'ok', color: 'geel' }), 'Geel');
+  // En het mag de bestaande betekenissen niet overschrijven.
+  assert.equal(M.colorTextWithRegions({ status: 'none' }), 'Kleurcode ontbreekt');
+  assert.equal(M.colorTextWithRegions({ status: 'na' }), 'Niet opgehaald');
+});
+
+test('colorTextWithRegions: ook een bron zonder kleurcode kan regio hebben', () => {
+  // "Onzeker" met een gevonden regionaal niveau: de landelijke uitspraak
+  // ontbreekt, maar dat er ergens een zwaarder gebied is, is wél bekend.
+  assert.equal(
+    M.colorTextWithRegions({ status: 'uncertain', extras: ['rood'] }),
+    'Onzeker (ook regionaal: rood)',
+  );
+});

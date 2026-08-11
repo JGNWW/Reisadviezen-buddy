@@ -42,6 +42,22 @@
     return COLOR_LABELS[cell.color] || cell.color;
   }
 
+  /**
+   * Kleurtekst mét de regionale kleuren erachter, voor Excel en PDF.
+   *
+   * Op het scherm zijn de regionale kleuren een streepje onder het cijfer; in
+   * een uitdraai bestaat dat streepje niet, dus daar moeten ze in woorden. De
+   * losse `colorText` blijft ongemoeid — die wordt op plekken gebruikt waar
+   * juist alleen de landelijke kleurcode hoort te staan.
+   */
+  function colorTextWithRegions(cell) {
+    const basis = colorText(cell);
+    const extra = (cell && cell.extras) || [];
+    if (!extra.length) return basis;
+    const namen = extra.map((c) => (COLOR_LABELS[c] || c).toLowerCase()).join(', ');
+    return `${basis} (ook regionaal: ${namen})`;
+  }
+
   /** Kort teken voor in de matrixcel: het niveaucijfer, of een symbool als er
    *  geen niveau is. Zwart-wit geprint blijft dit leesbaar — anders dan kleur. */
   function cellMark(cell) {
@@ -173,6 +189,8 @@
           level: s.level != null ? s.level : (COLOR_LEVEL[s.color] || null),
           status: s.status || 'ok',
           regional: !!s.regional,
+          // De kleuren die alleen regionaal voorkomen, zwaarste eerst.
+          extras: s.extras || [],
         };
       });
       const nlLevel = c.nl?.level != null ? c.nl.level : (COLOR_LEVEL[c.nl?.color] || null);
@@ -180,7 +198,7 @@
       return {
         iso3: c.iso3,
         country: c.name,
-        nl: { color: c.nl?.color || null, level: nlLevel, status: c.nl?.color ? 'ok' : 'na', regional: !!c.nl?.regional, short: 'NL', label: 'NederlandWereldwijd' },
+        nl: { color: c.nl?.color || null, level: nlLevel, status: c.nl?.color ? 'ok' : 'na', regional: !!c.nl?.regional, extras: c.nl?.extras || [], short: 'NL', label: 'NederlandWereldwijd' },
         cells,
         // Hoeveel bronnen hanteren welke kleurcode — op het scherm en in de PDF
         // één smalle kolom met vijf vakjes, in Excel vijf sorteerbare kolommen.
@@ -288,7 +306,7 @@
 
   const API = {
     COLOR_LABELS, COLOR_LEVEL, GEEN_KLEURCODE,
-    colorText, cellMark, clipSentences, deviationLabel,
+    colorText, colorTextWithRegions, cellMark, clipSentences, deviationLabel,
     distribution, cellLevel, medianLevel, versusNl,
     overviewMatrix, longRows, divergenceRows, provenanceRows, herkomst,
   };
