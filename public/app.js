@@ -1356,9 +1356,6 @@ function renderCompareView() {
 
   if (multi) {
     root.append(renderOverviewBlock(shown));
-    // Precies twee landen: het oordeel "welk land noemen de bronnen veiliger"
-    // (voorheen de aparte A↔B-modus) hoort hier vanzelf thuis.
-    if (shown.length === 2) root.append(renderVersusBlock(shown[0], shown[1]));
     root.append(renderCountryTabs(shown));
   }
 
@@ -1399,72 +1396,6 @@ function renderCountryTabs(shown) {
   return el('div', { class: 'country-tabs-wrap' },
     el('p', { class: 'hint', style: 'margin:0 0 6px' }, 'Kies een land voor de volledige vergelijking per thema:'),
     nav);
-}
-
-/**
- * Precies twee landen vergeleken: welk land noemen de bronnen veiliger?
- * (Voorheen een aparte A↔B-modus; nu een blok binnen de gewone vergelijking.)
- */
-function renderVersusBlock(a, b) {
-  const da = COMPARE_RESULTS.get(a.iso3), db = COMPARE_RESULTS.get(b.iso3);
-  const wrap = el('details', { class: 'versus-block', open: '' });
-  const frag = document.createDocumentFragment();
-  const okA = new Map((da.foreign.sources || []).filter((s) => !s.unavailable && !s.error).map((s) => [s.source, s]));
-  const okB = new Map((db.foreign.sources || []).filter((s) => !s.unavailable && !s.error).map((s) => [s.source, s]));
-  const fa = countryFlagByIso3(a.iso3), fb = countryFlagByIso3(b.iso3);
-
-  wrap.append(el('summary', {}, `⇄ ${a.nl} ↔ ${b.nl}: welk land noemen de bronnen veiliger?`));
-
-  // Verdict op basis van bronnen die beide landen beoordelen.
-  let aSafer = 0, bSafer = 0, equal = 0;
-  const rows = [];
-  // NL-rij.
-  const nlA = COLOR_LEVEL[da.staticData.nl.colors?.overall], nlB = COLOR_LEVEL[db.staticData.nl.colors?.overall];
-  rows.push({ label: '🇳🇱 NederlandWereldwijd', ca: da.staticData.nl.colors?.overall, cb: db.staticData.nl.colors?.overall, la: nlA, lb: nlB });
-  (CFG.SOURCES || []).forEach((meta) => {
-    const sa = okA.get(meta.id), sb = okB.get(meta.id);
-    if (!sa && !sb) return;
-    rows.push({ label: `${meta.flag || ''} ${meta.label}`, ca: sa?.color, cb: sb?.color, la: sa?.level, lb: sb?.level, ua: sa?.assessmentStatus === 'uncertain', ub: sb?.assessmentStatus === 'uncertain' });
-  });
-  rows.forEach((r) => {
-    if (r.la != null && r.lb != null) { if (r.la < r.lb) aSafer++; else if (r.lb < r.la) bSafer++; else equal++; }
-  });
-
-  const beoordeeld = aSafer + bSafer + equal;
-  const winner = aSafer > bSafer ? a : bSafer > aSafer ? b : null;
-  const verdict = el('div', { class: 'divergence ' + (aSafer && bSafer ? 'some' : 'none') });
-  verdict.append(el('h3', {}, winner
-    ? `➡️ Volgens ${Math.max(aSafer, bSafer)} van ${beoordeeld} beoordelende bron${beoordeeld === 1 ? '' : 'nen'} is ${winner === a ? a.nl : b.nl} veiliger`
-    : !beoordeeld ? 'Geen enkele bron beoordeelt beide landen'
-    : (aSafer === 0 && bSafer === 0) ? 'Beide landen krijgen dezelfde kleurcode van elke beoordelende bron'
-    : 'De bronnen zijn verdeeld over welk land veiliger is'));
-  verdict.append(el('p', { class: 'consensus-line' },
-    `${fa} ${a.nl} veiliger: ${aSafer} · ${fb} ${b.nl} veiliger: ${bSafer} · gelijk: ${equal}`));
-  frag.append(verdict);
-
-  // Kleurcode-tabel A ↔ B per bron.
-  const table = el('table', { class: 'summary-table' });
-  table.append(el('thead', {}, el('tr', {},
-    el('th', {}, 'Bron'), el('th', {}, `${fa} ${a.nl}`), el('th', {}, `${fb} ${b.nl}`), el('th', {}, 'Veiliger'))));
-  const tbody = el('tbody');
-  rows.forEach((r) => {
-    let cmp;
-    if (r.la == null || r.lb == null) cmp = el('span', { class: 'muted' }, '—');
-    else if (r.la < r.lb) cmp = el('span', { class: 'delta looser' }, `${fa} ${a.nl}`);
-    else if (r.lb < r.la) cmp = el('span', { class: 'delta looser' }, `${fb} ${b.nl}`);
-    else cmp = el('span', { class: 'delta same' }, 'gelijk');
-    tbody.append(el('tr', {},
-      el('td', {}, r.label),
-      el('td', {}, r.ua ? colorCode({ uncertain: true }) : colorCode({ predominant: r.ca })),
-      el('td', {}, r.ub ? colorCode({ uncertain: true }) : colorCode({ predominant: r.cb })),
-      el('td', {}, cmp)));
-  });
-  table.append(tbody);
-  frag.append(table);
-  frag.append(el('p', { class: 'hint' }, 'Buitenlandse kleurcodes zijn een benadering op de Nederlandse schaal. Bronnen die maar één van beide landen beoordelen, tellen niet mee in het oordeel.'));
-
-  wrap.append(frag);
-  return wrap;
 }
 
 /** Groepeert thema-blokken per canoniek thema-id. */
