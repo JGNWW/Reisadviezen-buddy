@@ -392,6 +392,22 @@ export function interpretStructured(structured) {
     const iPoints = body.indexOf('【ポイント】');
     if (iPoints >= 0) body = body.slice(0, iPoints);
     const JA_LEVEL = /レベル([１２３４1234])/;
+    // De trap zoals MOFA hem in een advieszin zet: "レベル4：退避してください".
+    // De dubbele punt onderscheidt het oordeel van een terloopse vermelding.
+    const JA_LEVEL_ADVIES = /レベル\s*([１２３４1234])\s*[：:]/;
+    // "Het hele land". 全域 betekent óók "het hele X" en staat net zo goed
+    // achter een provincie: Armenië heeft "シュニク州全域" — de hele provincie
+    // Syunik, niet het hele land. Zonder die uitzondering werd zo'n bullet als
+    // landelijk niveau gelezen.
+    const JA_LANDELIJK = /全土|国全体|(?<![州県省市郡])全域/;
+    // De restcategorie ("de overige gebieden"), die de landelijke ondergrens
+    // vormt. Er staat lang niet altijd alleen "上記以外の地域": Eritrea schrijft
+    // "首都アスマラ及び上記以外の地域" en Tanzania "上記以外のこれまで危険レベルが
+    // 発出されていなかった地域". Vandaar zoeken in plaats van vooraan verankeren,
+    // met ruimte voor een omschrijving tussen "以外の" en "地域".
+    // Naast "上記以外の…" bestaat ook de vorm met 除く ("met uitzondering van
+    // bovenstaande"), die Oezbekistan gebruikt: "上記を除く地域".
+    const JA_RESTGEBIED = /(?:その他|それ以外|上記以外)の[^、。]{0,25}?地域|上記[^、。]{0,12}?除く[^、。]{0,12}?地域/;
     const toNum = (d) => '１２３４'.includes(d) ? '１２３４'.indexOf(d) + 1 : Number(d);
     // MOFA's rangnummer is NIET onze schaal. Hun laagste trap is al een
     // waarschuwing — レベル1 「十分注意」 betekent "wees goed op uw hoede", niet
@@ -414,13 +430,22 @@ export function interpretStructured(structured) {
     // van de badge; zonder deze uitsluiting belandden ze als regio in de
     // uitsplitsing.
     const JA_DATE_ONLY = /^\s*\d{4}\s*年\s*\d{1,2}\s*月\s*\d{1,2}\s*日\s*$/;
-    const bullets = body.split('●').map((s) => s.trim()).filter(Boolean);
+    // Niet elke landpagina gebruikt ● als opsommingsteken; Oezbekistan zet er
+    // 〇 neer. Zonder die tekens erbij levert zo'n pagina nul bullets op en
+    // valt het land terug op "geen niveau gevonden".
+    const bullets = body.split(/[●〇○]/).map((s) => s.trim()).filter(Boolean);
     let national = null;
     let nationalTier = null;
     let nationalLabel = null;
     const structuredRegional = [];
     for (const b of bullets) {
-      const m = b.match(JA_LEVEL);
+      // Het niveau dat telt is dat van de advieszin ("レベル4：退避してください"),
+      // niet elke レベル die in de omschrijving voorkomt. Iran had als eerste
+      // bullet "首都テヘランを含む、これまで危険情報がレベル3であった地域
+      // レベル4：…" — het eerste voorkomen is daar de trap waar het gebied
+      // vandáán komt. Zonder deze voorkeur werd dat als het gebiedsniveau
+      // gelezen én brak de regionaam middenin af.
+      const m = b.match(JA_LEVEL_ADVIES) || b.match(JA_LEVEL);
       if (!m) continue;
       const tier = toNum(m[1]);
       const level = JP_SCALE[tier] ?? tier;
@@ -429,15 +454,57 @@ export function interpretStructured(structured) {
       // interpunct ín namen als ジャンム・カシミール heeft geen spatie ervoor).
       const region = b.slice(0, m.index).split(/\s・/)[0].replace(/[：:、。\s]+$/, '').trim();
       const phrase = (b.slice(m.index).match(/^レベル[１２３４1234][：:]?[^（(●]*/) || [b.slice(m.index)])[0].trim();
-      if (/全土|全域|国全体/.test(region) || /その他の地域|それ以外の地域|上記以外の地域/.test(region) || !region) {
+      if (JA_LANDELIJK.test(region) || JA_RESTGEBIED.test(region) || !region) {
         // 全土 wint altijd; その他の地域 alleen als er nog geen landelijk niveau is.
-        if (national == null || /全土|全域|国全体/.test(region)) {
+        if (national == null || JA_LANDELIJK.test(region)) {
           national = level; nationalTier = tier; nationalLabel = phrase;
         }
       } else if (!JA_DATE_ONLY.test(region)) {
         structuredRegional.push({ region, level });
       }
     }
+    // MOFA zet een landelijke verhoging niet altijd in een eigen gebiedsbullet.
+    // Bij Iran en Libanon staat hij alleen in de lopende tekst van 【ポイント】:
+    //   「これにより、イラン全土の危険情報がレベル4（退避勧告）となります。」
+    // Zonder die zin bleef er enkel regionaal bewijs over en kwam het land
+    // landelijk op groen, terwijl de bron letterlijk zegt dat het hele land op
+    // de zwaarste trap staat. Het maximum, want zo'n alinea beschrijft vaak
+    // eerst de oude trap en dan de nieuwe.
+    // Let op: hier bewust `text` en niet `body`. De 全土-zin staat vaak juist in
+    // 【ポイント】, en dat deel is uit `body` geknipt omdat daar de gebied→niveau-
+    // bullets niet in staan.
+    if (national == null) {
+      let hoogste = null;
+      for (const m of text.matchAll(/全土[^。]{0,30}?レベル\s*([１２３４1234])/g)) {
+        // 感染症危険情報 is een aparte schaal met dezelfde woorden; die hoort
+        // hier niet mee te tellen.
+        if (/感染症/.test(text.slice(Math.max(0, m.index - 12), m.index))) continue;
+        const tier = toNum(m[1]);
+        if (hoogste == null || tier > hoogste) hoogste = tier;
+      }
+      if (hoogste != null) {
+        national = JP_SCALE[hoogste] ?? hoogste;
+        nationalTier = hoogste;
+        nationalLabel = `全土 レベル${hoogste}`;
+      }
+    }
+
+    // Laatste redmiddel: de niveaubadge in de paginakop, maar alléén als er
+    // helemaal geen gebiedsbullets zijn. Dan beschrijft die badge het land als
+    // geheel (Madagaskar: kop "レベル１ 十分注意", daaronder enkel proza). Zodra
+    // er wél gebieden staan, zegt de badge alleen wat het zwáárste gebied is —
+    // en dat mag het landelijke niveau nooit optillen.
+    if (national == null && !structuredRegional.length) {
+      const kop = iLevel >= 0 ? text.slice(0, iLevel) : text.slice(0, 60);
+      const trappen = [...kop.matchAll(/レベル\s*([１２３４1234])/g)].map((m) => toNum(m[1]));
+      if (trappen.length) {
+        const laagste = Math.min(...trappen);
+        national = JP_SCALE[laagste] ?? laagste;
+        nationalTier = laagste;
+        nationalLabel = `レベル${laagste}`;
+      }
+    }
+
     if (national == null) {
       // Alleen regionale bullets: landelijk bewust laag (zelfde invariant als
       // overal — regionaal verhoogt landelijk nooit).
