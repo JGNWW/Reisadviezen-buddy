@@ -221,14 +221,35 @@ export function interpretStructured(structured) {
     const text = String(value || '');
     // Alle Sicherheitsstufe-vermeldingen met hun context (BMEIA noemt er soms
     // meerdere: één voor een regio/exklave en één "im Rest des Landes").
-    const all = [...text.matchAll(/Sicherheitsstufe(?:&nbsp;|\s)*([1-4])(?:\s*\(von 4\))?([\s\S]{0,80})/gi)]
+    // De context staat in een vooruitblik en wordt dus niet meeverbruikt.
+    // Anders slokt het venster van 80 tekens de eerstvolgende
+    // Sicherheitsstufe-vermelding op zodra BMEIA ze dicht op elkaar zet — en
+    // juist de laatste noemt meestal de landelijke ondergrens.
+    const all = [...text.matchAll(/Sicherheitsstufe(?:&nbsp;|\s)*([1-4])(?:\s*\(von 4\))?(?=([\s\S]{0,80}))/gi)]
       .map((m) => ({ level: Number(m[1]), ctx: m[2] }));
     if (!all.length) return uncertain('Geen Sicherheitsstufe gevonden in de landenbox van bmeia.gv.at.');
     const regionalMax = Math.max(...all.map((x) => x.level));
     // Landelijke ondergrens = de stufe die expliciet "im Rest des Landes",
     // "im übrigen Land", "landesweit" of "im ganzen/gesamten Land" geldt.
-    const restfrase = /rest des landes|übrigen?\s+land|im ganzen land|gesamt\w*\s+land|ganze[ns]?\s+land|landesweit|gesamte[ns]?\s+\w+|ganz(?:e|es)\s+\w+/i;
-    const rest = all.find((x) => restfrase.test(x.ctx));
+    // "in den restlichen Regionen" hoorde daar ook bij: bij Rusland staat de
+    // landelijke ondergrens zo geschreven ("Sicherheitsstufe 4 … für die an die
+    // Ukraine angrenzenden Verwaltungsgebiete. Hohes Sicherheitsrisiko
+    // Sicherheitsstufe 3 gilt in den restlichen Regionen."). Zonder die vorm
+    // vond de restzoektocht niets en kwam het land landelijk op groen, terwijl
+    // de bron voor het hele land minstens stufe 3 aanhoudt.
+    // Let op: géén kaal "restlicher Teil". Bij de Filipijnen staat er "gilt für
+    // den restlichen Teil der Insel Mindanao" — de rest van een eiland, niet
+    // van het land. "Landesteile" mag wel; dat zegt het letterlijk.
+    const restfrase = /rest des landes|restlich\w*\s+(?:regionen|gebiet\w*|landesteil\w*|land\w*)|übrigen?\s+land|im ganzen land|gesamt\w*\s+land|ganze[ns]?\s+land|landesweit|gesamte[ns]?\s+\w+|ganz(?:e|es)\s+\w+/i;
+    // Passen er meerdere, dan is de mildste de landelijke ondergrens. De ruime
+    // varianten hierboven ("gesamte <naam>", nodig voor "die gesamte Ukraine")
+    // pikken namelijk ook "auf der gesamten Westküste der Insel Mindanao" mee;
+    // daar staat verderop "gilt im Rest des Landes" met een lagere stufe, en
+    // dát is wat er voor het hele land geldt.
+    const restKandidaten = all.filter((x) => restfrase.test(x.ctx));
+    const rest = restKandidaten.length
+      ? restKandidaten.reduce((a, b) => (b.level < a.level ? b : a))
+      : null;
     if (rest) {
       return ok({
         level: rest.level, regionalMaxLevel: regionalMax > rest.level ? regionalMax : (rest.level >= 2 ? rest.level : null),
