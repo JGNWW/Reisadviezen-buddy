@@ -49,7 +49,7 @@
         "continent": "americas",
         "slug": "montserrat"
       },
-      "es": "Montserrat",
+      "es": null,
       "de": null,
       "nz": "montserrat"
     }
@@ -104,7 +104,7 @@
         "continent": "africa",
         "slug": "reunion"
       },
-      "es": "Reunión",
+      "es": null,
       "de": null,
       "nz": "reunion"
     }
@@ -159,7 +159,7 @@
         "continent": "americas",
         "slug": "greenland"
       },
-      "es": "Tierra Verde",
+      "es": null,
       "de": null,
       "nz": "greenland"
     }
@@ -186,7 +186,7 @@
         "continent": "americas",
         "slug": "anguilla"
       },
-      "es": "Anguila",
+      "es": null,
       "de": null,
       "nz": "anguilla"
     }
@@ -409,7 +409,7 @@
         "continent": "europe",
         "slug": "czech-republic"
       },
-      "es": "Chequia",
+      "es": "República Checa",
       "de": "CZE",
       "nz": "czech-republic",
       "dk": "tjekkiet",
@@ -466,7 +466,7 @@
         "continent": "africa",
         "slug": "malawi"
       },
-      "es": "Malaui",
+      "es": "Malawi",
       "de": "MWI",
       "nz": "malawi",
       "dk": "malawi"
@@ -522,7 +522,7 @@
         "continent": "americas",
         "slug": "virgin-islands-british"
       },
-      "es": "Islas Vírgenes (Británicas)",
+      "es": null,
       "de": null,
       "nz": "virgin-islands-british"
     }
@@ -661,7 +661,7 @@
         "continent": "americas",
         "slug": "dominica"
       },
-      "es": "república dominicana",
+      "es": "Dominica",
       "de": "DMA",
       "nz": "dominica",
       "dk": "dominica"
@@ -773,7 +773,7 @@
         "continent": "americas",
         "slug": "guyana"
       },
-      "es": "Guayana",
+      "es": "Guyana",
       "de": "GUY",
       "nz": "guyana",
       "dk": "guyana"
@@ -885,7 +885,7 @@
         "continent": "asia",
         "slug": "myanmar"
       },
-      "es": "Birmania",
+      "es": "Myanmar",
       "de": "MMR",
       "nz": "myanmar",
       "dk": "myanmar"
@@ -941,7 +941,7 @@
         "continent": "americas",
         "slug": "sint-maarten-dutch-part"
       },
-      "es": "Sint Maarten (parte holandesa)",
+      "es": null,
       "de": null,
       "nz": "sint-maarten-dutch-part"
     }
@@ -993,7 +993,7 @@
       "ie": "taiwan",
       "fr": "taiwan",
       "au": null,
-      "es": "Taiwán, Provincia de China",
+      "es": "Taiwán",
       "de": "TWN",
       "nz": "taiwan-province-of-china",
       "dk": "taipei"
@@ -1329,7 +1329,7 @@
         "continent": "americas",
         "slug": "martinique"
       },
-      "es": "Martinica",
+      "es": null,
       "de": null,
       "nz": "martinique"
     }
@@ -1356,7 +1356,7 @@
         "continent": "pacific",
         "slug": "american-samoa"
       },
-      "es": "Samoa Americana",
+      "es": null,
       "de": null,
       "nz": "american-samoa",
       "dk": "amerikansk-samoa"
@@ -1380,7 +1380,7 @@
         "continent": "pacific",
         "slug": "pitcairn"
       },
-      "es": "Pitcairn",
+      "es": null,
       "de": null,
       "nz": "pitcairn"
     }
@@ -1459,7 +1459,7 @@
         "continent": "pacific",
         "slug": "wallis-and-futuna"
       },
-      "es": "Wallis y Futuna",
+      "es": null,
       "de": null,
       "nz": "wallis-and-futuna"
     }
@@ -1486,7 +1486,7 @@
         "continent": "pacific",
         "slug": "new-caledonia"
       },
-      "es": "Nueva Caledonia",
+      "es": null,
       "de": null,
       "nz": "new-caledonia"
     }
@@ -1568,7 +1568,7 @@
         "continent": "americas",
         "slug": "puerto-rico"
       },
-      "es": "Puerto Rico",
+      "es": "Puerto Rico (EEUU)",
       "de": null,
       "nz": "puerto-rico"
     }
@@ -1651,7 +1651,7 @@
         "continent": "americas",
         "slug": "cayman-islands"
       },
-      "es": "Islas Caimán",
+      "es": null,
       "de": null,
       "nz": "cayman-islands"
     }
@@ -1870,7 +1870,7 @@
       "ie": null,
       "fr": null,
       "au": null,
-      "es": "Sabá",
+      "es": null,
       "de": null,
       "nz": "saba"
     }
@@ -1894,7 +1894,7 @@
       "ie": null,
       "fr": null,
       "au": null,
-      "es": "San Eustaquio",
+      "es": null,
       "de": null,
       "nz": "sint-eustatius"
     }
@@ -1917,7 +1917,7 @@
         "continent": "europe",
         "slug": "svalbard-and-jan-mayen"
       },
-      "es": "Svalbard y Jan Mayen",
+      "es": null,
       "de": null,
       "nz": "svalbard-and-jan-mayen"
     }
@@ -2056,7 +2056,7 @@
         "continent": "americas",
         "slug": "el-salvador"
       },
-      "es": "Salvador",
+      "es": "El Salvador",
       "de": "SLV",
       "nz": "el-salvador",
       "dk": "el-salvador"
@@ -2280,7 +2280,7 @@
         "continent": "americas",
         "slug": "french-guiana"
       },
-      "es": "Guayana Francesa",
+      "es": null,
       "de": null,
       "nz": "french-guiana"
     }
@@ -2335,7 +2335,7 @@
         "continent": "asia",
         "slug": "south-korea"
       },
-      "es": "Corea del Sur",
+      "es": "Corea",
       "de": "KOR",
       "nz": "south-korea",
       "dk": "sydkorea"
@@ -2471,7 +2471,7 @@
         "continent": "middle-east",
         "slug": "palestine-state-of"
       },
-      "es": "Palestina, Estado de",
+      "es": "Palestina",
       "de": "PSE",
       "nz": "palestine-state-of",
       "dk": "palaestina",
@@ -2584,7 +2584,7 @@
         "continent": "africa",
         "slug": "guinea-bissau"
       },
-      "es": "Guinea-Bisáu",
+      "es": "Guinea-Bissau",
       "de": "GNB",
       "nz": "guinea-bissau",
       "dk": "guinea-bissau"
@@ -2640,7 +2640,7 @@
         "continent": "americas",
         "slug": "virgin-islands-u-s"
       },
-      "es": "Islas Vírgenes (EE.UU.)",
+      "es": null,
       "de": null,
       "nz": "virgin-islands-u-s"
     }
@@ -2695,7 +2695,7 @@
         "continent": "asia",
         "slug": "macao"
       },
-      "es": "macao",
+      "es": null,
       "de": "MAC",
       "nz": "macao"
     }
@@ -2722,7 +2722,7 @@
         "continent": "asia",
         "slug": "hong-kong"
       },
-      "es": "Hong Kong",
+      "es": null,
       "de": "HKG",
       "nz": "hong-kong"
     }
@@ -3277,7 +3277,7 @@
         "continent": "europe",
         "slug": "moldova-republic-of"
       },
-      "es": "Moldavia, República de",
+      "es": "Moldavia",
       "de": "MDA",
       "nz": "moldova-republic-of",
       "dk": "moldova"
@@ -3333,7 +3333,7 @@
         "continent": "pacific",
         "slug": "tokelau"
       },
-      "es": "Tokelau",
+      "es": null,
       "de": null,
       "nz": "tokelau"
     }
@@ -3724,7 +3724,7 @@
         "continent": "americas",
         "slug": "aruba"
       },
-      "es": "Aruba",
+      "es": null,
       "de": null,
       "nz": "aruba"
     }
@@ -3748,7 +3748,7 @@
       "ie": null,
       "fr": null,
       "au": null,
-      "es": "Bonaire",
+      "es": null,
       "de": null,
       "nz": "bonaire"
     }
@@ -3803,7 +3803,7 @@
         "continent": "americas",
         "slug": "curacao"
       },
-      "es": "Curazao",
+      "es": null,
       "de": null,
       "nz": "curacao"
     }
@@ -3830,7 +3830,7 @@
         "continent": "africa",
         "slug": "congo"
       },
-      "es": "Congo",
+      "es": "República del Congo",
       "de": "COG",
       "nz": "republic-of-congo",
       "dk": "republikken-congo"
@@ -3886,7 +3886,7 @@
         "continent": "africa",
         "slug": "togo"
       },
-      "es": "Ir",
+      "es": "Togo",
       "de": "TGO",
       "nz": "togo",
       "dk": "togo"
@@ -3914,7 +3914,7 @@
         "continent": "americas",
         "slug": "guadeloupe"
       },
-      "es": "Guadalupe",
+      "es": null,
       "de": null,
       "nz": "guadeloupe"
     }
@@ -3969,7 +3969,7 @@
         "continent": "pacific",
         "slug": "french-polynesia"
       },
-      "es": "Polinesia Francesa",
+      "es": null,
       "de": null,
       "nz": "french-polynesia"
     }
@@ -4388,7 +4388,7 @@
         "continent": "africa",
         "slug": "congo-democratic-republic-of-the"
       },
-      "es": "Congo, República Democrática del",
+      "es": "República Democrática del Congo",
       "de": "COD",
       "nz": "democratic-republic-of-the-congo",
       "dk": "den-demokratiske-republik-congo"
@@ -4416,7 +4416,7 @@
         "continent": "middle-east",
         "slug": "syria"
       },
-      "es": "República Árabe Siria",
+      "es": "Siria",
       "de": "SYR",
       "nz": "syria",
       "dk": "syrien"
@@ -4528,7 +4528,7 @@
         "continent": "asia",
         "slug": "laos"
       },
-      "es": "República Democrática Popular Lao",
+      "es": "Laos",
       "de": "LAO",
       "nz": "laos",
       "dk": "laos"
@@ -4556,7 +4556,7 @@
         "continent": "middle-east",
         "slug": "jordan"
       },
-      "es": "Jordán",
+      "es": "Jordania",
       "de": "JOR",
       "nz": "jordan",
       "dk": "jordan"
@@ -4584,7 +4584,7 @@
         "continent": "americas",
         "slug": "turks-and-caicos-islands"
       },
-      "es": "Islas Turcas y Caicos",
+      "es": null,
       "de": null,
       "nz": "turks-and-caicos-islands"
     }
@@ -4751,7 +4751,7 @@
         "continent": "pacific",
         "slug": "niue"
       },
-      "es": "Niue",
+      "es": null,
       "de": "NIU",
       "nz": "niue"
     }
@@ -4806,7 +4806,7 @@
         "continent": "pacific",
         "slug": "micronesia-federated-states-of"
       },
-      "es": "Micronesia, Estados Federados de",
+      "es": "Micronesia",
       "de": "FSM",
       "nz": "micronesia-federated-states-of",
       "dk": "mikronesien"
@@ -5001,7 +5001,7 @@
         "continent": "africa",
         "slug": "tanzania-united-republic-of"
       },
-      "es": "Tanzania, República Unida de",
+      "es": "Tanzania",
       "de": "TZA",
       "nz": "tanzania-united-republic-of",
       "dk": "tanzania"
@@ -5138,7 +5138,7 @@
       "ie": "kosovo",
       "fr": "kosovo",
       "au": null,
-      "es": "Kosovo",
+      "es": null,
       "de": "XKX",
       "nz": "kosovo",
       "dk": "kosovo"
@@ -5278,7 +5278,7 @@
         "continent": "asia",
         "slug": "iran-islamic-republic-of"
       },
-      "es": "Irán, República Islámica de",
+      "es": "Irán",
       "de": "IRN",
       "nz": "iran-islamic-republic-of",
       "dk": "iran"
@@ -5582,7 +5582,7 @@
         "continent": "europe",
         "slug": "faroe-islands"
       },
-      "es": "Islas Feroe",
+      "es": null,
       "de": null,
       "nz": "faroe-islands"
     }
@@ -5662,7 +5662,7 @@
       "ie": null,
       "fr": "antarctique",
       "au": null,
-      "es": "Antártida",
+      "es": null,
       "de": null,
       "nz": "antarctica"
     }
@@ -5717,7 +5717,7 @@
         "continent": "americas",
         "slug": "venezuela-bolivarian-republic-of"
       },
-      "es": "Venezuela, República Bolivariana de",
+      "es": "Venezuela",
       "de": "VEN",
       "nz": "venezuela-bolivarian-republic-of",
       "dk": "venezuela"
@@ -6138,7 +6138,7 @@
         "continent": "europe",
         "slug": "spain"
       },
-      "es": "España",
+      "es": null,
       "de": "ESP",
       "nz": "spain",
       "dk": "spanien"
@@ -6166,7 +6166,7 @@
         "continent": "asia",
         "slug": "brunei"
       },
-      "es": "Brunéi Darussalam",
+      "es": "Brunéi",
       "de": "BRN",
       "nz": "brunei",
       "dk": "brunei"
@@ -6194,7 +6194,7 @@
         "continent": "americas",
         "slug": "bolivia-plurinational-state-of"
       },
-      "es": "Bolivia, Estado Plurinacional de",
+      "es": "Bolivia",
       "de": "BOL",
       "nz": "bolivia-plurinational-state-of",
       "dk": "bolivia"

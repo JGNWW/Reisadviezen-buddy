@@ -51,8 +51,16 @@ function auContinent(region, subregion) {
   return null;
 }
 
-// Spanje (Exteriores): landpagina via de Spaanse landnaam (?trc=Naam);
-// afgeleid via vertaling (en->es), met overrides voor bekende namen.
+// Spanje (Exteriores): landpagina via de Spaanse landnaam (?trc=Naam).
+// Deze koppeling stond volledig op vertaling (en->es) en dat ging stil mis:
+// een onbekende trc-waarde geeft namelijk HTTP 200 met een stubpagina in
+// plaats van een 404, dus 54 landen leverden jarenlang "niet vast te stellen"
+// op zonder dat er iets faalde. De vertaling gaf onder meer "Jordán" voor
+// Jordanië, "Ir" voor Togo, "Tierra Verde" voor Groenland en de ISO-langvormen
+// ("Irán, República Islámica de"), en zette Dominica zelfs op de pagina van de
+// Dominicaanse Republiek. Daarom staan alle Spaanse namen nu vast, overgenomen
+// uit de eigen landenlijst van exteriores.gob.es; null = daar publiceert
+// Spanje geen advies voor (overzeese gebieden, Kosovo, Spanje zelf).
 const ES_NAME_OVERRIDES = OVERRIDES.es || {};
 
 // Nieuw-Zeeland (SafeTravel): /destinations/{slug}, slug = Engelse landnaam.
@@ -227,18 +235,25 @@ async function main() {
   console.log('Franse/Spaanse/Deense namen afleiden via vertaling…');
   const isos = Object.keys(countries);
   await mapLimit(isos, 6, async (iso) => {
+    // Een land dat ín de overridetabel staat is bewust vastgelegd — óók als de
+    // waarde null is ("deze bron heeft geen advies voor dat land", zie
+    // _uitleg in slug-overrides.json). Met een `if (!x)`-terugval zou zo'n
+    // null alsnog door de vertaling worden overschreven en kreeg het land een
+    // verzonnen slug terug; de us-tak hiervoor doet het al met `in`.
+    const vast = (tabel) => Object.prototype.hasOwnProperty.call(tabel, iso);
+
     let fr = FR_SLUG_OVERRIDES[iso];
-    if (!fr) { const frName = await translateName(countries[iso].en, 'fr'); fr = frName ? normalise(frName) : null; }
+    if (!vast(FR_SLUG_OVERRIDES)) { const frName = await translateName(countries[iso].en, 'fr'); fr = frName ? normalise(frName) : null; }
     countries[iso].sources.fr = fr;
     if (fr) counts.fr = (counts.fr || 0) + 1;
 
     let es = ES_NAME_OVERRIDES[iso];
-    if (!es) { const esName = await translateName(countries[iso].en, 'es'); es = esName ? esName.trim() : null; }
+    if (!vast(ES_NAME_OVERRIDES)) { const esName = await translateName(countries[iso].en, 'es'); es = esName ? esName.trim() : null; }
     countries[iso].sources.es = es;
     if (es) counts.es = (counts.es || 0) + 1;
 
     let dk = DK_NAME_OVERRIDES[iso];
-    if (!dk) { const daName = await translateName(countries[iso].en, 'da'); dk = daName ? normalise(daName) : null; }
+    if (!vast(DK_NAME_OVERRIDES)) { const daName = await translateName(countries[iso].en, 'da'); dk = daName ? normalise(daName) : null; }
     countries[iso].sources.dk = dk;
     if (dk) counts.dk = (counts.dk || 0) + 1;
   });

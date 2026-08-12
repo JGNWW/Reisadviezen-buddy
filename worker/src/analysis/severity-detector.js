@@ -53,15 +53,30 @@ const PATTERNS = {
   es: [
     P(/se desaconseja (todo|cualquier) (viaje|desplazamiento)/i, 4),
     // "se desaconseja viajar a X" (zonder 'salvo'-uitzondering) = niet reizen.
-    P(/se desaconseja(n)? (viajar|el viaje|todo (el )?viaje)\b(?![^.]*salvo)/i, 4),
-    P(/se recomienda (valorar )?no viajar\b(?!.*salvo)/i, 4),
+    // Er kan een bijwoord tussen staan: Israël schrijft in kapitalen "SE
+    // DESACONSEJA COMPLETAMENTE VIAJAR A ISRAEL", en zonder ruimte daarvoor
+    // vond de zin helemaal geen niveau en bleef het oordeel "niet vast te
+    // stellen". Spaanse bijwoorden eindigen op -mente, dus dat is een nauwe gok.
+    P(/se desaconseja(n)? (?:\w+mente )?(viajar|el viaje|todo (el )?viaje)\b(?![^.]*salvo)/i, 4),
+    // De uitzonderings-check hoort bij de zín te blijven. Met `.*` keek de
+    // lookahead door de héle resterende tekst mee, zodat één willekeurig
+    // "salvo" verderop in het advies (visumregels, douane) deze formulering
+    // liet vallen — en er stond destijds geen 3-patroon tegenover, dus dan
+    // bleef er niets over. `[^.]*` houdt het bij dezelfde zin, net als bij de
+    // "desaconseja"-variant hierboven.
+    P(/se recomienda (valorar )?no viajar\b(?![^.]*salvo)/i, 4),
     // "Se desaconseja viajar al país SALVO CASO DE NECESIDAD" — dezelfde
     // strekking als "all but essential travel", dus niveau 3. De 4-patronen
     // hierboven sluiten "salvo" bewust uit, maar er stond niets tegenover:
     // Libië opent zijn adviespagina met precies deze zin en kwam daardoor
     // zónder niveau uit de ankersectie, en dus landelijk op groen.
-    P(/se desaconseja(n)? (?:viajar|el viaje|los viajes?|todo (?:el )?viaje)[^.]{0,60}?salvo[^.]{0,40}?(?:necesidad|imprescindible|ineludible|fuerza mayor|imperativ)/i, 3),
-    P(/evitar (todo|cualquier) desplazamiento/i, 4),
+    P(/se desaconseja(n)? (?:\w+mente )?(?:viajar|el viaje|los viajes?|todo (?:el )?viaje)[^.]{0,60}?salvo[^.]{0,40}?(?:necesidad|imprescindible|ineludible|fuerza mayor|imperativ)/i, 3),
+    // Dezelfde trap, maar met "se recomienda no viajar": "SE RECOMIENDA NO
+    // VIAJAR A MYANMAR, SALVO POR RAZONES EXCEPCIONALES Y JUSTIFICADAS".
+    P(/se recomienda (?:valorar )?no viajar[^.]{0,60}?salvo[^.]{0,60}?(?:necesidad|imprescindible|ineludible|excepcional|justificad|fuerza mayor|imperativ)/i, 3),
+    // Naast "desplazamiento" gebruikt Exteriores net zo goed "viaje": "se
+    // recomienda evitar todo viaje a Myanmar".
+    P(/evitar (todo|cualquier) (?:viaje|desplazamiento)/i, 4),
     P(/no viajar salvo|salvo (por )?razones (ineludibles|de fuerza mayor)/i, 3),
     // "aplazar/posponer el viaje … salvo que sea necesario/imprescindible" of
     // "… hasta nuevo aviso" — niet-noodzakelijke reizen ontraden (niveau 3).
@@ -104,6 +119,19 @@ const PATTERNS = {
   it: [
     P(/(?:viaggi|spostamenti)[^.]{0,80}sconsigli\w+ a qualsiasi titolo|sconsigli\w+ a qualsiasi titolo|evacuare il paese/i, 4),
     P(/(?:viaggi|spostamenti)[^.]{0,80}sconsigli\w+|sconsigli\w+[^.]{0,40}(?:viaggi|spostamenti|recarsi)|si sconsiglia(?:no)? di (?:recarsi|viaggiare)/i, 3),
+    // De Unità di Crisi ontraadt niet altijd met "sconsigliare": bij Libanon
+    // staat er "si ribadisce l'invito ai connazionali a rinviare i viaggi in
+    // Libano che non siano dettati da ragioni di necessità, di lavoro o di
+    // affari" — reizen uitstellen tenzij noodzakelijk. Dat is dezelfde
+    // strekking als "alleen noodzakelijke reizen" en dus niveau 3; zonder dit
+    // patroon vond de engine helemaal geen formulering en bleef Libanon bij
+    // Italië op "niet vast te stellen" staan.
+    // Bewust alleen de collectieve vormen ("i viaggi", "ogni/qualsiasi
+    // viaggio"): het enkelvoudige "rimandare il viaggio" is juist géén
+    // reisadvies maar gezondheidsproza — bij Nauru staat "i contatti stretti
+    // dei casi COVID-19 … sono invitati a considerare di rimandare il viaggio
+    // di almeno 5 giorni", en dat mag geen gebiedswaarschuwing worden.
+    P(/\b(?:rinviare|posticipare|rimandare)\s+(?:tutti\s+i\s+viaggi|i\s+viaggi|ogni\s+viaggio|qualsiasi\s+viaggio)\b/i, 3),
     P(/particolare cautela|elevata cautela|massima prudenza|particolare prudenza|particolare attenzione/i, 2),
     P(/normali misure di prudenza|normali precauzioni/i, 1),
   ],

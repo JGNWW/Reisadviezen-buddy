@@ -454,3 +454,51 @@ test('Spanje: "salvo caso de necesidad" is een landelijk oordeel, geen uitzonder
 test('Spanje: zonder uitzondering blijft het niveau 4', () => {
   assert.equal(findSeverity('Se desaconseja viajar a Libia', 'es').level, 4);
 });
+
+test('Spanje: een bijwoord tussen "desaconseja" en "viajar" mag de zin niet laten vallen', () => {
+  // Israël, Haïti en Niger schrijven hun landelijke oordeel in kapitalen mét
+  // versterkend bijwoord. Zonder ruimte daarvoor vond de detector niets en
+  // bleven die landen op "niet vast te stellen" of te laag staan.
+  for (const zin of [
+    'ANTE EL CONTEXTO DE CONFLICTO REGIONAL, SE DESACONSEJA COMPLETAMENTE VIAJAR A ISRAEL.',
+    'SE DESACONSEJA ENCARECIDAMENTE VIAJAR A HAITÍ.',
+    'SE DESACONSEJA ABSOLUTAMENTE VIAJAR A NÍGER.',
+  ]) {
+    assert.equal(findSeverity(zin, 'es').level, 4, zin);
+  }
+  // De uitzonderingsvorm blijft ook mét bijwoord de mildere trap.
+  assert.equal(
+    findSeverity('SE DESACONSEJA FIRMEMENTE VIAJAR AL PAÍS SALVO CASO DE NECESIDAD', 'es').level, 3,
+  );
+});
+
+test('Spanje: "se recomienda no viajar … salvo" is niveau 3, niet niets', () => {
+  // Myanmar. Het 4-patroon sloot elke zin met "salvo" uit — via een lookahead
+  // die bovendien over de zinsgrens heen keek — en er stond geen mildere
+  // variant tegenover, dus het land kwam zonder niveau uit de ankersectie.
+  const s = findSeverity('SE RECOMIENDA NO VIAJAR A MYANMAR, SALVO POR RAZONES EXCEPCIONALES Y JUSTIFICADAS.', 'es');
+  assert.equal(s.level, 3);
+  // Een "salvo" in een látere zin (visumregels) mag het 4-oordeel niet slopen.
+  assert.equal(
+    findSeverity('Se recomienda no viajar al país. El visado se concede salvo excepciones.', 'es').level, 4,
+  );
+});
+
+test('Italië: "rinviare/posticipare i viaggi" is een landelijke ontrading', () => {
+  // Libanon, Rusland en DR Congo gebruiken deze vorm in plaats van
+  // "sconsigliati"; zonder patroon bleven ze bij Italië zonder niveau.
+  for (const zin of [
+    "si ribadisce l'invito ai connazionali a rinviare i viaggi in Libano che non siano dettati da ragioni di necessità",
+    'si raccomanda di posticipare tutti i viaggi verso il Paese',
+    'si invitano i connazionali a rimandare i viaggi verso il Paese',
+    'si invitano i connazionali a rimandare qualsiasi viaggio verso la Repubblica Democratica del Congo',
+  ]) {
+    assert.equal(findSeverity(zin, 'it').level, 3, zin);
+  }
+  // Enkelvoudig "il viaggio" is gezondheidsproza (Nauru, COVID-contacten) en
+  // mag géén waarschuwing worden.
+  assert.equal(
+    findSeverity('I contatti stretti dei casi COVID-19 confermati sono invitati a considerare di rimandare il viaggio di almeno 5 giorni.', 'it'),
+    null,
+  );
+});
