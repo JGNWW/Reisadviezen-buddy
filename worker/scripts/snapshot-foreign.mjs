@@ -497,7 +497,22 @@ async function main() {
         adv = null;
         tally.reason ||= String(e?.message || e).slice(0, 120);
       }
-      if (!adv) { failed++; tally.failed++; continue; } // tijdelijke fout: vorige staat behouden, geen diff
+      if (!adv) {
+        // Tijdelijke fout: vorige staat behouden, geen diff. De brondatum
+        // halen we wél uit het vangnet. Zwitserland en Noorwegen blokkeren de
+        // kale serverfetch structureel en komen alleen via de wekelijkse
+        // browser-capture binnen; die schrijft data/latest/ maar niet
+        // source-dates.json, en dit was het enige pad daarheen. Gevolg:
+        // 192 Zwitserse en 178 Noorse datums stonden wél in het vangnet maar
+        // ontbraken volledig in de datumlijst, waardoor die twee bronnen nooit
+        // in "Recente wijzigingen" konden opduiken. Denemarken miste zo ruim
+        // de helft van zijn datums.
+        // compactFull() bewaart de ruwe brondatum; normaliseren, want in
+        // source-dates.json staat uitsluitend yyyy-mm-dd.
+        const bewaard = normDate(latest.sources[sid]?.lastModified);
+        if (bewaard) (sourceDates[iso3] ||= {})[sid] = bewaard;
+        failed++; tally.failed++; continue;
+      }
       fetchedAny = true;
       for (const t of indexTokens(adv.fullText)) countryTerms.add(t);
 
