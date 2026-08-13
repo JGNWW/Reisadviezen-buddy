@@ -45,6 +45,22 @@ export function sourceUrl(slug) {
 
 export const meta = { id: 'dk', label: 'Denemarken (Udenrigsministeriet)', flag: '🇩🇰', lang: 'da' };
 
+// um.dk heeft voor elk land uit zijn eigen keuzelijst een pagina, maar lang
+// niet voor elk land ook een advies. Ontbreekt het, dan staat er letterlijk
+// "Vi har ingen rejsevejledning for <land>" — een affirmatief antwoord van de
+// bron, geen mislukte ophaling. Dat onderscheid is niet cosmetisch: een
+// niveauloos resultaat met status 'uncertain' mag in het vangnet een eerder
+// bewaard advies niet vervangen (anders wist elke haperende run de laatste
+// goede stand). Zou Denemarken een advies intrekken, dan bleef het
+// ingetrokken advies daardoor eeuwig staan. Met 'none' — dezelfde afspraak
+// als bij de 137 VK-landen zonder waarschuwing — gaat die wijziging wél door.
+const DK_GEEN_ADVIES = /vi har ingen rejsevejledning/i;
+
+/** Zegt um.dk zelf dat er voor dit land geen reisadvies is? */
+export function isDanishNoAdvisory(text) {
+  return DK_GEEN_ADVIES.test(String(text || ''));
+}
+
 /** Maandnamen NB: Deense datums zijn dd.mm.yyyy — direct te normaliseren. */
 function danishDate(html) {
   const m = html.match(/opdateret:\s*(\d{2})\.(\d{2})\.(\d{4})/i);
@@ -58,6 +74,35 @@ export async function getAdvisory(slug) {
   if (!html) return null;
 
   const text = htmlToText(html);
+  // Geen advies bij deze bron: netjes als zodanig melden en verder niets
+  // afleiden. De koppeling blijft bestaan en wordt elke run opnieuw
+  // gecontroleerd, dus zodra um.dk hier alsnog een advies plaatst, komt dat
+  // gewoon binnen.
+  if (isDanishNoAdvisory(text)) {
+    return {
+      source: meta.id,
+      sourceLabel: meta.label,
+      flag: meta.flag,
+      name: null,
+      url,
+      lastModified: null,
+      updateNote: null,
+      level: null,
+      color: null,
+      levelLabel: 'Denemarken publiceert geen reisadvies voor dit land (um.dk: "Vi har ingen rejsevejledning").',
+      regionalMaxLevel: null,
+      hasRegionalWarnings: false,
+      regionalBreakdown: null,
+      regionalCoverage: null,
+      regions: {},
+      confidence: 'high',
+      assessmentStatus: 'none',
+      hasMap: false,
+      themes: [],
+      fullText: '',
+    };
+  }
+
   // Anker: het samenvattende blok begint bij "Gyldig: <datum>" en loopt tot de
   // eerste inhoudelijke sectiekop. Neem een ruime maar begrensde window.
   const gyldig = text.search(/Gyldig:\s*\d{2}\.\d{2}\.\d{4}/i);

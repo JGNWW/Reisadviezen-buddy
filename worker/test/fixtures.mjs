@@ -22,6 +22,8 @@ export const ROUTES = [
   ['opendata/travelwarning', 'de-index.json'],
   ['safetravel.govt.nz/destinations/nepal', 'nz-nepal.html'],
   ['rejsevejledninger/nepal', 'dk-nepal.html'],
+  // Een land waarvoor um.dk wél een pagina heeft maar geen advies.
+  ['rejsevejledninger/_geen-advies', 'dk-geen-advies.html'],
   ['pcinfectionspothazardinfo_010.html', 'jp-nepal.html'],
   ['pchazardspecificinfo_', 'jp-nepal-detail.html'],
   ['schede_paese/NPL.json', 'it-nepal.json'],
