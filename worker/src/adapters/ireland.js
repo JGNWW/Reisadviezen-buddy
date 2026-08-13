@@ -59,6 +59,23 @@ export function statusFromText(text) {
   return null;
 }
 
+/**
+ * Wijzigingsdatum uit de head van ireland.ie:
+ *   <meta property="website:modified_time" content="2026-04-23T14:09:48+01:00" />
+ * De offset is de Ierse; we houden de kalenderdatum van de bron zelf aan in
+ * plaats van die naar UTC om te rekenen, anders verspringt een avondupdate een
+ * dag. Lege content ("") komt voor bij het published_time-broertje, vandaar de
+ * lengtecontrole.
+ */
+export function lastModifiedFromHtml(html) {
+  // Attribuutvolgorde binnen de tag ligt niet vast, dus eerst de juiste tag
+  // afbakenen en pas daarna content eruit halen.
+  const tag = String(html || '').match(/<meta\b[^>]*\bwebsite:modified_time\b[^>]*>/i);
+  const inhoud = tag?.[0].match(/\bcontent=["']([^"']*)["']/i);
+  const datum = (inhoud?.[1] || '').match(/^(\d{4}-\d{2}-\d{2})/);
+  return datum ? datum[1] : null;
+}
+
 export async function getAdvisory(slug) {
   if (!slug) return null;
   const url = `${BASE}/${slug}/`;
@@ -70,9 +87,15 @@ export async function getAdvisory(slug) {
 
   const status = statusFromText(main.text);
 
-  // ireland.ie zet geen zichtbare wijzigingsdatum op de landpagina; de
-  // "Bijgewerkt"-kolom valt daarom terug op source-dates.json.
-  const lastModified = null;
+  // ireland.ie zet geen zíchtbare wijzigingsdatum op de landpagina, maar wel
+  // een meta-tag in de head. Die stond hier op null met als gevolg dat de
+  // "Bijgewerkt"-kolom terugviel op source-dates.json — en dáár kwam nooit een
+  // nieuwe Ierse datum bij, want dat bestand wordt alleen gevuld met wat de
+  // adapter teruggeeft. Wat er stond waren dus de dfa.ie-datums van vóór de
+  // verhuizing: Libanon bleef op 17-11-2022 staan terwijl ireland.ie
+  // 23-04-2026 meldt. Niets faalde zichtbaar — dezelfde val als bij de bron
+  // zelf, één laag verderop.
+  const lastModified = lastModifiedFromHtml(html);
   const sections = splitByHeadings(absolutiseLinks(main.innerHTML, SITE))
     .filter((s) => s.heading && s.text && s.text.length > 20)
     // Boilerplate van het nieuwe platform (inhoudsopgave, verzekeringsblok,
