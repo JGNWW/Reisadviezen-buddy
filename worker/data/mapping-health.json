@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-10T08:14:48.019Z",
+  "generatedAt": "2026-08-17T07:35:13.242Z",
   "sources": {
     "uk": {
       "checked": 219,
@@ -7,12 +7,12 @@
       "ontbrekend": [],
       "ongebruiktAantal": 12,
       "ongebruikt": [
-        "palestine",
         "netherlands",
+        "falkland-islands",
+        "palestine",
         "gibraltar",
         "st-helena-ascension-and-tristan-da-cunha",
         "western-sahara",
-        "falkland-islands",
         "mayotte",
         "st-pierre-and-miquelon",
         "st-martin-and-st-barthelemy",
@@ -32,7 +32,24 @@
       ]
     },
     "ca": {
-      "error": "fetch failed"
+      "checked": 220,
+      "broken": [],
+      "ontbrekend": [],
+      "ongebruiktAantal": 12,
+      "ongebruikt": [
+        "PT-20",
+        "BM",
+        "IC",
+        "FK",
+        "GI",
+        "GU",
+        "YT",
+        "NL",
+        "MP",
+        "BL",
+        "MF",
+        "PM"
+      ]
     },
     "ie": {
       "checked": 210,
