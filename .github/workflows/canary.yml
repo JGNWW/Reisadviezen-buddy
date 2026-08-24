@@ -1,8 +1,11 @@
 name: Live-canary bron-adapters
 
 # Wekelijkse controle of elke bron-adapter nog werkt op de échte site
-# (de offline contracttests bewaken alleen de parseerlogica). Bij falen
-# wordt automatisch een issue geopend (met dedupe op titel).
+# (de offline contracttests bewaken alleen de parseerlogica). Alle zeventien
+# adapters doen mee, met per bron een vast ankerland (Nepal) plus twee landen
+# die met de dag opschuiven — vaste testlanden vinden per definitie geen fout
+# bij land 137. Bij falen wordt automatisch een issue geopend (dedupe op
+# titel).
 on:
   schedule:
     - cron: '0 7 * * 1' # maandag 07:00 UTC
@@ -28,7 +31,7 @@ jobs:
           cache: npm
           cache-dependency-path: worker/package-lock.json
       - run: npm ci
-      - name: Canary draaien (2 landen per bron, live)
+      - name: Canary draaien (anker + 2 roterende landen per bron, live)
         run: node scripts/canary.mjs
         env:
           JINA_KEY: ${{ secrets.JINA_KEY }}

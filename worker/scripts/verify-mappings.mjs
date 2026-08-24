@@ -269,7 +269,9 @@ async function steekproef() {
   const bronnen = Object.keys(ADAPTERS);
   for (const [i, sid] of bronnen.entries()) {
     const isos = Object.entries(countries).filter(([, r]) => r.sources?.[sid]).map(([iso]) => iso);
-    const gekozen = kiesSteekproef(isos, dag, STEEKPROEF_PER_BRON, i * 7);
+    // Versprong per bron = de eigen vensterbreedte, zodat de bronnen naast
+    // elkaar liggende stukken van de lijst pakken in plaats van hetzelfde.
+    const gekozen = kiesSteekproef(isos, dag, STEEKPROEF_PER_BRON, i * STEEKPROEF_PER_BRON);
     const rij = { gekoppeld: isos.length, getest: gekozen.length, ok: 0, verdacht: 0, onbereikbaar: 0, geblokkeerd: GEBLOKKEERD.has(sid) };
     for (const iso of gekozen) {
       const rec = countries[iso];
