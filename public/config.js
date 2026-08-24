@@ -31,9 +31,18 @@ window.REISADVIEZEN_CONFIG = {
     { id: 'fi', label: 'Finland (Ulkoministeriö)', flag: '🇫🇮', lang: 'fi', default: true },
     // Zuid-Korea: eigen land-ID's (kr-map.json), vaste 여행경보-stappen per gebied.
     { id: 'kr', label: 'Zuid-Korea (MOFA)', flag: '🇰🇷', lang: 'ko', default: true },
-    // Noorwegen: via de reader-proxy (site blokkeert datacenter-IP's);
-    // slug/id-mapping uit de Wayback-CDX (no-map.json).
-    { id: 'no', label: 'Noorwegen (Utenriksdept.)', flag: '🇳🇴', lang: 'no', default: true },
+    // Noorwegen: regjeringen.no zet op élk verzoek een Cloudflare-botcheck,
+    // en die is niet te omzeilen — gemeten voor een kale fetch, de
+    // CORS-proxy, de reader (met en zonder browser-engine én met Noorse
+    // proxy), een headless-shell en een volledige Chromium met 25 seconden
+    // geduld. De koppelingen kloppen dus wel, maar er komt niets binnen.
+    // `blocked` zorgt dat de tool dat zégt in plaats van de kolom stil leeg
+    // te laten; haal de vlag weg zodra regjeringen.no soepeler wordt.
+    {
+      id: 'no', label: 'Noorwegen (Utenriksdept.)', flag: '🇳🇴', lang: 'no', default: true,
+      blocked: true,
+      blockedNote: 'regjeringen.no blokkeert geautomatiseerd ophalen (Cloudflare-botcheck). De link per land werkt wel — klik "bron →" om er zelf te kijken.',
+    },
     // Oostenrijk: Sicherheitsstufe-box (4-puntsschaal, met (regional)-
     // kwalificatie); direct met reader-fallback.
     { id: 'at', label: 'Oostenrijk (BMEIA)', flag: '🇦🇹', lang: 'de', default: true },

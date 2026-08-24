@@ -24,7 +24,8 @@
 //   }
 //
 // status: 'ok' · 'uncertain' (niet vast te stellen) · 'none' (bron publiceert
-// geen kleurcode) · 'na' (bron deze keer niet opgehaald).
+// geen kleurcode) · 'blocked' (bron weert geautomatiseerd ophalen) ·
+// 'na' (bron deze keer niet opgehaald).
 // ==========================================================================
 
 (function (global) {
@@ -35,6 +36,10 @@
   /** Leesbare kleurtekst voor een cel — nooit leeg, want een leeg vakje leest
    *  als "vergeten" terwijl "geen kleurcode" een echt antwoord van de bron is. */
   function colorText(cell) {
+    // 'blocked' vóór 'na': een bron die geautomatiseerd ophalen structureel
+    // weert is geen hapering. Als "Niet opgehaald" lijkt het elke keer opnieuw
+    // een incident, en verdwijnt de bron stilzwijgend uit de vergelijking.
+    if (cell && cell.status === 'blocked') return 'Bron blokkeert ophalen';
     if (!cell || cell.status === 'na') return 'Niet opgehaald';
     if (cell.status === 'none') return GEEN_KLEURCODE;
     if (cell.status === 'uncertain') return 'Onzeker';
@@ -61,6 +66,7 @@
   /** Kort teken voor in de matrixcel: het niveaucijfer, of een symbool als er
    *  geen niveau is. Zwart-wit geprint blijft dit leesbaar — anders dan kleur. */
   function cellMark(cell) {
+    if (cell && cell.status === 'blocked') return '⊘';
     if (!cell || cell.status === 'na') return '·';
     if (cell.status === 'none') return '—';
     if (cell.status === 'uncertain') return '?';

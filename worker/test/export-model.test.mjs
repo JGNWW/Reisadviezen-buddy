@@ -268,3 +268,16 @@ test('colorTextWithRegions: ook een bron zonder kleurcode kan regio hebben', () 
     'Onzeker (ook regionaal: rood)',
   );
 });
+
+test('een geblokkeerde bron krijgt een eigen teken, niet dat van een hapering', () => {
+  // Noorwegen zet op élk verzoek een Cloudflare-botcheck. Dat als "deze keer
+  // niet opgehaald" tonen laat het elke keer opnieuw op een incident lijken,
+  // en zo verdween Noorwegen stilzwijgend uit de vergelijking.
+  assert.equal(ExportModel.cellMark({ status: 'blocked' }), '⊘');
+  assert.equal(ExportModel.colorText({ status: 'blocked' }), 'Bron blokkeert ophalen');
+  // De andere drie antwoorden blijven onderscheiden.
+  assert.equal(ExportModel.cellMark({ status: 'na' }), '·');
+  assert.equal(ExportModel.cellMark({ status: 'none' }), '—');
+  assert.equal(ExportModel.cellMark({ status: 'uncertain' }), '?');
+  assert.equal(ExportModel.cellMark(null), '·');
+});

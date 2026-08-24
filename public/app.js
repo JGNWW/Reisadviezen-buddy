@@ -813,7 +813,13 @@ function renderSourcePicker() {
     if (!m) return;
     const x = el('button', { type: 'button', class: 'chip-x', title: 'Verwijderen', 'aria-label': `${m.label} verwijderen` }, '×');
     x.addEventListener('click', () => removeSource(id));
-    chips.append(el('span', { class: 'src-chip' }, el('span', { class: 'fl' }, m.flag || ''), ` ${m.label} `, x));
+    const chip = el('span', { class: 'src-chip' + (m.blocked ? ' geblokkeerd' : '') },
+      el('span', { class: 'fl' }, m.flag || ''), ` ${m.label} `);
+    // Meteen zichtbaar dat deze bron structureel niets oplevert, in plaats van
+    // dat pas per land te ontdekken.
+    if (m.blocked) chip.append(el('span', { class: 'chip-blok', title: m.blockedNote || 'Deze bron blokkeert geautomatiseerd ophalen.' }, '⊘ '));
+    chip.append(x);
+    chips.append(chip);
   });
   renderSourceMenu();
 }
@@ -826,7 +832,9 @@ function renderSourceMenu() {
   if (!avail.length) { menu.append(el('div', { class: 'menu-empty' }, 'Alle bronnen zijn toegevoegd.')); return; }
   avail.forEach((id) => {
     const m = sourceMeta(id);
-    const item = el('div', { class: 'menu-item', role: 'button', tabindex: '0' }, el('span', { class: 'fl' }, m.flag || ''), ` ${m.label}`);
+    const item = el('div', { class: 'menu-item' + (m.blocked ? ' geblokkeerd' : ''), role: 'button', tabindex: '0' },
+      el('span', { class: 'fl' }, m.flag || ''), ` ${m.label}`);
+    if (m.blocked) item.append(el('span', { class: 'menu-blok', title: m.blockedNote || '' }, ' ⊘ blokkeert ophalen'));
     const pick = () => { addSource(id); menu.hidden = true; $('#source-add .btn-drop').setAttribute('aria-expanded', 'false'); };
     item.addEventListener('click', pick);
     item.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
@@ -1941,9 +1949,16 @@ function renderSummaryTable(nl, okSources, naSources = [], iso3 = null, changesB
   // ene bron zelf kan nakijken. Voorkomt dat een blokkade als "geen risico"
   // (of stilte) wordt gelezen.
   naSources.forEach((s) => {
-    tbody.append(el('tr', { class: 'na-row' },
+    // Onderscheid maken tussen "deze keer niet gelukt" en "deze bron weert
+    // geautomatiseerd ophalen". Dat tweede blijft morgen ook zo; het als
+    // hapering tonen wekt de indruk dat het aan ons ligt en dat het de
+    // volgende keer wel lukt.
+    const tekst = s.blocked
+      ? 'deze bron blokkeert geautomatiseerd ophalen — alleen handmatig bij de bron te lezen'
+      : 'niet automatisch beschikbaar — controleer bij de bron zelf';
+    tbody.append(el('tr', { class: 'na-row' + (s.blocked ? ' geblokkeerd' : '') },
       el('td', {}, `${s.flag || SOURCE_FLAG[s.source] || ''} ${s.label || s.sourceLabel || s.source}`),
-      el('td', { class: 'muted', colspan: 5 }, 'niet automatisch beschikbaar — controleer bij de bron zelf'),
+      el('td', { class: 'muted', colspan: 5 }, s.blocked ? el('span', { title: s.error || '' }, '⊘ ', tekst) : tekst),
       el('td', {}, s.url
         ? el('a', { href: s.url, target: '_blank', rel: 'noopener' }, 'bron →')
         : el('span', { class: 'muted' }, '—'))));
@@ -4068,6 +4083,10 @@ function buildDataset({ withThemes = false } = {}) {
       const s = byId.get(id);
       const meta = sourceMeta(id);
       const base = { id, label: meta?.label || id, short: shortFor(id) };
+      // Structureel geblokkeerd is iets anders dan "deze keer niet gelukt":
+      // Noorwegen zet op élk verzoek een Cloudflare-botcheck en komt er nooit
+      // doorheen. Dat als 'na' tonen laat het op een hapering lijken.
+      if (s?.blocked) return { ...base, status: 'blocked', url: s.url || '' };
       if (!s || s.unavailable || s.error) return { ...base, status: 'na' };
       return {
         ...base,
@@ -4160,9 +4179,9 @@ function filteredThemeContent(nl, foreign, { hidden, word } = {}) {
  * De celkleur zégt het niveau al; er dan óók nog een cijfer in zetten leest als
  * een tweede, andere maat en dat verwart meer dan het verheldert. Wat géén
  * kleur is houdt zijn teken wél: "de bron publiceert geen kleurcode" (—),
- * "niet vast te stellen" (?) en "deze keer niet opgehaald" (·) zijn drie
- * verschillende antwoorden, en aan een leeg vakje zie je niet welk van de drie
- * het is.
+ * "niet vast te stellen" (?), "deze keer niet opgehaald" (·) en "deze bron
+ * blokkeert geautomatiseerd ophalen" (⊘) zijn vier verschillende antwoorden,
+ * en aan een leeg vakje zie je niet welk van de vier het is.
  */
 function ovMark(c) {
   const teken = ExportModel.cellMark(c);
@@ -4271,7 +4290,7 @@ function renderOverviewBlock(shown) {
     REGIO_KLEUREN
       ? 'de streep in het vakje toont de kleuren die alleen in delen van het land gelden, zwaarste links · '
       : '▲ = een gebied binnen het land is zwaarder dan het landelijke niveau · ',
-    '— = de bron publiceert geen kleurcode · ? = niet vast te stellen · · = deze keer niet opgehaald. ',
+    '— = de bron publiceert geen kleurcode · ? = niet vast te stellen · · = deze keer niet opgehaald · ⊘ = deze bron blokkeert geautomatiseerd ophalen. ',
     'Verdeling = hoeveel bronnen die kleurcode hanteren, altijd in de volgorde ',
     distCells({ groen: 0, geel: 0, oranje: 0, rood: 0, geen: 0 }, 'tiny legend'),
     ' groen · geel · oranje · rood · geen.',
@@ -4575,7 +4594,7 @@ function buildExportPdf(ds) {
       expDist(r.dist), el('td', { class: 'exp-diff' }, r.deviation))));
     mx.push(tbl);
     mx.push(el('p', { class: 'exp-legend' },
-      '— = de bron publiceert geen kleurcode voor dit land · ? = niet betrouwbaar vast te stellen · · = deze keer niet opgehaald. '
+      '— = de bron publiceert geen kleurcode voor dit land · ? = niet betrouwbaar vast te stellen · · = deze keer niet opgehaald · ⊘ = deze bron blokkeert geautomatiseerd ophalen. '
       + 'Verdeling = hoeveel bronnen die kleurcode hanteren, in de volgorde groen · geel · oranje · rood · geen. '
       + 'De bronnen staan voluit op het voorblad.'));
     page('land', ...mx);

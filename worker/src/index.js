@@ -214,8 +214,16 @@ async function resolveSource(s, iso, rec, translateTo) {
     }
     default:
       // Echt niets bruikbaars — alleen de bronlink zodat de redacteur zelf kan kijken.
+      // `blocked` = de bron weert geautomatiseerd ophalen structureel (zoals
+      // regjeringen.no met een Cloudflare-botcheck op élk verzoek, vanaf elk
+      // datacenter-IP en ook via de reader). Dat is iets anders dan een
+      // hapering, en de frontend zegt het ook anders: "bron blokkeert" in
+      // plaats van "deze keer niet opgehaald".
       return liveError
-        ? { source: s, error: String(liveError.message || liveError), label: adapter.meta.label, url: srcUrl }
+        ? {
+          source: s, error: String(liveError.message || liveError),
+          blocked: !!liveError.blocked, label: adapter.meta.label, url: srcUrl,
+        }
         : { source: s, unavailable: true, label: adapter.meta.label, url: srcUrl };
   }
 }

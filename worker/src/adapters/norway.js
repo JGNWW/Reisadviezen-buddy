@@ -94,7 +94,14 @@ async function fetchPage(url) {
       waarom.push(`${naam}: ${String(e?.message || e).slice(0, 200)}`);
     }
   }
-  throw new Error(`norway: Cloudflare-botcheck op ${url} (${waarom.join('; ')})`);
+  // Als geblokkeerd gemerkt, zodat de Worker en de frontend dit kunnen
+  // onderscheiden van een gewone hapering. Een bron die het structureel niet
+  // doet hoort niet als "deze keer niet opgehaald" in beeld te komen — dan
+  // lijkt het elke keer opnieuw een incident, en verdwijnt Noorwegen
+  // stilzwijgend uit de vergelijking.
+  const fout = new Error(`norway: Cloudflare-botcheck op ${url} (${waarom.join('; ')})`);
+  fout.blocked = true;
+  throw fout;
 }
 
 export async function getAdvisory(slugId) {
