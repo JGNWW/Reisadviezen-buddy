@@ -165,3 +165,14 @@ test('een uitzondering bínnen één provincie is niet het restgebied', () => {
   assert.equal(r.level, 2, 'het échte restgebied (上記以外) geeft レベル1 → geel');
   assert.equal(r.regionalMaxLevel, 4);
 });
+
+test('"geen 危険情報" dekt het hele land, dus regio = land', () => {
+  // MOFA publiceert een vaste schaal (レベル1-4). Staat er niets, dan is dat
+  // een uitspraak over het hele land — geen ontbrekende kennis. Met
+  // regionalMaxLevel null was in de tabel niet te zien welk van de twee het
+  // was, en betekende een ontbrekend regiobalkje dus niets.
+  const a = jp('危険情報は出ておりません');
+  assert.equal(a.level, 1);
+  assert.equal(a.regionalMaxLevel, 1);
+  assert.equal(a.hasRegionalWarnings, false);
+});

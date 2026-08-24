@@ -252,7 +252,11 @@ export function interpretStructured(structured) {
       : null;
     if (rest) {
       return ok({
-        level: rest.level, regionalMaxLevel: regionalMax > rest.level ? regionalMax : (rest.level >= 2 ? rest.level : null),
+        // Geen zwaardere zone gevonden = het BMEIA noemt er geen. Dan is het
+        // regionale maximum gelijk aan het landelijke niveau, niet "onbekend":
+        // met null is in de tabel niet te zien of de bron zegt dat het hele
+        // land hetzelfde is, of dat wij simpelweg niet gekeken hebben.
+        level: rest.level, regionalMaxLevel: Math.max(regionalMax || 0, rest.level),
         hasRegionalWarnings: regionalMax > rest.level,
         label: `Sicherheitsstufe ${rest.level}`,
         explanation: `BMEIA (Oostenrijk): Sicherheitsstufe ${rest.level} landelijk${regionalMax > rest.level ? `, tot ${regionalMax} regionaal` : ''}.`,
@@ -275,7 +279,10 @@ export function interpretStructured(structured) {
     }
     // Eén landelijke stufe zonder regio-kwalificatie.
     const level = all[0].level;
-    return ok({ level, regionalMaxLevel: regionalMax > level ? regionalMax : null, label: `Sicherheitsstufe ${level}`, explanation: `BMEIA (Oostenrijk): Sicherheitsstufe ${level} (van 4).` });
+    return ok({
+      level, regionalMaxLevel: Math.max(regionalMax || 0, level),
+      label: `Sicherheitsstufe ${level}`, explanation: `BMEIA (Oostenrijk): Sicherheitsstufe ${level} (van 4).`,
+    });
   }
 
   if (kind === 'no_advarsel') {
@@ -341,7 +348,10 @@ export function interpretStructured(structured) {
     const toLevel = (word) => (KR_LEVEL.find(([re]) => re.test(String(word || ''))) || [null, null])[1];
     const toGloss = (word) => (KR_GLOSS.find(([re]) => re.test(String(word || ''))) || [null, null])[1];
     if (!zones.length) {
-      return ok({ level: 1, regionalMaxLevel: null, label: '여행경보 없음 (geen waarschuwing)', explanation: 'MOFA (Zuid-Korea): geen 여행경보 (reiswaarschuwing) voor dit land.' });
+      // regionalMaxLevel = 1 en niet null: MOFA publiceert een vaste schaal, dus
+      // "geen 여행경보" is een uitspraak over het hele land — niet iets waar we
+      // geen zicht op hebben.
+      return ok({ level: 1, regionalMaxLevel: 1, label: '여행경보 없음 (geen waarschuwing)', explanation: 'MOFA (Zuid-Korea): geen 여행경보 (reiswaarschuwing) voor dit land.' });
     }
     let national = null;
     let nationalAlert = null;
@@ -408,7 +418,9 @@ export function interpretStructured(structured) {
     // gaan als structuredRegional mee naar de engine.
     const text = String(value || '');
     if (!text.trim() || /危険情報は出ておりません/.test(text)) {
-      return ok({ level: 1, regionalMaxLevel: null, label: '危険情報なし (geen waarschuwing)', explanation: 'MOFA (Japan): geen 危険情報 (gevareninformatie) voor dit land.' });
+      // Zelfde reden als bij Korea: 危険情報 is een vaste schaal, dus "er staat
+      // niets" betekent landsdekkend niveau 1, niet "onbekend".
+      return ok({ level: 1, regionalMaxLevel: 1, label: '危険情報なし (geen waarschuwing)', explanation: 'MOFA (Japan): geen 危険情報 (gevareninformatie) voor dit land.' });
     }
     // Alleen het deel tússen 【危険レベル】 en 【ポイント】 bevat de
     // gebied→niveau-bullets. Ervóór staat de paginakop (datum + niveaubadge —

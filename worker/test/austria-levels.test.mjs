@@ -80,3 +80,23 @@ test('Tsjaad: "gilt in der Hauptstadt" telt ook als gebiedsvermelding', () => {
   assert.equal(r.regionalMaxLevel, 4);
   assert.equal(r.hasRegionalWarnings, true);
 });
+
+test('zonder zwaardere zone is het regionale maximum gelijk aan het landniveau', () => {
+  // Niet null. Met null is in de tabel niet te zien of het BMEIA zégt dat het
+  // hele land op deze stufe staat, of dat wij er niet naar gekeken hebben —
+  // en een ontbrekend regiobalkje betekent dan niets.
+  const a = at('Sicherheitsstufe 2 Sicherheitsrisiko Sicherheitsstufe 2 im ganzen Land.');
+  assert.equal(a.level, 2);
+  assert.equal(a.regionalMaxLevel, 2);
+  assert.equal(a.hasRegionalWarnings, false);
+});
+
+test('een echte regionale escalatie blijft gewoon staan', () => {
+  const a = at(
+    'Sicherheitsstufe 3 (regional) Hohes Sicherheitsrisiko Sicherheitsstufe 3 (von 4) gilt im Grenzgebiet zu Jemen '
+    + 'in den Provinzen Nadschran, Asir und Dschaizan. Sicherheitsrisiko Sicherheitsstufe 2 (von 4) gilt im Rest des Landes.',
+  );
+  assert.equal(a.level, 2);
+  assert.equal(a.regionalMaxLevel, 3);
+  assert.equal(a.hasRegionalWarnings, true);
+});

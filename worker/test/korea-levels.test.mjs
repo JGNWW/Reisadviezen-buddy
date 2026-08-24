@@ -86,3 +86,12 @@ test('speciale-waarschuwingsgebieden komen regionaal terug bij een groen land', 
   assert.equal(r.regionalMaxLevel, 3);
   assert.equal(r.hasRegionalWarnings, true);
 });
+
+test('"geen 여행경보" dekt het hele land, dus regio = land', () => {
+  // Zelfde reden als bij Japan: MOFA hanteert vaste 여행경보-stappen, dus de
+  // afwezigheid ervan is een uitspraak, geen leemte.
+  const a = beoordeel([]);
+  assert.equal(a.level, 1);
+  assert.equal(a.regionalMaxLevel, 1);
+  assert.equal(a.hasRegionalWarnings, false);
+});
