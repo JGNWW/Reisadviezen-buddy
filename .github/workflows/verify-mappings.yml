@@ -1,10 +1,15 @@
 name: Mapping-bewaking
 
-# Wekelijkse controle van de land→bron-koppelingen tegen de indexen van de
-# bronnen zelf (VK/Duitsland/Canada/Ierland). Hernoemingen zoals gov.uk's
-# czech-republic → czechia worden zo gemeld in plaats van maandenlang stil
-# te falen. Rapport wordt gecommit; bij kapotte koppelingen komt er een
-# issue met kant-en-klare suggesties.
+# Wekelijkse controle van de land→bron-koppelingen. Twee sporen:
+#   1. tegen de index van de bron zelf (VK, Duitsland, Canada, Ierland,
+#      Spanje, Denemarken, Italië, Finland, Nieuw-Zeeland) — goedkoop en
+#      volledig;
+#   2. een roterende inhoudssteekproef over álle zeventien bronnen, want een
+#      index vangt de stubpagina niet: exteriores.gob.es antwoordt op een
+#      onbekende landnaam met 200, en safetravel.govt.nz serveerde voor
+#      "moldova-republic-of" een lege pagina in plaats van een 404.
+# Rapport wordt gecommit; bij kapotte koppelingen komt er een issue met
+# kant-en-klare suggesties.
 on:
   schedule:
     - cron: '30 6 * * 1' # maandag 06:30 UTC
@@ -44,8 +49,13 @@ jobs:
           cache: npm
           cache-dependency-path: worker/package-lock.json
       - run: npm ci
-      - name: Koppelingen valideren tegen bron-indexen
+      - name: Koppelingen valideren (index + inhoudssteekproef)
         run: node scripts/verify-mappings.mjs
+        env:
+          # De steekproef haalt echt op, dus dezelfde sleutels als de canary:
+          # zonder reader-sleutel komt Australië er niet doorheen.
+          JINA_KEY: ${{ secrets.JINA_KEY }}
+          CORS_PROXY_URL: ${{ secrets.CORS_PROXY_URL }}
 
       # Diepe controle voor de bronnen zonder index: die moeten per land
       # bevraagd worden. Vanaf een ontwikkelmachine loopt dat stuk op
@@ -119,11 +129,15 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           broken=$(node -e "console.log(require('./worker/data/mapping-health.json').totalBroken || 0)")
+          verdacht=$(node -e "console.log(require('./worker/data/mapping-health.json').totalVerdacht || 0)")
           fixed="${{ steps.autofix.outputs.fixed }}"
-          echo "Kapotte koppelingen: $broken (waarvan $fixed auto-gefixt in een PR)"
-          [ "$broken" = "0" ] && exit 0
-          [ "$broken" = "$fixed" ] && exit 0
-          title="Mapping-check: $broken kapotte bron-koppeling(en)"
+          echo "Kapotte koppelingen: $broken (waarvan $fixed auto-gefixt in een PR), verdachte ophalingen: $verdacht"
+          # Een verdachte ophaling is net zo goed een gat in de vergelijking als
+          # een kapotte koppeling — de bron valt er stil uit. Dus ook daarop een
+          # issue, ook als er geen enkele slug kapot is.
+          [ "$broken" = "0" ] && [ "$verdacht" = "0" ] && exit 0
+          [ "$broken" = "$fixed" ] && [ "$verdacht" = "0" ] && exit 0
+          title="Mapping-check: $broken kapotte koppeling(en), $verdacht verdachte ophaling(en)"
           existing=$(gh issue list --state open --search "Mapping-check in:title" --json number --jq 'length')
           if [ "$existing" = "0" ]; then
             body=$(node -e "
@@ -132,7 +146,12 @@ jobs:
               for (const [sid, s] of Object.entries(r.sources)) {
                 for (const b of s.broken || []) lines.push('- **' + sid + '** ' + b.iso3 + ' (' + b.land + '): \`' + b.id + '\`' + (b.suggestie ? ' → suggestie: \`' + b.suggestie + '\`' : ''));
               }
-              lines.push('', 'Verwerk de suggesties als overrides in server/scripts/build-countries.js en draai \`npm run build:countries\`.');
+              const verdacht = (r.steekproef?.verdacht || []).filter((v) => !v.geblokkeerd);
+              if (verdacht.length) {
+                lines.push('', 'Daarnaast leverde de inhoudssteekproef verdachte ophalingen op (pagina bestaat, maar geeft geen bruikbaar advies):', '');
+                for (const v of verdacht) lines.push('- **' + v.bron + '** ' + v.iso3 + ' (' + v.land + '): \`' + v.id + '\` — ' + v.reden);
+              }
+              lines.push('', 'Verwerk de suggesties als overrides in server/data/slug-overrides.json en draai \`npm run build:countries\`.');
               console.log(lines.join('\n'));
             ")
             gh issue create --title "$title" --body "$body"

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-24T07:40:08.383Z",
+  "generatedAt": "2026-08-24T12:22:50.458Z",
   "sources": {
     "uk": {
       "checked": 219,
@@ -60,6 +60,87 @@
         "bermuda",
         "mayotte",
         "the-netherlands"
+      ]
+    },
+    "es": {
+      "checked": 195,
+      "broken": [],
+      "ontbrekend": [],
+      "ongebruiktAantal": 2,
+      "ongebruikt": [
+        "Países Bajos",
+        "Santa Sede"
+      ]
+    },
+    "dk": {
+      "checked": 194,
+      "broken": [],
+      "ontbrekend": [],
+      "ongebruiktAantal": 1,
+      "ongebruikt": [
+        "nederlandene"
+      ],
+      "buitenIndex": [
+        {
+          "iso3": "ASM",
+          "land": "Amerikaans-Samoa",
+          "en": "American Samoa",
+          "id": "amerikansk-samoa",
+          "suggestie": null,
+          "score": null,
+          "bron": "dk",
+          "opmerking": "niet in de index, maar levert wel een advies"
+        }
+      ]
+    },
+    "it": {
+      "checked": 213,
+      "broken": [],
+      "ontbrekend": [],
+      "ongebruiktAantal": 9,
+      "ongebruikt": [
+        "BMU",
+        "GIB",
+        "GUM",
+        "BES",
+        "MNP",
+        "KSV",
+        "MYT",
+        "NLD",
+        "MAF"
+      ]
+    },
+    "fi": {
+      "error": "429 https://um.fi/matkustustiedotteet"
+    },
+    "nz": {
+      "checked": 215,
+      "broken": [],
+      "ontbrekend": [],
+      "ongebruiktAantal": 10,
+      "ongebruikt": [
+        "about-our-travel-advice",
+        "bermuda",
+        "europe-and-the-schengen-area",
+        "gibraltar",
+        "guam",
+        "mayotte",
+        "netherlands-antilles",
+        "northern-mariana-islands",
+        "republic-of-naoeru",
+        "the-netherlands"
+      ],
+      "buitenIndex": [
+        {
+          "iso3": "NRU",
+          "land": "Nauru",
+          "en": "Nauru",
+          "id": "nauru",
+          "suggestie": null,
+          "score": null,
+          "bron": "nz",
+          "opmerking": "niet in de index, maar levert wel een advies"
+        }
       ]
     }
   },
