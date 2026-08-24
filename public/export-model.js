@@ -130,14 +130,20 @@
 
   /**
    * Telling per kleurcode over een rij broncellen: hoeveel bronnen hanteren
-   * welke kleur. Alles wat geen kleurcode oplevert — de bron publiceert er geen,
-   * we konden hem niet vaststellen, of hij was niet op te halen — valt onder
-   * `geen`, zodat de vijf getallen altijd optellen tot het aantal bronnen.
+   * welke kleur. De getallen tellen altijd op tot het aantal bronnen.
+   *
+   * "De bron waarschuwt hier nergens voor" (status 'none') heeft een eigen
+   * vakje. Dat viel eerder onder `geen`, samen met "niet vast te stellen" en
+   * "niet opgehaald" — maar dat is een standpunt en geen leegte: de FCDO zegt
+   * het voor 145 landen met zoveel woorden, Denemarken voor 118. Op één hoop
+   * gegooid met een mislukte ophaling leek het alsof die bronnen niets vonden,
+   * terwijl ze juist iets vonden: niks aan de hand.
    */
   function distribution(cells) {
-    const out = { groen: 0, geel: 0, oranje: 0, rood: 0, geen: 0 };
+    const out = { groen: 0, geel: 0, oranje: 0, rood: 0, geenWaarschuwing: 0, geen: 0 };
     for (const c of cells || []) {
       if (c && c.status === 'ok' && c.color && out[c.color] != null) out[c.color]++;
+      else if (c && c.status === 'none') out.geenWaarschuwing++;
       else out.geen++;
     }
     return out;

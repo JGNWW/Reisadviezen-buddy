@@ -1649,7 +1649,9 @@ function renderConsensusBlock(nlColor, okSources) {
   } else {
     zin.push('NederlandWereldwijd geeft voor dit land geen kleurcode, dus er valt niets te vergelijken.');
   }
-  if (dist.geen) zin.push(` ${dist.geen} bron${dist.geen === 1 ? '' : 'nen'} ${dist.geen === 1 ? 'geeft' : 'geven'} geen kleurcode of ${dist.geen === 1 ? 'was' : 'waren'} niet op te halen.`);
+  const gw = dist.geenWaarschuwing;
+  if (gw) zin.push(` ${gw} bron${gw === 1 ? '' : 'nen'} ${gw === 1 ? 'waarschuwt' : 'waarschuwen'} voor dit land nergens voor.`);
+  if (dist.geen) zin.push(` ${dist.geen} bron${dist.geen === 1 ? '' : 'nen'} ${dist.geen === 1 ? 'was' : 'waren'} niet vast te stellen of niet op te halen.`);
   wrap.append(el('p', { class: 'cons-note' }, zin));
   return wrap;
 }
@@ -4188,17 +4190,29 @@ function ovMark(c) {
   return /^\d+$/.test(teken) ? '' : teken;
 }
 
-/** Rij van vijf telvakjes (groen · geel · oranje · rood · geen), in dezelfde
- *  stijl als de matrixcellen. Compact genoeg voor één tabelkolom. */
+/** Rij van zes telvakjes (groen · geel · oranje · rood · geen waarschuwing ·
+ *  geen antwoord), in dezelfde stijl als de matrixcellen. Compact genoeg voor
+ *  één tabelkolom.
+ *
+ *  De laatste twee zijn bewust apart. "Deze bron waarschuwt hier nergens voor"
+ *  is een standpunt — de FCDO zegt het voor 145 landen — en hoorde niet op één
+ *  hoop met een mislukte ophaling. */
 function distCells(dist, cls = 'tiny') {
   const wrap = el('span', {
     class: `dist-cells ${cls}`,
     title: `${dist.groen}× groen · ${dist.geel}× geel · ${dist.oranje}× oranje · ${dist.rood}× rood · `
-      + `${dist.geen} zonder kleurcode of niet opgehaald`,
+      + `${dist.geenWaarschuwing}× geen waarschuwing · ${dist.geen}× niet vast te stellen of niet opgehaald`,
   });
   ['groen', 'geel', 'oranje', 'rood'].forEach((k) => wrap.append(
     el('span', { class: `dist-cell c-${k}${dist[k] ? '' : ' zero'}` }, String(dist[k]))));
-  wrap.append(el('span', { class: 'dist-cell none' }, String(dist.geen)));
+  wrap.append(el('span', {
+    class: `dist-cell geenwaarschuwing${dist.geenWaarschuwing ? '' : ' zero'}`,
+    title: 'Bronnen die voor dit land aantoonbaar geen waarschuwing publiceren',
+  }, String(dist.geenWaarschuwing)));
+  wrap.append(el('span', {
+    class: 'dist-cell none',
+    title: 'Bronnen zonder vast te stellen kleurcode, of deze keer niet opgehaald',
+  }, String(dist.geen)));
   return wrap;
 }
 
@@ -4292,8 +4306,8 @@ function renderOverviewBlock(shown) {
       : '▲ = een gebied binnen het land is zwaarder dan het landelijke niveau · ',
     '— = de bron publiceert geen kleurcode · ? = niet vast te stellen · · = deze keer niet opgehaald · ⊘ = deze bron blokkeert geautomatiseerd ophalen. ',
     'Verdeling = hoeveel bronnen die kleurcode hanteren, altijd in de volgorde ',
-    distCells({ groen: 0, geel: 0, oranje: 0, rood: 0, geen: 0 }, 'tiny legend'),
-    ' groen · geel · oranje · rood · geen.',
+    distCells({ groen: 0, geel: 0, oranje: 0, rood: 0, geenWaarschuwing: 0, geen: 0 }, 'tiny legend'),
+    ' groen · geel · oranje · rood · geen waarschuwing · geen antwoord.',
     telling ? ` NederlandWereldwijd: ${telling}.` : ''));
   return wrap;
 }
@@ -4396,7 +4410,8 @@ function buildExportXlsx(ds) {
     const { header, body } = ExportModel.overviewMatrix(ds);
     // In Excel juist wél vijf losse kolommen: daar wil je op kunnen filteren,
     // sorteren en draaien — op het scherm en in de PDF zijn het vijf vakjes.
-    const kop = [...header.slice(0, -2), 'Groen', 'Geel', 'Oranje', 'Rood', 'Geen kleurcode', ...header.slice(-2)];
+    const kop = [...header.slice(0, -2), 'Groen', 'Geel', 'Oranje', 'Rood',
+      'Geen waarschuwing', 'Geen antwoord', ...header.slice(-2)];
     const s = {
       name: 'Overzicht', freeze: 2, autofilter: 2,
       cols: [26, 16, ...ds.sources.map(() => 16), 9, 9, 9, 9, 15, 40, 14],
@@ -4417,7 +4432,7 @@ function buildExportXlsx(ds) {
       s.rows.push([{ v: r.country, t: 'country' }, cc(r.nl), ...r.cells.map(cc),
         { v: r.dist.groen, t: 'cc_groen' }, { v: r.dist.geel, t: 'cc_geel' },
         { v: r.dist.oranje, t: 'cc_oranje' }, { v: r.dist.rood, t: 'cc_rood' },
-        { v: r.dist.geen, t: 'num' },
+        { v: r.dist.geenWaarschuwing, t: 'num' }, { v: r.dist.geen, t: 'num' },
         { v: r.deviation, t: 'text' }, { v: r.date, t: 'num' }]);
     }
     sheets.push(s);
@@ -4586,6 +4601,7 @@ function buildExportPdf(ds) {
       const td = el('td', { class: 'exp-dist' });
       ['groen', 'geel', 'oranje', 'rood'].forEach((k) => td.append(
         el('span', { class: 'exp-dcell', style: `background:${CC_HEX[k]}` }, String(d[k]))));
+      td.append(el('span', { class: 'exp-dcell geenwaarschuwing' }, String(d.geenWaarschuwing)));
       td.append(el('span', { class: 'exp-dcell none' }, String(d.geen)));
       return td;
     };
@@ -4595,7 +4611,7 @@ function buildExportPdf(ds) {
     mx.push(tbl);
     mx.push(el('p', { class: 'exp-legend' },
       '— = de bron publiceert geen kleurcode voor dit land · ? = niet betrouwbaar vast te stellen · · = deze keer niet opgehaald · ⊘ = deze bron blokkeert geautomatiseerd ophalen. '
-      + 'Verdeling = hoeveel bronnen die kleurcode hanteren, in de volgorde groen · geel · oranje · rood · geen. '
+      + 'Verdeling = hoeveel bronnen die kleurcode hanteren, in de volgorde groen · geel · oranje · rood · geen waarschuwing · geen antwoord. '
       + 'De bronnen staan voluit op het voorblad.'));
     page('land', ...mx);
   }

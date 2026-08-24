@@ -1024,3 +1024,11 @@ h2 .flag-img { width: 30px; height: 22px; vertical-align: -3px; border-radius: 3
 .chip-blok, .menu-blok { color: var(--muted); font-size: .85em; }
 .na-row.geblokkeerd td { background: repeating-linear-gradient(
   135deg, transparent, transparent 6px, rgba(0, 0, 0, .035) 6px, rgba(0, 0, 0, .035) 12px); }
+
+/* Zesde telvakje: bronnen die voor dit land aantoonbaar geen waarschuwing
+   publiceren. Bewust een eigen, lichte tint tussen de kleurcodes en het grijze
+   "geen antwoord" in — het ís een uitspraak, alleen geen kleurcode. Op één
+   hoop met een mislukte ophaling leek het alsof die bronnen niets gevonden
+   hadden, terwijl ze juist iets vonden: niks aan de hand. */
+.dist-cell.geenwaarschuwing { background: #e8f0e4; color: #4a5d47; font-weight: 400; }
+.exp-dcell.geenwaarschuwing { background: #e8f0e4; color: #4a5d47; }

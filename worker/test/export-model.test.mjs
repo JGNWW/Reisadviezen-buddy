@@ -66,10 +66,10 @@ test('overviewMatrix: kop, cellen en telling per kleurcode', () => {
 test('overviewMatrix: elke rij draagt de verdeling en de mediaan', () => {
   const { body } = M.overviewMatrix(ds());
   // Jordanië: VK geel, DE oranje, KR oranje, CH geel → 2× geel, 2× oranje.
-  assert.deepEqual(body[0].dist, { groen: 0, geel: 2, oranje: 2, rood: 0, geen: 0 });
+  assert.deepEqual(body[0].dist, { groen: 0, geel: 2, oranje: 2, rood: 0, geenWaarschuwing: 0, geen: 0 });
   assert.equal(body[0].median, 3); // 2,2,3,3 → afgerond 3
-  // El Salvador: VK geen kleurcode, CH niet opgehaald.
-  assert.deepEqual(body[1].dist, { groen: 1, geel: 0, oranje: 1, rood: 0, geen: 2 });
+  // El Salvador: VK publiceert geen waarschuwing (eigen vakje), CH niet opgehaald.
+  assert.deepEqual(body[1].dist, { groen: 1, geel: 0, oranje: 1, rood: 0, geenWaarschuwing: 1, geen: 1 });
 });
 
 test('overviewMatrix: grootste afwijking noemt de strengste bronnen', () => {
@@ -164,21 +164,38 @@ const cellen = () => [
   { status: 'uncertain' },
 ];
 
-test('distribution: telt per kleur, de rest valt onder "geen"', () => {
-  assert.deepEqual(M.distribution(cellen()), { groen: 0, geel: 2, oranje: 1, rood: 1, geen: 3 });
+test('distribution: "geen waarschuwing" is een eigen vakje, geen leegte', () => {
+  // De FCDO publiceert voor 145 landen aantoonbaar geen waarschuwing en
+  // Denemarken voor 118. Dat op één hoop gooien met "niet vast te stellen" en
+  // "niet opgehaald" leest als "die bron vond niets", terwijl hij juist iets
+  // vond: niks aan de hand.
+  assert.deepEqual(M.distribution(cellen()),
+    { groen: 0, geel: 2, oranje: 1, rood: 1, geenWaarschuwing: 1, geen: 2 });
 });
 
-test('distribution: de vijf getallen tellen op tot het aantal bronnen', () => {
+test('distribution: de zes getallen tellen op tot het aantal bronnen', () => {
   const cells = cellen();
   const d = M.distribution(cells);
-  assert.equal(d.groen + d.geel + d.oranje + d.rood + d.geen, cells.length);
-  assert.deepEqual(M.distribution([]), { groen: 0, geel: 0, oranje: 0, rood: 0, geen: 0 });
+  assert.equal(d.groen + d.geel + d.oranje + d.rood + d.geenWaarschuwing + d.geen, cells.length);
+  assert.deepEqual(M.distribution([]),
+    { groen: 0, geel: 0, oranje: 0, rood: 0, geenWaarschuwing: 0, geen: 0 });
 });
 
 test('distribution: kleur zonder "ok"-status telt niet mee als kleur', () => {
   // Een onzekere inschatting mag niet als harde kleurcode meetellen.
   assert.deepEqual(M.distribution([{ status: 'uncertain', color: 'rood', level: 4 }]),
-    { groen: 0, geel: 0, oranje: 0, rood: 0, geen: 1 });
+    { groen: 0, geel: 0, oranje: 0, rood: 0, geenWaarschuwing: 0, geen: 1 });
+  // Ook een 'none'-cel met (verouderde) kleur telt niet als kleurcode.
+  assert.deepEqual(M.distribution([{ status: 'none', color: 'groen' }]),
+    { groen: 0, geel: 0, oranje: 0, rood: 0, geenWaarschuwing: 1, geen: 0 });
+});
+
+test('medianLevel blijft ongemoeid door het nieuwe vakje', () => {
+  // Bewuste keuze: "geen waarschuwing" krijgt een eigen vakje in de
+  // verdeling, maar telt niet als niveau 1 mee in de mediaan. Dat laatste zou
+  // de consensus voor vijf van de 224 landen verschuiven, en die afweging
+  // hoort een aparte, expliciete stap te zijn — niet een bijvangst hiervan.
+  assert.equal(M.medianLevel([{ status: 'ok', level: 3 }, { status: 'none' }]), 3);
 });
 
 test('medianLevel: middelste niveau, alleen over bronnen mét een kleurcode', () => {
