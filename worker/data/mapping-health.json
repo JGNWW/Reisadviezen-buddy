@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-24T12:22:50.458Z",
+  "generatedAt": "2026-08-31T14:20:23.920Z",
   "sources": {
     "uk": {
       "checked": 219,
@@ -111,7 +111,14 @@
       ]
     },
     "fi": {
-      "error": "429 https://um.fi/matkustustiedotteet"
+      "checked": 153,
+      "broken": [],
+      "ontbrekend": [],
+      "ongebruiktAantal": 2,
+      "ongebruikt": [
+        "NL",
+        "XK"
+      ]
     },
     "nz": {
       "checked": 215,
@@ -127,7 +134,7 @@
         "mayotte",
         "netherlands-antilles",
         "northern-mariana-islands",
-        "republic-of-naoeru",
+        "republic-of-naoero",
         "the-netherlands"
       ],
       "buitenIndex": [
@@ -144,6 +151,336 @@
       ]
     }
   },
+  "steekproef": {
+    "dag": 20696,
+    "perBron": {
+      "uk": {
+        "gekoppeld": 219,
+        "getest": 6,
+        "ok": 6,
+        "verdacht": 0,
+        "onbereikbaar": 0,
+        "geblokkeerd": false
+      },
+      "us": {
+        "gekoppeld": 225,
+        "getest": 6,
+        "ok": 6,
+        "verdacht": 0,
+        "onbereikbaar": 0,
+        "geblokkeerd": false
+      },
+      "ca": {
+        "gekoppeld": 220,
+        "getest": 6,
+        "ok": 6,
+        "verdacht": 0,
+        "onbereikbaar": 0,
+        "geblokkeerd": false
+      },
+      "ie": {
+        "gekoppeld": 210,
+        "getest": 6,
+        "ok": 6,
+        "verdacht": 0,
+        "onbereikbaar": 0,
+        "geblokkeerd": false
+      },
+      "fr": {
+        "gekoppeld": 190,
+        "getest": 6,
+        "ok": 6,
+        "verdacht": 0,
+        "onbereikbaar": 0,
+        "geblokkeerd": false
+      },
+      "au": {
+        "gekoppeld": 220,
+        "getest": 6,
+        "ok": 2,
+        "verdacht": 3,
+        "onbereikbaar": 1,
+        "geblokkeerd": false
+      },
+      "es": {
+        "gekoppeld": 195,
+        "getest": 6,
+        "ok": 6,
+        "verdacht": 0,
+        "onbereikbaar": 0,
+        "geblokkeerd": false
+      },
+      "de": {
+        "gekoppeld": 198,
+        "getest": 6,
+        "ok": 6,
+        "verdacht": 0,
+        "onbereikbaar": 0,
+        "geblokkeerd": false
+      },
+      "nz": {
+        "gekoppeld": 215,
+        "getest": 6,
+        "ok": 6,
+        "verdacht": 0,
+        "onbereikbaar": 0,
+        "geblokkeerd": false
+      },
+      "dk": {
+        "gekoppeld": 194,
+        "getest": 6,
+        "ok": 6,
+        "verdacht": 0,
+        "onbereikbaar": 0,
+        "geblokkeerd": false
+      },
+      "jp": {
+        "gekoppeld": 199,
+        "getest": 6,
+        "ok": 6,
+        "verdacht": 0,
+        "onbereikbaar": 0,
+        "geblokkeerd": false
+      },
+      "it": {
+        "gekoppeld": 213,
+        "getest": 6,
+        "ok": 6,
+        "verdacht": 0,
+        "onbereikbaar": 0,
+        "geblokkeerd": false
+      },
+      "fi": {
+        "gekoppeld": 153,
+        "getest": 6,
+        "ok": 5,
+        "verdacht": 0,
+        "onbereikbaar": 1,
+        "geblokkeerd": false
+      },
+      "kr": {
+        "gekoppeld": 197,
+        "getest": 6,
+        "ok": 0,
+        "verdacht": 6,
+        "onbereikbaar": 0,
+        "geblokkeerd": false
+      },
+      "no": {
+        "gekoppeld": 178,
+        "getest": 6,
+        "ok": 0,
+        "verdacht": 0,
+        "onbereikbaar": 6,
+        "geblokkeerd": true
+      },
+      "at": {
+        "gekoppeld": 197,
+        "getest": 6,
+        "ok": 6,
+        "verdacht": 0,
+        "onbereikbaar": 0,
+        "geblokkeerd": false
+      },
+      "ch": {
+        "gekoppeld": 192,
+        "getest": 6,
+        "ok": 0,
+        "verdacht": 6,
+        "onbereikbaar": 0,
+        "geblokkeerd": false
+      }
+    },
+    "verdacht": [
+      {
+        "bron": "au",
+        "iso3": "TUN",
+        "land": "Tunesië",
+        "id": "africa/tunisia",
+        "reden": "pagina zonder niveau en zonder inhoud (0 thema's) — mogelijk een stubpagina",
+        "geblokkeerd": false
+      },
+      {
+        "bron": "au",
+        "iso3": "NIC",
+        "land": "Nicaragua",
+        "id": "americas/nicaragua",
+        "reden": "pagina zonder niveau en zonder inhoud (0 thema's) — mogelijk een stubpagina",
+        "geblokkeerd": false
+      },
+      {
+        "bron": "au",
+        "iso3": "ABW",
+        "land": "Aruba",
+        "id": "americas/aruba",
+        "reden": "pagina zonder niveau en zonder inhoud (0 thema's) — mogelijk een stubpagina",
+        "geblokkeerd": false
+      },
+      {
+        "bron": "kr",
+        "iso3": "NIU",
+        "land": "Niue",
+        "id": "380",
+        "reden": "fetch mislukt: https://www.0404.go.kr/ntnSafetyInfo/380/detail",
+        "geblokkeerd": false
+      },
+      {
+        "bron": "kr",
+        "iso3": "WSM",
+        "land": "Samoa",
+        "id": "112",
+        "reden": "fetch mislukt: https://www.0404.go.kr/ntnSafetyInfo/112/detail",
+        "geblokkeerd": false
+      },
+      {
+        "bron": "kr",
+        "iso3": "FSM",
+        "land": "Micronesië",
+        "id": "308",
+        "reden": "fetch mislukt: https://www.0404.go.kr/ntnSafetyInfo/308/detail",
+        "geblokkeerd": false
+      },
+      {
+        "bron": "kr",
+        "iso3": "SLB",
+        "land": "Salomonseilanden",
+        "id": "311",
+        "reden": "fetch mislukt: https://www.0404.go.kr/ntnSafetyInfo/311/detail",
+        "geblokkeerd": false
+      },
+      {
+        "bron": "kr",
+        "iso3": "FJI",
+        "land": "Fiji",
+        "id": "249",
+        "reden": "fetch mislukt: https://www.0404.go.kr/ntnSafetyInfo/249/detail",
+        "geblokkeerd": false
+      },
+      {
+        "bron": "kr",
+        "iso3": "PLW",
+        "land": "Palau",
+        "id": "314",
+        "reden": "fetch mislukt: https://www.0404.go.kr/ntnSafetyInfo/314/detail",
+        "geblokkeerd": false
+      },
+      {
+        "bron": "ch",
+        "iso3": "EST",
+        "land": "Estland",
+        "id": "estland/reisehinweise-fuerestland.html",
+        "reden": "geen advies teruggegeven",
+        "geblokkeerd": false
+      },
+      {
+        "bron": "ch",
+        "iso3": "LTU",
+        "land": "Litouwen",
+        "id": "litauen/reisehinweise-fuerlitauen.html",
+        "reden": "geen advies teruggegeven",
+        "geblokkeerd": false
+      },
+      {
+        "bron": "ch",
+        "iso3": "ITA",
+        "land": "Italië",
+        "id": "italien/reisehinweise-fueritalien.html",
+        "reden": "geen advies teruggegeven",
+        "geblokkeerd": false
+      },
+      {
+        "bron": "ch",
+        "iso3": "IRL",
+        "land": "Ierland",
+        "id": "irland/reisehinweise-fuerirland.html",
+        "reden": "geen advies teruggegeven",
+        "geblokkeerd": false
+      },
+      {
+        "bron": "ch",
+        "iso3": "DNK",
+        "land": "Denemarken",
+        "id": "daenemark/reisehinweise-fuerdaenemark.html",
+        "reden": "geen advies teruggegeven",
+        "geblokkeerd": false
+      },
+      {
+        "bron": "ch",
+        "iso3": "COM",
+        "land": "Comoren",
+        "id": "komoren/reisehinweise-fuerdiekomoren.html",
+        "reden": "geen advies teruggegeven",
+        "geblokkeerd": false
+      }
+    ],
+    "onbereikbaar": [
+      {
+        "bron": "au",
+        "iso3": "TCD",
+        "land": "Tsjaad",
+        "id": "africa/chad",
+        "reden": "reader 402 https://www.smartraveller.gov.au/destinations/africa/chad — {\"data\":null,\"code\":402,\"name\":\"InsufficientBalanceError\",\"status\":40203,\"message\":\"Accou",
+        "geblokkeerd": false
+      },
+      {
+        "bron": "fi",
+        "iso3": "BLR",
+        "land": "Belarus (Wit-Rusland)",
+        "id": "BY",
+        "reden": "403 https://um.fi/matkustustiedote/-/c/BY",
+        "geblokkeerd": false
+      },
+      {
+        "bron": "no",
+        "iso3": "CMR",
+        "land": "Kameroen",
+        "id": "kamerun/2424175",
+        "reden": "norway: Cloudflare-botcheck op https://www.regjeringen.no/no/tema/utenrikssaker/reiseinformasjon/velg-land/reiseinfo_kamerun/id2424175/ (direct: 403 https://www",
+        "geblokkeerd": true
+      },
+      {
+        "bron": "no",
+        "iso3": "KAZ",
+        "land": "Kazachstan",
+        "id": "kasakhstan/2428578",
+        "reden": "norway: Cloudflare-botcheck op https://www.regjeringen.no/no/tema/utenrikssaker/reiseinformasjon/velg-land/reiseinfo_kasakhstan/id2428578/ (direct: 403 https://",
+        "geblokkeerd": true
+      },
+      {
+        "bron": "no",
+        "iso3": "ROU",
+        "land": "Roemenië",
+        "id": "romania/2414864",
+        "reden": "norway: Cloudflare-botcheck op https://www.regjeringen.no/no/tema/utenrikssaker/reiseinformasjon/velg-land/reiseinfo_romania/id2414864/ (direct: 403 https://www",
+        "geblokkeerd": true
+      },
+      {
+        "bron": "no",
+        "iso3": "VCT",
+        "land": "Saint Vincent en de Grenadines",
+        "id": "saintvincent/2428984",
+        "reden": "norway: Cloudflare-botcheck op https://www.regjeringen.no/no/tema/utenrikssaker/reiseinformasjon/velg-land/reiseinfo_saintvincent/id2428984/ (direct: 403 https:",
+        "geblokkeerd": true
+      },
+      {
+        "bron": "no",
+        "iso3": "GUY",
+        "land": "Guyana",
+        "id": "guyana/2415199",
+        "reden": "norway: Cloudflare-botcheck op https://www.regjeringen.no/no/tema/utenrikssaker/reiseinformasjon/velg-land/reiseinfo_guyana/id2415199/ (direct: 403 https://www.",
+        "geblokkeerd": true
+      },
+      {
+        "bron": "no",
+        "iso3": "SSD",
+        "land": "Zuid-Sudan",
+        "id": "sorsudan/2429140",
+        "reden": "norway: Cloudflare-botcheck op https://www.regjeringen.no/no/tema/utenrikssaker/reiseinformasjon/velg-land/reiseinfo_sorsudan/id2429140/ (direct: 403 https://ww",
+        "geblokkeerd": true
+      }
+    ]
+  },
   "totalBroken": 0,
-  "totalOntbrekend": 0
+  "totalOntbrekend": 0,
+  "totalVerdacht": 15
 }
