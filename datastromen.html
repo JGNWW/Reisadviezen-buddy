@@ -1,0 +1,947 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Datastromen — Reisadviezen-buddy</title>
+<style>
+  :root{
+    color-scheme: light;
+    --bg:#f6f7f9;
+    --card:#ffffff;
+    --ink:#16202c;
+    --ink-soft:#54636f;
+    --line:#dde3ea;
+    --line-strong:#b9c4cf;
+
+    /* Opslagcategorieen — kleur EN tekstlabel worden altijd samen gebruikt */
+    --c-bewaren:#1d4ed8;   --c-bewaren-bg:#eaf0ff;
+    --c-tijdelijk:#0f766e; --c-tijdelijk-bg:#e6f6f3;
+    --c-extern:#7c3aed;    --c-extern-bg:#f2ecff;
+    --c-keuze:#b45309;     --c-keuze-bg:#fdf0dc;
+
+    --c-gebruiker:#be123c; --c-gebruiker-bg:#fdecef;
+    --c-app:#0369a1;       --c-app-bg:#e7f2fa;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  .wrap{max-width:1240px; margin:0 auto; padding:28px 18px 80px}
+  h1{font-size:27px; line-height:1.2; margin:0 0 6px; letter-spacing:-.02em}
+  h2{font-size:20px; margin:0 0 4px; letter-spacing:-.01em}
+  h3{font-size:15px; margin:0 0 8px}
+  p{margin:0 0 12px}
+  .lede{color:var(--ink-soft); max-width:74ch; margin:0 0 18px}
+  section{margin:34px 0 0; scroll-margin-top:86px}
+  .sec-head{margin-bottom:14px}
+  .sec-head p{color:var(--ink-soft); max-width:80ch; margin:6px 0 0; font-size:14px}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px 20px}
+  .card + .card{margin-top:14px}
+  .muted{color:var(--ink-soft)}
+  code, .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:.9em}
+  code{background:#eef1f5; padding:1px 5px; border-radius:5px}
+  a{color:#1d4ed8}
+
+  /* ---- Kopbalk ---- */
+  header.top{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:22px 24px}
+  .kicker{font-size:12px; text-transform:uppercase; letter-spacing:.09em; color:var(--ink-soft); font-weight:700; margin:0 0 8px}
+  .top-tags{display:flex; flex-wrap:wrap; gap:8px; margin-top:14px}
+  .top-tag{font-size:12.5px; border:1px solid var(--line-strong); border-radius:999px; padding:4px 11px; background:#fbfcfd}
+  .top-tag b{font-weight:700}
+
+  /* ---- Bedieningsbalk ---- */
+  .controls{position:sticky; top:0; z-index:30; margin:22px 0 0;
+    background:rgba(246,247,249,.93); backdrop-filter:blur(8px);
+    border:1px solid var(--line); border-radius:14px; padding:12px 14px;
+    display:flex; flex-wrap:wrap; gap:14px 22px; align-items:center}
+  .ctl-group{display:flex; align-items:center; gap:8px; flex-wrap:wrap}
+  .ctl-label{font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-soft)}
+  .seg{display:flex; border:1px solid var(--line-strong); border-radius:10px; overflow:hidden; background:#fff}
+  .seg button{appearance:none; border:0; background:#fff; padding:7px 12px; font:inherit; font-size:13.5px; cursor:pointer; color:var(--ink)}
+  .seg button + button{border-left:1px solid var(--line)}
+  .seg button[aria-pressed="true"]{background:#16202c; color:#fff; font-weight:600}
+  .switch{display:inline-flex; align-items:center; gap:9px; cursor:pointer; font-size:13.5px; user-select:none}
+  .switch input{position:absolute; opacity:0; width:0; height:0}
+  .track{width:42px; height:24px; border-radius:999px; background:#c7d0d9; position:relative; transition:background .15s; flex:0 0 auto}
+  .track::after{content:""; position:absolute; top:3px; left:3px; width:18px; height:18px; border-radius:50%; background:#fff; transition:transform .15s; box-shadow:0 1px 3px rgba(0,0,0,.28)}
+  .switch input:checked + .track{background:#16202c}
+  .switch input:checked + .track::after{transform:translateX(18px)}
+  .switch input:focus-visible + .track{outline:2px solid #1d4ed8; outline-offset:2px}
+  .filter-note{font-size:13px; color:var(--ink-soft)}
+
+  /* ---- Legenda ---- */
+  .legend{display:grid; grid-template-columns:repeat(auto-fit,minmax(255px,1fr)); gap:12px}
+  .lg{border:1px solid var(--line); border-radius:12px; padding:12px 14px; background:#fff}
+  .lg-title{display:flex; align-items:center; gap:9px; font-weight:700; font-size:13.5px}
+  .dot{width:13px; height:13px; border-radius:4px; flex:0 0 auto; border:1px solid rgba(0,0,0,.18)}
+  .lg p{margin:6px 0 0; font-size:12.8px; color:var(--ink-soft)}
+  .legend-sub{display:flex; flex-wrap:wrap; gap:10px 20px; margin-top:14px; font-size:13px; color:var(--ink-soft)}
+  .legend-sub span{display:inline-flex; align-items:center; gap:7px}
+  .shape{width:26px; height:15px; border-radius:4px; border:1.6px solid #0369a1; background:#e7f2fa; flex:0 0 auto}
+  .shape.store{border-color:#1d4ed8; background:#eaf0ff; border-radius:4px 4px 9px 9px}
+  .shape.ext{border-color:#7c3aed; background:#f2ecff; border-style:dashed}
+  .shape.user{border-color:#be123c; background:#fdecef; border-radius:999px}
+
+  /* ---- Diagram ---- */
+  .diagram-hint{font-size:12.8px; color:var(--ink-soft); margin:0 0 8px}
+  .diagram-scroll{overflow-x:auto; overflow-y:hidden; border:1px solid var(--line); border-radius:14px; background:#fff; -webkit-overflow-scrolling:touch}
+  .diagram-scroll svg{display:block; min-width:1180px; width:100%; height:auto}
+  .n-rect{fill:#fff; stroke-width:1.6}
+  .n-bar{stroke:none}
+  .n-title{font-size:12.6px; font-weight:700; fill:var(--ink)}
+  .n-sub{font-size:10.4px; fill:#5b6874}
+  .n-tag{font-size:9.4px; font-weight:700; letter-spacing:.02em}
+  .e-line{fill:none; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round}
+  .e-label{font-size:10.3px; fill:#39444f}
+  .e-crud{font-size:9.3px; font-weight:700}
+  .dim{opacity:.10}
+  .fadeable{transition:opacity .22s}
+  .crud-hidden .crud-chip{display:none}
+  .crud-hidden .crud-cell{display:none}
+
+  /* ---- Matrix ---- */
+  .table-scroll{overflow-x:auto; border:1px solid var(--line); border-radius:14px; background:#fff}
+  table.matrix{border-collapse:collapse; width:100%; min-width:1080px; font-size:13.2px}
+  table.matrix th, table.matrix td{text-align:left; vertical-align:top; padding:11px 12px; border-bottom:1px solid var(--line)}
+  table.matrix thead th{position:sticky; top:0; background:#f2f5f8; font-size:11.5px; text-transform:uppercase; letter-spacing:.05em; color:#46525e; z-index:2; border-bottom:1px solid var(--line-strong)}
+  table.matrix tbody tr:hover{background:#fafbfd}
+  table.matrix tr.row-hidden{display:none}
+  .g-name{font-weight:700}
+  .g-where{font-size:12px; color:var(--ink-soft); margin-top:3px}
+  .flowpath{font-size:12.3px; line-height:1.5}
+  .flowpath .arrow{color:var(--line-strong); padding:0 3px}
+  .pill{display:inline-block; font-size:11.3px; font-weight:700; padding:2px 8px; border-radius:999px; border:1px solid; white-space:nowrap}
+  .p-bewaren{color:var(--c-bewaren); background:var(--c-bewaren-bg); border-color:#c3d2fb}
+  .p-tijdelijk{color:var(--c-tijdelijk); background:var(--c-tijdelijk-bg); border-color:#b8e0d8}
+  .p-extern{color:var(--c-extern); background:var(--c-extern-bg); border-color:#d8c8fb}
+  .p-keuze{color:var(--c-keuze); background:var(--c-keuze-bg); border-color:#f0d3a5}
+  .crud-set{display:flex; gap:4px; flex-wrap:wrap}
+  .crud{display:inline-flex; width:21px; height:21px; align-items:center; justify-content:center; border-radius:6px; font-size:11.5px; font-weight:800; background:#eef1f5; color:#8a96a2; border:1px solid var(--line)}
+  .crud.on{background:#16202c; color:#fff; border-color:#16202c}
+  .crud-none{font-size:11.3px; color:var(--ink-soft); font-style:italic}
+  .persist{font-size:12.3px}
+  .badge{display:inline-block; font-size:10.5px; font-weight:700; padding:1.5px 7px; border-radius:6px; margin-left:6px; vertical-align:middle; white-space:nowrap}
+  .b-built{background:#e6f6f3; color:#0f766e; border:1px solid #b8e0d8}
+  .b-off{background:#eef1f5; color:#5b6874; border:1px solid var(--line-strong)}
+  .b-plan{background:#fdf0dc; color:#b45309; border:1px solid #f0d3a5}
+  .b-assume{background:#fff; color:#54636f; border:1px dashed var(--line-strong)}
+
+  /* ---- Keuze-lijst ---- */
+  .choices{display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:12px}
+  .choice{border:1px solid #f0d3a5; background:#fffaf2; border-radius:12px; padding:14px 16px}
+  .choice h3{margin:0 0 5px; font-size:14px}
+  .choice p{margin:0 0 8px; font-size:13px; color:#5b4a33}
+  .choice .q{font-size:13px; font-weight:600; color:#8a5a12; margin:0}
+
+  /* ---- Advies ---- */
+  .verdict{border:1px solid var(--line); border-left:5px solid var(--c-bewaren); border-radius:12px; background:#fff; padding:18px 20px; margin-bottom:12px}
+  .verdict.no-db{border-left-color:var(--c-tijdelijk)}
+  .verdict.open{border-left-color:var(--c-keuze)}
+  .verdict h3{font-size:15.5px; margin:0 0 8px}
+  .verdict ul{margin:8px 0 0; padding-left:20px}
+  .verdict li{margin:0 0 6px}
+  .big-answer{font-size:17px; font-weight:700; margin:0 0 6px}
+
+  ul.tight{margin:6px 0 0; padding-left:20px}
+  ul.tight li{margin:0 0 5px}
+  .two{display:grid; grid-template-columns:1fr 1fr; gap:14px}
+  footer{margin-top:44px; padding-top:18px; border-top:1px solid var(--line); font-size:12.6px; color:var(--ink-soft)}
+
+  @media (max-width:880px){
+    .wrap{padding:18px 14px 60px}
+    h1{font-size:22px}
+    .two{grid-template-columns:1fr}
+    .controls{position:static}
+    /* Matrix wordt een kaartenlijst */
+    .table-scroll{border:0; background:transparent; overflow:visible}
+    table.matrix{min-width:0; display:block}
+    table.matrix thead{display:none}
+    table.matrix tbody{display:block}
+    table.matrix tr{display:block; background:#fff; border:1px solid var(--line); border-radius:12px; padding:12px 14px; margin-bottom:12px}
+    table.matrix td{display:block; border:0; padding:7px 0}
+    table.matrix td + td{border-top:1px dashed var(--line)}
+    table.matrix td::before{content:attr(data-label); display:block; font-size:10.8px; text-transform:uppercase; letter-spacing:.05em; color:#78838e; font-weight:700; margin-bottom:3px}
+    table.matrix td:first-child::before{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <p class="kicker">Reisadviezen-buddy &middot; NederlandWereldwijd</p>
+  <h1>Datastromen: waar komt elk gegeven vandaan, wat gebeurt ermee, en wat moet bewaard blijven?</h1>
+  <p class="lede">Deze pagina brengt de werkelijke datastromen van <b>Reisadviezen-buddy</b> in kaart &mdash; de tool waarmee een redacteur het Nederlandse reisadvies voor een land naast de reisadviezen van zeventien andere landen legt. Alles hieronder komt uit de code van deze repository, niet uit een generiek voorbeeld: bestandsnamen, endpoints, opslagsleutels en CI-workflows zijn de echte.</p>
+  <div class="top-tags">
+    <span class="top-tag"><b>226</b> landen met NL-reisadvies</span>
+    <span class="top-tag"><b>17</b> buitenlandse bronnen</span>
+    <span class="top-tag"><b>0</b> eigen databases</span>
+    <span class="top-tag"><b>10</b> localStorage-sleutels</span>
+    <span class="top-tag"><b>7</b> GitHub Actions-workflows</span>
+  </div>
+</header>
+
+<section>
+  <div class="card">
+    <h2>Wat ik gelezen heb &mdash; en welke aannames daaronder zitten</h2>
+    <p class="muted" style="margin-top:6px">De vraag verwees naar <code>STRATEGY.md</code> of &ldquo;het bijbehorende document&rdquo;. Dat bestand bestaat niet in deze repository (ook niet in de git-geschiedenis, op geen enkele branch).</p>
+    <ul class="tight">
+      <li><b>Als strategiedocument gelezen:</b> <code>README.md</code> (doel, architectuur, negen functies, kanttekeningen) en <code>worker/README.md</code> (de proxy, de bronnen, de endpoints, de secrets). <span class="badge b-assume">aanname</span></li>
+      <li><b>Als plan gelezen:</b> de zeven workflows in <code>.github/workflows/</code> &mdash; die leggen vast wat er automatisch, op welk ritme, met welke data gebeurt.</li>
+      <li><b>Als code gelezen:</b> <code>server/scripts/build-static.js</code>, <code>server/sources/nl.js</code>, <code>worker/src/index.js</code>, <code>worker/scripts/snapshot-foreign.mjs</code>, <code>public/app.js</code>, <code>public/config.js</code>, <code>public/export-model.js</code>.</li>
+    </ul>
+    <p style="margin-top:14px"><b>Waar strategie en code uiteenlopen</b> &mdash; dit is geen fout in de code, maar het README loopt achter:</p>
+    <ul class="tight">
+      <li>Het README noemt zeven buitenlandse bronnen en zegt &ldquo;Japan is nog open&rdquo;. In <code>public/config.js</code> en <code>worker/src/adapters/</code> staan er <b>zeventien</b>, Japan inclusief. <span class="badge b-built">gebouwd</span></li>
+      <li>De architectuurschets in het README kent alleen &ldquo;statische site + live proxy&rdquo;. De snapshot-pijplijn, de kaart-kleurenpijplijn, de nieuwspijplijn en de mapping-bewaking staan er niet in, maar draaien wel. <span class="badge b-built">gebouwd</span></li>
+      <li>Humanitaire context (ReliefWeb) is gebouwd, maar staat uit zolang er geen goedgekeurde <code>RELIEFWEB_APP</code>-appname is; het endpoint antwoordt dan <code>{available:false}</code>. <span class="badge b-off">gebouwd, staat uit</span></li>
+      <li>Noorwegen is volledig gekoppeld, maar <span class="mono">regjeringen.no</span> blokkeert elk geautomatiseerd verzoek; de tool zegt dat ook met zoveel woorden. <span class="badge b-off">gebouwd, bron blokkeert</span></li>
+    </ul>
+    <p style="margin-top:14px"><b>Er staat niets in dit document dat alleen nog een idee is.</b> Alle stromen hieronder zijn daadwerkelijk gebouwd; de open punten zitten niet in functionaliteit maar in opslagkeuzes, en die staan apart onder <a href="#keuzes">Keuze nodig</a>.</p>
+  </div>
+</section>
+
+<div class="controls" role="region" aria-label="Weergave-instellingen">
+  <div class="ctl-group">
+    <span class="ctl-label" id="filter-label">Toon</span>
+    <div class="seg" role="group" aria-labelledby="filter-label">
+      <button type="button" data-filter="alle" aria-pressed="true">Alle data</button>
+      <button type="button" data-filter="db" aria-pressed="false">Databaseopslag</button>
+      <button type="button" data-filter="geendb" aria-pressed="false">Geen eigen databaseopslag</button>
+    </div>
+  </div>
+  <div class="ctl-group">
+    <label class="switch">
+      <input type="checkbox" id="crud-toggle" checked>
+      <span class="track" aria-hidden="true"></span>
+      <span>CRUD-labels tonen</span>
+    </label>
+  </div>
+  <p class="filter-note" id="filter-note">Alle stromen zichtbaar. Bij een filter blijft de volledige route van de geselecteerde data staan &mdash; bron, verwerking, bestemming en opslag.</p>
+</div>
+
+<section>
+  <div class="sec-head">
+    <h2>Legenda</h2>
+    <p>De vier opslagcategorieen hebben elk een eigen kleur <em>en</em> een eigen tekstlabel, in het diagram en in de matrix. Op de pijlen slaat de kleur op wat er met die gegevens gebeurt aan het eind van de route.</p>
+  </div>
+  <div class="legend">
+    <div class="lg">
+      <div class="lg-title"><span class="dot" style="background:#1d4ed8"></span> Duurzaam bewaren</div>
+      <p>Moet een herstart, herladen en het afsluiten van de browser overleven. Zonder deze gegevens werkt een functie niet meer, of raakt informatie onherstelbaar kwijt.</p>
+    </div>
+    <div class="lg">
+      <div class="lg-title"><span class="dot" style="background:#0f766e"></span> Tijdelijk</div>
+      <p>Alleen nodig voor invoer, ophalen, berekenen of tonen. Mag na het sluiten weg; wordt bij de volgende keer opnieuw opgehaald of opnieuw berekend.</p>
+    </div>
+    <div class="lg">
+      <div class="lg-title"><span class="dot" style="background:#7c3aed"></span> Blijft extern / in een bestand</div>
+      <p>Staat al bij de bron of in een bestand buiten de app. Hoeft niet naar een eigen database gekopieerd te worden; de bron blijft de waarheid.</p>
+    </div>
+    <div class="lg">
+      <div class="lg-title"><span class="dot" style="background:#b45309"></span> Keuze nodig</div>
+      <p>Twijfelgeval. Werkt vandaag, maar er ligt een vraag onder die we bewust moeten beantwoorden. Zie de sectie <a href="#keuzes">Keuze nodig</a>.</p>
+    </div>
+  </div>
+  <div class="legend-sub">
+    <span><span class="shape user"></span> Gebruiker</span>
+    <span><span class="shape"></span> Onderdeel van de app</span>
+    <span><span class="shape ext"></span> Externe bron of dienst</span>
+    <span><span class="shape store"></span> Opslag</span>
+    <span><span class="crud on">C</span><span class="crud on">R</span><span class="crud on">U</span><span class="crud on">D</span> actie op opgeslagen gegevens</span>
+    <span><span class="crud-none">geen databaseactie</span> alleen transport, berekening of weergave</span>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <h2>1 &middot; De datastromen</h2>
+    <p>Van links naar rechts: externe bronnen &rarr; automatische verwerking &rarr; opslag &rarr; live proxy &rarr; de browser van de redacteur. Op elke pijl staat welke gegevens er stromen; het chipje eronder zegt of dat een CRUD-actie op opgeslagen gegevens is of alleen transport.</p>
+  </div>
+  <p class="diagram-hint">Op een smal scherm: het diagram schuift horizontaal. De matrix eronder bevat dezelfde namen en dezelfde keuzes, en wordt op een klein scherm een kaartenlijst.</p>
+  <div class="diagram-scroll">
+    <svg id="diagram" viewBox="0 -96 1760 1098" role="img" aria-labelledby="diagram-title diagram-desc">
+      <title id="diagram-title">Datastroomdiagram van Reisadviezen-buddy</title>
+      <desc id="diagram-desc">Zes kolommen: externe bronnen, automatische verwerking in GitHub Actions, opslag in de Git-repository en op GitHub Pages, de live proxy op Cloudflare, de browser met localStorage, en de redacteur met de uitdraai. Dezelfde informatie staat in tekstvorm in de matrix onder het diagram.</desc>
+      <defs>
+        <marker id="ah-bewaren" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1d4ed8"/></marker>
+        <marker id="ah-tijdelijk" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#0f766e"/></marker>
+        <marker id="ah-extern" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#7c3aed"/></marker>
+        <marker id="ah-keuze" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#b45309"/></marker>
+      </defs>
+      <g id="layer-cols"></g>
+      <g id="layer-edges"></g>
+      <g id="layer-nodes"></g>
+    </svg>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <h2>2 &amp; 3 &middot; Matrix: bron &rarr; verwerking &rarr; bestemming, met CRUD en opslagkeuze</h2>
+    <p>Per gegeven of gebruikershandeling. <b>Huidige opslag</b> is wat de code vandaag doet; <b>advies</b> is wat ik ervan vind. Browseropslag telt als opslag: <code>localStorage</code> staat hier nadrukkelijk niet als werkgeheugen.</p>
+  </div>
+  <div class="table-scroll">
+    <table class="matrix" id="matrix">
+      <thead>
+        <tr>
+          <th style="min-width:190px">Gegeven / handeling</th>
+          <th style="min-width:280px">Bron &rarr; verwerking &rarr; bestemming</th>
+          <th style="min-width:92px" class="crud-cell">C/R/U/D</th>
+          <th style="min-width:128px">Opslagkeuze</th>
+          <th style="min-width:250px">Huidige opslag &amp; advies (met reden)</th>
+          <th style="min-width:150px">Na afsluiten / herladen</th>
+        </tr>
+      </thead>
+      <tbody id="matrix-body"></tbody>
+    </table>
+  </div>
+</section>
+
+<section id="keuzes">
+  <div class="sec-head">
+    <h2>Keuze nodig &mdash; de vragen die we moeten beantwoorden</h2>
+    <p>Zes twijfelgevallen. Geen ervan blokkeert de tool vandaag; ze bepalen wel of er ooit een echte database bij moet.</p>
+  </div>
+  <div class="choices">
+    <div class="choice">
+      <h3>1. Favorieten en groepen: persoonlijk of van de redactie?</h3>
+      <p>Staan nu in <code>localStorage</code> (<code>watchlist</code>, <code>exportGroups</code>) &mdash; per browser, per apparaat. Wie op een andere computer inlogt, ziet een leeg lijstje; wist iemand zijn browsergegevens, dan is de lijst weg.</p>
+      <p class="q">Moet een groep als &ldquo;Sahel&rdquo; van de hele redactie zijn, of is dit bewust een persoonlijk kladlijstje? Alleen bij &ldquo;van de redactie&rdquo; is gedeelde opslag nodig.</p>
+    </div>
+    <div class="choice">
+      <h3>2. Bewaartermijn van de geschiedenis</h3>
+      <p><code>worker/data/history/</code> groeit oneindig door: elke snapshot-run voegt een entry toe aan 226 bestanden, en er is geen enkele plek die iets verwijdert. <code>news/</code> is een rollend venster van 30 dagen.</p>
+      <p class="q">Hoe ver terug moet een redacteur kunnen kijken &mdash; een jaar, vijf jaar, of alles? Dat antwoord bepaalt of hier een D(elete) hoort te komen.</p>
+    </div>
+    <div class="choice">
+      <h3>3. Trefwoordindex: committen of afleiden?</h3>
+      <p><code>worker/data/foreign-index/*.json</code> (26 shards) wordt gecommit, maar is volledig af te leiden uit <code>latest/</code>. De grote tussenversie <code>docs.json</code> gaat al bewust niet in git.</p>
+      <p class="q">Willen we een snelle build met een grotere repo, of een kleinere repo met een langere build?</p>
+    </div>
+    <div class="choice">
+      <h3>4. Moet &ldquo;afgehandeld&rdquo; onthouden worden?</h3>
+      <p>De divergentie-werklijst zet elk land op volgorde van afwijking, maar onthoudt niet wie welk land al bekeken heeft. Bij twee of drie redacteuren betekent dat dubbel werk.</p>
+      <p class="q">Wil de redactie per land kunnen afvinken &ldquo;bekeken op datum, door wie&rdquo;? <b>Dit is de enige functie in de hele tool die echt om gedeelde, schrijfbare opslag vraagt.</b></p>
+    </div>
+    <div class="choice">
+      <h3>5. Mag brontekst naar een externe vertaaldienst?</h3>
+      <p>Niet-Engelse adviezen gaan fragment voor fragment naar het gratis Google-endpoint, met MyMemory als vangnet. Het gaat om openbare overheidsteksten &mdash; geen persoonsgegevens &mdash; maar het is wel verkeer naar derden.</p>
+      <p class="q">Leggen we dit vast als bewuste keuze, of willen we een vertaaldienst met een contract?</p>
+    </div>
+    <div class="choice">
+      <h3>6. Publieke noodproxies</h3>
+      <p>Als de Worker onbereikbaar is, probeert de frontend <span class="mono">api.allorigins.win</span> en <span class="mono">api.codetabs.com</span>. Dan loopt het verzoek langs een partij die we niet kennen.</p>
+      <p class="q">Accepteren we dat als laatste redmiddel, of schrappen we het en tonen we liever een foutmelding?</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <h2>5 &middot; Voorstel: wat je minimaal moet bewaren</h2>
+  </div>
+
+  <div class="verdict no-db">
+    <p class="big-answer">Een database is niet nodig.</p>
+    <p style="margin:0">Reisadviezen-buddy heeft er vandaag geen, en de use case vraagt er ook niet om. De tool leest openbare bronnen, rekent in de browser en toont het resultaat; er zijn geen accounts, geen persoonsgegevens en geen transacties. Wat wel bewaard moet blijven, staat al in de Git-repository (bestanden, met versiegeschiedenis erbij als bonus) en in de browser van de redacteur. Dat is een prima &ldquo;database&rdquo; voor dit doel: goedkoop, inzichtelijk, en elke wijziging is terug te lezen in een commit.</p>
+  </div>
+
+  <div class="verdict">
+    <h3>Minimale duurzame opslag &mdash; dit moet blijven bestaan</h3>
+    <ul>
+      <li><b>De snapshot per land</b> (<code>worker/data/latest/</code>, 226 bestanden). Zonder vangnet verdwijnt een bron uit de vergelijking zodra hij hapert of blokkeert &mdash; en dat is precies het moment waarop een redacteur hem nodig heeft.</li>
+      <li><b>Zin-vingerafdrukken</b> (<code>fingerprints/</code>). Zonder de vorige versie is er niets om mee te vergelijken; wijzigingsdetectie stopt onmiddellijk.</li>
+      <li><b>Wijzigingsgeschiedenis</b> (<code>history/</code>, <code>recent-changes.json</code>, <code>source-dates.json</code>). Buitenlandse bronnen publiceren zelf geen geschiedenis. Wat hier niet wordt vastgelegd, is voorgoed weg.</li>
+      <li><b>Kaart-kleuren</b> (<code>mapcolors/</code>). Het decoderen van een zonekaart vereist een echte browser; een Cloudflare Worker kan dat niet. Dus: een keer per week uitrekenen en bewaren.</li>
+      <li><b>Lokaal nieuws</b> (<code>news/</code>). Google News antwoordt een Worker met een harde 503. Verzamelen kan alleen in CI, dus het resultaat moet ergens landen.</li>
+      <li><b>De koppeling land &rarr; bron</b> (<code>worker/src/data/countries.json</code>). Handwerk plus wekelijkse verificatie; opnieuw afleiden kost dagen.</li>
+      <li><b>De persoonlijke voorkeuren in <code>localStorage</code></b> (bronselectie, verborgen thema's, matrixdichtheid, uitdraai-opties, proxy-URL, recent bekeken landen). Dit is echte opslag, geen werkgeheugen &mdash; maar het hoort per redacteur en per browser, dus daar is het goed op zijn plek.</li>
+    </ul>
+  </div>
+
+  <div class="verdict" style="border-left-color:#0f766e">
+    <h3>Dit hoef je niet te bewaren</h3>
+    <ul>
+      <li><b>Het Nederlandse reisadvies zelf.</b> Staat als CC0-open data bij NederlandWereldwijd en wordt elke dag vers opgehaald. Een kopie in een eigen database levert alleen een tweede waarheid op die kan gaan afwijken.</li>
+      <li><b>Live opgehaalde buitenlandse adviezen, vertalingen, kaartafbeeldingen en ReliefWeb-meldingen.</b> Per bezoek ophalen, tonen, weggooien. (De <em>snapshot</em> is iets anders: dat is een bewust vangnet, geen cache.)</li>
+      <li><b>Alle afgeleide bestanden:</b> <code>divergence.json</code>, <code>advisory-ages.json</code>, <code>search/nl.json</code>, <code>compare/&lt;ISO3&gt;.json</code>. Die zijn bij elke build in seconden opnieuw te berekenen &mdash; en <code>docs/</code> staat dan ook terecht in <code>.gitignore</code>.</li>
+      <li><b>De vergelijking in het werkgeheugen</b> en de URL-parameters van een deellink. De deellink is transport: wie hem opent, haalt alles opnieuw op.</li>
+      <li><b>De uitdraai</b> (<code>.xlsx</code>, <code>.csv</code>, <code>.pdf</code>, favorieten-<code>.json</code>). Die staat na het downloaden op de computer van de redacteur; de app hoeft er geen kopie van te houden.</li>
+    </ul>
+  </div>
+
+  <div class="verdict open">
+    <h3>En als er ooit tóch iets bij moet</h3>
+    <p style="margin:0 0 8px">Alleen keuze 1 (gedeelde favorieten/groepen) en keuze 4 (afvinken wie welk land bekeken heeft) vragen om opslag die de Git-repo en <code>localStorage</code> niet kunnen leveren: meerdere mensen die tegelijk schrijven. Dat is het enige scenario waarin een database gerechtvaardigd is.</p>
+    <p style="margin:0">En dan nog: het blijft klein. Iets in de trant van <span class="mono">(redacteur, iso3, soort, waarde, bijgewerkt_op)</span> &mdash; bijvoorbeeld <span class="mono">("j.dekker", "NPL", "favoriet", "", "2026-09-15")</span> of <span class="mono">("j.dekker", "MLI", "afgehandeld", "consensus gevolgd", "2026-09-15")</span>. Eén tabel, vijf kolommen, met C/R/U/D erop. Begin daar niet aan voordat keuze 1 en 4 beantwoord zijn.</p>
+  </div>
+</section>
+
+<footer>
+  <p>Gegenereerd uit de code van <b>Reisadviezen-buddy</b> op 15 september 2026. Alle getoonde voorbeeldwaarden zijn fictief; er staan geen secrets of persoonsgegevens in dit bestand. Deze pagina beschrijft de app &mdash; ze verandert er niets aan.</p>
+</footer>
+
+</div>
+
+<script>
+(function(){
+'use strict';
+
+/* ==========================================================================
+   Model: kolommen, knopen en pijlen. Diagram en matrix delen dezelfde namen
+   en dezelfde categorieen, zodat ze nooit uit elkaar kunnen lopen.
+   ========================================================================== */
+
+var CAT = {
+  bewaren:   { label:'Duurzaam bewaren', color:'#1d4ed8', bg:'#eaf0ff', marker:'ah-bewaren', pill:'p-bewaren' },
+  tijdelijk: { label:'Tijdelijk',        color:'#0f766e', bg:'#e6f6f3', marker:'ah-tijdelijk', pill:'p-tijdelijk' },
+  extern:    { label:'Blijft extern',    color:'#7c3aed', bg:'#f2ecff', marker:'ah-extern', pill:'p-extern' },
+  keuze:     { label:'Keuze nodig',      color:'#b45309', bg:'#fdf0dc', marker:'ah-keuze', pill:'p-keuze' }
+};
+
+var KIND = {
+  gebruiker: { color:'#be123c', bg:'#fdecef', tag:'GEBRUIKER' },
+  app:       { color:'#0369a1', bg:'#e7f2fa', tag:'APP' },
+  extern:    { color:'#7c3aed', bg:'#f7f4ff', tag:'EXTERN' },
+  opslag:    { color:'#1d4ed8', bg:'#f2f6ff', tag:'OPSLAG' }
+};
+
+var COLS = [
+  { x:20,   w:215, title:'Externe bronnen' },
+  { x:335,  w:220, title:'Automatische verwerking' },
+  { x:655,  w:210, title:'Opslag' },
+  { x:965,  w:200, title:'Live proxy + diensten' },
+  { x:1265, w:205, title:'Browser van de redacteur' },
+  { x:1570, w:180, title:'Gebruiker' }
+];
+
+var NODES = [
+  /* --- kolom 0: externe bronnen --- */
+  { id:'ext-nl', col:0, y:90, h:92, kind:'extern', title:'NederlandWereldwijd — open data',
+    sub:'opendata.nederlandwereldwijd.nl · CC0 · 226 landen · tekst, kleurcode, kaart-URL, datum' },
+  { id:'ext-foreign', col:0, y:272, h:116, kind:'extern', title:'17 buitenlandse overheidsbronnen',
+    sub:'FCDO · State Dept · Global Affairs · DFA · France Diplomatie · Smartraveller · Exteriores · Auswärtiges Amt · SafeTravel · MOFA JP/KR · e.a.' },
+  { id:'ext-news', col:0, y:470, h:92, kind:'extern', title:'Google News RSS',
+    sub:'top-3 lokale media per land, gecureerd in news-sources.json' },
+
+  /* --- kolom 1: automatische verwerking --- */
+  { id:'ci-build', col:1, y:90, h:106, kind:'app', title:'Pages-build — build-static.js',
+    sub:'dagelijks 06:00 UTC + bij elke push · normaliseert, deelt in thema’s in, leidt kleuren af' },
+  { id:'ci-snapshot', col:1, y:245, h:116, kind:'app', title:'Snapshot-CI — snapshot-foreign.mjs',
+    sub:'elke 6 uur · vergelijkt zinnen met vingerafdrukken en schrijft wat er wijzigde' },
+  { id:'ci-browser', col:1, y:410, h:100, kind:'app', title:'Browser-snapshots + CH-crisis',
+    sub:'’s nachts · echte Chromium voor AU, DK, NO en CH' },
+  { id:'ci-mapcolors', col:1, y:560, h:100, kind:'app', title:'Kaart-kleuren — map-colors.mjs',
+    sub:'wekelijks · leest de kleur uit de officiële zonekaart (FR, VK)' },
+  { id:'ci-news', col:1, y:710, h:100, kind:'app', title:'Nieuws-CI — collect-news.mjs',
+    sub:'elke 6 uur · classificeert koppen en vertaalt ze naar het Nederlands' },
+
+  /* --- kolom 2: opslag --- */
+  { id:'st-pages', col:2, y:90, h:150, kind:'opslag', cat:'tijdelijk', title:'GitHub Pages — docs/data/**',
+    sub:'compare/<ISO3>.json · search/nl.json · divergence.json · advisory-ages.json · meta.json — staat in .gitignore, elke build opnieuw gemaakt' },
+  { id:'st-repo', col:2, y:290, h:250, kind:'opslag', cat:'bewaren', title:'Git-repo — worker/data/**',
+    sub:'latest/ (226) · history/ (226) · fingerprints/ (226) · mapcolors/ (219) · news/ (223) · foreign-index/ (26) · recent-changes.json · source-dates.json — dit ís de database van deze app' },
+  { id:'wk-cache', col:2, y:590, h:92, kind:'opslag', cat:'tijdelijk', title:'Caches — edge + geheugen',
+    sub:'Cache-Control 30 min tot 24 uur · TTL 30 min in nl.js · mag leeglopen zonder verlies' },
+
+  /* --- kolom 3: live proxy + de diensten die hij aanroept --- */
+  { id:'wk-worker', col:3, y:250, h:200, kind:'app', title:'Live proxy — Cloudflare Worker',
+    sub:'/advisory · /map · /translate · /news · /context · /health — live eerst, snapshot als vangnet, kaartkleur als correctie' },
+  { id:'ext-services', col:3, y:620, h:150, kind:'extern', title:'Diensten die de proxy aanroept',
+    sub:'r.jina.ai reader (AU) · eigen CORS-proxy · vertaling: Google → MyMemory · ReliefWeb (VN-OCHA) voor humanitaire context' },
+
+  /* --- kolom 4: browser --- */
+  { id:'fe-app', col:4, y:90, h:210, kind:'app', title:'Frontend — public/app.js',
+    sub:'vergelijken · kleurcodematrix · divergentie-werklijst · thema-vergelijking · zoeken · datumscanner · uitdraai — alles in het werkgeheugen van het tabblad' },
+  { id:'fe-ls', col:4, y:380, h:190, kind:'opslag', cat:'keuze', title:'localStorage — browseropslag',
+    sub:'watchlist · exportGroups · selectedSources · proxyBase · hiddenThemes · matrixDensity · changesGroupBy · exportOpts · regioKleuren · recentCountries' },
+
+  /* --- kolom 5: gebruiker --- */
+  { id:'usr', col:5, y:90, h:200, kind:'gebruiker', title:'Redacteur NederlandWereldwijd',
+    sub:'kiest land(en), bronnen, thema en zoekterm; markeert favorieten; maakt de uitdraai' },
+  { id:'dl', col:5, y:380, h:150, kind:'opslag', cat:'extern', title:'Uitdraai op de eigen computer',
+    sub:'uitdraai.xlsx · wijzigingen.csv · favorieten.json · print/PDF — buiten de app' }
+];
+
+/* Pijlen. from/to = knoop-id; fy/ty = exacte y op de rand; bend = x van de
+   verticale tussenstap (weglaten bij een rechte lijn); via = eigen route.
+   lx/ly/lw = plaats en breedte van het label (handmatig, voor een rustig beeld). */
+var EDGES = [
+  { id:'e-nlmap', from:'ext-nl', to:'fe-app', cat:'extern', crud:'geen', lx:700, ly:-34, lw:345,
+    via:[[127,90],[127,-30],[1330,-30],[1330,90]],
+    label:'kaartafbeelding NL — rechtstreeks in een <img>, geen kopie' },
+
+  { id:'e-nl', from:'ext-nl', to:'ci-build', cat:'extern', crud:'R', fy:136, ty:136, lx:285, ly:126, lw:94,
+    label:'reisadviezen 226 landen: tekst, kleurcode, datum' },
+  { id:'e-build-pages', from:'ci-build', to:'st-pages', cat:'tijdelijk', crud:'CU', fy:140, ty:140, lx:605, ly:130, lw:94,
+    label:'compare/<ISO3>.json, zoekindex, divergentie' },
+  { id:'e-repo-build', from:'st-repo', to:'ci-build', cat:'bewaren', crud:'R', lx:596, ly:232, lw:96, lanchor:'end',
+    via:[[700,290],[700,265],[600,265],[600,168],[555,168]],
+    label:'wijzigingen, geschiedenis, trefwoordindex' },
+  { id:'e-pages-fe', from:'st-pages', to:'fe-app', cat:'extern', crud:'R', fy:200, ty:200, lx:1065, ly:192, lw:280,
+    label:'NL-advies, zoekindex, divergentie-werklijst, actualiteitsoverzicht' },
+
+  { id:'e-fe-usr', from:'fe-app', to:'usr', cat:'tijdelijk', crud:'geen', fy:136, ty:136, lx:1514, ly:126, lw:72,
+    label:'scherm: kleurmatrix, thema’s, kaarten · deellink' },
+  { id:'e-usr-fe', from:'usr', to:'fe-app', cat:'tijdelijk', crud:'geen', fy:210, ty:210, lx:1514, ly:200, lw:72,
+    label:'invoer: land(en), bronnen, thema, zoekterm' },
+  { id:'e-usr-fav', from:'usr', to:'fe-app', cat:'keuze', crud:'CUD', fy:280, ty:280, lx:1514, ly:270, lw:72,
+    label:'favoriet aan/uit, groep bewaren of wissen' },
+
+  { id:'e-for-snap', from:'ext-foreign', to:'ci-snapshot', cat:'bewaren', crud:'R', fy:296, ty:296, lx:285, ly:286, lw:94,
+    label:'adviesteksten + niveaus, elke 6 uur' },
+  { id:'e-for-brow', from:'ext-foreign', to:'ci-browser', cat:'bewaren', crud:'R', bend:249, fy:330, ty:448, lx:294, ly:436, lw:80,
+    label:'tekst van AU, DK, NO, CH' },
+  { id:'e-for-map', from:'ext-foreign', to:'ci-mapcolors', cat:'bewaren', crud:'R', bend:254, fy:356, ty:598, lx:294, ly:586, lw:80,
+    label:'officiële zonekaart' },
+  { id:'e-news-ci', from:'ext-news', to:'ci-news', cat:'bewaren', crud:'R', bend:251, fy:520, ty:748, lx:294, ly:736, lw:80,
+    label:'RSS-koppen, 30 dagen' },
+
+  { id:'e-snap-repo', from:'ci-snapshot', to:'st-repo', cat:'bewaren', crud:'CU', fy:312, ty:312, lx:605, ly:302, lw:94,
+    label:'latest/, history/, fingerprints/, recent-changes' },
+  { id:'e-brow-repo', from:'ci-browser', to:'st-repo', cat:'bewaren', crud:'U', bend:600, fy:448, ty:376, lx:605, ly:364, lw:94,
+    label:'latest/ voor AU, DK, NO, CH' },
+  { id:'e-map-repo', from:'ci-mapcolors', to:'st-repo', cat:'bewaren', crud:'CU', bend:585, fy:598, ty:428, lx:605, ly:416, lw:94,
+    label:'mapcolors/<ISO3>' },
+  { id:'e-news-repo', from:'ci-news', to:'st-repo', cat:'bewaren', crud:'CU', bend:570, fy:748, ty:480, lx:605, ly:468, lw:94,
+    label:'news/<ISO3>.json' },
+
+  { id:'e-repo-wk', from:'st-repo', to:'wk-worker', cat:'bewaren', crud:'R', fy:318, ty:318, lx:915, ly:308, lw:94,
+    label:'vangnet: laatste advies, kaartkleur, nieuws' },
+  { id:'e-for-wk', from:'ext-foreign', to:'wk-worker', cat:'tijdelijk', crud:'R', lx:560, ly:886, lw:330,
+    via:[[127,388],[127,908],[930,908],[930,420],[965,420]],
+    label:'live ophalen bij het bezoek: niveau, kleur, thema’s, kaart-URL' },
+  { id:'e-repo-fe', from:'st-repo', to:'fe-app', cat:'bewaren', crud:'R', lx:1000, ly:950, lw:360,
+    via:[[760,540],[760,972],[1248,972],[1248,276],[1265,276]],
+    label:'noodroute als de proxy onbereikbaar is: snapshot rechtstreeks uit de repo' },
+
+  { id:'e-wk-svc', from:'wk-worker', to:'ext-services', cat:'tijdelijk', crud:'geen', fx:990, fy:450, tx:990, ty:620, lx:1070, ly:500, lw:128, lanchor:'middle', vertical:true,
+    label:'heen: te vertalen tekstfragment, ISO3-code' },
+  { id:'e-svc-wk', from:'ext-services', to:'wk-worker', cat:'extern', crud:'geen', fx:1140, fy:620, tx:1140, ty:450, lx:1070, ly:578, lw:128, lanchor:'middle', vertical:true,
+    label:'terug: NL-vertaling, brontekst, lopende rampen' },
+
+  { id:'e-wk-fe', from:'wk-worker', to:'fe-app', cat:'tijdelijk', crud:'geen', fy:262, ty:262, lx:1200, ly:250, lw:74, lanchor:'middle',
+    label:'advies per bron: niveau, kleur, thema’s' },
+  { id:'e-fe-wk', from:'fe-app', to:'wk-worker', cat:'tijdelijk', crud:'geen', fy:296, ty:296, lx:1200, ly:340, lw:74, lanchor:'middle',
+    label:'verzoek: ISO3-code + bronnen' },
+
+  { id:'e-fe-ls', from:'fe-app', to:'fe-ls', cat:'keuze', crud:'CUD', fx:1276, fy:300, tx:1276, ty:380, lx:1362, ly:360, lw:112, lanchor:'middle', vertical:true, both:true,
+    label:'opslaan en teruglezen: favorieten, groepen, voorkeuren' },
+
+  { id:'e-fe-dl', from:'fe-app', to:'dl', cat:'extern', crud:'geen', bend:1564, fy:296, ty:440, lx:1514, ly:360, lw:72, lanchor:'middle',
+    label:'uitdraai: xlsx, csv, pdf, json' }
+];
+
+/* --- Matrix: dezelfde gegevens, in woorden. --------------------------------- */
+var ROWS = [
+  { cat:'extern', name:'Nederlands reisadvies (tekst, kleurcode, thema’s)', where:'bij NederlandWereldwijd',
+    flow:['NederlandWereldwijd open data','build-static.js: normaliseren, thema-classificatie, kleur afleiden','docs/data/compare/&lt;ISO3&gt;.json → browser'],
+    crud:'R', crudNote:'lezen bij de bron; C/U alleen op de build-bestanden',
+    now:'Elke dag opnieuw opgehaald en weggeschreven naar <code>docs/</code> — dat staat in <code>.gitignore</code>, dus er blijft niets van over tussen builds.',
+    advice:'<b>Niet kopiëren naar een eigen database.</b> De CC0-feed is de waarheid en wordt dagelijks ververst; een eigen kopie levert alleen een tweede versie op die kan gaan afwijken van wat de burger op de site leest.',
+    persist:'Niets. Bij de volgende build is alles er weer.' },
+
+  { cat:'extern', name:'NL-kaartafbeelding', where:'bij NederlandWereldwijd',
+    flow:['opendata…/traveladvice/map','geen — de browser laadt de afbeelding rechtstreeks','&lt;img&gt; in de vergelijking'],
+    crud:'geen', crudNote:'alleen weergave',
+    now:'Gehotlinkt. De build downloadt de kaarten bewust niet.',
+    advice:'<b>Zo laten.</b> Cross-origin <code>&lt;img&gt;</code> werkt zonder CORS, en de kaart is altijd zo actueel als de bron.',
+    persist:'Niets.' },
+
+  { cat:'tijdelijk', name:'Buitenlands reisadvies (live opgehaald)', where:'bij de 17 bronnen, via de Worker',
+    flow:['FCDO, State Dept, Global Affairs, … (17 bronnen)','Worker: adapter per bron, niveau omgezet naar de NL-kleurschaal, thema’s ingedeeld, vertaald','browser: kleurmatrix, thema-vergelijking, divergentie'],
+    crud:'geen', crudNote:'R bij de bron; verder alleen transport',
+    now:'Per bezoek opgehaald. 30 minuten in de edge-cache, verder nergens.',
+    advice:'<b>Tijdelijk houden.</b> Actualiteit is het hele punt van dit scherm; een bewaarde kopie zou juist verouderen. Het vangnet (hieronder) is iets anders: dat is een bewuste snapshot, geen cache.',
+    persist:'Niets. Bij herladen wordt alles opnieuw opgehaald.' },
+
+  { cat:'bewaren', name:'Snapshot van het laatste volledige advies', where:'Git-repo <code>worker/data/latest/</code>',
+    flow:['17 bronnen (deels via een echte Chromium)','snapshot-CI elke 6 uur + browser-snapshot-CI ’s nachts','worker/data/latest/&lt;ISO3&gt;.json (226 bestanden) → Worker → browser'],
+    crud:'CU', crudNote:'aanmaken bij een nieuw land, overschrijven bij een update',
+    now:'Gecommit in de repo; de Worker leest het via raw.githubusercontent, de frontend kan het als noodroute ook rechtstreeks lezen.',
+    advice:'<b>Bewaren.</b> Bronnen blokkeren datacenter-IP’s, haperen of leveren een lege SPA-schil. Zonder vangnet verdwijnt een bron dan stilletjes uit de vergelijking — precies op het moment dat een redacteur hem nodig heeft.',
+    persist:'Moet blijven bestaan.' },
+
+  { cat:'bewaren', name:'Zin-vingerafdrukken', where:'Git-repo <code>worker/data/fingerprints/</code>',
+    flow:['de opgehaalde adviesteksten','snapshot-CI: hash per zin, vergelijken met de vorige run','worker/data/fingerprints/&lt;ISO3&gt;.json (226)'],
+    crud:'U', crudNote:'alleen de laatste versie wordt bewaard',
+    now:'Gecommit; elke run overschrijft de vorige.',
+    advice:'<b>Bewaren.</b> Zonder de vorige vingerafdruk is er niets om mee te vergelijken en stopt wijzigingsdetectie onmiddellijk. Oude versies zijn niet nodig: alleen de laatste telt.',
+    persist:'Moet blijven bestaan (alleen de laatste versie).' },
+
+  { cat:'bewaren', name:'Wijzigingsgeschiedenis per land', where:'Git-repo <code>worker/data/history/</code>',
+    flow:['verschil tussen twee snapshots','snapshot-CI: nieuwe entry met datum, niveaus en gewijzigde zinnen','worker/data/history/&lt;ISO3&gt;.json → build → divergentie-werklijst'],
+    crud:'CU', crudNote:'nieuwe entry toevoegen; geen verwijderroute',
+    now:'Gecommit, groeit oneindig door. Verwijderde zinnen worden bewust niet opgeslagen (alleen het aantal), om de repo klein te houden.',
+    advice:'<b>Bewaren</b> — buitenlandse bronnen publiceren zelf geen geschiedenis, dus wat hier niet vastligt is voorgoed weg. Wel een <span class="pill p-keuze">Keuze nodig</span> over de bewaartermijn: zie keuze 2.',
+    persist:'Moet blijven bestaan.' },
+
+  { cat:'bewaren', name:'Recente wijzigingen + bron-datums', where:'Git-repo → Pages → browser',
+    flow:['worker/data/history/','snapshot-CI stelt de gesorteerde lijst samen','recent-changes.json + source-dates.json → docs/data → tabblad “Recente wijzigingen”'],
+    crud:'U', crudNote:'per run overschreven',
+    now:'Gecommit en bij elke build meegekopieerd naar <code>docs/data/</code>.',
+    advice:'<b>Bewaren.</b> Dit is de ingang waarmee een redacteur zijn dag begint; opnieuw af te leiden uit <code>history/</code>, maar goedkoop genoeg om klaar te zetten.',
+    persist:'Moet blijven bestaan.' },
+
+  { cat:'bewaren', name:'Kaart-kleuren uit de zonekaart', where:'Git-repo <code>worker/data/mapcolors/</code>',
+    flow:['officiële zonekaart van France Diplomatie en FCDO','map-colors CI, wekelijks: Chromium rendert de kaart en leest de kleur per zone','worker/data/mapcolors/&lt;ISO3&gt;.json (219) → Worker als kleurcorrectie'],
+    crud:'CU', crudNote:'per land overschreven',
+    now:'Gecommit; de Worker gebruikt het als override op de tekstueel afgeleide kleur.',
+    advice:'<b>Bewaren.</b> Een kaart decoderen vereist een echte browser en een Cloudflare Worker kan dat niet. Eén keer per week uitrekenen en het resultaat bewaren is de enige werkbare route.',
+    persist:'Moet blijven bestaan.' },
+
+  { cat:'bewaren', name:'Lokaal nieuws per land', where:'Git-repo <code>worker/data/news/</code>',
+    flow:['Google News RSS (top-3 lokale media per land)','collect-news.mjs elke 6 uur: classificeren op reisadvies-categorie, kruisbevestigen, koppen vertalen','worker/data/news/&lt;ISO3&gt;.json (223) → Worker /news → browser'],
+    crud:'CU', crudNote:'rollend venster van 30 dagen',
+    now:'Gecommit. Google News antwoordt een Cloudflare Worker met een harde 503, dus verzamelen kan alleen in CI.',
+    advice:'<b>Bewaren</b> — puur uit technische noodzaak: zonder deze bestanden is er helemaal geen lokaal nieuws in de tool. Bewaartermijn: zie keuze 2.',
+    persist:'Moet blijven bestaan (laatste 30 dagen).' },
+
+  { cat:'keuze', name:'Trefwoordindex buitenlandse adviezen', where:'Git-repo <code>worker/data/foreign-index/</code>',
+    flow:['worker/data/latest/','snapshot-CI leidt 26 a–z-shards af (de grote docs.json blijft in de Actions-cache)','foreign-index/&lt;letter&gt;.json → docs/data → zoeken in de browser'],
+    crud:'CU', crudNote:'volledig afleidbaar uit latest/',
+    now:'Gecommit in de repo en meegekopieerd naar de site.',
+    advice:'<span class="pill p-keuze">Keuze nodig</span> — dit is een afgeleide, dus strikt genomen hoeft het niet bewaard te worden. Committen geeft een snelle build en een grotere repo; afleiden per build geeft het omgekeerde. Zie keuze 3.',
+    persist:'Hangt van de keuze af.' },
+
+  { cat:'tijdelijk', name:'Divergentie-werklijst + actualiteitsoverzicht', where:'build-output op GitHub Pages',
+    flow:['worker/data/history/ + de verse NL-data','build-static.js: mediaan van de buitenlandse niveaus, afwijking t.o.v. NL, achterstand in dagen','divergence.json + advisory-ages.json → tabblad Favorieten en de werklijst'],
+    crud:'CU', crudNote:'bestanden, geen database; elke build opnieuw',
+    now:'Geschreven naar <code>docs/data/</code> — staat in <code>.gitignore</code>.',
+    advice:'<b>Niet duurzaam bewaren.</b> Volledig herleidbaar uit <code>history/</code> en de NL-feed, en het hóórt te veranderen zodra een van beide verandert. Een bewaarde versie zou juist misleiden.',
+    persist:'Niets. Bij de volgende build opnieuw berekend.' },
+
+  { cat:'tijdelijk', name:'Zoekindex NL-adviezen', where:'build-output op GitHub Pages',
+    flow:['de 226 opgehaalde NL-adviezen','build-static.js: per land de tekstblokken met thema-label','docs/data/search/nl.json → zoeken op thema/woord + datumscanner'],
+    crud:'CU', crudNote:'bestand, geen database',
+    now:'Geschreven naar <code>docs/data/</code>, niet in git.',
+    advice:'<b>Niet duurzaam bewaren.</b> Afgeleid van de open data; bij elke build in seconden opnieuw op te bouwen.',
+    persist:'Niets.' },
+
+  { cat:'tijdelijk', name:'Vertaling van brontekst', where:'Google Translate → MyMemory, via de Worker',
+    flow:['een tekstfragment van een niet-Engelse bron, of een Nederlandse zoekterm','Worker /translate: chunking, batching, retry, 24 uur in de geheugencache','terug naar de browser, alleen om te tonen'],
+    crud:'geen', crudNote:'alleen transport',
+    now:'Nergens opgeslagen. Wel: de brontekst gaat hierbij naar een derde partij. Het zijn openbare overheidsteksten, geen persoonsgegevens.',
+    advice:'<b>Tijdelijk houden</b>, maar de route bewust vastleggen — zie keuze 5. Een vertaling bewaren heeft geen zin: hij verandert mee met de brontekst.',
+    persist:'Niets.' },
+
+  { cat:'extern', name:'Humanitaire context (ReliefWeb)', where:'bij ReliefWeb (VN-OCHA)',
+    flow:['api.reliefweb.int — lopende rampen per land','Worker /context: filteren op status, sorteren op laatst gewijzigd (er gaat alleen een ISO3-code heen)','ingeklapt blokje onder de vergelijking'],
+    crud:'geen', crudNote:'alleen transport',
+    now:'Live opgehaald, 6 uur gecachet. Staat uit zonder goedgekeurde appname.',
+    advice:'<b>Niet kopiëren.</b> ReliefWeb is de bron en houdt de status zelf bij; een kopie zou stilletjes verouderen terwijl een crisis doorloopt.',
+    persist:'Niets.' },
+
+  { cat:'extern', name:'Buitenlandse kaartafbeelding', where:'bij de bron, doorgegeven door de Worker',
+    flow:['de zonekaart van de buitenlandse bron','Worker /map/&lt;bron&gt;/&lt;iso&gt;: ophalen en doorgeven met CORS-headers','&lt;img&gt;, pas na een klik van de redacteur'],
+    crud:'geen', crudNote:'alleen doorgifte',
+    now:'Nergens opgeslagen; 1 uur in de edge-cache.',
+    advice:'<b>Niet opslaan.</b> De afgeleide kleur wordt wél bewaard (zie “Kaart-kleuren”) — dat is het enige stukje van de kaart dat de tool echt nodig heeft.',
+    persist:'Niets.' },
+
+  { cat:'keuze', name:'Favorieten (★)', where:'browseropslag, sleutel <code>watchlist</code>',
+    flow:['de redacteur klikt op de ster','frontend: toevoegen of weghalen uit de set','localStorage — per browser, per apparaat'],
+    crud:'CD', crudNote:'C bij aanzetten, D bij uitzetten',
+    now:'<b>Browseropslag, dus echte opslag</b> — geen werkgeheugen. Blijft staan na afsluiten, maar alleen in díe browser. Te exporteren als JSON en te delen via een link.',
+    advice:'<span class="pill p-keuze">Keuze nodig</span> — prima in de browser zolang het een persoonlijk lijstje is. Moet de hele redactie dezelfde favorieten zien, dan is dit het eerste gegeven dat om gedeelde opslag vraagt. Zie keuze 1.',
+    persist:'Blijft staan in deze browser; weg bij het wissen van browsergegevens of op een ander apparaat.' },
+
+  { cat:'keuze', name:'Groepen landen (bijv. “Sahel”)', where:'browseropslag, sleutel <code>exportGroups</code>',
+    flow:['de redacteur bewaart de huidige selectie onder een naam','frontend: naam → lijst met ISO3-codes','localStorage — per browser'],
+    crud:'CUD', crudNote:'aanmaken, bijwerken (“groep bijwerken”), verwijderen',
+    now:'Browseropslag. Alle vier de CRUD-acties bestaan al, inclusief een bevestiging bij verwijderen.',
+    advice:'<span class="pill p-keuze">Keuze nodig</span> — zelfde vraag als bij favorieten, maar zwaarder: een groep is redactioneel werk dat je niet wil verliezen als iemand zijn browser opschoont. Zie keuze 1.',
+    persist:'Blijft staan in deze browser; weg bij het wissen van browsergegevens.' },
+
+  { cat:'bewaren', name:'Werk- en weergavevoorkeuren', where:'browseropslag (7 sleutels)',
+    flow:['de redacteur zet een bron uit, verbergt een thema, kiest een dichtheid','frontend past het toe en schrijft het weg','localStorage: selectedSources, hiddenThemes, matrixDensity, changesGroupBy, exportOpts, regioKleuren, recentCountries'],
+    crud:'CUD', crudNote:'op browseropslag, niet op een database',
+    now:'Browseropslag. <b>Dit is opslag</b>, en het is ook de bedoeling dat het een herlaadbeurt overleeft.',
+    advice:'<b>In <code>localStorage</code> laten.</b> Het zijn persoonlijke voorkeuren, geen redactionele inhoud; ze hoeven niet gedeeld te worden en er is niets aan verloren als ze ooit wegvallen.',
+    persist:'Blijft staan in deze browser. Valt terug op de standaardwaarden als het weg is.' },
+
+  { cat:'bewaren', name:'Proxy-URL van de Worker', where:'browseropslag, sleutel <code>proxyBase</code>',
+    flow:['de ⚙-knop of ?proxy=… in de URL','frontend: opschonen en bewaren; leeg = verwijderen','localStorage, met config.js als terugval'],
+    crud:'CUD', crudNote:'D bij een leeg veld (removeItem)',
+    now:'Browseropslag. Geen geheim: het is een publieke, open endpoint-URL.',
+    advice:'<b>In <code>localStorage</code> laten.</b> Handig om tijdelijk naar een test-Worker te wijzen; de standaardwaarde staat al in <code>public/config.js</code>.',
+    persist:'Blijft staan in deze browser.' },
+
+  { cat:'tijdelijk', name:'Vergelijkselectie in de URL (deellink)', where:'de adresbalk',
+    flow:['de redacteur kiest landen en bronnen','frontend schrijft het naar de URL (history.replaceState)','<code>?landen=NPL,IND&bronnen=uk,us&tabland=IND</code> — te bookmarken en door te sturen'],
+    crud:'geen', crudNote:'transport, geen opslag',
+    now:'Alleen in de adresbalk en in de geschiedenis van de browser.',
+    advice:'<b>Zo laten.</b> De deellink is de goedkoopste vorm van “bewaren” die er is: wie hem opent, haalt alles opnieuw en vers op.',
+    persist:'Niets — behalve wat de redacteur zelf bookmarkt.' },
+
+  { cat:'tijdelijk', name:'De vergelijking in het werkgeheugen', where:'het geopende tabblad',
+    flow:['de opgehaalde NL- en bronbestanden','COMPARE_RESULTS, _cache, de opgebouwde matrix, zoekresultaten, datumscanner-uitkomsten','het scherm'],
+    crud:'geen', crudNote:'berekening en weergave',
+    now:'Alleen in het geheugen van het tabblad; weg bij herladen.',
+    advice:'<b>Tijdelijk houden.</b> Dit is het enige echte werkgeheugen in de app en dat hoort het ook te blijven.',
+    persist:'Niets. Opnieuw opgebouwd bij herladen.' },
+
+  { cat:'tijdelijk', name:'Caches (edge + geheugen)', where:'Cloudflare-edge en het build-proces',
+    flow:['antwoorden van de Worker en van de NL-open data','Cache-Control van 30 minuten tot 24 uur; TTL van 30 minuten in nl.js','snellere herhaalverzoeken'],
+    crud:'geen', crudNote:'cache, geen opslag',
+    now:'Vluchtig en per definitie vervangbaar.',
+    advice:'<b>Zo laten.</b> Verwar dit niet met het snapshot-vangnet: een cache mag leeg raken zonder dat er iets verloren gaat, het vangnet niet.',
+    persist:'Niets.' },
+
+  { cat:'extern', name:'Uitdraai (Excel, CSV, PDF, favorieten-JSON)', where:'de computer van de redacteur',
+    flow:['de opgehaalde vergelijking + de gekozen opties','export-model.js bouwt de bladen en pagina’s; app.js maakt er cellen of print-HTML van','download: <code>Reisadviezen_uitdraai_2026-09-15.xlsx</code>, <code>reisadvies-wijzigingen.csv</code>, print/PDF'],
+    crud:'geen', crudNote:'het bestand ontstaat buiten de app',
+    now:'De app houdt geen kopie. Alleen de <em>opties</em> (kleuren aan/uit, tekst aan/uit) worden onthouden.',
+    advice:'<b>Geen kopie bewaren.</b> Een uitdraai is een momentopname voor een vergadering of een mail; zodra hij nodig is, is hij opnieuw te maken — dan met verse data.',
+    persist:'Het gedownloade bestand blijft op de computer staan. In de app niets.' },
+
+  { cat:'bewaren', name:'Koppeling land → bron-identifier', where:'Git-repo <code>worker/src/data/countries.json</code>',
+    flow:['de indexpagina’s van de bronnen + handmatige correcties','build-countries.js, plus de wekelijkse mapping-bewaking met een roterende inhoudssteekproef','countries.json (ISO3 → slug/id per bron) + mapping-audit.json en mapping-health.json'],
+    crud:'CU', crudNote:'gecommit; kapotte koppelingen worden als issue gemeld',
+    now:'Gecommit in de repo. Bijvoorbeeld: <code>NPL → uk:"nepal", jp:"010", kr:"22"</code>.',
+    advice:'<b>Bewaren.</b> Dit is deels handwerk en deels geverifieerd resultaat; opnieuw afleiden kost dagen en gaat mis bij stubpagina’s die met een 200 antwoorden op een onbekend land.',
+    persist:'Moet blijven bestaan.' },
+
+  { cat:'extern', name:'Secrets en tokens', where:'Cloudflare Worker-secrets en GitHub Actions-secrets',
+    flow:['handmatig gezet door de beheerder','wrangler secret put / GitHub Settings → Secrets; de deploy-workflow zet RELIEFWEB_APP door','alleen beschikbaar tijdens runtime — voorbeeld: <code>JINA_KEY = ••••••••</code>'],
+    crud:'geen', crudNote:'buiten de applicatiedata',
+    now:'JINA_KEY, CORS_PROXY_URL, RELIEFWEB_APP, MYMEMORY_EMAIL, CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID — geen ervan staat in de repo.',
+    advice:'<b>Nooit in een eigen database of in de repo.</b> De bestaande opzet is goed; laat de fallback-proxy-URL een secret blijven, ook al voelt hij onschuldig.',
+    persist:'Blijft bestaan in de secret-opslag van Cloudflare en GitHub.' }
+];
+
+/* ==========================================================================
+   Tekenen
+   ========================================================================== */
+
+var SVGNS = 'http://www.w3.org/2000/svg';
+function svg(tag, attrs){
+  var n = document.createElementNS(SVGNS, tag);
+  for (var k in attrs) if (attrs[k] !== null && attrs[k] !== undefined) n.setAttribute(k, attrs[k]);
+  return n;
+}
+function wrap(text, maxWidth, fontSize){
+  var perChar = fontSize * 0.515;
+  var max = Math.max(6, Math.floor(maxWidth / perChar));
+  var words = String(text).split(/\s+/), lines = [], cur = '';
+  for (var i=0;i<words.length;i++){
+    var t = cur ? cur + ' ' + words[i] : words[i];
+    if (t.length > max && cur){ lines.push(cur); cur = words[i]; }
+    else cur = t;
+  }
+  if (cur) lines.push(cur);
+  return lines;
+}
+function textBlock(x, y, lines, cls, lineHeight, anchor){
+  var t = svg('text', { x:x, y:y, class:cls, 'text-anchor':anchor||'start' });
+  for (var i=0;i<lines.length;i++){
+    var ts = svg('tspan', { x:x, dy: i===0 ? 0 : lineHeight });
+    ts.textContent = lines[i];
+    t.appendChild(ts);
+  }
+  return t;
+}
+function nodeById(id){ for (var i=0;i<NODES.length;i++) if (NODES[i].id===id) return NODES[i]; return null; }
+function colOf(n){ return COLS[n.col]; }
+
+/* Afgeronde orthogonale route door een lijst punten. */
+function roundedPath(pts, r){
+  if (pts.length < 2) return '';
+  var d = 'M' + pts[0][0] + ',' + pts[0][1];
+  for (var i=1;i<pts.length-1;i++){
+    var p = pts[i-1], c = pts[i], nx = pts[i+1];
+    var v1x = c[0]-p[0], v1y = c[1]-p[1], v2x = nx[0]-c[0], v2y = nx[1]-c[1];
+    var l1 = Math.hypot(v1x,v1y), l2 = Math.hypot(v2x,v2y);
+    var rr = Math.min(r, l1/2, l2/2);
+    d += ' L' + (c[0]-v1x/l1*rr) + ',' + (c[1]-v1y/l1*rr);
+    d += ' Q' + c[0] + ',' + c[1] + ' ' + (c[0]+v2x/l2*rr) + ',' + (c[1]+v2y/l2*rr);
+  }
+  d += ' L' + pts[pts.length-1][0] + ',' + pts[pts.length-1][1];
+  return d;
+}
+
+function drawColumns(){
+  var g = document.getElementById('layer-cols');
+  for (var i=0;i<COLS.length;i++){
+    var c = COLS[i];
+    var lines = wrap(c.title, c.w, 11);
+    var t = textBlock(c.x + c.w/2, -70, lines, 'n-sub', 12, 'middle');
+    t.setAttribute('style','font-size:10.6px;font-weight:700;letter-spacing:.07em;fill:#7a8691;text-transform:uppercase');
+    g.appendChild(t);
+  }
+}
+
+function drawNodes(){
+  var g = document.getElementById('layer-nodes');
+  for (var i=0;i<NODES.length;i++){
+    var n = NODES[i], c = colOf(n), k = KIND[n.kind];
+    var grp = svg('g', { 'data-node': n.id, class:'fadeable' });
+    grp.appendChild(svg('rect', { x:c.x, y:n.y, width:c.w, height:n.h, rx:11,
+      class:'n-rect', stroke:k.color, fill:k.bg,
+      'stroke-dasharray': n.kind==='extern' ? '5 3' : null }));
+    grp.appendChild(svg('rect', { x:c.x, y:n.y, width:4.5, height:n.h, rx:2.2, class:'n-bar', fill:k.color }));
+
+    var tx = c.x + 13, ty = n.y + 20, avail = c.w - 24;
+    var tl = wrap(n.title, avail, 12.6);
+    grp.appendChild(textBlock(tx, ty, tl, 'n-title', 14));
+    ty += tl.length * 14 + 4;
+
+    var sl = wrap(n.sub, avail, 10.4);
+    grp.appendChild(textBlock(tx, ty, sl, 'n-sub', 11.6));
+    ty += sl.length * 11.6 + 4;
+
+    var tagText = k.tag;
+    if (n.cat) tagText += '  ·  ' + CAT[n.cat].label.toUpperCase();
+    var tag = svg('text', { x:tx, y: n.y + n.h - 9, class:'n-tag', fill: n.cat ? CAT[n.cat].color : k.color });
+    tag.textContent = tagText;
+    grp.appendChild(tag);
+    g.appendChild(grp);
+  }
+}
+
+function edgePoints(e){
+  if (e.via) return e.via.slice();
+  var a = nodeById(e.from), b = nodeById(e.to);
+  var ca = colOf(a), cb = colOf(b);
+  if (e.vertical){
+    return [[e.fx, e.fy], [e.tx, e.ty]];
+  }
+  var forward = cb.x > ca.x;
+  var fx = e.fx !== undefined ? e.fx : (forward ? ca.x + ca.w : ca.x);
+  var tx = e.tx !== undefined ? e.tx : (forward ? cb.x : cb.x + cb.w);
+  if (e.bend === undefined || e.fy === e.ty) return [[fx, e.fy], [tx, e.ty]];
+  return [[fx, e.fy], [e.bend, e.fy], [e.bend, e.ty], [tx, e.ty]];
+}
+
+function drawEdges(){
+  var g = document.getElementById('layer-edges');
+  for (var i=0;i<EDGES.length;i++){
+    var e = EDGES[i], cat = CAT[e.cat];
+    var grp = svg('g', { 'data-edge': e.id, 'data-cat': e.cat, class:'fadeable' });
+    var pts = edgePoints(e);
+    grp.appendChild(svg('path', { d: roundedPath(pts, 11), class:'e-line', stroke: cat.color,
+      'marker-end':'url(#' + cat.marker + ')',
+      'marker-start': e.both ? 'url(#' + cat.marker + ')' : null }));
+
+    var anchor = e.lanchor || 'middle';
+    var lines = wrap(e.label, e.lw || 96, 10.3);
+    var crudH = e.crud === 'geen' ? 13 : 13;
+    var baseY = e.ly - (lines.length - 1) * 11.4 - crudH;
+    var t = textBlock(e.lx, baseY, lines, 'e-label', 11.4, anchor);
+    grp.appendChild(t);
+
+    var chip = svg('g', { class:'crud-chip' });
+    var isNone = e.crud === 'geen';
+    var label = isNone ? 'geen databaseactie' : e.crud.split('').join('·');
+    var wCh = isNone ? 92 : (e.crud.length * 10 + 14);
+    var cx = anchor === 'middle' ? e.lx - wCh/2 : (anchor === 'end' ? e.lx - wCh : e.lx);
+    chip.appendChild(svg('rect', { x:cx, y: e.ly - 8, width:wCh, height:14.5, rx:7,
+      fill: isNone ? '#f1f4f7' : cat.bg, stroke: isNone ? '#d5dce3' : cat.color, 'stroke-width':1 }));
+    var ct = svg('text', { x: cx + wCh/2, y: e.ly + 2.6, class:'e-crud', 'text-anchor':'middle',
+      fill: isNone ? '#7a8691' : cat.color });
+    ct.textContent = label;
+    chip.appendChild(ct);
+    grp.appendChild(chip);
+    g.appendChild(grp);
+  }
+}
+
+/* ==========================================================================
+   Matrix
+   ========================================================================== */
+function crudCell(spec){
+  if (spec === 'geen') return '<span class="crud-none">geen databaseactie</span>';
+  var letters = ['C','R','U','D'], out = '<div class="crud-set">';
+  for (var i=0;i<letters.length;i++){
+    out += '<span class="crud' + (spec.indexOf(letters[i]) >= 0 ? ' on' : '') + '">' + letters[i] + '</span>';
+  }
+  return out + '</div>';
+}
+
+function drawMatrix(){
+  var tb = document.getElementById('matrix-body'), html = '';
+  for (var i=0;i<ROWS.length;i++){
+    var r = ROWS[i], cat = CAT[r.cat];
+    var flow = '<div class="flowpath">' + r.flow[0] +
+      '<span class="arrow">&rarr;</span>' + r.flow[1] +
+      '<span class="arrow">&rarr;</span>' + r.flow[2] + '</div>';
+    html += '<tr data-cat="' + r.cat + '">' +
+      '<td><div class="g-name">' + r.name + '</div><div class="g-where">waar: ' + r.where + '</div></td>' +
+      '<td data-label="Bron &rarr; verwerking &rarr; bestemming">' + flow + '</td>' +
+      '<td data-label="C/R/U/D" class="crud-cell">' + crudCell(r.crud) +
+        '<div class="g-where" style="margin-top:5px">' + r.crudNote + '</div></td>' +
+      '<td data-label="Opslagkeuze"><span class="pill ' + cat.pill + '">' + cat.label + '</span></td>' +
+      '<td data-label="Huidige opslag &amp; advies"><div><b>Nu:</b> ' + r.now + '</div>' +
+        '<div style="margin-top:7px"><b>Advies:</b> ' + r.advice + '</div></td>' +
+      '<td data-label="Na afsluiten / herladen"><div class="persist">' + r.persist + '</div></td>' +
+      '</tr>';
+  }
+  tb.innerHTML = html;
+}
+
+/* ==========================================================================
+   Filters en CRUD-schakelaar
+   ========================================================================== */
+var FILTERS = {
+  alle:   { cats:['bewaren','tijdelijk','extern','keuze'], note:'Alle stromen zichtbaar. Bij een filter blijft de volledige route van de geselecteerde data staan — bron, verwerking, bestemming en opslag.' },
+  db:     { cats:['bewaren','keuze'], note:'Alleen gegevens die duurzaam in eigen opslag terechtkomen, plus de twijfelgevallen. De hele route blijft zichtbaar: van de bron, via de CI, tot het bestand in de repo of de sleutel in localStorage. Let op: die eigen opslag is vandaag een Git-repo en browseropslag — geen database.' },
+  geendb: { cats:['tijdelijk','extern'], note:'Alleen gegevens die niet in eigen opslag hoeven: live opgehaald, doorgegeven, berekend of getoond — plus alles wat al bij de bron of in een bestand staat.' }
+};
+
+function applyFilter(mode){
+  var cats = FILTERS[mode].cats;
+  var active = {};
+  var edges = document.querySelectorAll('#layer-edges > g[data-edge]');
+  for (var i=0;i<edges.length;i++){
+    var on = cats.indexOf(edges[i].getAttribute('data-cat')) >= 0;
+    edges[i].classList.toggle('dim', !on);
+    if (on){
+      for (var j=0;j<EDGES.length;j++){
+        if (EDGES[j].id === edges[i].getAttribute('data-edge')){
+          active[EDGES[j].from] = true; active[EDGES[j].to] = true;
+        }
+      }
+    }
+  }
+  var nodes = document.querySelectorAll('#layer-nodes > g[data-node]');
+  for (var k=0;k<nodes.length;k++){
+    var id = nodes[k].getAttribute('data-node'), n = nodeById(id);
+    var on = !!active[id] || (n && n.cat && cats.indexOf(n.cat) >= 0);
+    nodes[k].classList.toggle('dim', !on);
+  }
+  var rows = document.querySelectorAll('#matrix-body tr');
+  for (var m=0;m<rows.length;m++){
+    rows[m].classList.toggle('row-hidden', cats.indexOf(rows[m].getAttribute('data-cat')) < 0);
+  }
+  document.getElementById('filter-note').textContent = FILTERS[mode].note;
+  var btns = document.querySelectorAll('.seg button[data-filter]');
+  for (var b=0;b<btns.length;b++){
+    btns[b].setAttribute('aria-pressed', btns[b].getAttribute('data-filter') === mode ? 'true' : 'false');
+  }
+}
+
+/* ==========================================================================
+   Start
+   ========================================================================== */
+drawColumns();
+drawEdges();
+drawNodes();
+drawMatrix();
+applyFilter('alle');
+
+var segBtns = document.querySelectorAll('.seg button[data-filter]');
+for (var i=0;i<segBtns.length;i++){
+  segBtns[i].addEventListener('click', function(){ applyFilter(this.getAttribute('data-filter')); });
+}
+document.getElementById('crud-toggle').addEventListener('change', function(){
+  document.body.classList.toggle('crud-hidden', !this.checked);
+});
+
+})();
+</script>
+</body>
+</html>
